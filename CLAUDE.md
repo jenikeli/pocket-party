@@ -2,6 +2,8 @@
 
 Project context for Claude Code. Read this first every session, then read `plan.md` for the current milestone.
 
+`docs/spike-findings.md` holds the results of tests I ran on my real devices before writing any game code (a throwaway `spike.js`), to check viability and pin down parameters: HTTPS requirements, latency, socket survival when the screen locks, tilt rates. Treat its numbers as measured facts that override general assumptions, and note that they come from single runs on a few devices.
+
 ## What this is
 
 A local-network party game in the style of Mario Party. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
@@ -67,10 +69,24 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - Minigames are self-contained modules in `host/minigames/<name>/` with a matching controller UI in `controller/minigames/<name>/`, implementing the interface documented in `plan.md`.
 - Comment the *why* for anything non-obvious, especially networking, reconnection, and sensor logic.
 
+## Readability (I must be able to read and change any file myself)
+
+- Plain, obvious code over clever code. If a junior developer couldn't follow a function on first read, simplify it.
+- Start every file with a one- or two-line comment saying what it is for and who uses it.
+- Aim for files under about 200 lines and functions under about 40. If a file grows past that, split it by responsibility, not arbitrarily.
+- Descriptive names (`playerSlots`, `sendInput`), no abbreviations beyond common ones (`ws`, `id`, `dt`).
+- No abstraction until it is needed in at least two real places. No speculative options, plugin systems, or "for later" hooks.
+- One way to do each thing. Once a pattern exists (how a module subscribes to messages, how a scene is structured, how an input module is shaped), reuse it instead of inventing a second one.
+- Keep data flow traceable: a message should be easy to follow from `shared/protocol.js` to the code that sends it and the code that handles it. Avoid global event buses and hidden side effects.
+- No dead code, commented-out code, or leftover debug logging. Never swallow errors silently; log them with context.
+- Don't rewrite or reformat code unrelated to the current task.
+
 ## How to work with me
 
 - I'm building this partly to learn. When you make a non-obvious design decision (networking, state sync, reconnection, sensors), explain the mechanism briefly: what actually happens and why, not just what to type.
 - Work in small steps. Finish one milestone from `plan.md`, make sure it runs, then stop and tell me exactly how to test it on real devices.
+- **One milestone per chat.** Each milestone is built in its own fresh chat session. Do not start the next milestone in the same chat, even if there is time left. If a milestone is too big for one chat, say so and propose how to split it.
+- **Hand off at the end of each milestone,** because the next chat starts with no memory of this one: tick the finished checkboxes in `plan.md`, add a short "Notes" line under the milestone for any decision or deviation the next milestone needs to know, and update the Commands section below. Then give me a short walkthrough of what was built: the files added, what each does, and how one message flows through the system end to end.
 - Before adding a dependency, say what it is and why the built-ins can't do it.
 - If a request conflicts with the hard constraints above, flag it instead of working around it.
 - Be precise. If you are unsure about something (an iOS Safari quirk, a Termux limitation, an HTTPS-on-LAN trick), say so and tell me how to verify it rather than guessing.

@@ -1,6 +1,6 @@
 # plan.md
 
-Build plan for the phone-controller party game. Work through milestones in order. Stop after each one and let me test on real devices before continuing. See `CLAUDE.md` for architecture and constraints.
+Build plan for the phone-controller party game. Work through milestones in order. Stop after each one and let me test on real devices before continuing. Each milestone is built in its own chat session (see "How to work with me" in `CLAUDE.md`). See `CLAUDE.md` for architecture and constraints.
 
 ## Goal
 

@@ -43,20 +43,22 @@ Each minigame also has a controller UI module that shows the right controls and 
 ## Milestones
 
 ### M0: Project skeleton
-- [ ] Folders: `server/`, `host/`, `controller/`, `shared/`, `assets/`
-- [ ] `package.json` with `ws` as the only dependency
-- [ ] Server serves static files for `/` (controller) and `/host`, bound to `0.0.0.0:3000`
-- [ ] `shared/protocol.js` with initial message types
-- [ ] Phaser vendored into `host/vendor/`
-- [ ] `engines` and `.nvmrc` pinning the Node major version used on the phone
-- [ ] Config only via env vars (`PORT`, `CERT_PATH`, `KEY_PATH`, optional `HOST_IP` override); no hardcoded paths; port 3000 or above
-- [ ] On startup the server prints every non-internal IPv4 address with its interface name, e.g. `http://10.60.55.71:3000  (swlan0)`, wrapped in try/catch
-- [ ] `npm run check`: verifies the Node version, binds the port, and prints the reachable URLs
+- [x] Folders: `server/`, `host/`, `controller/`, `shared/`, `assets/`
+- [x] `package.json` with `ws` as the only dependency
+- [x] Server serves static files for `/` (controller) and `/host`, bound to `0.0.0.0:3000`
+- [x] `shared/protocol.js` with initial message types
+- [x] Phaser vendored into `host/vendor/`
+- [x] `engines` and `.nvmrc` pinning the Node major version used on the phone
+- [x] Config only via env vars (`PORT`, `CERT_PATH`, `KEY_PATH`, optional `HOST_IP` override); no hardcoded paths; port 3000 or above
+- [x] On startup the server prints every non-internal IPv4 address with its interface name, e.g. `http://10.60.55.71:3000  (swlan0)`, wrapped in try/catch
+- [x] `npm run check`: verifies the Node version, binds the port, and prints the reachable URLs
 - [ ] Run the M0 server on the Termux phone now (clone with git, `npm install`, `npm start`), not just on the dev box
 
 **Done when:** the server runs from the same repo on both my Linux server and the Termux phone, and a host device and a phone (iOS and Android) both load their pages over the hotspot.
 
 Notes (decided before M0): `HOST_IP` only picks which address the server prints first as the main URL, and later shows on the host's join screen. It never changes the bind address, which stays `0.0.0.0`. Vendor the latest Phaser 3.x as a pinned ES module build (`phaser.esm.js`), not Phaser 4. `.gitignore` must cover `node_modules/`, `*.pem`, `.env`, and any other secrets: never commit certs, keys, or tokens.
+
+Notes (M0 done): Phaser is `host/vendor/phaser-3.90.0.esm.min.js` (named exports: `import * as Phaser from ...`). The server only serves the `controller/`, `host/`, `shared/` and `assets/` folders, with `/` aliased to the controller page and `/host` to the host page; pages must use absolute paths (`/host/main.js`). All files are sent with `Cache-Control: no-cache` plus `Last-Modified`, so unchanged files revalidate with a 304. HTTPS is already switched on when `CERT_PATH` and `KEY_PATH` are both set (M2 still owns WSS, `gen-cert` and the device checks). `ws` is installed but not used yet; the WebSocket server and `npm run dev` (watch + reload push) come in M1.
 
 ### M1: One phone moves a square
 - [ ] Host creates a room and shows a room code

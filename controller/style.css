@@ -1,0 +1,33 @@
+/* Controller styles: mobile-first, full-screen touch surface. Used by controller/index.html. */
+
+html, body {
+  margin: 0;
+  height: 100dvh; /* dvh follows the visible area as mobile browser bars show and hide */
+  background: #10131c;
+  color: #ffffff;
+  font-family: sans-serif;
+  /* No browser gestures (scroll, double-tap zoom, pinch) on the controller; we handle touches ourselves. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* Stops pull-to-refresh on Android Chrome and rubber-band scrolling on iOS. */
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+main {
+  padding: 24px;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  color: #9aa4bf;
+}
+
+dd {
+  margin: 0;
+  color: #ffffff;
+}

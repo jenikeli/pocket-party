@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Secrets: never commit certs, keys, tokens or env files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+
+# Editor and OS noise
+.DS_Store
+npm-debug.log*

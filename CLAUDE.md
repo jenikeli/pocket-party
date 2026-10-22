@@ -96,8 +96,9 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 (Update as the project grows.)
 
 - `npm install`: install deps
-- `npm start`: run the server on port 3000 (HTTPS if certs are configured)
-- `npm run dev`: run the server with file watching and reload push to the host
+- `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
+- `npm run check`: check Node version, env vars, cert files and port, then print the reachable URLs
+- `npm run dev`: (not built yet, planned for M1) run the server with file watching and reload push to the host
 
 ## Testing on real devices
 

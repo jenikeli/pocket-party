@@ -11,7 +11,7 @@ A Mario Party-style game for 2-6 players. A host display shows a board and minig
 - Controllers: Android Chrome, and iOS Safari or Chrome (iPhone and iPad), all verified in the spike with a self-signed cert that includes `extendedKeyUsage=serverAuth` and `keyUsage` (see `docs/spike-findings.md`). Host: Windows, Mac, iOS, or Android browser.
 - Host rendering and game logic: Phaser 3 (2D), 1920x1080 logical size, `FIT` scaling.
 - Server: Node + `ws`, relay only. Dev on my Linux home server, production on a spare non-rooted Android phone running Node in Termux. The same code and the same `npm start` must work on both. Node is v26.3.1 on the phone; pin the same major version on the dev box via `engines` and `.nvmrc`.
-- Network: the Android phone runs a hotspot and all game devices join it. Observed on my phone: the hotspot interface is `swlan0` at `10.60.55.71` and the address stayed the same after toggling the hotspot. The phone may also be on home Wi-Fi at the same time (`wlan0`), so the server answers on several addresses.
+- Network: the Android phone runs a hotspot and all game devices join it. Observed on my phone: the hotspot interface is `swlan0` at `10.60.55.71` and the address stayed the same after toggling the hotspot, but changed after a phone restart, so never assume a fixed IP. The phone may also be on home Wi-Fi at the same time (`wlan0`), so the server answers on several addresses.
 - Transport: WebSockets. HTTPS/WSS is required for tilt and Wake Lock, so it is a real milestone (M2), not an afterthought.
 - Reconnection: playerId + secret token in `localStorage`. The host holds a disconnected player's slot for a generous grace period (default 2 minutes, configurable), because phones often drop their socket when the screen locks and the OS, not our code, decides that.
 - Host is authoritative for game state.
@@ -52,7 +52,7 @@ Each minigame also has a controller UI module that shows the right controls and 
 - [x] Config only via env vars (`PORT`, `CERT_PATH`, `KEY_PATH`, optional `HOST_IP` override); no hardcoded paths; port 3000 or above
 - [x] On startup the server prints every non-internal IPv4 address with its interface name, e.g. `http://10.60.55.71:3000  (swlan0)`, wrapped in try/catch
 - [x] `npm run check`: verifies the Node version, binds the port, and prints the reachable URLs
-- [ ] Run the M0 server on the Termux phone now (clone with git, `npm install`, `npm start`), not just on the dev box
+- [x] Run the M0 server on the Termux phone now (clone with git, `npm install`, `npm start`), not just on the dev box
 
 **Done when:** the server runs from the same repo on both my Linux server and the Termux phone, and a host device and a phone (iOS and Android) both load their pages over the hotspot.
 
@@ -65,19 +65,22 @@ Notes (M0 done): Phaser is `host/vendor/phaser-3.90.0.esm.min.js` (named exports
 - [ ] Controller joins with the code; server assigns playerId + token
 - [ ] Controller sends a simple drag input
 - [ ] Host moves a square per player in response
+- [ ] Host join screen shows a QR code for `location.origin + "/?room=<code>"` (a small vendored QR library in `host/vendor/`, no CDN); the controller fills in the room code from the URL. The server IP changes when the phone restarts, so nobody should have to type it except whoever opens `/host`.
 
 **Done when:** two phones (one iOS, one Android) each control their own square on the host in real time.
 
 ### M2: HTTPS on the LAN
-Goal: make controller pages a secure context on iOS and Android with as little per-device setup as possible. Try these in order and record what works:
-- [ ] Server serves HTTPS/WSS when `CERT_PATH` and `KEY_PATH` are set; clients choose `wss` automatically
-- [ ] Option A: a local CA (such as `mkcert`) with the root cert installed and trusted on each phone. iOS needs the profile installed and then enabled under Certificate Trust Settings. Document the exact steps.
-- [ ] Option B: a domain I own, with an A record pointing to the server's private LAN IP and a Let's Encrypt cert via DNS-01. No per-device trust needed, but devices must be able to resolve the domain (internet or a hotspot with internet).
-- [x] Option C: spike result in `docs/spike-findings.md`. A self-signed cert (IP in the subject alternative name) with click-through gives `isSecureContext = true`, working `wss`, Wake Lock, and tilt permission on Android Chrome and iPad Safari. iPhone Safari initially failed; adding `extendedKeyUsage=serverAuth` and `keyUsage=digitalSignature,keyEncipherment` to the cert fixed it, and Safari and Chrome now work on iPhone and iPad. Still to check: how often the warning reappears. The cost is that every player taps through a certificate warning, so A or B may be worth it.
-- [ ] `npm run gen-cert`: generate the cert with openssl (Termux needs `pkg install openssl-tool`). It takes the server's IPs as arguments and puts every one in `subjectAltName` (hotspot IP, home Wi-Fi IP, dev box IP), plus `extendedKeyUsage=serverAuth` and `keyUsage=digitalSignature,keyEncipherment`. The full command is in `docs/spike-findings.md`. A cert only matches the IPs listed, so regenerate it if the hotspot IP changes or the cert expires (30 days).
-- [ ] Verify `window.isSecureContext === true` on each phone, and that Wake Lock and `requestPermission` are available.
+Goal: make controller pages a secure context on iOS and Android with no per-device setup beyond tapping through a warning.
 
-**Done when:** an iPhone and an Android phone both report a secure context on the LAN, and I know the simplest setup that works. Recommend one option and explain the tradeoffs.
+Decision (before M2): use a self-signed cert (option C). Rejected: a local CA (every device must install and trust a root cert) and a real domain with Let's Encrypt (needs internet). Accepted cost: every player taps through a certificate warning, again whenever the cert changes.
+- [ ] Server serves HTTPS/WSS when `CERT_PATH` and `KEY_PATH` are set; clients choose `wss` automatically (HTTPS serving already exists from M0)
+- [x] Spike result in `docs/spike-findings.md`: a self-signed cert (IP in the subject alternative name) with click-through gives `isSecureContext = true`, working `wss`, Wake Lock, and tilt permission on Android Chrome and iPad Safari. iPhone Safari needed `extendedKeyUsage=serverAuth` and `keyUsage=digitalSignature,keyEncipherment`; with those, Safari and Chrome work on iPhone and iPad.
+- [ ] `npm run gen-cert`: generate the cert with openssl (Termux needs `pkg install openssl-tool`). The hotspot IP changes when the phone restarts (seen: `10.60.55.71`, then `10.213.249.252`), so read the current IPs from `listLanAddresses()` by default instead of requiring them as arguments, and put every one in `subjectAltName`, plus `extendedKeyUsage=serverAuth` and `keyUsage=digitalSignature,keyEncipherment`. The base command is in `docs/spike-findings.md`. Pick a validity well under iOS's 825-day limit.
+- [ ] `npm start` (and `npm run check`) warn clearly when the cert does not cover the current IPs or has expired, and say to run `npm run gen-cert`
+- [ ] Verify `window.isSecureContext === true` on each phone, and that Wake Lock and `requestPermission` are available
+- [ ] Record how often the warning reappears per browser (same cert, next visit / next day), in `docs/spike-findings.md`
+
+**Done when:** an iPhone and an Android phone both report a secure context on the LAN after a phone restart and `npm run gen-cert`, with nothing installed on the devices.
 
 ### M3: Input lab (tap, swipe, tilt)
 A test page and a matching host view for comparing the three input types on both platforms.

@@ -89,6 +89,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - **Hand off at the end of each milestone,** because the next chat starts with no memory of this one: tick the finished checkboxes in `plan.md`, add a short "Notes" line under the milestone for any decision or deviation the next milestone needs to know, and update the Commands section below. Then give me a short walkthrough of what was built: the files added, what each does, and how one message flows through the system end to end.
 - Before adding a dependency, say what it is and why the built-ins can't do it.
 - If a request conflicts with the hard constraints above, flag it instead of working around it.
+- Never commit or push. Leave all changes uncommitted; I review and commit them myself. Don't offer to commit either.
 - Be precise. If you are unsure about something (an iOS Safari quirk, a Termux limitation, an HTTPS-on-LAN trick), say so and tell me how to verify it rather than guessing.
 
 ## Commands

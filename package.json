@@ -10,9 +10,14 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "node server/index.js --dev",
-    "check": "node server/check.js"
+    "check": "node server/check.js",
+    "test": "node --test --test-timeout=30000 \"test/unit/*.test.js\" \"test/server/*.test.js\"",
+    "test:browser": "node --test --test-timeout=60000 --test-concurrency=1 \"test/browser/*.test.js\""
   },
   "dependencies": {
     "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
   }
 }

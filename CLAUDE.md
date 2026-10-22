@@ -95,10 +95,11 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 (Update as the project grows.)
 
-- `npm install`: install deps
+- `npm install`: install deps (on the Termux phone use `npm install --omit=dev`, which skips Playwright)
 - `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
 - `npm run check`: check Node version, env vars, cert files and port, then print the reachable URLs
-- `npm test`: (not built yet, planned for M1.5) run the automated tests
+- `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, about 2 s
+- `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing
@@ -111,6 +112,18 @@ Every behaviour that has been built must stay working as the code changes. Autom
 - Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.
 - Tests use Node's built-in runner (`node --test`) and live in `test/`. Test dependencies are dev-only and must never be needed by `npm start`.
 - Automation cannot check everything (real touch screens, tilt sensors, certificate warnings, sockets dropping when a phone locks, the hotspot). The handoff lists only those checks for me to do on real devices.
+- Test layout: `test/unit/` (plain modules), `test/server/` (real server + `ws` clients), `test/browser/` (Playwright), shared helpers in `test/helpers/`. The host draws on a canvas, so browser tests read the screen by decoding screenshots (`test/helpers/screenshot-pixels.js`) and watch the page's WebSocket frames for protocol messages. Start servers with `startServer()` and stop them in `t.after()` or `after()`, so a failing assertion never leaves a server running and hangs the run.
+
+### Still needs a real device (and why)
+
+- **Real touch:** browser tests drag with mouse-generated pointer events. Real fingers, multi-touch, and iOS edge-swipe gestures stealing the touch (`pointercancel`) only happen on a phone.
+- **Closing a tab frees the slot:** a headless page close kills the socket by itself, so it cannot prove the controller's `pagehide` handler is needed or works. Real Chrome kept the socket open after the tab closed until the handler was added.
+- **Real Safari:** WebKit in Playwright is Safari's engine, not Safari itself (no iOS UI, no real viewport bars, no `100dvh` behaviour while the address bar animates).
+- **Secure context and certificates:** tests load from `127.0.0.1`, which browsers always treat as a secure context, so they say nothing about HTTPS on the LAN, cert warnings, tilt permission or Wake Lock. Those need phones on the LAN IP.
+- **Sensors:** tilt and shake (M3 on) have no real source in a headless browser.
+- **Network:** hotspot reach, client isolation, Wi-Fi latency and jitter, and sockets dropping when a screen locks or the app is switched.
+- **Scanning the QR:** tests prove the drawn QR encodes the right URL module by module, not that a phone camera reads it from across a room.
+- **Termux:** the server running on the Android phone itself (`npm start` there).
 
 ## Testing on real devices
 

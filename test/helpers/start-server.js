@@ -40,10 +40,11 @@ export function waitForExit(child) {
 }
 
 // Starts the server and resolves once it prints its "listening" line.
-// Returns { port, baseUrl, output(), stop() }. Pass args: ['--dev'] for dev mode.
-export async function startServer({ args = [] } = {}) {
+// Returns { port, baseUrl, output(), stop() }. Pass args: ['--dev'] for dev mode, and
+// env: { CERT_PATH, KEY_PATH } for HTTPS (baseUrl then starts with https://).
+export async function startServer({ args = [], env = {} } = {}) {
   const port = await findFreePort();
-  const child = runScript('server/index.js', { args, env: { PORT: String(port) } });
+  const child = runScript('server/index.js', { args, env: { ...env, PORT: String(port) } });
   let output = '';
 
   await new Promise((resolve, reject) => {
@@ -68,5 +69,6 @@ export async function startServer({ args = [] } = {}) {
     await exited;
   }
 
-  return { port, baseUrl: `http://127.0.0.1:${port}`, output: () => output, stop };
+  const protocol = env.CERT_PATH ? 'https' : 'http';
+  return { port, baseUrl: `${protocol}://127.0.0.1:${port}`, output: () => output, stop };
 }

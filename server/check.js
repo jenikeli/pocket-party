@@ -3,8 +3,10 @@
 
 import fs from 'node:fs';
 import net from 'node:net';
+import tls from 'node:tls';
 import { readConfig, BIND_ADDRESS } from './config.js';
-import { printUrls } from './addresses.js';
+import { printUrls, listLanAddresses } from './addresses.js';
+import { readCertificate, findCertificateErrors, findUncoveredAddresses } from './certificate.js';
 
 const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
@@ -12,6 +14,11 @@ let problems = 0;
 
 function pass(message) {
   console.log(`  ok    ${message}`);
+}
+
+// Something worth fixing that does not stop the game, e.g. one address the cert does not cover.
+function warn(message) {
+  console.log(`  WARN  ${message}`);
 }
 
 function fail(message) {
@@ -35,13 +42,41 @@ function checkCertFiles(config) {
     pass('No CERT_PATH/KEY_PATH set: will serve plain HTTP (tilt and Wake Lock need HTTPS)');
     return;
   }
+  let allReadable = true;
   for (const [name, filePath] of [['CERT_PATH', config.certPath], ['KEY_PATH', config.keyPath]]) {
     try {
       fs.accessSync(filePath, fs.constants.R_OK);
       pass(`${name} readable: ${filePath}`);
     } catch (error) {
       fail(`${name} not readable: ${filePath} (${error.code})`);
+      allReadable = false;
     }
+  }
+  if (allReadable) {
+    checkCertificate(config);
+  }
+}
+
+function checkCertificate(config) {
+  let certificate;
+  try {
+    certificate = readCertificate(config.certPath);
+    // Builds the same TLS setup the HTTPS server will, so a key from a different cert fails here, not at start.
+    tls.createSecureContext({ cert: fs.readFileSync(config.certPath), key: fs.readFileSync(config.keyPath) });
+  } catch (error) {
+    fail(`Certificate or key cannot be used: ${error.message}`);
+    return;
+  }
+  const errors = findCertificateErrors(certificate);
+  for (const error of errors) {
+    fail(`${error} Run \`npm run gen-cert\`.`);
+  }
+  const uncovered = findUncoveredAddresses(certificate, listLanAddresses());
+  for (const entry of uncovered) {
+    warn(`Certificate does not cover ${entry.address} (${entry.name}). Run \`npm run gen-cert\` if players use it.`);
+  }
+  if (errors.length === 0 && uncovered.length === 0) {
+    pass(`Certificate valid until ${certificate.validToDate.toDateString()} and covers every LAN address`);
   }
 }
 

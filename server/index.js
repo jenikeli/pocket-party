@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
 import { readConfig, BIND_ADDRESS } from './config.js';
-import { printUrls } from './addresses.js';
+import { printUrls, listLanAddresses } from './addresses.js';
+import { readCertificate, findCertificateErrors, findUncoveredAddresses } from './certificate.js';
 import { handleStaticRequest } from './static-files.js';
 import { attachRelay, sendToAllHosts } from './relay.js';
 import { watchPublicFiles } from './dev-reload.js';
@@ -18,11 +19,37 @@ function createServer(config) {
   if (!config.useHttps) {
     return http.createServer(handleStaticRequest);
   }
-  const tlsOptions = {
-    cert: fs.readFileSync(config.certPath),
-    key: fs.readFileSync(config.keyPath),
-  };
-  return https.createServer(tlsOptions, handleStaticRequest);
+  try {
+    const tlsOptions = {
+      cert: fs.readFileSync(config.certPath),
+      key: fs.readFileSync(config.keyPath),
+    };
+    return https.createServer(tlsOptions, handleStaticRequest);
+  } catch (error) {
+    console.error(`Could not load the certificate or key: ${error.message}`);
+    console.error('Run `npm run gen-cert` to make new ones, or fix CERT_PATH and KEY_PATH.');
+    process.exit(1);
+  }
+}
+
+// The server still starts with a bad cert (some addresses may work), but says loudly what will fail.
+// A cert lists the IPs it is valid for, and the hotspot IP changes when the phone restarts.
+function warnAboutCertificate(config) {
+  const certificate = readCertificate(config.certPath);
+  const warnings = findCertificateErrors(certificate);
+  for (const entry of findUncoveredAddresses(certificate, listLanAddresses())) {
+    warnings.push(`The certificate does not cover ${entry.address} (${entry.name}); phones there get a certificate error.`);
+  }
+  if (warnings.length === 0) {
+    return;
+  }
+  console.warn('');
+  console.warn('WARNING: certificate problems');
+  for (const warning of warnings) {
+    console.warn(`  - ${warning}`);
+  }
+  console.warn('  Fix: run `npm run gen-cert`, then restart the server.');
+  console.warn('');
 }
 
 function main() {
@@ -51,6 +78,9 @@ function main() {
   server.listen(config.port, BIND_ADDRESS, () => {
     console.log(`Pocket Party server listening on ${BIND_ADDRESS}:${config.port}`);
     printUrls(config);
+    if (config.useHttps) {
+      warnAboutCertificate(config);
+    }
   });
 }
 

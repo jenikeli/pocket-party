@@ -16,3 +16,6 @@ npm-debug.log*
 
 # Test output (browser test screenshots)
 test-results/
+
+# Generated TLS cert and key (npm run gen-cert)
+certs/

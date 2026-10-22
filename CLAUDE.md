@@ -97,8 +97,9 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 (Update as the project grows.)
 
 - `npm install`: install deps (on the Termux phone use `npm install --omit=dev`, which skips Playwright)
-- `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
-- `npm run check`: check Node version, env vars, cert files and port, then print the reachable URLs
+- `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set; warns if the cert is expired or misses a current IP). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
+- `npm run gen-cert`: make a self-signed cert for every current LAN IP plus 127.0.0.1 (needs `openssl`; Termux: `pkg install openssl-tool`). Writes to `CERT_PATH`/`KEY_PATH` if set, else `certs/`. Rerun whenever the IP changes (phone restart), then start with `CERT_PATH=certs/cert.pem KEY_PATH=certs/key.pem npm start`
+- `npm run check`: check Node version, env vars, cert files (valid, matching key, covers the current IPs) and port, then print the reachable URLs
 - `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, about 2 s
 - `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)

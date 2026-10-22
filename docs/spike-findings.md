@@ -62,4 +62,15 @@ The Termux phone's hotspot settings allow at most 10 connected devices (user-che
 - Actually filling the hotspot to 10 devices (the most simultaneous clients seen was 2)
 - Hotspot auto-off when idle, and the Termux screen-off soak test
 - Latency with nine devices sending at 30-60 Hz
-- How often the certificate warning reappears
+- How often the certificate warning reappears (table below, to fill in during M2)
+
+## 7. Certificate warning reappearance (M2, not yet measured)
+
+Same cert each time unless the row says otherwise. Write what the browser did: warning shown again, or page loaded straight away.
+
+| Browser | Reload | Close tab, reopen | Next day | After `npm run gen-cert` (new cert) |
+|---|---|---|---|---|
+| Android Chrome | | | | |
+| iPhone Safari | | | | |
+| iPhone Chrome | | | | |
+| iPad Safari | | | | |

@@ -7,8 +7,11 @@ import { createMessageQueue } from './message-queue.js';
 
 // Opens a socket and resolves once it is connected. Returns { send, sendRaw, next, nextOfType,
 // collectFor, closed, close }. `closed` is a promise that resolves when the server closes the socket.
-export function connectClient(port) {
-  const socket = new WebSocket(`ws://127.0.0.1:${port}${SOCKET_PATH}`);
+// With `ca` (a self-signed cert's PEM) it connects over wss and trusts only that cert, so the TLS
+// handshake is really verified, including that the cert lists 127.0.0.1.
+export function connectClient(port, { ca } = {}) {
+  const url = `${ca ? 'wss' : 'ws'}://127.0.0.1:${port}${SOCKET_PATH}`;
+  const socket = new WebSocket(url, ca ? { ca } : {});
   const queue = createMessageQueue();
   socket.on('message', (data) => queue.push(JSON.parse(data.toString())));
   const closed = new Promise((resolve) => socket.on('close', resolve));

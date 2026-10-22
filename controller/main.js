@@ -83,8 +83,14 @@ function listDeviceInfo() {
     'Secure context': String(window.isSecureContext),
     // Both are missing entirely over plain HTTP (measured in the spike); they appear once we serve HTTPS (M2).
     'Tilt API': 'DeviceOrientationEvent' in window ? 'present' : 'missing',
+    // iOS must call this from a tap before any tilt events arrive. The spike found it on Android Chrome too.
+    'Tilt permission API': hasTiltPermissionApi() ? 'present' : 'missing',
     'Wake Lock API': 'wakeLock' in navigator ? 'present' : 'missing',
   };
+}
+
+function hasTiltPermissionApi() {
+  return 'DeviceOrientationEvent' in window && typeof DeviceOrientationEvent.requestPermission === 'function';
 }
 
 function showDeviceInfo() {

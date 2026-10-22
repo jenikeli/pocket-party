@@ -2,7 +2,7 @@
 // Loaded by host/index.html. Each screen of the game is a scene in host/scenes/.
 
 import * as Phaser from '/host/vendor/phaser-3.90.0.esm.min.js';
-import { SquaresScene } from '/host/scenes/squares-scene.js';
+import { InputLabScene } from '/host/scenes/input-lab-scene.js';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -15,5 +15,5 @@ new Phaser.Game({
     width: 1920,
     height: 1080,
   },
-  scene: [SquaresScene],
+  scene: [InputLabScene],
 });

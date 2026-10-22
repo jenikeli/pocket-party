@@ -182,3 +182,85 @@ describe('leaving', () => {
     assert.equal(late.reply.reason, JOIN_FAILURE_REASONS.NO_SUCH_ROOM);
   });
 });
+
+describe('input lab messages (M3)', () => {
+  test('input_mode and device_info reach the host with the server-added playerId', async () => {
+    const { host, roomCode } = await createHost(port);
+    const { controller, reply } = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    controller.send({ type: MESSAGE_TYPES.DEVICE_INFO, platform: 'iPhone', browser: 'Safari', playerId: 'fake' });
+    controller.send({ type: MESSAGE_TYPES.INPUT_MODE, mode: 'drag', fallbackFrom: 'tilt', reason: 'denied' });
+    assert.deepEqual(await host.next(), {
+      type: MESSAGE_TYPES.DEVICE_INFO,
+      platform: 'iPhone',
+      browser: 'Safari',
+      playerId: reply.playerId,
+    });
+    assert.deepEqual(await host.next(), {
+      type: MESSAGE_TYPES.INPUT_MODE,
+      mode: 'drag',
+      fallbackFrom: 'tilt',
+      reason: 'denied',
+      playerId: reply.playerId,
+    });
+    controller.close();
+    host.close();
+  });
+
+  test('a host ping reaches only that controller, and its pong comes back with the playerId', async () => {
+    const { host, roomCode } = await createHost(port);
+    const pinged = await joinRoom(port, roomCode);
+    const other = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    host.send({ type: MESSAGE_TYPES.PING, playerId: pinged.reply.playerId, sentAt: 123.4 });
+    // The controller does not need its own playerId in the ping, so the server leaves it out.
+    assert.deepEqual(await pinged.controller.next(), { type: MESSAGE_TYPES.PING, sentAt: 123.4 });
+    assert.deepEqual(await other.controller.collectFor(150), []);
+
+    pinged.controller.send({ type: MESSAGE_TYPES.PONG, sentAt: 123.4 });
+    assert.deepEqual(await host.next(), {
+      type: MESSAGE_TYPES.PONG,
+      sentAt: 123.4,
+      playerId: pinged.reply.playerId,
+    });
+    pinged.controller.close();
+    other.controller.close();
+    host.close();
+  });
+
+  test('a host cannot ping a player in another room, and pinging a missing player is harmless', async () => {
+    const roomA = await createHost(port);
+    const roomB = await createHost(port);
+    const { controller, reply } = await joinRoom(port, roomB.roomCode);
+    await roomB.host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    roomA.host.send({ type: MESSAGE_TYPES.PING, playerId: reply.playerId, sentAt: 1 });
+    roomA.host.send({ type: MESSAGE_TYPES.PING, playerId: 'nobody', sentAt: 2 });
+    assert.deepEqual(await controller.collectFor(150), []);
+
+    // Room A's host is still connected and working.
+    const late = await joinRoom(port, roomA.roomCode);
+    assert.equal(late.reply.type, MESSAGE_TYPES.JOINED);
+
+    controller.close();
+    late.controller.close();
+    roomA.host.close();
+    roomB.host.close();
+  });
+
+  test('a controller cannot send pings to other players', async () => {
+    const { host, roomCode } = await createHost(port);
+    const sender = await joinRoom(port, roomCode);
+    const target = await joinRoom(port, roomCode);
+
+    sender.controller.send({ type: MESSAGE_TYPES.PING, playerId: target.reply.playerId, sentAt: 1 });
+    assert.deepEqual(await target.controller.collectFor(150), []);
+
+    sender.controller.close();
+    target.controller.close();
+    host.close();
+  });
+});

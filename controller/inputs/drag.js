@@ -1,8 +1,11 @@
 // Drag input: turns a finger dragging on a surface into a virtual-stick value { kind: 'drag', x, y }.
-// Used by controller/main.js. Same shape as every input module: start(surface), stop(), onInput(callback).
+// Used by controller/input-lab.js. Same shape as every input module: start(surface), stop(), onInput(callback).
 //
 // x and y run from -1 to 1: how far the finger is from where it first touched, divided by DRAG_RADIUS_PX.
 // Right and down are positive, matching screen and Phaser coordinates. Lifting the finger sends 0, 0.
+
+import { INPUT_KINDS } from '../../shared/protocol.js';
+import { createThrottle } from './throttle.js';
 
 // How far (in CSS px) the finger must move from its start point to count as a full push.
 const DRAG_RADIUS_PX = 80;
@@ -16,9 +19,7 @@ let activePointerId = null; // only the first finger steers; extra fingers are i
 let originX = 0;
 let originY = 0;
 
-let pendingValue = null;
-let flushTimer = null;
-let lastSentAt = 0;
+const throttle = createThrottle(SEND_INTERVAL_MS, (value) => inputCallback(value));
 
 export function onInput(callback) {
   inputCallback = callback;
@@ -42,8 +43,7 @@ export function stop() {
   surface.removeEventListener('pointercancel', handlePointerEnd);
   surface = null;
   activePointerId = null;
-  clearTimeout(flushTimer);
-  flushTimer = null;
+  throttle.cancel();
 }
 
 function handlePointerDown(event) {
@@ -69,7 +69,7 @@ function handlePointerMove(event) {
     x /= length;
     y /= length;
   }
-  queueSend({ kind: 'drag', x: roundTo2(x), y: roundTo2(y) });
+  throttle.queue({ kind: INPUT_KINDS.DRAG, x: roundTo2(x), y: roundTo2(y) });
 }
 
 // pointercancel fires when the browser takes over the touch (for example a system gesture).
@@ -79,24 +79,7 @@ function handlePointerEnd(event) {
     return;
   }
   activePointerId = null;
-  queueSend({ kind: 'drag', x: 0, y: 0 });
-}
-
-// Sends at most once per SEND_INTERVAL_MS. Only the newest value matters, so in-between values are
-// overwritten. The timer always fires, so the final value (usually the release) is never lost.
-function queueSend(value) {
-  pendingValue = value;
-  if (flushTimer !== null) {
-    return;
-  }
-  const wait = Math.max(0, lastSentAt + SEND_INTERVAL_MS - performance.now());
-  flushTimer = setTimeout(flushPending, wait);
-}
-
-function flushPending() {
-  flushTimer = null;
-  lastSentAt = performance.now();
-  inputCallback(pendingValue);
+  throttle.queue({ kind: INPUT_KINDS.DRAG, x: 0, y: 0 });
 }
 
 function roundTo2(value) {

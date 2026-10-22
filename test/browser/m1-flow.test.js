@@ -1,5 +1,6 @@
 // Browser tests for M1 end to end: the real host page (desktop Chromium) and the real controller page on an
 // emulated Android phone (Chromium) and iPhone (WebKit, Safari's engine). Screenshots go to test-results/screenshots/.
+// Since M3 the host shows the input lab, so "the player's square" is the stick dot on that player's card.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,13 +16,14 @@ const CONTROLLER_DEVICES = [
   { name: 'iphone', engine: 'webkit', device: devices['iPhone 13'] },
 ];
 
-// Layout from host/scenes/squares-scene.js and host/qr-code.js, at 1:1 scale (1920x1080 viewport).
-const PLAY_AREA = { left: 0, top: 0, right: 1380, bottom: 1080 };
+// Layout from host/join-panel.js, host/qr-code.js and host/player-card.js, at 1:1 scale (1920x1080 viewport).
 const QR_CENTER = { x: 1650, y: 390 };
 const QR_SIZE_PX = 420;
 const QR_QUIET_ZONE_MODULES = 4;
 const FIRST_PLAYER_COLOR = 0xe74c3c;
-const FIRST_SQUARE_START = { x: 200, y: 440 };
+// The first card's top-left corner is (15, 15); its stick ring is centered 105, 195 inside it, radius 75.
+const FIRST_DOT_START = { x: 120, y: 210 };
+const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };
 
 // The center of every QR module, as [x, y] screen points, plus the dark/light pattern the code should have.
 function expectedQrModules(text) {
@@ -57,10 +59,10 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     let controllerPage;
     let roomCode;
 
-    // The first player's square on the host, or null when it is not on screen.
-    async function findFirstSquare() {
-      const square = await findColor(pixelReader, await hostPage.screenshot(), FIRST_PLAYER_COLOR, PLAY_AREA);
-      return square.count > 0 ? square : null;
+    // The first player's stick dot on the host, or null when it is not on screen.
+    async function findFirstDot() {
+      const dot = await findColor(pixelReader, await hostPage.screenshot(), FIRST_PLAYER_COLOR, FIRST_RING_AREA);
+      return dot.count > 0 ? dot : null;
     }
 
     async function openController() {
@@ -109,16 +111,16 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await controllerPage.textContent('#pad-status'), `In room ${roomCode}`);
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
 
-      const square = await waitUntil(findFirstSquare, { message: 'the first square on the host' });
-      assert.ok(Math.abs(square.centerX - FIRST_SQUARE_START.x) < 5, `square x ${square.centerX}`);
-      assert.ok(Math.abs(square.centerY - FIRST_SQUARE_START.y) < 5, `square y ${square.centerY}`);
+      const dot = await waitUntil(findFirstDot, { message: 'the first player\'s dot on the host' });
+      assert.ok(Math.abs(dot.centerX - FIRST_DOT_START.x) < 3, `dot x ${dot.centerX}`);
+      assert.ok(Math.abs(dot.centerY - FIRST_DOT_START.y) < 3, `dot y ${dot.centerY}`);
       await saveScreenshot(controllerPage, `${name}-2-controller-pad`);
       await saveScreenshot(hostPage, `${name}-2-host-with-player`);
     });
 
-    test('dragging right on the pad moves that square right, and releasing stops it', async () => {
-      const start = await findFirstSquare();
-      const pad = await controllerPage.locator('#drag-pad').boundingBox();
+    test('dragging right on the pad moves that player\'s dot right, and releasing centers it', async () => {
+      const start = await findFirstDot();
+      const pad = await controllerPage.locator('#input-pad').boundingBox();
       const padX = pad.x + pad.width / 2;
       const padY = pad.y + pad.height / 2;
 
@@ -126,37 +128,36 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await controllerPage.mouse.move(padX, padY);
       await controllerPage.mouse.down();
       await controllerPage.mouse.move(padX + 100, padY, { steps: 5 });
+      // A full push moves the dot 53 px (ring radius 75 minus dot radius 22).
       const moved = await waitUntil(
         async () => {
-          const square = await findFirstSquare();
-          return square && square.centerX > start.centerX + 150 ? square : null;
+          const dot = await findFirstDot();
+          return dot && dot.centerX > start.centerX + 45 ? dot : null;
         },
-        { message: 'the square to move right' },
+        { message: 'the dot to move right' },
       );
       assert.ok(Math.abs(moved.centerY - start.centerY) < 5, 'a straight-right drag should not move it vertically');
       await saveScreenshot(controllerPage, `${name}-3-controller-dragging`);
       await controllerPage.mouse.up();
 
-      // After release the stick is 0, 0, so two screenshots a moment apart show the square in the same place.
+      // Release sends 0, 0, which puts the dot back in the middle of the ring.
       await waitUntil(
         async () => {
-          const firstLook = await findFirstSquare();
-          await new Promise((resolve) => setTimeout(resolve, 200));
-          const secondLook = await findFirstSquare();
-          return Math.abs(secondLook.centerX - firstLook.centerX) < 1;
+          const dot = await findFirstDot();
+          return dot && Math.abs(dot.centerX - start.centerX) < 3;
         },
-        { message: 'the square to stop after release' },
+        { message: 'the dot to return to the center after release' },
       );
       await saveScreenshot(hostPage, `${name}-3-host-after-drag`);
     });
 
-    test('closing the controller tab removes its square', async () => {
+    test('closing the controller tab removes its card', async () => {
       // A headless close tears the page down, which closes its socket whether or not pagehide runs, so this
       // does not prove the pagehide handler in controller/main.js works; that needs a real browser.
       // (close({ runBeforeUnload: true }) would fire pagehide, but in Playwright's WebKit it never closes the tab.)
       await controllerPage.close();
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT);
-      await waitUntil(async () => (await findFirstSquare()) === null, { message: 'the square to disappear' });
+      await waitUntil(async () => (await findFirstDot()) === null, { message: 'the card to disappear' });
       await saveScreenshot(hostPage, `${name}-4-host-after-leave`);
     });
 

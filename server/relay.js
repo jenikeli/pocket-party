@@ -1,4 +1,4 @@
-// WebSocket relay: lets a host create a room, lets controllers join it, and forwards controller inputs to the host.
+// WebSocket relay: lets a host create a room, lets controllers join it, and passes messages between them.
 // Used by server/index.js. It never looks inside an input; game logic lives on the host.
 
 import { WebSocketServer, WebSocket } from 'ws';
@@ -7,6 +7,14 @@ import { createRoom, findRoom, deleteRoom, listRooms, addPlayer, removePlayer } 
 
 // Inputs are tiny. A low cap stops one misbehaving client from making the server buffer megabytes.
 const MAX_MESSAGE_BYTES = 16 * 1024;
+
+// Controller messages the server passes on to the host unchanged, apart from adding the sender's playerId.
+const FORWARDED_TO_HOST = new Set([
+  MESSAGE_TYPES.INPUT,
+  MESSAGE_TYPES.INPUT_MODE,
+  MESSAGE_TYPES.DEVICE_INFO,
+  MESSAGE_TYPES.PONG,
+]);
 
 // Shares the HTTP(S) server's port: the browser asks to "upgrade" a normal request on /ws into a WebSocket.
 // With HTTPS that upgrade happens inside TLS, which is what makes the connection wss://.
@@ -40,7 +48,7 @@ function handleConnection(socket) {
     } else if (session.role === 'controller') {
       handleControllerMessage(session, message);
     } else {
-      console.warn(`Ignoring "${message.type}" from the host of room ${session.room.roomCode}`);
+      handleHostMessage(session, message);
     }
   });
 
@@ -103,17 +111,27 @@ function refuseJoin(socket, reason) {
 }
 
 function handleControllerMessage(session, message) {
-  if (message.type !== MESSAGE_TYPES.INPUT) {
+  if (!FORWARDED_TO_HOST.has(message.type)) {
     console.warn(`Ignoring "${message.type}" from player ${session.playerId}`);
     return;
   }
-  // playerId comes from the socket's session, so a controller cannot send inputs as someone else.
-  send(session.room.hostSocket, {
-    type: MESSAGE_TYPES.INPUT,
-    playerId: session.playerId,
-    input: message.input,
-    sentAt: message.sentAt,
-  });
+  // playerId comes from the socket's session and is written last, so it replaces any playerId the
+  // controller put in the message: a controller cannot send inputs as someone else.
+  send(session.room.hostSocket, { ...message, playerId: session.playerId });
+}
+
+// The host may only reach players in its own room, because it looks them up in its own room's table.
+function handleHostMessage(session, message) {
+  if (message.type !== MESSAGE_TYPES.PING) {
+    console.warn(`Ignoring "${message.type}" from the host of room ${session.room.roomCode}`);
+    return;
+  }
+  const slot = session.room.players.get(message.playerId);
+  if (!slot) {
+    // Normal when a player left just as the host pinged them.
+    return;
+  }
+  send(slot.socket, { type: MESSAGE_TYPES.PING, sentAt: message.sentAt });
 }
 
 function endSession(session) {

@@ -62,15 +62,10 @@ The Termux phone's hotspot settings allow at most 10 connected devices (user-che
 - Actually filling the hotspot to 10 devices (the most simultaneous clients seen was 2)
 - Hotspot auto-off when idle, and the Termux screen-off soak test
 - Latency with nine devices sending at 30-60 Hz
-- How often the certificate warning reappears (table below, to fill in during M2)
+- Whether the certificate warning comes back the next day, or after `npm run gen-cert` makes a new cert (see section 7)
 
-## 7. Certificate warning reappearance (M2, not yet measured)
+## 7. Certificate warning reappearance (M2)
 
-Same cert each time unless the row says otherwise. Write what the browser did: warning shown again, or page loaded straight away.
+User-reported on the M2 test devices (iPhone Safari and Chrome, Android Chrome), same cert each time: after tapping through the warning once, it did not appear again on reload or after closing and reopening the tab. After a new cert from `npm run gen-cert`, the warning appeared again, as expected (the browser accepted the old cert, not the address). Not tested: the next day. Judged good enough: one tap-through per player per cert is acceptable.
 
-| Browser | Reload | Close tab, reopen | Next day | After `npm run gen-cert` (new cert) |
-|---|---|---|---|---|
-| Android Chrome | | | | |
-| iPhone Safari | | | | |
-| iPhone Chrome | | | | |
-| iPad Safari | | | | |
+M2 device check (user-reported): on iPhone and Android, `https://<hotspot IP>:3000/` reported a secure context with the tilt and Wake Lock APIs present, and joining a room over `wss` worked.

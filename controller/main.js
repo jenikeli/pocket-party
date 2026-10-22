@@ -1,9 +1,10 @@
-// Controller entry point: joins a room with a code, then sends drag input to the host.
+// Controller entry point: joins a room with a code, then hands over to the input lab.
 // Loaded by controller/index.html.
 
 import { MESSAGE_TYPES, JOIN_FAILURE_REASONS } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
-import * as dragInput from '/controller/inputs/drag.js';
+import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
+import { startInputLab, stopInputLab } from '/controller/input-lab.js';
 
 const joinScreen = document.getElementById('join-screen');
 const joinForm = document.getElementById('join-form');
@@ -12,11 +13,6 @@ const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
 const padScreen = document.getElementById('pad-screen');
 const padStatus = document.getElementById('pad-status');
-const dragPad = document.getElementById('drag-pad');
-const stickKnob = document.getElementById('stick-knob');
-
-// How far the on-screen knob moves (CSS px) when the stick is pushed all the way.
-const KNOB_TRAVEL_PX = 60;
 
 const JOIN_FAILURE_TEXT = {
   [JOIN_FAILURE_REASONS.NO_SUCH_ROOM]: 'No room with that code. Check the code on the big screen.',
@@ -46,6 +42,10 @@ function joinRoom(roomCode) {
         case MESSAGE_TYPES.ROOM_CLOSED:
           leaveReason = 'The host left the game.';
           break;
+        case MESSAGE_TYPES.PING:
+          // Answer at once and unchanged: the host times the round trip on its own clock.
+          connection.send({ type: MESSAGE_TYPES.PONG, sentAt: message.sentAt });
+          break;
         default:
           console.warn('Controller ignoring unexpected message:', message);
       }
@@ -53,44 +53,20 @@ function joinRoom(roomCode) {
   });
 }
 
-function sendDragInput(value) {
-  connection.send({ type: MESSAGE_TYPES.INPUT, input: value, sentAt: Date.now() });
-  moveKnob(value.x, value.y);
-}
-
-function moveKnob(x, y) {
-  stickKnob.style.transform = `translate(${x * KNOB_TRAVEL_PX}px, ${y * KNOB_TRAVEL_PX}px)`;
-}
-
 function showPadScreen(roomCode) {
   padStatus.textContent = `In room ${roomCode}`;
   joinScreen.hidden = true;
   padScreen.hidden = false;
-  dragInput.start(dragPad);
+  connection.send({ type: MESSAGE_TYPES.DEVICE_INFO, platform: detectPlatform(), browser: detectBrowser() });
+  startInputLab((message) => connection.send(message));
 }
 
 function showJoinScreen(statusText) {
-  dragInput.stop();
-  moveKnob(0, 0);
+  stopInputLab();
   padScreen.hidden = true;
   joinScreen.hidden = false;
   joinButton.disabled = false;
   joinStatus.textContent = statusText;
-}
-
-function listDeviceInfo() {
-  return {
-    'Secure context': String(window.isSecureContext),
-    // Both are missing entirely over plain HTTP (measured in the spike); they appear once we serve HTTPS (M2).
-    'Tilt API': 'DeviceOrientationEvent' in window ? 'present' : 'missing',
-    // iOS must call this from a tap before any tilt events arrive. The spike found it on Android Chrome too.
-    'Tilt permission API': hasTiltPermissionApi() ? 'present' : 'missing',
-    'Wake Lock API': 'wakeLock' in navigator ? 'present' : 'missing',
-  };
-}
-
-function hasTiltPermissionApi() {
-  return 'DeviceOrientationEvent' in window && typeof DeviceOrientationEvent.requestPermission === 'function';
 }
 
 function showDeviceInfo() {
@@ -114,8 +90,6 @@ joinForm.addEventListener('submit', (event) => {
   roomCodeInput.blur(); // closes the on-screen keyboard
   joinRoom(roomCode);
 });
-
-dragInput.onInput(sendDragInput);
 
 // pagehide fires when the tab is closed or navigated away. Closing the socket here sends a proper close
 // frame, so the server frees the slot at once. Without it, Chrome kept the socket (and the square) alive

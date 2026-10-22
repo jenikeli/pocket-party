@@ -56,6 +56,8 @@ Each minigame also has a controller UI module that shows the right controls and 
 
 **Done when:** the server runs from the same repo on both my Linux server and the Termux phone, and a host device and a phone (iOS and Android) both load their pages over the hotspot.
 
+Notes (decided before M0): `HOST_IP` only picks which address the server prints first as the main URL, and later shows on the host's join screen. It never changes the bind address, which stays `0.0.0.0`. Vendor the latest Phaser 3.x as a pinned ES module build (`phaser.esm.js`), not Phaser 4. `.gitignore` must cover `node_modules/`, `*.pem`, `.env`, and any other secrets: never commit certs, keys, or tokens.
+
 ### M1: One phone moves a square
 - [ ] Host creates a room and shows a room code
 - [ ] Controller joins with the code; server assigns playerId + token
@@ -96,6 +98,8 @@ A test page and a matching host view for comparing the three input types on both
 - [ ] Controller Wake Lock where available (nice to have, not required, since reconnection covers it)
 
 **Done when:** a player can drop and rejoin without losing their slot, on both iOS and Android.
+
+Notes (open question from before M0): CLAUDE.md says the server keeps the slot table but the host "holds the slot" for the grace period. Decide which side runs the timer. A likely fit: the host runs it and tells the server to free the slot, and the server rejects tokens for freed slots.
 
 ### M5: Minigame framework + first minigame
 - [ ] Host loads and runs a minigame module and collects results

@@ -1,9 +1,12 @@
-// WebSocket relay: lets a host create a room, lets controllers join it, and passes messages between them.
-// Used by server/index.js. It never looks inside an input; game logic lives on the host.
+// WebSocket relay: lets a host create a room, lets controllers join or rejoin it, and passes messages
+// between them. Used by server/index.js. It never looks inside an input; game logic lives on the host.
 
-import { WebSocketServer, WebSocket } from 'ws';
-import { SOCKET_PATH, MESSAGE_TYPES, JOIN_FAILURE_REASONS } from '../shared/protocol.js';
-import { createRoom, findRoom, deleteRoom, listRooms, addPlayer, removePlayer } from './rooms.js';
+import { WebSocketServer } from 'ws';
+import { SOCKET_PATH, MESSAGE_TYPES } from '../shared/protocol.js';
+import { createRoom, findRoom, deleteRoom, listRooms, setPlayerLimit, removePlayer } from './rooms.js';
+import { joinRoom, rejoinRoom } from './joining.js';
+import { parseMessage, send } from './messages.js';
+import { startHeartbeat } from './heartbeat.js';
 
 // Inputs are tiny. A low cap stops one misbehaving client from making the server buffer megabytes.
 const MAX_MESSAGE_BYTES = 16 * 1024;
@@ -13,8 +16,13 @@ const FORWARDED_TO_HOST = new Set([
   MESSAGE_TYPES.INPUT,
   MESSAGE_TYPES.INPUT_MODE,
   MESSAGE_TYPES.DEVICE_INFO,
+  MESSAGE_TYPES.PLAYER_NAME,
+  MESSAGE_TYPES.SET_READY,
   MESSAGE_TYPES.PONG,
 ]);
+
+// Host messages the server passes on to the one player named by their playerId (removed on the way).
+const FORWARDED_TO_PLAYER = new Set([MESSAGE_TYPES.PING, MESSAGE_TYPES.CONTROLLER_STATE]);
 
 // Shares the HTTP(S) server's port: the browser asks to "upgrade" a normal request on /ws into a WebSocket.
 // With HTTPS that upgrade happens inside TLS, which is what makes the connection wss://.
@@ -25,6 +33,7 @@ export function attachRelay(httpServer) {
     maxPayload: MAX_MESSAGE_BYTES,
   });
   socketServer.on('connection', handleConnection);
+  startHeartbeat(socketServer);
 }
 
 export function sendToAllHosts(message) {
@@ -35,7 +44,7 @@ export function sendToAllHosts(message) {
 
 function handleConnection(socket) {
   // What this socket is, decided by its first message:
-  // { role: 'host', room } or { role: 'controller', room, playerId }. null until then.
+  // { role: 'host', room } or { role: 'controller', room, slot }. null until then.
   let session = null;
 
   socket.on('message', (data) => {
@@ -46,7 +55,7 @@ function handleConnection(socket) {
     if (session === null) {
       session = startSession(socket, message);
     } else if (session.role === 'controller') {
-      handleControllerMessage(session, message);
+      handleControllerMessage(socket, session, message);
     } else {
       handleHostMessage(session, message);
     }
@@ -54,7 +63,7 @@ function handleConnection(socket) {
 
   socket.on('close', () => {
     if (session !== null) {
-      endSession(session);
+      endSession(socket, session);
     }
   });
 
@@ -64,14 +73,17 @@ function handleConnection(socket) {
 }
 
 function startSession(socket, message) {
-  if (message.type === MESSAGE_TYPES.CREATE_ROOM) {
-    return startHostSession(socket);
+  switch (message.type) {
+    case MESSAGE_TYPES.CREATE_ROOM:
+      return startHostSession(socket);
+    case MESSAGE_TYPES.JOIN:
+      return joinRoom(socket, message);
+    case MESSAGE_TYPES.REJOIN:
+      return rejoinRoom(socket, message);
+    default:
+      console.warn(`Ignoring "${message.type}" from a socket that has not created or joined a room`);
+      return null;
   }
-  if (message.type === MESSAGE_TYPES.JOIN) {
-    return startControllerSession(socket, String(message.roomCode).toUpperCase());
-  }
-  console.warn(`Ignoring "${message.type}" from a socket that has not created or joined a room`);
-  return null;
 }
 
 function startHostSession(socket) {
@@ -81,95 +93,81 @@ function startHostSession(socket) {
   return { role: 'host', room };
 }
 
-function startControllerSession(socket, roomCode) {
-  const room = findRoom(roomCode);
-  if (!room) {
-    refuseJoin(socket, JOIN_FAILURE_REASONS.NO_SUCH_ROOM);
-    return null;
+function handleControllerMessage(socket, session, message) {
+  if (message.type === MESSAGE_TYPES.PING) {
+    // The controller's own check that its socket still works, so the server answers it directly.
+    send(socket, { type: MESSAGE_TYPES.PONG, sentAt: message.sentAt });
+    return;
   }
-  const slot = addPlayer(room, socket);
-  if (!slot) {
-    refuseJoin(socket, JOIN_FAILURE_REASONS.ROOM_FULL);
-    return null;
-  }
-
-  console.log(`Player ${slot.playerId} joined room ${room.roomCode}`);
-  send(socket, {
-    type: MESSAGE_TYPES.JOINED,
-    roomCode: room.roomCode,
-    playerId: slot.playerId,
-    token: slot.token,
-  });
-  send(room.hostSocket, { type: MESSAGE_TYPES.PLAYER_JOINED, playerId: slot.playerId });
-  return { role: 'controller', room, playerId: slot.playerId };
-}
-
-// ws sends queued messages before the close frame, so the controller always sees the reason.
-function refuseJoin(socket, reason) {
-  send(socket, { type: MESSAGE_TYPES.JOIN_FAILED, reason });
-  socket.close();
-}
-
-function handleControllerMessage(session, message) {
   if (!FORWARDED_TO_HOST.has(message.type)) {
-    console.warn(`Ignoring "${message.type}" from player ${session.playerId}`);
+    console.warn(`Ignoring "${message.type}" from player ${session.slot.playerId}`);
     return;
   }
   // playerId comes from the socket's session and is written last, so it replaces any playerId the
   // controller put in the message: a controller cannot send inputs as someone else.
-  send(session.room.hostSocket, { ...message, playerId: session.playerId });
+  send(session.room.hostSocket, { ...message, playerId: session.slot.playerId });
+}
+
+function handleHostMessage(session, message) {
+  const { room } = session;
+  if (FORWARDED_TO_PLAYER.has(message.type)) {
+    forwardToPlayer(room, message);
+  } else if (message.type === MESSAGE_TYPES.SET_PLAYER_LIMIT) {
+    if (setPlayerLimit(room, message.maxPlayers)) {
+      console.log(`Room ${room.roomCode} now takes up to ${room.playerLimit} players`);
+    } else {
+      console.warn(`Ignoring player limit "${message.maxPlayers}" for room ${room.roomCode}: not a whole number`);
+    }
+  } else if (message.type === MESSAGE_TYPES.REMOVE_PLAYER) {
+    removeDisconnectedPlayer(room, message.playerId);
+  } else {
+    console.warn(`Ignoring "${message.type}" from the host of room ${room.roomCode}`);
+  }
 }
 
 // The host may only reach players in its own room, because it looks them up in its own room's table.
-function handleHostMessage(session, message) {
-  if (message.type !== MESSAGE_TYPES.PING) {
-    console.warn(`Ignoring "${message.type}" from the host of room ${session.room.roomCode}`);
-    return;
-  }
-  const slot = session.room.players.get(message.playerId);
+function forwardToPlayer(room, message) {
+  const slot = room.players.get(message.playerId);
   if (!slot) {
-    // Normal when a player left just as the host pinged them.
+    // Normal when a player was removed just as the host sent this.
     return;
   }
-  send(slot.socket, { type: MESSAGE_TYPES.PING, sentAt: message.sentAt });
+  const { playerId, ...rest } = message;
+  send(slot.socket, rest);
 }
 
-function endSession(session) {
+function removeDisconnectedPlayer(room, playerId) {
+  const slot = room.players.get(playerId);
+  if (!slot) {
+    return;
+  }
+  if (slot.socket !== null) {
+    // The player rejoined just before the host's timer ran out; the host gets PLAYER_RECONNECTED instead.
+    console.log(`Not removing player ${playerId} from room ${room.roomCode}: they are connected again`);
+    return;
+  }
+  console.log(`Player ${playerId} removed from room ${room.roomCode} (grace period over)`);
+  removePlayer(room, playerId);
+  send(room.hostSocket, { type: MESSAGE_TYPES.PLAYER_LEFT, playerId });
+}
+
+function endSession(socket, session) {
   const { room } = session;
   if (session.role === 'host') {
     console.log(`Host left, closing room ${room.roomCode}`);
     deleteRoom(room);
     for (const slot of room.players.values()) {
       send(slot.socket, { type: MESSAGE_TYPES.ROOM_CLOSED });
-      slot.socket.close();
+      slot.socket?.close();
     }
     return;
   }
-  // M1 frees the slot right away. M4 replaces this with a grace period so a locked phone can rejoin.
-  console.log(`Player ${session.playerId} left room ${room.roomCode}`);
-  removePlayer(room, session.playerId);
-  send(room.hostSocket, { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: session.playerId });
-}
-
-// Returns the parsed message, or null (logged) if it is not a JSON object with a string type.
-function parseMessage(data) {
-  let message;
-  try {
-    message = JSON.parse(data.toString());
-  } catch (error) {
-    console.warn('Ignoring a message that is not JSON:', error.message);
-    return null;
+  // A rejoin already moved the slot to a newer socket, or the room closed: nothing to report.
+  if (session.slot.socket !== socket || findRoom(room.roomCode) !== room) {
+    return;
   }
-  if (typeof message !== 'object' || message === null || typeof message.type !== 'string') {
-    console.warn('Ignoring a message without a string "type"');
-    return null;
-  }
-  return message;
-}
-
-// Sockets can close at any moment (locked phones), so skip ones that are no longer open.
-function send(socket, message) {
-  if (socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify(message));
-  }
+  // Keep the slot: a locked phone or a Wi-Fi blip is normal, and the player can rejoin with their token.
+  session.slot.socket = null;
+  console.log(`Player ${session.slot.playerId} disconnected from room ${room.roomCode}`);
+  send(room.hostSocket, { type: MESSAGE_TYPES.PLAYER_DISCONNECTED, playerId: session.slot.playerId });
 }

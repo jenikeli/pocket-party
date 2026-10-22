@@ -51,7 +51,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 - All messages are JSON: `{ type: string, ...payload }`. Types live in `shared/protocol.js`. Add new types there first.
 - On first join, the server issues each controller a random `playerId` and secret `token`. The controller stores both in `localStorage`.
-- Reconnect: the controller sends `{type: "rejoin", playerId, token}`. The server validates the token. The host holds the slot for a generous grace period (default 2 minutes, configurable) before freeing it. A page cannot keep its own socket alive once the OS suspends it, so design for drops: when the controller tab becomes visible again it shows "Reconnecting..." and rejoins automatically, with a "Tap to reconnect" fallback. Never accept a rejoin on `playerId` alone.
+- Reconnect: the controller sends `{type: "rejoin", roomCode, playerId, token}`. The server validates the token. The host holds the slot for a generous grace period (default 2 minutes, configurable) before freeing it. A page cannot keep its own socket alive once the OS suspends it, so design for drops: when the controller tab becomes visible again it shows "Reconnecting..." and rejoins automatically, with a "Tap to reconnect" fallback. Never accept a rejoin on `playerId` alone.
 - The host is the single authority on game state. Controllers send inputs, not state changes.
 - Mobile browsers suspend background tabs and sockets when the screen locks. Treat disconnects as normal, not as errors. Measured: hidden pages lost their socket after about 14-30 s in two cases and kept it for 90 s+ in another. After resuming, `ws.readyState` can still read open on a dead socket, so on `visibilitychange` to visible, send a ping and reconnect if no pong arrives within about 2 seconds.
 
@@ -100,8 +100,8 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set; warns if the cert is expired or misses a current IP). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
 - `npm run gen-cert`: make a self-signed cert for every current LAN IP plus 127.0.0.1 (needs `openssl`; Termux: `pkg install openssl-tool`). Writes to `CERT_PATH`/`KEY_PATH` if set, else `certs/`. Rerun whenever the IP changes (phone restart), then start with `CERT_PATH=certs/cert.pem KEY_PATH=certs/key.pem npm start`
 - `npm run check`: check Node version, env vars, cert files (valid, matching key, covers the current IPs) and port, then print the reachable URLs
-- `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, about 2 s
-- `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
+- `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, under 10 s
+- `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). About 3 minutes (one M4 test waits out the 30 s grace period). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing
@@ -126,6 +126,8 @@ Every behaviour that has been built must stay working as the code changes. Autom
 - **Network:** hotspot reach, client isolation, Wi-Fi latency and jitter, and sockets dropping when a screen locks or the app is switched.
 - **Scanning the QR:** tests prove the drawn QR encodes the right URL module by module, not that a phone camera reads it from across a room.
 - **Termux:** the server running on the Android phone itself (`npm start` there).
+- **Real drops and resumes:** tests fake a dead socket by routing it through Playwright and fire `visibilitychange` by hand. A real screen lock, app switch or Wi-Fi toggle, and how long the OS keeps the socket, only happen on a phone.
+- **Wake Lock grants:** headless browsers refuse the lock (`NotAllowedError`), so only real devices show whether the host and phones actually stay awake.
 
 ## Testing on real devices
 

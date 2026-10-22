@@ -2,7 +2,16 @@
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRoom, findRoom, deleteRoom, listRooms, addPlayer, removePlayer } from '../../server/rooms.js';
+import {
+  createRoom,
+  findRoom,
+  deleteRoom,
+  listRooms,
+  setPlayerLimit,
+  addPlayer,
+  findPlayerWithToken,
+  removePlayer,
+} from '../../server/rooms.js';
 import { MAX_PLAYERS } from '../../shared/protocol.js';
 
 // rooms.js keeps one table for the whole process, so empty it between tests.
@@ -91,4 +100,48 @@ test('rooms do not share players', () => {
   addPlayer(first, fakeSocket());
   assert.equal(first.players.size, 1);
   assert.equal(second.players.size, 0);
+});
+
+test('setPlayerLimit caps new joins, clamps to 1..MAX_PLAYERS, and ignores non-whole numbers', () => {
+  const room = createRoom(fakeSocket());
+  assert.equal(room.playerLimit, MAX_PLAYERS);
+
+  assert.equal(setPlayerLimit(room, 2), true);
+  assert.ok(addPlayer(room, fakeSocket()));
+  assert.ok(addPlayer(room, fakeSocket()));
+  assert.equal(addPlayer(room, fakeSocket()), null);
+
+  setPlayerLimit(room, 99);
+  assert.equal(room.playerLimit, MAX_PLAYERS);
+  setPlayerLimit(room, 0);
+  assert.equal(room.playerLimit, 1);
+  for (const bad of [2.5, '3', null, undefined, NaN]) {
+    assert.equal(setPlayerLimit(room, bad), false);
+    assert.equal(room.playerLimit, 1);
+  }
+});
+
+test('lowering the limit keeps the players already in', () => {
+  const room = createRoom(fakeSocket());
+  addPlayer(room, fakeSocket());
+  addPlayer(room, fakeSocket());
+  setPlayerLimit(room, 1);
+  assert.equal(room.players.size, 2);
+  assert.equal(addPlayer(room, fakeSocket()), null);
+});
+
+test('findPlayerWithToken needs both the playerId and its exact token', () => {
+  const room = createRoom(fakeSocket());
+  const slot = addPlayer(room, fakeSocket());
+  const other = addPlayer(room, fakeSocket());
+
+  assert.equal(findPlayerWithToken(room, slot.playerId, slot.token), slot);
+  assert.equal(findPlayerWithToken(room, slot.playerId, other.token), null);
+  assert.equal(findPlayerWithToken(room, slot.playerId, slot.token.toUpperCase()), null);
+  assert.equal(findPlayerWithToken(room, slot.playerId, slot.token.slice(1)), null);
+  assert.equal(findPlayerWithToken(room, slot.playerId, undefined), null);
+  assert.equal(findPlayerWithToken(room, slot.playerId, { length: 32 }), null);
+  assert.equal(findPlayerWithToken(room, 'deadbeef', slot.token), null);
+  removePlayer(room, slot.playerId);
+  assert.equal(findPlayerWithToken(room, slot.playerId, slot.token), null);
 });

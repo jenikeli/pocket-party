@@ -1,6 +1,9 @@
 // Browser tests for M3, the input lab: the real controller page on an emulated Android phone (Chromium) and
 // iPhone (WebKit) against the real host page. Headless browsers have no motion sensor, so the tilt tests stub
 // DeviceOrientationEvent.requestPermission and fire deviceorientation events by hand.
+// Since M4 the lab starts from the lobby once two players are ready. The tested phone joins first (so it has
+// the first card), a helper phone joins second, and each test then reopens the tested phone's tab, which
+// rejoins as the same player straight into the lab.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,28 +37,38 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
     let hostPage;
     let hostMessages;
     let roomCode;
+    let controllerContext;
+    let testedPlayerId;
 
-    // Opens a fresh controller tab and joins. Every test closes its tab with leave(), so the player always
-    // gets the first card. Returns { page, playerId, deviceInfo, firstMode }: the two messages every
-    // controller sends right after joining, read here so tests start with nothing left over in the queue.
-    async function joinController(permissionAnswer) {
-      const context = await controllerBrowser.newContext(device);
-      if (permissionAnswer) {
-        await context.addInitScript(stubTiltPermission, permissionAnswer);
+    // The next message of `type` the host receives from the tested phone (the helper's traffic is skipped).
+    async function nextFromTested(type, timeoutMs = 5000) {
+      while (true) {
+        const message = await hostMessages.nextOfType(type, timeoutMs);
+        if (message.playerId === testedPlayerId) {
+          return message;
+        }
       }
-      const page = await context.newPage();
+    }
+
+    // Opens a fresh tab for the tested phone, which rejoins into the lab. Every test closes its tab with leave().
+    // Returns { page, playerId, deviceInfo, firstMode }: the two messages every controller sends after (re)joining
+    // and starting the lab, read here so tests start with nothing left over in the queue.
+    async function joinController(permissionAnswer) {
+      const page = await controllerContext.newPage();
+      if (permissionAnswer) {
+        await page.addInitScript(stubTiltPermission, permissionAnswer);
+      }
       await page.goto(`${server.baseUrl}/?room=${roomCode}`);
-      await page.click('#join-button');
       await page.waitForSelector('#pad-screen:not([hidden])');
-      const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-      const deviceInfo = await hostMessages.nextOfType(MESSAGE_TYPES.DEVICE_INFO);
-      const firstMode = await hostMessages.nextOfType(MESSAGE_TYPES.INPUT_MODE);
+      const { playerId } = await nextFromTested(MESSAGE_TYPES.PLAYER_RECONNECTED);
+      const deviceInfo = await nextFromTested(MESSAGE_TYPES.DEVICE_INFO);
+      const firstMode = await nextFromTested(MESSAGE_TYPES.INPUT_MODE);
       return { page, playerId, deviceInfo, firstMode };
     }
 
     async function leave(page) {
-      await page.context().close();
-      await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT);
+      await page.close();
+      await nextFromTested(MESSAGE_TYPES.PLAYER_DISCONNECTED);
     }
 
     // The next INPUT the host receives from this player that matches `kind`.
@@ -66,6 +79,16 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
           return message;
         }
       }
+    }
+
+    // Joins `context`'s phone to the lobby and returns its page and playerId.
+    async function joinLobby(context) {
+      const page = await context.newPage();
+      await page.goto(`${server.baseUrl}/?room=${roomCode}`);
+      await page.click('#join-button');
+      await page.waitForSelector('#lobby-screen:not([hidden])');
+      const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+      return { page, playerId };
     }
 
     function fireOrientation(page, beta, gamma) {
@@ -89,6 +112,15 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       hostMessages = watchServerMessages(hostPage);
       await hostPage.goto(`${server.baseUrl}/host`);
       roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+
+      controllerContext = await controllerBrowser.newContext(device);
+      const tested = await joinLobby(controllerContext);
+      testedPlayerId = tested.playerId;
+      const helper = await joinLobby(await hostBrowser.newContext(devices['Pixel 7']));
+      await tested.page.click('#ready-button');
+      await helper.page.click('#ready-button');
+      await tested.page.waitForSelector('#pad-screen:not([hidden])', { timeout: 8000 });
+      await leave(tested.page);
     });
 
     after(async () => {
@@ -108,7 +140,7 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
     test('the host pings each controller and gets a pong back through the page', async () => {
       const { page, playerId } = await joinController();
       // The host pings once a second, so a pong must arrive within about two.
-      const pong = await hostMessages.nextOfType(MESSAGE_TYPES.PONG, 3000);
+      const pong = await nextFromTested(MESSAGE_TYPES.PONG, 3000);
       assert.equal(pong.playerId, playerId);
       assert.equal(typeof pong.sentAt, 'number');
       await leave(page);
@@ -117,7 +149,7 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
     test('tap mode sends one tap per touch and counts them on the phone', async () => {
       const { page, playerId } = await joinController();
       await page.click('button[data-mode="tap"]');
-      assert.equal((await hostMessages.nextOfType(MESSAGE_TYPES.INPUT_MODE)).mode, 'tap');
+      assert.equal((await nextFromTested(MESSAGE_TYPES.INPUT_MODE)).mode, 'tap');
       for (let i = 0; i < 3; i += 1) {
         await page.click('#input-pad');
       }
@@ -205,8 +237,8 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       assert.equal(await page.getAttribute('button[data-mode="drag"]', 'aria-pressed'), 'true');
 
       // First the switch to the tilt tab, then the fallback.
-      assert.equal((await hostMessages.nextOfType(MESSAGE_TYPES.INPUT_MODE)).mode, 'tilt');
-      assert.deepEqual(await hostMessages.nextOfType(MESSAGE_TYPES.INPUT_MODE), {
+      assert.equal((await nextFromTested(MESSAGE_TYPES.INPUT_MODE)).mode, 'tilt');
+      assert.deepEqual(await nextFromTested(MESSAGE_TYPES.INPUT_MODE), {
         type: MESSAGE_TYPES.INPUT_MODE,
         mode: 'drag',
         fallbackFrom: 'tilt',

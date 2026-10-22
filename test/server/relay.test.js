@@ -1,5 +1,6 @@
 // Integration tests for the WebSocket relay: the real server, driven by scripted host and controller clients.
-// Covers rooms, joining, input forwarding and leaving, as built in M1.
+// Covers rooms, joining, input forwarding and leaving (M1), and the M3 lab messages. Reconnection and the
+// lobby's messages (M4) are in reconnect.test.js.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -57,7 +58,7 @@ describe('rooms and joining', () => {
     host.close();
   });
 
-  test(`a full room (${MAX_PLAYERS} players) refuses the next one, and takes them once a slot frees`, async () => {
+  test(`a full room (${MAX_PLAYERS} players) refuses the next one, and takes them once the host frees a slot`, async () => {
     const { host, roomCode } = await createHost(port);
     const controllers = [];
     for (let i = 0; i < MAX_PLAYERS; i += 1) {
@@ -70,7 +71,12 @@ describe('rooms and joining', () => {
     assert.deepEqual(extra.reply, { type: MESSAGE_TYPES.JOIN_FAILED, reason: JOIN_FAILURE_REASONS.ROOM_FULL });
     await extra.controller.closed;
 
+    // A dropped player's slot is held for them, so the room is still full until the host frees it.
     controllers[0].close();
+    const { playerId } = await host.nextOfType(MESSAGE_TYPES.PLAYER_DISCONNECTED);
+    const tooEarly = await joinRoom(port, roomCode);
+    assert.equal(tooEarly.reply.reason, JOIN_FAILURE_REASONS.ROOM_FULL);
+    host.send({ type: MESSAGE_TYPES.REMOVE_PLAYER, playerId });
     await host.nextOfType(MESSAGE_TYPES.PLAYER_LEFT);
     const late = await joinRoom(port, roomCode);
     assert.equal(late.reply.type, MESSAGE_TYPES.JOINED);
@@ -157,13 +163,15 @@ describe('inputs', () => {
 });
 
 describe('leaving', () => {
-  test('when a controller disconnects, the host gets player_left', async () => {
+  // Changed in M4: a disconnect no longer frees the slot (see reconnect.test.js for what happens next).
+  test('when a controller disconnects, the host gets player_disconnected, not player_left', async () => {
     const { host, roomCode } = await createHost(port);
     const { controller, reply } = await joinRoom(port, roomCode);
     await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
 
     controller.close();
-    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: reply.playerId });
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_DISCONNECTED, playerId: reply.playerId });
+    assert.deepEqual(await host.collectFor(150), []);
     host.close();
   });
 

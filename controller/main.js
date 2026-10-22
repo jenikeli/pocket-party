@@ -1,72 +1,111 @@
-// Controller entry point: joins a room with a code, then hands over to the input lab.
+// Controller entry point: joins a room, shows the lobby or the input lab as the host says, and shows
+// "Reconnecting..." while controller/connection.js gets the player back into their slot.
 // Loaded by controller/index.html.
 
-import { MESSAGE_TYPES, JOIN_FAILURE_REASONS } from '/shared/protocol.js';
-import { openSocket } from '/shared/socket.js';
+import { MESSAGE_TYPES, JOIN_FAILURE_REASONS, CONTROLLER_SCREENS } from '/shared/protocol.js';
+import { keepScreenAwake } from '/shared/wake-lock.js';
+import { createConnection, ROOM_CLOSED, UNREACHABLE } from '/controller/connection.js';
+import { saveSession, loadSession, clearSession, saveName, loadName } from '/controller/session-store.js';
 import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
+import { showLobbyState, showConnectedPlaceholder, onReadyChange } from '/controller/lobby-screen.js';
 import { startInputLab, stopInputLab } from '/controller/input-lab.js';
 
 const joinScreen = document.getElementById('join-screen');
 const joinForm = document.getElementById('join-form');
+const nameInput = document.getElementById('player-name');
 const roomCodeInput = document.getElementById('room-code');
 const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
+const lobbyScreen = document.getElementById('lobby-screen');
+const lobbyRoom = document.getElementById('lobby-room');
 const padScreen = document.getElementById('pad-screen');
 const padStatus = document.getElementById('pad-status');
+const reconnectOverlay = document.getElementById('reconnect-overlay');
+const reconnectText = document.getElementById('reconnect-text');
+const reconnectButton = document.getElementById('reconnect-button');
 
-const JOIN_FAILURE_TEXT = {
+const END_TEXT = {
   [JOIN_FAILURE_REASONS.NO_SUCH_ROOM]: 'No room with that code. Check the code on the big screen.',
   [JOIN_FAILURE_REASONS.ROOM_FULL]: 'That room is full.',
+  [JOIN_FAILURE_REASONS.REJOIN_REFUSED]: 'You were away too long, so your place was given up. Join again.',
+  [ROOM_CLOSED]: 'The host left the game.',
+  [UNREACHABLE]: 'Could not reach the server.',
 };
 
-let connection = null;
+let isLabRunning = false;
 
-function joinRoom(roomCode) {
-  joinButton.disabled = true;
-  joinStatus.textContent = 'Joining...';
-  // Shown when the socket closes. Messages that arrive before the close replace it with the real reason.
-  let leaveReason = 'Could not reach the server.';
+const connection = createConnection({
+  onJoined: (session) => {
+    saveSession(session);
+    reconnectOverlay.hidden = true;
+    lobbyRoom.textContent = `Room ${session.roomCode}`;
+    padStatus.textContent = `In room ${session.roomCode}`;
+    // After a rejoin the current screen stays up; the host's CONTROLLER_STATE follows right away either way.
+    if (!joinScreen.hidden) {
+      showConnectedPlaceholder();
+      showScreen(lobbyScreen);
+    }
+    // Sent after every join and rejoin: the page may have reloaded, and the host simply keeps the latest.
+    connection.send({ type: MESSAGE_TYPES.DEVICE_INFO, platform: detectPlatform(), browser: detectBrowser() });
+    connection.send({ type: MESSAGE_TYPES.PLAYER_NAME, name: loadName() });
+  },
+  onMessage: handleHostMessage,
+  onReconnecting: () => showReconnectOverlay('Reconnecting...', false),
+  onOffline: () => showReconnectOverlay('Could not reconnect.', true),
+  onEnded: (reason) => {
+    clearSession();
+    reconnectOverlay.hidden = true;
+    showJoinScreen(END_TEXT[reason] || `Could not join (${reason}).`);
+  },
+});
 
-  connection = openSocket({
-    onOpen: () => connection.send({ type: MESSAGE_TYPES.JOIN, roomCode }),
-    onClose: () => showJoinScreen(leaveReason),
-    onMessage: (message) => {
-      switch (message.type) {
-        case MESSAGE_TYPES.JOINED:
-          leaveReason = 'Connection lost. Join again.';
-          showPadScreen(message.roomCode);
-          break;
-        case MESSAGE_TYPES.JOIN_FAILED:
-          leaveReason = JOIN_FAILURE_TEXT[message.reason] || `Could not join (${message.reason}).`;
-          break;
-        case MESSAGE_TYPES.ROOM_CLOSED:
-          leaveReason = 'The host left the game.';
-          break;
-        case MESSAGE_TYPES.PING:
-          // Answer at once and unchanged: the host times the round trip on its own clock.
-          connection.send({ type: MESSAGE_TYPES.PONG, sentAt: message.sentAt });
-          break;
-        default:
-          console.warn('Controller ignoring unexpected message:', message);
-      }
-    },
-  });
+function handleHostMessage(message) {
+  if (message.type !== MESSAGE_TYPES.CONTROLLER_STATE) {
+    console.warn('Controller ignoring unexpected message:', message);
+    return;
+  }
+  if (message.screen === CONTROLLER_SCREENS.INPUT_LAB) {
+    showInputLab();
+  } else {
+    stopLab();
+    showLobbyState(message);
+    showScreen(lobbyScreen);
+  }
 }
 
-function showPadScreen(roomCode) {
-  padStatus.textContent = `In room ${roomCode}`;
-  joinScreen.hidden = true;
-  padScreen.hidden = false;
-  connection.send({ type: MESSAGE_TYPES.DEVICE_INFO, platform: detectPlatform(), browser: detectBrowser() });
-  startInputLab((message) => connection.send(message));
+// After a rejoin the host sends the lab screen again; a lab that is still running just carries on.
+function showInputLab() {
+  showScreen(padScreen);
+  if (!isLabRunning) {
+    isLabRunning = true;
+    startInputLab((message) => connection.send(message));
+  }
+}
+
+function stopLab() {
+  if (isLabRunning) {
+    isLabRunning = false;
+    stopInputLab();
+  }
+}
+
+function showScreen(screen) {
+  for (const each of [joinScreen, lobbyScreen, padScreen]) {
+    each.hidden = each !== screen;
+  }
 }
 
 function showJoinScreen(statusText) {
-  stopInputLab();
-  padScreen.hidden = true;
-  joinScreen.hidden = false;
+  stopLab();
+  showScreen(joinScreen);
   joinButton.disabled = false;
   joinStatus.textContent = statusText;
+}
+
+function showReconnectOverlay(text, offerButton) {
+  reconnectText.textContent = text;
+  reconnectButton.hidden = !offerButton;
+  reconnectOverlay.hidden = false;
 }
 
 function showDeviceInfo() {
@@ -87,19 +126,40 @@ joinForm.addEventListener('submit', (event) => {
     joinStatus.textContent = 'Type the code shown on the big screen.';
     return;
   }
-  roomCodeInput.blur(); // closes the on-screen keyboard
-  joinRoom(roomCode);
+  saveName(nameInput.value.trim());
+  // Closes the on-screen keyboard.
+  nameInput.blur();
+  roomCodeInput.blur();
+  joinButton.disabled = true;
+  joinStatus.textContent = 'Joining...';
+  connection.join(roomCode);
 });
 
-// pagehide fires when the tab is closed or navigated away. Closing the socket here sends a proper close
-// frame, so the server frees the slot at once. Without it, Chrome kept the socket (and the square) alive
-// after the tab closed until the whole browser quit.
-window.addEventListener('pagehide', () => {
-  if (connection) {
-    connection.close();
+onReadyChange((wantsReady) => connection.send({ type: MESSAGE_TYPES.SET_READY, ready: wantsReady }));
+reconnectButton.addEventListener('click', () => connection.reconnect());
+
+// Phones suspend hidden tabs, and their sockets may die without a close event, so check on the way back.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    connection.checkAfterResume();
   }
 });
 
+// pagehide fires when the tab is closed, reloaded or navigated away. Closing the socket here sends a proper
+// close frame, so the host shows "waiting to reconnect" at once; without it, Chrome kept the socket open
+// after the tab closed. The slot itself is kept for the grace period, because a reload looks the same.
+window.addEventListener('pagehide', () => connection.disconnect());
+
 // The host's QR code links to /?room=CODE, so scanning players only need to tap Join.
-roomCodeInput.value = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+const linkRoomCode = (new URLSearchParams(location.search).get('room') || '').toUpperCase();
+roomCodeInput.value = linkRoomCode;
+nameInput.value = loadName();
 showDeviceInfo();
+keepScreenAwake((status) => (document.getElementById('wake-status').textContent = `Screen awake: ${status}`));
+
+// A saved place in the same room (a reload, or the tab was closed and the link opened again): take it back.
+// A link to a different room means a new game, so that player joins normally.
+const savedSession = loadSession();
+if (savedSession && (linkRoomCode === '' || linkRoomCode === savedSession.roomCode)) {
+  connection.rejoin(savedSession);
+}

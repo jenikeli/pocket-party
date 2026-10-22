@@ -1,5 +1,5 @@
 // The right-hand join panel on the host: QR code, room code, join link and player count.
-// Used by host/scenes/input-lab-scene.js.
+// Used by host/scenes/lobby-scene.js and host/scenes/input-lab-scene.js.
 
 import { drawQrCode } from '/host/qr-code.js';
 
@@ -9,7 +9,7 @@ const PANEL_CENTER_X = 1920 - PANEL_WIDTH / 2;
 
 const TEXT_STYLE = { fontFamily: 'sans-serif', color: '#ffffff' };
 
-// Draws the empty panel. Returns { showRoom(roomCode), setPlayerCount(count) }.
+// Draws the empty panel. Returns { showRoom(roomCode), setPlayerCount(count, maxPlayers) }.
 export function drawJoinPanel(scene) {
   scene.add.rectangle(PANEL_CENTER_X, GAME_HEIGHT / 2, PANEL_WIDTH, GAME_HEIGHT, 0x1c2130);
   scene.add.text(PANEL_CENTER_X, 90, 'Scan to join', { ...TEXT_STYLE, fontSize: '48px' }).setOrigin(0.5);
@@ -42,8 +42,8 @@ export function drawJoinPanel(scene) {
     }
   }
 
-  function setPlayerCount(count) {
-    playerCountText.setText(`Players: ${count}`);
+  function setPlayerCount(count, maxPlayers) {
+    playerCountText.setText(`Players: ${count} / ${maxPlayers}`);
   }
 
   return { showRoom, setPlayerCount };

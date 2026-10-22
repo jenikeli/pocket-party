@@ -1,4 +1,4 @@
-// One player's card in the host's input lab: which phone and input it is, a live picture of the input,
+// One player's card in the host's input lab: who it is, which phone and input, a live picture of the input,
 // and the numbers (rate, round trip, jitter, raw value). Used by host/scenes/input-lab-scene.js.
 
 import { INPUT_KINDS } from '/shared/protocol.js';
@@ -26,26 +26,34 @@ export function cardPosition(slotIndex) {
   };
 }
 
-// Draws an empty card. Returns { showDevice, showMode, showInput, showStats, destroy }.
-export function createPlayerCard(scene, slotIndex, color) {
+// Draws an empty card. Returns { showName, showDevice, showMode, showInput, showStats, showWaiting, destroy }.
+export function createPlayerCard(scene, slotIndex, color, colorText) {
   const { x, y } = cardPosition(slotIndex);
-  const colorText = `#${color.toString(16).padStart(6, '0')}`;
   const container = scene.add.container(x, y);
   const text = (left, top, value, style) => scene.add.text(left, top, value, { ...TEXT_STYLE, ...style });
 
   const background = scene.add.rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x1c2130).setOrigin(0);
   background.setStrokeStyle(4, color);
-  const title = text(20, 16, `P${slotIndex + 1}`, { fontSize: '40px', color: colorText, fontStyle: 'bold' });
-  const deviceText = text(90, 26, '', { fontSize: '24px', color: DIM_COLOR });
-  const modeText = text(20, 70, 'no input yet', { fontSize: '26px' });
+  const title = text(20, 12, '', { fontSize: '36px', color: colorText, fontStyle: 'bold' });
+  const deviceText = text(20, 56, '', { fontSize: '22px', color: DIM_COLOR });
+  const modeText = text(20, 84, 'no input yet', { fontSize: '24px' });
   const ring = scene.add.circle(RING_CENTER.x, RING_CENTER.y, RING_RADIUS).setStrokeStyle(3, 0x3a4258);
   const dot = scene.add.circle(RING_CENTER.x, RING_CENTER.y, DOT_RADIUS, color);
   const bigText = text(RING_CENTER.x, RING_CENTER.y, '', { fontSize: '80px' }).setOrigin(0.5);
   const statsText = text(215, 118, '', { fontSize: '24px', fontFamily: 'monospace', lineSpacing: 6 });
   const rawText = text(20, 296, '', { fontSize: '20px', color: DIM_COLOR });
-  container.add([background, title, deviceText, modeText, ring, dot, bigText, statsText, rawText]);
+  // Covers the card while the player is in their grace period.
+  const waitingCover = scene.add.rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x10131c, 0.92).setOrigin(0);
+  const waitingText = text(CARD_WIDTH / 2, CARD_HEIGHT / 2, '', { fontSize: '30px', color: WARNING_COLOR, align: 'center' })
+    .setOrigin(0.5);
+  container.add([background, title, deviceText, modeText, ring, dot, bigText, statsText, rawText, waitingCover, waitingText]);
+  showWaiting(null);
 
   let tapCount = 0;
+
+  function showName(name) {
+    title.setText(name);
+  }
 
   function showDevice(label) {
     deviceText.setText(label);
@@ -92,5 +100,11 @@ export function createPlayerCard(scene, slotIndex, color) {
     statsText.setText(lines);
   }
 
-  return { showDevice, showMode, showInput, showStats, destroy: () => container.destroy() };
+  // `label` is e.g. 'waiting to reconnect\n1:52', or null once the player is back.
+  function showWaiting(label) {
+    waitingCover.setVisible(label !== null);
+    waitingText.setVisible(label !== null).setText(label ?? '');
+  }
+
+  return { showName, showDevice, showMode, showInput, showStats, showWaiting, destroy: () => container.destroy() };
 }

@@ -48,3 +48,12 @@ export async function joinRoom(port, roomCode) {
   const reply = await controller.next();
   return { controller, reply };
 }
+
+// Connects as a controller and sends REJOIN with { roomCode, playerId, token }, e.g. a JOINED reply.
+// Returns { controller, reply } with the server's first answer.
+export async function rejoinRoom(port, { roomCode, playerId, token }) {
+  const controller = await connectClient(port);
+  controller.send({ type: MESSAGE_TYPES.REJOIN, roomCode, playerId, token });
+  const reply = await controller.next();
+  return { controller, reply };
+}

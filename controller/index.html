@@ -1,4 +1,4 @@
-<!-- Controller page (/): what each player opens on their phone. Join screen first, then the input lab. -->
+<!-- Controller page (/): what each player opens on their phone. Join screen, then the lobby, then the input lab. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -12,12 +12,23 @@
   <main id="join-screen">
     <h1>Pocket Party</h1>
     <form id="join-form">
+      <label for="player-name">Your name</label>
+      <input id="player-name" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
       <label for="room-code">Room code</label>
       <input id="room-code" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
       <button id="join-button" type="submit">Join</button>
     </form>
     <p id="join-status"></p>
     <dl id="device-info"></dl>
+  </main>
+
+  <!-- The lobby: who this phone plays as, and the ready button. -->
+  <main id="lobby-screen" hidden>
+    <p id="lobby-room"></p>
+    <p id="player-badge"><span id="player-swatch"></span><span id="player-label"></span></p>
+    <button type="button" id="ready-button" aria-pressed="false">I'm ready</button>
+    <p id="lobby-hint"></p>
+    <p id="wake-status"></p>
   </main>
 
   <!-- The input lab: pick an input with the tabs, try it on the pad, and read what is being sent below. -->
@@ -43,6 +54,11 @@
       <dt>Tilt sensor</dt><dd id="readout-tilt">not enabled</dd>
     </dl>
   </main>
+  <!-- Covers every screen while the phone gets its slot back after a drop. -->
+  <div id="reconnect-overlay" hidden>
+    <p id="reconnect-text"></p>
+    <button type="button" id="reconnect-button" hidden>Tap to reconnect</button>
+  </div>
   <script type="module" src="/controller/main.js"></script>
 </body>
 </html>

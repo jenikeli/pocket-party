@@ -1,6 +1,7 @@
 // Browser tests for M1 end to end: the real host page (desktop Chromium) and the real controller page on an
 // emulated Android phone (Chromium) and iPhone (WebKit, Safari's engine). Screenshots go to test-results/screenshots/.
 // Since M3 the host shows the input lab, so "the player's square" is the stick dot on that player's card.
+// Since M4 players join a lobby first, and the lab starts once two players are ready, so a second phone helps.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -57,6 +58,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     let hostMessages;
     let controllerContext;
     let controllerPage;
+    let helperContext;
     let roomCode;
 
     // The first player's stick dot on the host, or null when it is not on screen.
@@ -78,6 +80,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       pixelReader = await openPixelReader(hostBrowser);
       hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 } });
       controllerContext = await controllerBrowser.newContext(device);
+      helperContext = await hostBrowser.newContext(devices['Pixel 7']);
     });
 
     after(async () => {
@@ -107,9 +110,21 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await controllerPage.inputValue('#room-code'), roomCode);
 
       await controllerPage.click('#join-button');
-      await controllerPage.waitForSelector('#pad-screen:not([hidden])');
-      assert.equal(await controllerPage.textContent('#pad-status'), `In room ${roomCode}`);
+      await controllerPage.waitForSelector('#lobby-screen:not([hidden])');
+      assert.equal(await controllerPage.textContent('#lobby-room'), `Room ${roomCode}`);
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+    });
+
+    test('once a second player joins and both are ready, the lab shows the first player\'s dot', async () => {
+      const helperPage = await helperContext.newPage();
+      await helperPage.goto(`${server.baseUrl}/?room=${roomCode}`);
+      await helperPage.click('#join-button');
+      await helperPage.waitForSelector('#lobby-screen:not([hidden])');
+      for (const page of [controllerPage, helperPage]) {
+        await page.click('#ready-button');
+      }
+      await controllerPage.waitForSelector('#pad-screen:not([hidden])', { timeout: 8000 });
+      assert.equal(await controllerPage.textContent('#pad-status'), `In room ${roomCode}`);
 
       const dot = await waitUntil(findFirstDot, { message: 'the first player\'s dot on the host' });
       assert.ok(Math.abs(dot.centerX - FIRST_DOT_START.x) < 3, `dot x ${dot.centerX}`);
@@ -151,19 +166,20 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-3-host-after-drag`);
     });
 
-    test('closing the controller tab removes its card', async () => {
+    // Changed in M4: the card stays, covered by "waiting to reconnect", until the grace period ends.
+    test('closing the controller tab covers its card while the slot is held', async () => {
       // A headless close tears the page down, which closes its socket whether or not pagehide runs, so this
       // does not prove the pagehide handler in controller/main.js works; that needs a real browser.
       // (close({ runBeforeUnload: true }) would fire pagehide, but in Playwright's WebKit it never closes the tab.)
       await controllerPage.close();
-      await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT);
-      await waitUntil(async () => (await findFirstDot()) === null, { message: 'the card to disappear' });
+      await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_DISCONNECTED);
+      await waitUntil(async () => (await findFirstDot()) === null, { message: 'the card to be covered' });
       await saveScreenshot(hostPage, `${name}-4-host-after-leave`);
     });
 
     test('closing the host sends the controller back to the join screen', async () => {
+      // The phone saved its place, so opening the link again rejoins straight into the lab.
       controllerPage = await openController();
-      await controllerPage.click('#join-button');
       await controllerPage.waitForSelector('#pad-screen:not([hidden])');
 
       await hostPage.close();

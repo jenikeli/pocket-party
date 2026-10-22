@@ -88,7 +88,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(page, `${name}-https-2-secure-join-screen`);
 
       await page.click('#join-button');
-      await page.waitForSelector('#pad-screen:not([hidden])');
+      await page.waitForSelector('#lobby-screen:not([hidden])');
       assert.match(await controllerSocketUrl, /^wss:\/\//);
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
       await page.close();

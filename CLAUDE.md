@@ -98,7 +98,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - `npm install`: install deps
 - `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
 - `npm run check`: check Node version, env vars, cert files and port, then print the reachable URLs
-- `npm run dev`: (not built yet, planned for M1) run the server with file watching and reload push to the host
+- `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing on real devices
 

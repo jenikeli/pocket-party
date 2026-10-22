@@ -1,4 +1,4 @@
-<!-- Controller page (/): what each player opens on their phone. -->
+<!-- Controller page (/): what each player opens on their phone. Join screen first, then the drag pad. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,10 +9,23 @@
   <link rel="stylesheet" href="/controller/style.css">
 </head>
 <body>
-  <main>
+  <main id="join-screen">
     <h1>Pocket Party</h1>
-    <p>Controller loaded.</p>
+    <form id="join-form">
+      <label for="room-code">Room code</label>
+      <input id="room-code" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+      <button id="join-button" type="submit">Join</button>
+    </form>
+    <p id="join-status"></p>
     <dl id="device-info"></dl>
+  </main>
+
+  <main id="pad-screen" hidden>
+    <p id="pad-status"></p>
+    <div id="drag-pad">
+      <div id="stick-ring"><div id="stick-knob"></div></div>
+      <p>Drag anywhere to move</p>
+    </div>
   </main>
   <script type="module" src="/controller/main.js"></script>
 </body>

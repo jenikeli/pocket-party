@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
+    "dev": "node server/index.js --dev",
     "check": "node server/check.js"
   },
   "dependencies": {

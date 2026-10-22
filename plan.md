@@ -61,13 +61,15 @@ Notes (decided before M0): `HOST_IP` only picks which address the server prints 
 Notes (M0 done): Phaser is `host/vendor/phaser-3.90.0.esm.min.js` (named exports: `import * as Phaser from ...`). The server only serves the `controller/`, `host/`, `shared/` and `assets/` folders, with `/` aliased to the controller page and `/host` to the host page; pages must use absolute paths (`/host/main.js`). All files are sent with `Cache-Control: no-cache` plus `Last-Modified`, so unchanged files revalidate with a 304. HTTPS is already switched on when `CERT_PATH` and `KEY_PATH` are both set (M2 still owns WSS, `gen-cert` and the device checks). `ws` is installed but not used yet; the WebSocket server and `npm run dev` (watch + reload push) come in M1.
 
 ### M1: One phone moves a square
-- [ ] Host creates a room and shows a room code
-- [ ] Controller joins with the code; server assigns playerId + token
-- [ ] Controller sends a simple drag input
-- [ ] Host moves a square per player in response
-- [ ] Host join screen shows a QR code for `location.origin + "/?room=<code>"` (a small vendored QR library in `host/vendor/`, no CDN); the controller fills in the room code from the URL. The server IP changes when the phone restarts, so nobody should have to type it except whoever opens `/host`.
+- [x] Host creates a room and shows a room code
+- [x] Controller joins with the code; server assigns playerId + token
+- [x] Controller sends a simple drag input
+- [x] Host moves a square per player in response
+- [x] Host join screen shows a QR code for `location.origin + "/?room=<code>"` (a small vendored QR library in `host/vendor/`, no CDN); the controller fills in the room code from the URL. The server IP changes when the phone restarts, so nobody should have to type it except whoever opens `/host`.
 
 **Done when:** two phones (one iOS, one Android) each control their own square on the host in real time.
+
+Notes (M1 done): Checked with scripted WebSocket clients on the dev box; the real-device check (iOS + Android) is still to do. WebSockets share the HTTP(S) port at `/ws` (`SOCKET_PATH`). Browser pages connect with `openSocket({ onOpen, onMessage, onClose })` from `shared/socket.js`, which returns `{ send, close }` and already picks `wss:` on https pages. Room codes are 4 letters (no I or O). `MAX_PLAYERS` = 6 is enforced by the server. The server adds `playerId` to forwarded inputs from the socket's session and ignores any `playerId` in the message. No reconnection yet (all M4): a controller's slot is freed as soon as its socket closes (no grace period, no connected flag), the token is issued but not stored in `localStorage`, `REJOIN` is not handled, and the server has no heartbeat, so it does not notice half-open sockets. When the host disconnects, the server deletes the room and sends `ROOM_CLOSED` to its controllers, so a host reload (including a dev reload) gives a new room code. Patterns to reuse: a host scene is a class extending `Phaser.Scene` in `host/scenes/`, with one `handleMessage` switch, and for now the scene owns the socket (move it out once a second scene needs it). An input module exports `start(surface)`, `stop()`, `onInput(callback)` (see `controller/inputs/drag.js`: `{ kind: 'drag', x, y }` from -1 to 1, at most every 33 ms). `npm run dev` passes `--dev`: it watches `controller/`, `host/`, `shared/`, `assets/` and pushes `RELOAD` to hosts only; changes to `server/` still need a manual restart. QR library: `host/vendor/qrcode-generator-2.0.4.mjs` (MIT, license in its header).
 
 ### M2: HTTPS on the LAN
 Goal: make controller pages a secure context on iOS and Android with no per-device setup beyond tapping through a warning.

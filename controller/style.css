@@ -16,8 +16,50 @@ html, body {
   overflow: hidden;
 }
 
+/* Our display rules below would otherwise beat the browser's default for the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
 main {
+  box-sizing: border-box;
+  height: 100dvh;
   padding: 24px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  color: #9aa4bf;
+}
+
+/* 16px or more stops iOS Safari from zooming in when the field is focused. */
+input, button {
+  font-size: 32px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+}
+
+input {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  /* Inherited user-select: none can make text fields impossible to type in on iOS Safari. */
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+button {
+  background: #3498db;
+  color: #ffffff;
+}
+
+button:disabled {
+  opacity: 0.5;
 }
 
 dl {
@@ -30,4 +72,42 @@ dl {
 dd {
   margin: 0;
   color: #ffffff;
+}
+
+#pad-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+#pad-status {
+  margin: 0 0 16px;
+  color: #9aa4bf;
+}
+
+#drag-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  background: #1c2130;
+  color: #9aa4bf;
+}
+
+#stick-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+  border: 3px solid #3a4258;
+  border-radius: 50%;
+}
+
+#stick-knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #3498db;
 }

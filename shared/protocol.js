@@ -8,7 +8,8 @@
 export const SOCKET_PATH = '/ws';
 
 // Most controllers one room accepts. The server refuses joins beyond this.
-export const MAX_PLAYERS = 6;
+// The Android hotspot accepts 10 clients and the host display is one of them, which leaves 9 phones.
+export const MAX_PLAYERS = 9;
 
 export const MESSAGE_TYPES = Object.freeze({
   // host -> server: {}. Sent once the host has loaded; the server answers with ROOM_CREATED.

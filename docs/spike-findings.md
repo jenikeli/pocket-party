@@ -52,10 +52,14 @@ Observed from the server log (the spike does not record whether "hidden" meant s
 - Code 1006 means the connection ended without a close frame (OS suspended or killed it); 1001 means the page went away cleanly (reload, navigation, or close).
 - Survival time is inconsistent (14 s to 90+ s on the same phone). Design for drops at any time.
 
-## 5. Not yet tested
+## 5. Hotspot client limit
+
+The Termux phone's hotspot settings allow at most 10 connected devices (user-checked in the settings, not yet filled to the limit). The host display counts as one when it joins the hotspot, so at most 9 phones can play. This sets `MAX_PLAYERS` in `shared/protocol.js`.
+
+## 6. Not yet tested
 
 - Lock behaviour and Wake Lock grant on iPhone (tilt rate is done: about 60 Hz)
-- Hotspot client limit (the most simultaneous clients seen was 2)
+- Actually filling the hotspot to 10 devices (the most simultaneous clients seen was 2)
 - Hotspot auto-off when idle, and the Termux screen-off soak test
-- Latency with six devices sending at 30-60 Hz
+- Latency with nine devices sending at 30-60 Hz
 - How often the certificate warning reappears

@@ -98,7 +98,19 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - `npm install`: install deps
 - `npm start`: run the server on port 3000 (HTTPS if `CERT_PATH` and `KEY_PATH` are set). Env vars: `PORT` (3000+), `CERT_PATH`, `KEY_PATH`, `HOST_IP`.
 - `npm run check`: check Node version, env vars, cert files and port, then print the reachable URLs
+- `npm test`: (not built yet, planned for M1.5) run the automated tests
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
+
+## Testing
+
+Every behaviour that has been built must stay working as the code changes. Automated tests are how we know.
+
+- Each milestone adds automated tests for the behaviour it builds, in the same chat. A milestone is not done until `npm test` (and the browser tests, once they exist) passes.
+- Run the full test suite before handing off, not only the new tests.
+- If a change breaks an existing test, fix the code, not the test. Change a test only when the intended behaviour changed on purpose, and say so in the handoff.
+- Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.
+- Tests use Node's built-in runner (`node --test`) and live in `test/`. Test dependencies are dev-only and must never be needed by `npm start`.
+- Automation cannot check everything (real touch screens, tilt sensors, certificate warnings, sockets dropping when a phone locks, the hotspot). The handoff lists only those checks for me to do on real devices.
 
 ## Testing on real devices
 

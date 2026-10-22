@@ -13,8 +13,13 @@ const PANEL_CENTER_X = PLAY_AREA_WIDTH + 270;
 
 const SQUARE_SIZE = 90;
 const SQUARE_SPEED = 900; // px per second when the stick is pushed all the way
-// One color per slot, in join order. MAX_PLAYERS in shared/protocol.js is 6, so 6 colors.
-const PLAYER_COLORS = [0xe74c3c, 0x3498db, 0x2ecc71, 0xf1c40f, 0x9b59b6, 0xe67e22];
+// One color per slot, in join order. MAX_PLAYERS in shared/protocol.js is 9, so 9 colors.
+// All are light enough for the dark label text to read on top.
+const PLAYER_COLORS = [
+  0xe74c3c, 0x3498db, 0x2ecc71, 0xf1c40f, 0x9b59b6, 0xe67e22,
+  0x1abc9c, 0xff79b0, 0xa3e048,
+];
+const SQUARES_PER_ROW = 6;
 
 const TEXT_STYLE = { fontFamily: 'sans-serif', color: '#ffffff' };
 
@@ -103,11 +108,11 @@ export class SquaresScene extends Phaser.Scene {
   addPlayer(playerId) {
     const colorIndex = this.findFreeColorIndex();
     // Start each square at its own spot so new players do not stack on top of each other.
-    const x = 200 + colorIndex * 190;
-    const y = GAME_HEIGHT / 2;
+    const x = 200 + (colorIndex % SQUARES_PER_ROW) * 190;
+    const y = GAME_HEIGHT / 2 - 100 + Math.floor(colorIndex / SQUARES_PER_ROW) * 200;
     const square = this.add.container(x, y, [
       this.add.rectangle(0, 0, SQUARE_SIZE, SQUARE_SIZE, PLAYER_COLORS[colorIndex]),
-      this.add.text(0, 0, `P${colorIndex + 1}`, { ...TEXT_STYLE, fontSize: '36px' }).setOrigin(0.5),
+      this.add.text(0, 0, `P${colorIndex + 1}`, { ...TEXT_STYLE, fontSize: '36px', color: '#10131c' }).setOrigin(0.5),
     ]);
     this.players.set(playerId, { colorIndex, square, stick: { x: 0, y: 0 } });
     this.updatePlayerCount();

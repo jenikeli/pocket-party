@@ -4,7 +4,7 @@ Build plan for the phone-controller party game. Work through milestones in order
 
 ## Goal
 
-A Mario Party-style game for 2-6 players. A host display shows a board and minigames. Players use their own phones (iOS or Android) as controllers. The host can be any device with a browser. Start with a small, fun core (a circular stadium board plus 3 minigames that showcase tap, swipe, and tilt) and grow from there.
+A Mario Party-style game for 2-9 players. A host display shows a board and minigames. Players use their own phones (iOS or Android) as controllers. The host can be any device with a browser. Start with a small, fun core (a circular stadium board plus 3 minigames that showcase tap, swipe, and tilt) and grow from there.
 
 ## Decisions already made
 
@@ -16,6 +16,8 @@ A Mario Party-style game for 2-6 players. A host display shows a board and minig
 - Reconnection: playerId + secret token in `localStorage`. The host holds a disconnected player's slot for a generous grace period (default 2 minutes, configurable), because phones often drop their socket when the screen locks and the OS, not our code, decides that.
 - Host is authoritative for game state.
 - Inputs to explore first: tap, swipe, tilt.
+- Up to 9 players (`MAX_PLAYERS` in `shared/protocol.js` is the hard ceiling; the host's lobby setting picks the limit for each game). The phone's hotspot accepts 10 clients and the host display is one of them (see `docs/spike-findings.md`). With many players, board turns get long and the screen gets crowded, so M6 and the minigames must lay out and pace for 9, not 6.
+- Automated tests guard every behaviour that has been built, so later changes cannot silently break earlier milestones (see "Testing" in `CLAUDE.md`). Real-device checks are kept for what automation cannot see.
 
 ## Board design
 
@@ -69,7 +71,16 @@ Notes (M0 done): Phaser is `host/vendor/phaser-3.90.0.esm.min.js` (named exports
 
 **Done when:** two phones (one iOS, one Android) each control their own square on the host in real time.
 
-Notes (M1 done): Checked with scripted WebSocket clients on the dev box; the real-device check (iOS + Android) is still to do. WebSockets share the HTTP(S) port at `/ws` (`SOCKET_PATH`). Browser pages connect with `openSocket({ onOpen, onMessage, onClose })` from `shared/socket.js`, which returns `{ send, close }` and already picks `wss:` on https pages. Room codes are 4 letters (no I or O). `MAX_PLAYERS` = 6 is enforced by the server. The server adds `playerId` to forwarded inputs from the socket's session and ignores any `playerId` in the message. No reconnection yet (all M4): a controller's slot is freed as soon as its socket closes (no grace period, no connected flag), the token is issued but not stored in `localStorage`, `REJOIN` is not handled, and the server has no heartbeat, so it does not notice half-open sockets. When the host disconnects, the server deletes the room and sends `ROOM_CLOSED` to its controllers, so a host reload (including a dev reload) gives a new room code. Patterns to reuse: a host scene is a class extending `Phaser.Scene` in `host/scenes/`, with one `handleMessage` switch, and for now the scene owns the socket (move it out once a second scene needs it). An input module exports `start(surface)`, `stop()`, `onInput(callback)` (see `controller/inputs/drag.js`: `{ kind: 'drag', x, y }` from -1 to 1, at most every 33 ms). `npm run dev` passes `--dev`: it watches `controller/`, `host/`, `shared/`, `assets/` and pushes `RELOAD` to hosts only; changes to `server/` still need a manual restart. QR library: `host/vendor/qrcode-generator-2.0.4.mjs` (MIT, license in its header).
+Notes (M1 done): Checked with scripted WebSocket clients on the dev box; the real-device check (iOS + Android) is still to do. WebSockets share the HTTP(S) port at `/ws` (`SOCKET_PATH`). Browser pages connect with `openSocket({ onOpen, onMessage, onClose })` from `shared/socket.js`, which returns `{ send, close }` and already picks `wss:` on https pages. Room codes are 4 letters (no I or O). `MAX_PLAYERS` is enforced by the server (changed from 6 to 9 after M1 testing to fit the hotspot; the M1 host has 9 colors and spawns squares in rows of 6). The server adds `playerId` to forwarded inputs from the socket's session and ignores any `playerId` in the message. No reconnection yet (all M4): a controller's slot is freed as soon as its socket closes (no grace period, no connected flag), the token is issued but not stored in `localStorage`, `REJOIN` is not handled, and the server has no heartbeat, so it does not notice half-open sockets. When the host disconnects, the server deletes the room and sends `ROOM_CLOSED` to its controllers, so a host reload (including a dev reload) gives a new room code. Patterns to reuse: a host scene is a class extending `Phaser.Scene` in `host/scenes/`, with one `handleMessage` switch, and for now the scene owns the socket (move it out once a second scene needs it). An input module exports `start(surface)`, `stop()`, `onInput(callback)` (see `controller/inputs/drag.js`: `{ kind: 'drag', x, y }` from -1 to 1, at most every 33 ms). `npm run dev` passes `--dev`: it watches `controller/`, `host/`, `shared/`, `assets/` and pushes `RELOAD` to hosts only; changes to `server/` still need a manual restart. QR library: `host/vendor/qrcode-generator-2.0.4.mjs` (MIT, license in its header).
+
+### M1.5: Automated tests
+Added after M1: nothing yet checks that finished behaviour keeps working. Build the test setup and cover everything M0 and M1 already do, so every later milestone only adds tests for its own behaviour.
+- [ ] `npm test` runs Node's built-in test runner (`node --test`, no dependency): unit tests for plain modules (`server/config.js`, `server/rooms.js`) and integration tests that start the real server on a free port and talk to it with `ws` clients (create room, join, wrong code, room full, input relay with the server-added `playerId`, spoofed `playerId` ignored, player left, room closed, static files and their content types, including `.mjs`)
+- [ ] Browser tests (`npm run test:browser`): drive the real host and controller pages in headless browsers, including mobile emulation, and save screenshots that Claude can look at. Needs a dev-only dependency (Playwright is the likely choice, with headless Chromium and WebKit); ask before adding it, and keep it out of what Termux installs (`npm install --omit=dev`)
+- [ ] Browser tests cover M1 end to end: host shows a room code and QR, controller joins from the `?room=` link, dragging moves that player's square, closing the controller tab removes it, closing the host sends the controller back to the join screen
+- [ ] A short list in `CLAUDE.md` of what still needs a real device (and why)
+
+**Done when:** `npm test` and `npm run test:browser` both pass on the Linux dev server, and breaking a covered behaviour on purpose makes a test fail.
 
 ### M2: HTTPS on the LAN
 Goal: make controller pages a secure context on iOS and Android with no per-device setup beyond tapping through a warning.
@@ -101,6 +112,7 @@ A test page and a matching host view for comparing the three input types on both
 - [ ] Host grace-period timer; slot freed if no rejoin; wrong token rejected
 - [ ] Resume UX: when the controller tab becomes visible again (`visibilitychange`), send a ping and treat the socket as dead if no pong arrives within about 2 seconds (the spike showed `readyState` can still read open on a dead socket). Show "Reconnecting..." and auto-rejoin with the token; if that fails, show a "Tap to reconnect" button
 - [ ] Host shows a "waiting for <player>" state while a slot is in its grace period
+- [ ] Game settings on the lobby screen, set by the host before the game starts. Start with: max players (2 to `MAX_PLAYERS`, default 6) and the reconnect grace period (default 2 minutes). The host owns the settings; the server only receives the player limit (with `CREATE_ROOM` or a new message type), clamps it to `MAX_PLAYERS`, and refuses joins beyond it. Later milestones add their own settings here (M6: number of rounds). Add only settings that real features use.
 - [ ] Host keeps its screen awake with Wake Lock (expected: nobody touches the host during a game)
 - [ ] Controller Wake Lock where available (nice to have, not required, since reconnection covers it)
 
@@ -119,7 +131,7 @@ Notes (open question from before M0): CLAUDE.md says the server keeps the slot t
 - [ ] Procedural stadium track (see Board design) with colored tokens
 - [ ] Turn order, dice roll from the controller, animated movement, space effects
 - [ ] After each round, run a minigame and award coins
-- [ ] End screen after 8 rounds with the winner
+- [ ] End screen after the configured number of rounds (default 8) with the winner, plus a rounds setting in the lobby
 
 **Done when:** a complete short game runs from lobby to winner.
 

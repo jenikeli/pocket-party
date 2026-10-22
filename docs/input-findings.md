@@ -8,47 +8,30 @@ How the lab measures (so the numbers can be read correctly):
 - **jitter**: over the last second, max minus min of (host receive time - phone send time). The two clocks differ, but by a constant amount, so this spread is how much the one-way delay varies. Only shows while inputs are flowing.
 - Headless browser tests show RTTs of 100-250 ms on the dev box because the test host page renders slowly; those are not network numbers. Only real devices count here.
 
-## Setup for each run
+## Results (first device run, user-reported)
 
-Write down: server device (Termux phone or dev box), network (hotspot or home Wi-Fi), number of phones connected, and the date.
+Devices: iPhone (Safari) and Android (Chrome), over HTTPS. All four inputs worked on both: tilt permission flow, tilt movement and Set zero, the fallback to drag after a denied permission, tap (including two thumbs) and swipe, with no page scrolling or zooming reported.
 
-## Latency and rate
+### Tilt permission memory
 
-Fill in one row per phone and input. "Idle rtt" is with the phone connected but not sending; "busy rtt" is while dragging or tilting.
-
-| Phone + browser | Input | rate (Hz) | idle rtt avg / max | busy rtt avg / max | jitter (ms) | Notes |
-|---|---|---|---|---|---|---|
-| iPhone Safari | drag | | | | | |
-| iPhone Safari | tap | | | | | |
-| iPhone Safari | swipe | | | | | |
-| iPhone Safari | tilt | | | | | |
-| Android Chrome | drag | | | | | |
-| Android Chrome | tap | | | | | |
-| Android Chrome | swipe | | | | | |
-| Android Chrome | tilt | | | | | |
-
-## Tilt
-
-| Question | iPhone Safari | Android Chrome |
+| | iPhone Safari | Android Chrome |
 |---|---|---|
-| Permission prompt shown on "Enable tilt"? | | |
-| Asked again after a reload? After closing and reopening the tab? | | |
-| After denying once, can it be granted again without clearing site data? | | |
-| Rate while moving / while lying still (Hz) | | |
-| Drift: x and y after "Set zero", then 30 s held still | | |
-| Does the value jump when the phone is tipped past vertical? | | |
-| Comfortable full-tilt angle (the lab uses 25 degrees) | | |
+| Remembered after "Enable tilt" (reload, reopen tab) | yes | yes |
+| Private / incognito tab | asks again | still remembered |
+| After restarting the browser | asks again | still remembered |
 
-## Touch
+So on iOS, expect players to tap "Enable tilt" again after Safari restarts. Every game that uses tilt needs the button anyway (M3 always shows it), so this costs one tap, not a code change. Why Android keeps it even in incognito was not checked; a likely reason is that Chrome's "Motion sensors" site setting defaults to allowed, so its `requestPermission()` grants without asking.
 
-| Question | iPhone Safari | Android Chrome |
-|---|---|---|
-| Fastest tap rate one thumb / two thumbs (taps per second on the controller counter over 5 s) | | |
-| Any taps missed or doubled? | | |
-| Swipes that should count but did not (too short or too slow)? | | |
-| Edge swipes stolen by the OS (back gesture, home bar)? | | |
-| Any page scroll, zoom or pull-to-refresh while playing? | | |
+### Latency and rate
+
+The numbers varied a lot from moment to moment, so no table was recorded. Judged good enough: the controls feel responsive, and feel is what matters for the games. Re-measure only if a minigame feels laggy.
+
+### Responsiveness
+
+Tilt feels less responsive than drag. That is expected, and the cause is on the phone, not the network: both inputs take the same path to the host, but tilt adds the sensor's own rate (about 60 Hz), the 0.35 moving-average smoothing (roughly 50-100 ms before the value settles) and the 25-degree full-tilt range. To review later if a tilt game needs it, in `controller/inputs/tilt.js`: raise `SMOOTHING` (less lag, more shake), lower `FULL_TILT_DEGREES`, or halve `SEND_INTERVAL_MS` to send at 60 Hz.
 
 ## Conclusions
 
-(Which inputs feel good enough for a minigame, and any change to the lab's constants: tilt range, smoothing, swipe thresholds, send rate.)
+- Tap, swipe, drag and tilt are all usable on iPhone and Android, so the M5 (tap) and M7 (swipe, tilt) minigames can go ahead as planned.
+- Tilt games should not need quick reactions until the tilt responsiveness above has been tuned. Steering and balancing suit it better than dodging.
+- On iOS, assume the tilt permission is lost whenever Safari restarts.

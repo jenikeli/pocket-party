@@ -1,5 +1,6 @@
 // M3 input lab scene, which stands in for the game until M5: a card per player with a live picture of their
-// input plus its rate, round-trip time and jitter. Started by host/scenes/lobby-scene.js once all are ready.
+// input plus its rate, round-trip time and jitter. Started by the host from host/scenes/lobby-scene.js; the host
+// can remove players and close the room here.
 
 import * as Phaser from '/host/vendor/phaser-3.90.0.esm.min.js';
 import { MESSAGE_TYPES } from '/shared/protocol.js';
@@ -8,11 +9,14 @@ import { createRoundTripStats, createJitterMeter } from '/host/latency-stats.js'
 import { drawJoinPanel } from '/host/join-panel.js';
 import { drawConnectionLost } from '/host/connection-lost.js';
 import { createPlayerCard } from '/host/player-card.js';
+import { drawCloseRoomButton } from '/host/buttons.js';
 import { PLAYER_COLORS, displayName, colorText, secondsUntilFreed, formatMinutes } from '/host/roster.js';
 
 // Once a second per player is plenty for a readout, and adds almost nothing to the input traffic.
 const PING_INTERVAL_MS = 1000;
 const STATS_REFRESH_MS = 250;
+// In the join panel, below the player count (1:1 scale).
+export const CLOSE_BUTTON = { x: 1650, y: 970 };
 
 export class InputLabScene extends Phaser.Scene {
   constructor(room) {
@@ -26,6 +30,7 @@ export class InputLabScene extends Phaser.Scene {
   create() {
     this.joinPanel = drawJoinPanel(this);
     this.joinPanel.showRoom(this.room.roomCode);
+    drawCloseRoomButton(this, this.room, CLOSE_BUTTON.x, CLOSE_BUTTON.y);
     for (const player of this.room.players.values()) {
       this.addView(player);
     }
@@ -45,6 +50,7 @@ export class InputLabScene extends Phaser.Scene {
     const view = this.views.get(message.playerId);
     switch (message.type) {
       case MESSAGE_TYPES.PLAYER_JOINED:
+        // Rare: a join that reached the server just before the room closed to new players.
         this.addView(player);
         break;
       case MESSAGE_TYPES.PLAYER_LEFT:
@@ -75,8 +81,8 @@ export class InputLabScene extends Phaser.Scene {
     this.joinPanel.setPlayerCount(this.room.players.size, this.room.settings.maxPlayers);
   }
 
-  handleConnectionLost() {
-    drawConnectionLost(this);
+  handleConnectionLost(closedByHost) {
+    drawConnectionLost(this, closedByHost);
   }
 
   applyInput(view, message) {
@@ -114,7 +120,9 @@ export class InputLabScene extends Phaser.Scene {
 
   // Cards sit by color slot, so a player keeps their card position across a drop and rejoin.
   addView(player) {
-    const card = createPlayerCard(this, player.colorIndex, PLAYER_COLORS[player.colorIndex], colorText(player));
+    const card = createPlayerCard(this, player.colorIndex, PLAYER_COLORS[player.colorIndex], colorText(player), () =>
+      this.room.kickPlayer(player.playerId),
+    );
     card.showName(displayName(player));
     card.showDevice(player.device);
     this.views.set(player.playerId, {

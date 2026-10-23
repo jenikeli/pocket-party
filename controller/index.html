@@ -29,11 +29,15 @@
     <button type="button" id="ready-button" aria-pressed="false">I'm ready</button>
     <p id="lobby-hint"></p>
     <p id="wake-status"></p>
+    <button type="button" class="leave-button">Leave game</button>
   </main>
 
   <!-- The input lab: pick an input with the tabs, try it on the pad, and read what is being sent below. -->
   <main id="pad-screen" hidden>
-    <p id="pad-status"></p>
+    <div id="pad-top">
+      <p id="pad-status"></p>
+      <button type="button" class="leave-button">Leave</button>
+    </div>
     <nav id="mode-tabs">
       <button type="button" data-mode="drag">Drag</button>
       <button type="button" data-mode="tap">Tap</button>
@@ -58,6 +62,7 @@
   <div id="reconnect-overlay" hidden>
     <p id="reconnect-text"></p>
     <button type="button" id="reconnect-button" hidden>Tap to reconnect</button>
+    <button type="button" class="leave-button" id="overlay-leave-button" hidden>Leave game</button>
   </div>
   <script type="module" src="/controller/main.js"></script>
 </body>

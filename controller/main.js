@@ -4,7 +4,7 @@
 
 import { MESSAGE_TYPES, JOIN_FAILURE_REASONS, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { keepScreenAwake } from '/shared/wake-lock.js';
-import { createConnection, ROOM_CLOSED, UNREACHABLE } from '/controller/connection.js';
+import { createConnection, ROOM_CLOSED, UNREACHABLE, KICKED, LEFT } from '/controller/connection.js';
 import { saveSession, loadSession, clearSession, saveName, loadName } from '/controller/session-store.js';
 import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
 import { showLobbyState, showConnectedPlaceholder, onReadyChange } from '/controller/lobby-screen.js';
@@ -23,20 +23,28 @@ const padStatus = document.getElementById('pad-status');
 const reconnectOverlay = document.getElementById('reconnect-overlay');
 const reconnectText = document.getElementById('reconnect-text');
 const reconnectButton = document.getElementById('reconnect-button');
+const overlayLeaveButton = document.getElementById('overlay-leave-button');
 
 const END_TEXT = {
   [JOIN_FAILURE_REASONS.NO_SUCH_ROOM]: 'No room with that code. Check the code on the big screen.',
   [JOIN_FAILURE_REASONS.ROOM_FULL]: 'That room is full.',
-  [JOIN_FAILURE_REASONS.REJOIN_REFUSED]: 'You were away too long, so your place was given up. Join again.',
+  [JOIN_FAILURE_REASONS.GAME_IN_PROGRESS]: 'That game has already started.',
+  [JOIN_FAILURE_REASONS.REJOIN_REFUSED]: 'Your place in the game is gone (away too long, or removed). Join again.',
   [ROOM_CLOSED]: 'The host left the game.',
   [UNREACHABLE]: 'Could not reach the server.',
+  [KICKED]: 'The host removed you from the game.',
+  [LEFT]: 'You left the game.',
 };
+
+// The room no longer exists after these, so its code is cleared from the page and the address bar.
+const ROOM_GONE_REASONS = new Set([JOIN_FAILURE_REASONS.NO_SUCH_ROOM, ROOM_CLOSED]);
 
 let isLabRunning = false;
 
 const connection = createConnection({
   onJoined: (session) => {
     saveSession(session);
+    showRoomCodeInUrl(session.roomCode);
     reconnectOverlay.hidden = true;
     lobbyRoom.textContent = `Room ${session.roomCode}`;
     padStatus.textContent = `In room ${session.roomCode}`;
@@ -55,9 +63,26 @@ const connection = createConnection({
   onEnded: (reason) => {
     clearSession();
     reconnectOverlay.hidden = true;
+    if (ROOM_GONE_REASONS.has(reason)) {
+      showRoomCodeInUrl('');
+    }
     showJoinScreen(END_TEXT[reason] || `Could not join (${reason}).`);
   },
 });
+
+// The address bar always names the room this phone is in, so a reload (which rejoins only when the saved
+// session's room matches ?room=) never meets a stale code. replaceState changes the URL without a reload or a
+// new history entry. An empty code removes ?room= and empties the field.
+function showRoomCodeInUrl(roomCode) {
+  const url = new URL(location.href);
+  if (roomCode === '') {
+    url.searchParams.delete('room');
+  } else {
+    url.searchParams.set('room', roomCode);
+  }
+  history.replaceState(null, '', url);
+  roomCodeInput.value = roomCode;
+}
 
 function handleHostMessage(message) {
   if (message.type !== MESSAGE_TYPES.CONTROLLER_STATE) {
@@ -102,9 +127,11 @@ function showJoinScreen(statusText) {
   joinStatus.textContent = statusText;
 }
 
-function showReconnectOverlay(text, offerButton) {
+// `offerButtons` adds "Tap to reconnect" and "Leave game", once the automatic attempts have run out.
+function showReconnectOverlay(text, offerButtons) {
   reconnectText.textContent = text;
-  reconnectButton.hidden = !offerButton;
+  reconnectButton.hidden = !offerButtons;
+  overlayLeaveButton.hidden = !offerButtons;
   reconnectOverlay.hidden = false;
 }
 
@@ -137,6 +164,14 @@ joinForm.addEventListener('submit', (event) => {
 
 onReadyChange((wantsReady) => connection.send({ type: MESSAGE_TYPES.SET_READY, ready: wantsReady }));
 reconnectButton.addEventListener('click', () => connection.reconnect());
+// A native confirm dialog is plain, but works the same on iOS and Android and cannot be tapped by accident.
+for (const leaveButton of document.querySelectorAll('.leave-button')) {
+  leaveButton.addEventListener('click', () => {
+    if (confirm('Leave the game? Your place will be given to someone else.')) {
+      connection.leave();
+    }
+  });
+}
 
 // Phones suspend hidden tabs, and their sockets may die without a close event, so check on the way back.
 document.addEventListener('visibilitychange', () => {

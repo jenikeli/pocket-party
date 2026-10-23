@@ -8,14 +8,15 @@ import { MAX_PLAYERS } from '../shared/protocol.js';
 const ROOM_CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const ROOM_CODE_LENGTH = 4;
 
-// roomCode -> { roomCode, hostSocket, playerLimit, players: Map(playerId -> slot) }
+// roomCode -> { roomCode, hostSocket, isOpen, playerLimit, players: Map(playerId -> slot) }
+// isOpen is false while the host runs a game, so new players are refused (rejoins still work).
 // A slot is { playerId, token, socket }. Its socket is null while the player is disconnected: the slot is
 // kept for them until the host says to free it (the host runs the grace period).
 const rooms = new Map();
 
 export function createRoom(hostSocket) {
   const roomCode = generateUnusedRoomCode();
-  const room = { roomCode, hostSocket, playerLimit: MAX_PLAYERS, players: new Map() };
+  const room = { roomCode, hostSocket, isOpen: true, playerLimit: MAX_PLAYERS, players: new Map() };
   rooms.set(roomCode, room);
   return room;
 }

@@ -3,10 +3,13 @@
 
 import { MESSAGE_TYPES } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
+import { sendLeaveInBackground } from '/controller/background-leave.js';
 
 // What onEnded(reason) can get besides the JOIN_FAILURE_REASONS values.
 export const ROOM_CLOSED = 'room_closed';
 export const UNREACHABLE = 'unreachable';
+export const KICKED = 'kicked';
+export const LEFT = 'left';
 
 // After a locked screen a socket can still read "open" when the OS has already killed it (seen in the spike),
 // so on resume we ping the server and treat the socket as dead if no pong comes back within this time.
@@ -20,8 +23,8 @@ const REJOIN_DELAY_MS = 1500;
 
 // The callbacks: onJoined(session) after every JOINED; onMessage(message) for messages from the host;
 // onReconnecting() when a rejoin starts; onOffline() when the automatic attempts ran out; onEnded(reason) when
-// the slot is gone for good (the host left, the slot was freed, or the first join failed).
-// Returns { join(roomCode), rejoin(session), reconnect(), checkAfterResume(), send(message), disconnect() }.
+// the slot is gone for good (the host left or removed us, the slot was freed, we left, or the first join failed).
+// Returns { join(roomCode), rejoin(session), reconnect(), checkAfterResume(), send(message), disconnect(), leave() }.
 export function createConnection({ onJoined, onMessage, onReconnecting, onOffline, onEnded }) {
   let socket = null; // the current socket ({ send, close } from openSocket), or null
   let session = null; // { roomCode, playerId, token } once the server has given us a slot
@@ -81,6 +84,9 @@ export function createConnection({ onJoined, onMessage, onReconnecting, onOfflin
         break;
       case MESSAGE_TYPES.ROOM_CLOSED:
         endReason = ROOM_CLOSED;
+        break;
+      case MESSAGE_TYPES.KICKED:
+        endReason = KICKED;
         break;
       case MESSAGE_TYPES.PING:
         // The host's latency ping. Answer at once and unchanged: the host times the round trip on its own clock.
@@ -185,5 +191,22 @@ export function createConnection({ onJoined, onMessage, onReconnecting, onOfflin
     }
   }
 
-  return { join, rejoin, reconnect, checkAfterResume, send, disconnect };
+  // "Leave game": the phone ends the session at once and never tries to rejoin. On a working socket the LEAVE goes
+  // there, and closing straight after is safe because a browser sends queued messages before the close frame.
+  // Without one (reconnecting or offline), a separate socket delivers it once the network is back.
+  function leave() {
+    if (session === null) {
+      return;
+    }
+    const leftSession = session;
+    if (state === 'connected') {
+      socket.send({ type: MESSAGE_TYPES.LEAVE, ...leftSession });
+    } else {
+      sendLeaveInBackground(leftSession);
+    }
+    abandonSocket();
+    end(LEFT);
+  }
+
+  return { join, rejoin, reconnect, checkAfterResume, send, disconnect, leave };
 }

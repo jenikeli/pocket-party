@@ -11,6 +11,10 @@ export function joinRoom(socket, message) {
     refuseJoin(socket, JOIN_FAILURE_REASONS.NO_SUCH_ROOM);
     return null;
   }
+  if (!room.isOpen) {
+    refuseJoin(socket, JOIN_FAILURE_REASONS.GAME_IN_PROGRESS);
+    return null;
+  }
   const slot = addPlayer(room, socket);
   if (!slot) {
     refuseJoin(socket, JOIN_FAILURE_REASONS.ROOM_FULL);

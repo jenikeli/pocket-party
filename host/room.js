@@ -8,10 +8,12 @@ import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
 import { DEFAULT_SETTINGS } from '/host/lobby-rules.js';
 
 // Returns the room object. Call connect() once the page has loaded, and setListener(scene) from each scene's
-// create(). The listener needs handleMessage(message, player) and handleConnectionLost().
+// create(). The listener needs handleMessage(message, player) and handleConnectionLost(closedByHost).
 export function createRoom() {
   let socket = null;
   let listener = null;
+  // True once the host pressed "Close room", so the closing socket is not reported as a lost connection.
+  let closedByHost = false;
   // playerId -> setTimeout id, for players in their grace period.
   const graceTimers = new Map();
 
@@ -28,14 +30,28 @@ export function createRoom() {
     sendControllerState,
     setScreen,
     setMaxPlayers,
+    kickPlayer,
+    close,
   };
 
   function connect() {
     socket = openSocket({
       onOpen: () => socket.send({ type: MESSAGE_TYPES.CREATE_ROOM }),
       onMessage: handleMessage,
-      onClose: () => listener?.handleConnectionLost(),
+      onClose: () => listener?.handleConnectionLost(closedByHost),
     });
+  }
+
+  // The server deletes a room when its host's socket closes and sends ROOM_CLOSED to every phone, so
+  // closing the socket is all "Close room" needs.
+  function close() {
+    closedByHost = true;
+    socket.close();
+  }
+
+  // The player is removed from the roster when the server confirms with PLAYER_LEFT, as for the grace period.
+  function kickPlayer(playerId) {
+    socket.send({ type: MESSAGE_TYPES.KICK_PLAYER, playerId });
   }
 
   // The room updates the roster first, so the scene that hears the message next already sees the change.
@@ -121,9 +137,11 @@ export function createRoom() {
     });
   }
 
-  // Disconnected players are skipped: they get the current screen when they rejoin.
+  // Disconnected players are skipped: they get the current screen when they rejoin. The room takes new players
+  // only in the lobby: someone joining mid-game would have no place in it, so the server turns them away.
   function setScreen(screen) {
     room.screen = screen;
+    socket.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open: screen === CONTROLLER_SCREENS.LOBBY });
     for (const player of room.players.values()) {
       if (player.connected) {
         sendControllerState(player);

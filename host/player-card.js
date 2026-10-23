@@ -2,6 +2,7 @@
 // and the numbers (rate, round trip, jitter, raw value). Used by host/scenes/input-lab-scene.js.
 
 import { INPUT_KINDS } from '/shared/protocol.js';
+import { drawConfirmButton } from '/host/buttons.js';
 
 // Cards sit in a 3x3 grid (MAX_PLAYERS is 9) in the 1380 px left of the join panel.
 export const CARD_WIDTH = 440;
@@ -11,6 +12,8 @@ const CARDS_PER_ROW = 3;
 // The stick picture, relative to the card's top-left corner.
 export const RING_CENTER = { x: 105, y: 195 };
 export const RING_RADIUS = 75;
+// The Remove button, relative to the card's top-left corner.
+export const REMOVE_BUTTON_CENTER = { x: CARD_WIDTH - 80, y: 36 };
 const DOT_RADIUS = 22;
 
 const SWIPE_ARROWS = { up: '↑', down: '↓', left: '←', right: '→' };
@@ -26,8 +29,9 @@ export function cardPosition(slotIndex) {
   };
 }
 
-// Draws an empty card. Returns { showName, showDevice, showMode, showInput, showStats, showWaiting, destroy }.
-export function createPlayerCard(scene, slotIndex, color, colorText) {
+// Draws an empty card. `onRemove()` runs when the host confirms the card's Remove button.
+// Returns { showName, showDevice, showMode, showInput, showStats, showWaiting, destroy }.
+export function createPlayerCard(scene, slotIndex, color, colorText, onRemove) {
   const { x, y } = cardPosition(slotIndex);
   const container = scene.add.container(x, y);
   const text = (left, top, value, style) => scene.add.text(left, top, value, { ...TEXT_STYLE, ...style });
@@ -46,7 +50,16 @@ export function createPlayerCard(scene, slotIndex, color, colorText) {
   const waitingCover = scene.add.rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x10131c, 0.92).setOrigin(0);
   const waitingText = text(CARD_WIDTH / 2, CARD_HEIGHT / 2, '', { fontSize: '30px', color: WARNING_COLOR, align: 'center' })
     .setOrigin(0.5);
+  // Drawn after the cover, so a player who is waiting to reconnect can still be removed.
+  const removeButton = drawConfirmButton(scene, REMOVE_BUTTON_CENTER.x, REMOVE_BUTTON_CENTER.y, {
+    width: 130,
+    height: 44,
+    fontSize: 22,
+    label: 'Remove',
+    onConfirm: onRemove,
+  });
   container.add([background, title, deviceText, modeText, ring, dot, bigText, statsText, rawText, waitingCover, waitingText]);
+  container.add(removeButton.objects);
   showWaiting(null);
 
   let tapCount = 0;

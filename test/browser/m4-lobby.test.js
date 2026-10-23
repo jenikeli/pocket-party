@@ -8,6 +8,15 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
+import {
+  START_BUTTON,
+  CLOSE_ROOM_BUTTON,
+  GAME_CLOSE_ROOM_BUTTON,
+  lobbyRemoveButton,
+  cardRemoveButton,
+  startGame,
+  confirmClick,
+} from '../helpers/host-buttons.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const CONTROLLER_DEVICES = [
@@ -20,9 +29,28 @@ const LIST_DOT_X = 110;
 const LIST_FIRST_ROW_Y = 230;
 const LIST_ROW_HEIGHT = 72;
 const MAX_PLAYERS_MINUS = { x: 700, y: 900 };
-const GRACE_MINUS = { x: 700, y: 990 };
 const FIRST_COLOR = 0xe74c3c;
 const SECOND_COLOR = 0x3498db;
+
+// Routes the page's game socket through Playwright. Returns { routes, setBlocked(flag) }: routes[i].cut = true
+// makes socket i drop every frame both ways (a half-open socket); while blocked, new sockets are closed at once
+// without reaching the server (no network). Call before page.goto.
+async function routeSockets(page) {
+  const routes = [];
+  let blocked = false;
+  await page.routeWebSocket(/\/ws$/, (pageSide) => {
+    const route = { pageSide, cut: false };
+    routes.push(route);
+    if (blocked) {
+      pageSide.close();
+      return;
+    }
+    const serverSide = pageSide.connectToServer();
+    pageSide.onMessage((message) => !route.cut && serverSide.send(message));
+    serverSide.onMessage((message) => !route.cut && pageSide.send(message));
+  });
+  return { routes, setBlocked: (flag) => (blocked = flag) };
+}
 
 for (const { name, engine, device } of CONTROLLER_DEVICES) {
   describe(`M4 lobby and reconnection with ${name} controllers`, () => {
@@ -71,26 +99,6 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       return dot.count > 0;
     }
 
-    // Routes the page's game socket through Playwright. Returns { routes, setBlocked(flag) }: routes[i].cut = true
-    // makes socket i drop every frame both ways (a half-open socket); while blocked, new sockets are closed at once
-    // without reaching the server (no network). Call before page.goto.
-    async function routeSockets(page) {
-      const routes = [];
-      let blocked = false;
-      await page.routeWebSocket(/\/ws$/, (pageSide) => {
-        const route = { pageSide, cut: false };
-        routes.push(route);
-        if (blocked) {
-          pageSide.close();
-          return;
-        }
-        const serverSide = pageSide.connectToServer();
-        pageSide.onMessage((message) => !route.cut && serverSide.send(message));
-        serverSide.onMessage((message) => !route.cut && pageSide.send(message));
-      });
-      return { routes, setBlocked: (flag) => (blocked = flag) };
-    }
-
     // Our handler only reads document.visibilityState, which stays 'visible' in a headless page.
     function fireBackToVisible(page) {
       return page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
@@ -133,14 +141,48 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-m4-1-host-lobby`);
     });
 
+    test('a code typed by hand goes into the address bar, and Leave frees the slot without reconnecting', async () => {
+      const context = await controllerBrowser.newContext(device);
+      const page = await context.newPage();
+      await page.goto(`${server.baseUrl}/`);
+      await page.fill('#room-code', roomCode.toLowerCase());
+      await page.click('#join-button');
+      await page.waitForSelector('#lobby-screen:not([hidden])');
+      const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+      assert.equal(new URL(page.url()).searchParams.get('room'), roomCode);
+
+      page.once('dialog', (dialog) => dialog.accept());
+      await page.click('#lobby-screen .leave-button');
+      await page.waitForSelector('#join-screen:not([hidden])');
+      assert.equal(await page.textContent('#join-status'), 'You left the game.');
+      // Straight to PLAYER_LEFT: no disconnect, no grace period.
+      assert.deepEqual(await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId });
+      assert.equal(await page.evaluate(() => localStorage.getItem('pocket-party:session')), null);
+      // It stays on the join screen: no rejoin attempt, so no second socket.
+      await page.waitForTimeout(500);
+      assert.equal(await page.isVisible('#reconnect-overlay'), false);
+      await context.close();
+    });
+
+    test('the host removes a player from the lobby with two clicks, and the phone is told', async () => {
+      const cy = await joinAs('Cy');
+      // A single click only arms the button.
+      await hostPage.mouse.click(lobbyRemoveButton(2).x, lobbyRemoveButton(2).y);
+      await hostPage.waitForTimeout(300);
+      assert.equal(await cy.page.isVisible('#lobby-screen'), true);
+      await saveScreenshot(hostPage, `${name}-m4-2-host-remove-armed`);
+      await hostPage.mouse.click(lobbyRemoveButton(2).x, lobbyRemoveButton(2).y);
+
+      await nextAbout(MESSAGE_TYPES.PLAYER_LEFT, cy.playerId);
+      await cy.page.waitForSelector('#join-screen:not([hidden])');
+      assert.equal(await cy.page.textContent('#join-status'), 'The host removed you from the game.');
+      await cy.context.close();
+    });
+
     test('the host\'s max players setting refuses joins beyond it', async () => {
       // 6 -> 2. It cannot go lower, because two players are in.
       for (let i = 0; i < 5; i += 1) {
         await hostPage.mouse.click(MAX_PLAYERS_MINUS.x, MAX_PLAYERS_MINUS.y);
-      }
-      // Shorten the grace period to its minimum (2:00 -> 0:30), for the last test.
-      for (let i = 0; i < 4; i += 1) {
-        await hostPage.mouse.click(GRACE_MINUS.x, GRACE_MINUS.y);
       }
       // Phaser handles clicks on its next frame, so wait until the server has the new limit.
       await waitUntil(() => server.output().includes(`Room ${roomCode} now takes up to 2 players`), {
@@ -155,21 +197,36 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await context.close();
     });
 
-    test('ready goes through the host, and once both are ready the countdown takes everyone to the lab', async () => {
+    test('ready goes through the host, and the host starts the game only once everyone is ready', async () => {
       await ana.page.click('#ready-button');
       await ana.page.waitForSelector('#ready-button[aria-pressed="true"]');
       assert.equal(await ana.page.textContent('#ready-button'), 'Not ready');
       await ana.page.click('#ready-button');
       await ana.page.waitForSelector('#ready-button[aria-pressed="false"]');
 
+      // With Bo not ready, Start does nothing.
       await ana.page.click('#ready-button');
+      await ana.page.waitForSelector('#ready-button[aria-pressed="true"]');
+      await hostPage.mouse.click(START_BUTTON.x, START_BUTTON.y);
+      await ana.page.waitForTimeout(500);
+      assert.equal(await ana.page.isVisible('#lobby-screen'), true);
+
       await bo.page.click('#ready-button');
-      await saveScreenshot(hostPage, `${name}-m4-3-host-countdown`);
-      for (const { page } of [ana, bo]) {
-        await page.waitForSelector('#pad-screen:not([hidden])', { timeout: 8000 });
-      }
+      await bo.page.waitForSelector('#ready-button[aria-pressed="true"]');
+      await saveScreenshot(hostPage, `${name}-m4-3-host-all-ready`);
+      await startGame(hostPage, ana.page);
+      await bo.page.waitForSelector('#pad-screen:not([hidden])');
       assert.equal(await ana.page.textContent('#pad-status'), `In room ${roomCode}`);
       await saveScreenshot(hostPage, `${name}-m4-3-host-lab`);
+    });
+
+    test('while the game runs, a new player is refused', async () => {
+      const context = await controllerBrowser.newContext(device);
+      const page = await openPlayer(context);
+      await page.click('#join-button');
+      await page.waitForFunction(() => document.getElementById('join-status').textContent !== 'Joining...');
+      assert.match(await page.textContent('#join-status'), /already started/);
+      await context.close();
     });
 
     test('closing the tab and opening the link again rejoins as the same player, straight into the lab', async () => {
@@ -216,6 +273,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await ana.page.textContent('#reconnect-text'), 'Reconnecting...');
       await ana.page.waitForSelector('#reconnect-button:not([hidden])', { timeout: 15000 });
       assert.equal(await ana.page.textContent('#reconnect-text'), 'Could not reconnect.');
+      assert.equal(await ana.page.isVisible('#overlay-leave-button'), true);
       // The first socket plus three automatic attempts.
       assert.equal(sockets.routes.length, 4);
       await saveScreenshot(ana.page, `${name}-m4-5-controller-tap-to-reconnect`);
@@ -227,19 +285,112 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await ana.page.isVisible('#pad-screen'), true);
     });
 
-    // The grace timer runs on the host, so one device is enough; it takes the 30 s minimum grace period.
-    test('a player who stays away past the grace period loses the slot and is told on return', { skip: name !== 'android' && 'runs once, with the Android controller' }, async () => {
-      await ana.page.close();
-      await nextAbout(MESSAGE_TYPES.PLAYER_DISCONNECTED, ana.playerId);
-      await nextAbout(MESSAGE_TYPES.PLAYER_LEFT, ana.playerId, 40000);
+    test('the host removes a player during the game; joining again is refused and stays on the join screen', async () => {
+      await confirmClick(hostPage, cardRemoveButton(1));
+      await nextAbout(MESSAGE_TYPES.PLAYER_LEFT, bo.playerId);
+      await bo.page.waitForSelector('#join-screen:not([hidden])');
+      assert.equal(await bo.page.textContent('#join-status'), 'The host removed you from the game.');
 
-      ana.page = await openPlayer(ana.context);
-      await ana.page.waitForSelector('#join-screen:not([hidden])');
-      await waitUntil(async () => /away too long/.test(await ana.page.textContent('#join-status')), {
-        message: 'the phone to say its place was given up',
+      // The code is still filled in, but the game has started, so Bo is refused.
+      await bo.page.click('#join-button');
+      await waitUntil(async () => (await bo.page.textContent('#join-status')) === 'That game has already started.', {
+        message: 'the phone to say the game has started',
       });
-      assert.equal(await ana.page.evaluate(() => localStorage.getItem('pocket-party:session')), null);
-      await saveScreenshot(ana.page, `${name}-m4-6-controller-slot-gone`);
+      assert.equal(await bo.page.isVisible('#join-screen'), true);
+      assert.equal(await bo.page.isVisible('#pad-screen'), false);
+      await saveScreenshot(hostPage, `${name}-m4-6-host-after-remove`);
+    });
+
+    test('Close room during the game sends every phone back to the join screen, with the old code cleared', async () => {
+      await confirmClick(hostPage, GAME_CLOSE_ROOM_BUTTON);
+      await ana.page.waitForSelector('#join-screen:not([hidden])');
+      assert.equal(await ana.page.textContent('#join-status'), 'The host left the game.');
+      assert.equal(await ana.page.inputValue('#room-code'), '');
+      assert.equal(new URL(ana.page.url()).searchParams.has('room'), false);
+      await saveScreenshot(hostPage, `${name}-m4-7-host-room-closed`);
     });
   });
 }
+
+// The grace timer runs on the host, so one device is enough; it takes the default 30 s grace period. This also
+// checks Close room from the lobby, which the tests above use during the game.
+describe('M4 grace period and closing from the lobby', () => {
+  let server;
+  let browser;
+  let hostPage;
+  let hostMessages;
+  let roomCode;
+
+  before(async () => {
+    server = await startServer();
+    browser = await launchBrowser('chromium');
+    hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    hostMessages = watchServerMessages(hostPage);
+    await hostPage.goto(`${server.baseUrl}/host`);
+    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+  });
+
+  after(async () => {
+    await browser?.close();
+    await server?.stop();
+  });
+
+  async function joinLobby(context) {
+    const page = await context.newPage();
+    await page.goto(`${server.baseUrl}/?room=${roomCode}`);
+    await page.click('#join-button');
+    await page.waitForSelector('#lobby-screen:not([hidden])');
+    const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+    return { page, playerId };
+  }
+
+  test('a player who stays away past the grace period loses the slot and is told on return', async () => {
+    const context = await browser.newContext(devices['Pixel 7']);
+    const { page, playerId } = await joinLobby(context);
+    await page.close();
+    assert.equal((await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_DISCONNECTED)).playerId, playerId);
+    assert.equal((await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT, 40000)).playerId, playerId);
+
+    const back = await context.newPage();
+    await back.goto(`${server.baseUrl}/?room=${roomCode}`);
+    await waitUntil(async () => /away too long/.test(await back.textContent('#join-status')), {
+      message: 'the phone to say its place was given up',
+    });
+    assert.equal(await back.isVisible('#join-screen'), true);
+    assert.equal(await back.evaluate(() => localStorage.getItem('pocket-party:session')), null);
+    await saveScreenshot(back, 'android-m4-8-controller-slot-gone');
+    await context.close();
+  });
+
+  test('Leave on the reconnect screen works at once, and the server is told once the network is back', async () => {
+    const context = await browser.newContext(devices['Pixel 7']);
+    const page = await context.newPage();
+    const sockets = await routeSockets(page);
+    await page.goto(`${server.baseUrl}/?room=${roomCode}`);
+    await page.click('#join-button');
+    await page.waitForSelector('#lobby-screen:not([hidden])');
+    const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    sockets.setBlocked(true);
+    await sockets.routes[0].pageSide.close();
+    await page.waitForSelector('#overlay-leave-button:not([hidden])', { timeout: 15000 });
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.click('#overlay-leave-button');
+    // The phone does not wait for the network.
+    await page.waitForSelector('#join-screen:not([hidden])');
+    assert.equal(await page.textContent('#join-status'), 'You left the game.');
+
+    // Wi-Fi comes back: a retry delivers the LEAVE, well before the 30 s grace period would have freed the slot.
+    await page.waitForTimeout(2500);
+    sockets.setBlocked(false);
+    assert.equal((await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT, 10000)).playerId, playerId);
+    await context.close();
+  });
+
+  test('Close room in the lobby sends the phones back to the join screen', async () => {
+    const { page } = await joinLobby(await browser.newContext(devices['Pixel 7']));
+    await confirmClick(hostPage, CLOSE_ROOM_BUTTON);
+    await page.waitForSelector('#join-screen:not([hidden])');
+    assert.equal(await page.textContent('#join-status'), 'The host left the game.');
+  });
+});

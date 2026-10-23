@@ -1,7 +1,7 @@
 // Browser tests for M1 end to end: the real host page (desktop Chromium) and the real controller page on an
 // emulated Android phone (Chromium) and iPhone (WebKit, Safari's engine). Screenshots go to test-results/screenshots/.
 // Since M3 the host shows the input lab, so "the player's square" is the stick dot on that player's card.
-// Since M4 players join a lobby first, and the lab starts once two players are ready, so a second phone helps.
+// Since M4 players join a lobby first, and the host starts the lab once two players are ready, so a second phone helps.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,6 +9,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor, readDarkPoints } from '../helpers/screenshot-pixels.js';
+import { startGame } from '../helpers/host-buttons.js';
 import { qrcode } from '../../host/vendor/qrcode-generator-2.0.4.mjs';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -123,7 +124,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       for (const page of [controllerPage, helperPage]) {
         await page.click('#ready-button');
       }
-      await controllerPage.waitForSelector('#pad-screen:not([hidden])', { timeout: 8000 });
+      await startGame(hostPage, controllerPage);
       assert.equal(await controllerPage.textContent('#pad-status'), `In room ${roomCode}`);
 
       const dot = await waitUntil(findFirstDot, { message: 'the first player\'s dot on the host' });

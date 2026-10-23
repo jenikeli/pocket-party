@@ -7,9 +7,9 @@ export const MIN_PLAYERS = 2;
 
 export const DEFAULT_SETTINGS = Object.freeze({
   maxPlayers: 6,
-  // How long a dropped player's slot is held for them. Phones drop their socket whenever the screen locks,
-  // so this is generous.
-  graceSeconds: 120,
+  // How long a dropped player's slot is held for them. Short, so a phone that is really gone does not hold
+  // the game up for long; the host can raise it, or remove a player at once.
+  graceSeconds: 30,
 });
 
 const GRACE_STEP_SECONDS = 30;

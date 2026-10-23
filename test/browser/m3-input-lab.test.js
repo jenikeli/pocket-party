@@ -1,7 +1,7 @@
 // Browser tests for M3, the input lab: the real controller page on an emulated Android phone (Chromium) and
 // iPhone (WebKit) against the real host page. Headless browsers have no motion sensor, so the tilt tests stub
 // DeviceOrientationEvent.requestPermission and fire deviceorientation events by hand.
-// Since M4 the lab starts from the lobby once two players are ready. The tested phone joins first (so it has
+// Since M4 the host starts the lab from the lobby once two players are ready. The tested phone joins first (so it has
 // the first card), a helper phone joins second, and each test then reopens the tested phone's tab, which
 // rejoins as the same player straight into the lab.
 
@@ -11,6 +11,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
+import { startGame } from '../helpers/host-buttons.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const CONTROLLER_DEVICES = [
@@ -119,7 +120,7 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       const helper = await joinLobby(await hostBrowser.newContext(devices['Pixel 7']));
       await tested.page.click('#ready-button');
       await helper.page.click('#ready-button');
-      await tested.page.waitForSelector('#pad-screen:not([hidden])', { timeout: 8000 });
+      await startGame(hostPage, tested.page);
       await leave(tested.page);
     });
 

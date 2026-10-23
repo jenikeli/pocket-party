@@ -23,6 +23,10 @@ export const MESSAGE_TYPES = Object.freeze({
   // a room takes MAX_PLAYERS.
   SET_PLAYER_LIMIT: 'set_player_limit',
 
+  // host -> server: { open } (true or false). When the game starts the host closes the room, so new players
+  // are refused with GAME_IN_PROGRESS; rejoins still get in. Rooms start open.
+  SET_ROOM_OPEN: 'set_room_open',
+
   // controller -> server: { roomCode }. First join; the server answers with JOINED or JOIN_FAILED.
   JOIN: 'join',
 
@@ -53,7 +57,24 @@ export const MESSAGE_TYPES = Object.freeze({
   // that are still disconnected (a rejoin may have just beaten the timer) and answers with PLAYER_LEFT.
   REMOVE_PLAYER: 'remove_player',
 
-  // server -> host: { playerId }. The slot is freed; its token no longer works.
+  // host -> server: { playerId }. The host removes this player, connected or not. The server sends them
+  // KICKED, closes their socket, frees the slot and answers with PLAYER_LEFT.
+  KICK_PLAYER: 'kick_player',
+
+  // server -> controller: {}. The host removed this player. The server then closes the socket.
+  KICKED: 'kicked',
+
+  // controller -> server: { roomCode, playerId, token }. The player tapped "Leave game". The server frees the
+  // slot at once, answers the host with PLAYER_LEFT and closes the socket. Sent on the controller's socket, or,
+  // when that socket is down, as the first message of a new socket: then the server checks the token as for
+  // REJOIN and answers the controller with LEFT before closing.
+  LEAVE: 'leave',
+
+  // server -> controller: {}. The answer to a LEAVE sent on a new socket: the slot is free (or was already gone),
+  // so the controller can stop retrying.
+  LEFT: 'left',
+
+  // server -> host: { playerId }. The slot is freed (grace period over, kicked, or left); its token no longer works.
   PLAYER_LEFT: 'player_left',
 
   // server -> controller: {}. The host left, so the room is gone. The server then closes the socket.
@@ -107,6 +128,8 @@ export const MESSAGE_TYPES = Object.freeze({
 export const JOIN_FAILURE_REASONS = Object.freeze({
   NO_SUCH_ROOM: 'no_such_room',
   ROOM_FULL: 'room_full',
+  // JOIN only: the host has closed the room because a game is running (SET_ROOM_OPEN).
+  GAME_IN_PROGRESS: 'game_in_progress',
   // REJOIN only: the room has no slot with that playerId and token (the slot was freed, or the token is wrong).
   REJOIN_REFUSED: 'rejoin_refused',
 });

@@ -82,8 +82,9 @@ test('the grace countdown rounds up, stops at 0, and shows as minutes', () => {
   assert.equal(formatMinutes(0), '0:00');
 });
 
-test('the defaults are 6 players and a 2 minute grace period', () => {
-  assert.deepEqual(DEFAULT_SETTINGS, { maxPlayers: 6, graceSeconds: 120 });
+// Changed on purpose after the M4 device run: the grace period default went from 2 minutes to 30 seconds.
+test('the defaults are 6 players and a 30 second grace period', () => {
+  assert.deepEqual(DEFAULT_SETTINGS, { maxPlayers: 6, graceSeconds: 30 });
 });
 
 test(`max players steps by one between ${MIN_PLAYERS} and ${MAX_PLAYERS}, and not below the players present`, () => {

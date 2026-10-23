@@ -3,8 +3,9 @@
 
 import { WebSocketServer } from 'ws';
 import { SOCKET_PATH, MESSAGE_TYPES } from '../shared/protocol.js';
-import { createRoom, findRoom, deleteRoom, listRooms, setPlayerLimit, removePlayer } from './rooms.js';
+import { createRoom, findRoom, deleteRoom, listRooms, setPlayerLimit } from './rooms.js';
 import { joinRoom, rejoinRoom } from './joining.js';
+import { removeDisconnectedPlayer, kickPlayer, leaveRoom, leaveWithToken } from './leaving.js';
 import { parseMessage, send } from './messages.js';
 import { startHeartbeat } from './heartbeat.js';
 
@@ -80,6 +81,10 @@ function startSession(socket, message) {
       return joinRoom(socket, message);
     case MESSAGE_TYPES.REJOIN:
       return rejoinRoom(socket, message);
+    case MESSAGE_TYPES.LEAVE:
+      // This socket exists only to deliver the LEAVE, so it never gets a session.
+      leaveWithToken(socket, message);
+      return null;
     default:
       console.warn(`Ignoring "${message.type}" from a socket that has not created or joined a room`);
       return null;
@@ -97,6 +102,10 @@ function handleControllerMessage(socket, session, message) {
   if (message.type === MESSAGE_TYPES.PING) {
     // The controller's own check that its socket still works, so the server answers it directly.
     send(socket, { type: MESSAGE_TYPES.PONG, sentAt: message.sentAt });
+    return;
+  }
+  if (message.type === MESSAGE_TYPES.LEAVE) {
+    leaveRoom(session.room, session.slot, socket);
     return;
   }
   if (!FORWARDED_TO_HOST.has(message.type)) {
@@ -118,8 +127,13 @@ function handleHostMessage(session, message) {
     } else {
       console.warn(`Ignoring player limit "${message.maxPlayers}" for room ${room.roomCode}: not a whole number`);
     }
+  } else if (message.type === MESSAGE_TYPES.SET_ROOM_OPEN) {
+    room.isOpen = message.open === true;
+    console.log(`Room ${room.roomCode} is now ${room.isOpen ? 'open' : 'closed'} to new players`);
   } else if (message.type === MESSAGE_TYPES.REMOVE_PLAYER) {
     removeDisconnectedPlayer(room, message.playerId);
+  } else if (message.type === MESSAGE_TYPES.KICK_PLAYER) {
+    kickPlayer(room, message.playerId);
   } else {
     console.warn(`Ignoring "${message.type}" from the host of room ${room.roomCode}`);
   }
@@ -136,21 +150,6 @@ function forwardToPlayer(room, message) {
   send(slot.socket, rest);
 }
 
-function removeDisconnectedPlayer(room, playerId) {
-  const slot = room.players.get(playerId);
-  if (!slot) {
-    return;
-  }
-  if (slot.socket !== null) {
-    // The player rejoined just before the host's timer ran out; the host gets PLAYER_RECONNECTED instead.
-    console.log(`Not removing player ${playerId} from room ${room.roomCode}: they are connected again`);
-    return;
-  }
-  console.log(`Player ${playerId} removed from room ${room.roomCode} (grace period over)`);
-  removePlayer(room, playerId);
-  send(room.hostSocket, { type: MESSAGE_TYPES.PLAYER_LEFT, playerId });
-}
-
 function endSession(socket, session) {
   const { room } = session;
   if (session.role === 'host') {
@@ -162,7 +161,7 @@ function endSession(socket, session) {
     }
     return;
   }
-  // A rejoin already moved the slot to a newer socket, or the room closed: nothing to report.
+  // A rejoin already moved the slot to a newer socket, the slot was freed, or the room closed: nothing to report.
   if (session.slot.socket !== socket || findRoom(room.roomCode) !== room) {
     return;
   }

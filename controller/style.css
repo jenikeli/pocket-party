@@ -230,3 +230,17 @@ dd {
   text-align: center;
   font-size: 28px;
 }
+
+/* Leaving is rare and final, so its buttons are quiet. */
+.leave-button {
+  font-size: 18px;
+  padding: 10px 16px;
+  background: #2a3145;
+  color: #9aa4bf;
+}
+
+#pad-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

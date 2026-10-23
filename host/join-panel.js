@@ -32,7 +32,7 @@ export function drawJoinPanel(scene) {
     // The QR uses this page's own address. "localhost" only works on this machine, not on the phones.
     if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
       scene.add
-        .text(PANEL_CENTER_X, 990, 'Phones cannot reach "localhost".\nOpen /host using the LAN IP instead.', {
+        .text(PANEL_CENTER_X, 1040, 'Phones cannot reach "localhost".\nOpen /host using the LAN IP instead.', {
           ...TEXT_STYLE,
           fontSize: '24px',
           color: '#f39c12',

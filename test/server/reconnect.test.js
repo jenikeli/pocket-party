@@ -1,10 +1,11 @@
-// Integration tests for M4 on the real server: held slots, rejoining with the token, the host freeing a slot
-// when its grace period ends, the lobby's player limit, and the messages the lobby sends both ways.
+// Integration tests for M4 on the real server: held slots, rejoining with the token, freeing slots (grace period
+// over, kicked by the host, left on purpose), the lobby's player limit and open/closed room, and the lobby's
+// messages both ways.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { startServer } from '../helpers/start-server.js';
-import { createHost, joinRoom, rejoinRoom } from '../helpers/socket-client.js';
+import { connectClient, createHost, joinRoom, rejoinRoom } from '../helpers/socket-client.js';
 import { MESSAGE_TYPES, JOIN_FAILURE_REASONS, MAX_PLAYERS } from '../../shared/protocol.js';
 
 let server;
@@ -121,6 +122,111 @@ describe('freeing slots', () => {
     assert.deepEqual(await other.controller.next(), { type: MESSAGE_TYPES.ROOM_CLOSED });
     const { reply } = await rejoinRoom(port, joined);
     assert.equal(reply.reason, JOIN_FAILURE_REASONS.NO_SUCH_ROOM);
+  });
+});
+
+describe('kicking and leaving', () => {
+  test('the host kicks a connected player: they are told, their socket closes, and the token stops working', async () => {
+    const { host, roomCode } = await createHost(port);
+    const { controller, reply } = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    host.send({ type: MESSAGE_TYPES.KICK_PLAYER, playerId: reply.playerId });
+    assert.deepEqual(await controller.next(), { type: MESSAGE_TYPES.KICKED });
+    await controller.closed;
+    // Only PLAYER_LEFT: the socket closing is not also reported as a disconnect.
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: reply.playerId });
+    assert.deepEqual(await host.collectFor(150), []);
+
+    const again = await rejoinRoom(port, reply);
+    assert.equal(again.reply.reason, JOIN_FAILURE_REASONS.REJOIN_REFUSED);
+    host.close();
+  });
+
+  test('the host can kick a player who is waiting to reconnect', async () => {
+    const { host, joined } = await roomWithDroppedPlayer();
+    host.send({ type: MESSAGE_TYPES.KICK_PLAYER, playerId: joined.playerId });
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: joined.playerId });
+    host.close();
+  });
+
+  test('a player who leaves frees the slot at once, without a disconnect first', async () => {
+    const { host, roomCode } = await createHost(port);
+    host.send({ type: MESSAGE_TYPES.SET_PLAYER_LIMIT, maxPlayers: 1 });
+    const { controller, reply } = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    controller.send({ ...reply, type: MESSAGE_TYPES.LEAVE });
+    await controller.closed;
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: reply.playerId });
+    assert.deepEqual(await host.collectFor(150), []);
+
+    // The one slot is free again for someone new, and the old token no longer works.
+    const next = await joinRoom(port, roomCode);
+    assert.equal(next.reply.type, MESSAGE_TYPES.JOINED);
+    assert.equal((await rejoinRoom(port, reply)).reply.reason, JOIN_FAILURE_REASONS.REJOIN_REFUSED);
+    next.controller.close();
+    host.close();
+  });
+});
+
+describe('leaving from a new socket', () => {
+  // As when the player tapped Leave on the reconnect screen: their own socket is down, so the phone opens a new one.
+  async function sendLeave(credentials) {
+    const socket = await connectClient(port);
+    socket.send({ ...credentials, type: MESSAGE_TYPES.LEAVE });
+    const reply = await socket.next();
+    await socket.closed;
+    return reply;
+  }
+
+  test('a LEAVE with the token frees a dropped player\'s slot, and the phone is told it worked', async () => {
+    const { host, joined } = await roomWithDroppedPlayer();
+    assert.deepEqual(await sendLeave(joined), { type: MESSAGE_TYPES.LEFT });
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: joined.playerId });
+    assert.equal((await rejoinRoom(port, joined)).reply.reason, JOIN_FAILURE_REASONS.REJOIN_REFUSED);
+    host.close();
+  });
+
+  test('a wrong token frees nothing, but still gets LEFT so the phone stops retrying', async () => {
+    const { host, joined } = await roomWithDroppedPlayer();
+    assert.deepEqual(await sendLeave({ ...joined, token: 'f'.repeat(32) }), { type: MESSAGE_TYPES.LEFT });
+    assert.deepEqual(await sendLeave({ ...joined, roomCode: 'QQQQ' }), { type: MESSAGE_TYPES.LEFT });
+    assert.deepEqual(await host.collectFor(150), []);
+    assert.equal((await rejoinRoom(port, joined)).reply.type, MESSAGE_TYPES.JOINED);
+    host.close();
+  });
+
+  test('a LEAVE while the old socket still looks open cuts that socket, with no disconnect reported', async () => {
+    const { host, roomCode } = await createHost(port);
+    const { controller, reply } = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    assert.deepEqual(await sendLeave(reply), { type: MESSAGE_TYPES.LEFT });
+    await controller.closed;
+    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_LEFT, playerId: reply.playerId });
+    assert.deepEqual(await host.collectFor(150), []);
+    host.close();
+  });
+});
+
+describe('open and closed rooms', () => {
+  test('a closed room refuses new players but takes rejoins, and takes new players again once reopened', async () => {
+    const { host, joined, roomCode } = await roomWithDroppedPlayer();
+    host.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open: false });
+
+    const late = await joinRoom(port, roomCode);
+    assert.deepEqual(late.reply, { type: MESSAGE_TYPES.JOIN_FAILED, reason: JOIN_FAILURE_REASONS.GAME_IN_PROGRESS });
+    await late.controller.closed;
+    const back = await rejoinRoom(port, joined);
+    assert.equal(back.reply.type, MESSAGE_TYPES.JOINED);
+
+    host.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open: true });
+    const next = await joinRoom(port, roomCode);
+    assert.equal(next.reply.type, MESSAGE_TYPES.JOINED);
+    back.controller.close();
+    next.controller.close();
+    host.close();
   });
 });
 

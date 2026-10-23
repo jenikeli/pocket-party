@@ -2,6 +2,7 @@
 // each with - and + buttons. Used by host/scenes/lobby-scene.js, which owns the values and the rules.
 
 import { formatMinutes } from '/host/roster.js';
+import { drawButton } from '/host/buttons.js';
 
 // The rows' vertical centers and the buttons' horizontal centers, at 1:1 scale.
 export const MAX_PLAYERS_ROW_Y = 900;
@@ -30,16 +31,8 @@ export function drawSettingsPanel(scene, { onMaxPlayersStep, onGraceStep }) {
 // Draws one "label  [-] value [+]" row and returns its value text.
 function drawSettingRow(scene, y, label, onStep) {
   scene.add.text(LABEL_X, y, label, { ...TEXT_STYLE, fontSize: '36px', color: '#9aa4bf' }).setOrigin(0, 0.5);
-  drawButton(scene, MINUS_BUTTON_X, y, '-', () => onStep(-1));
-  drawButton(scene, PLUS_BUTTON_X, y, '+', () => onStep(1));
+  const size = { width: BUTTON_SIZE, height: BUTTON_SIZE, fontSize: 48 };
+  drawButton(scene, MINUS_BUTTON_X, y, { ...size, label: '-', onClick: () => onStep(-1) });
+  drawButton(scene, PLUS_BUTTON_X, y, { ...size, label: '+', onClick: () => onStep(1) });
   return scene.add.text(VALUE_X, y, '', { ...TEXT_STYLE, fontSize: '40px' }).setOrigin(0.5);
-}
-
-function drawButton(scene, x, y, label, onClick) {
-  const background = scene.add.rectangle(x, y, BUTTON_SIZE, BUTTON_SIZE, 0x2a3145).setInteractive({ useHandCursor: true });
-  scene.add.text(x, y, label, { ...TEXT_STYLE, fontSize: '48px' }).setOrigin(0.5);
-  // pointerup, not pointerdown, so a touch that slides off the button does not count, as with normal buttons.
-  background.on('pointerup', onClick);
-  background.on('pointerover', () => background.setFillColor(0x3a4258));
-  background.on('pointerout', () => background.setFillColor(0x2a3145));
 }

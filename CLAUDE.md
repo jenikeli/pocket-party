@@ -6,7 +6,7 @@ Project context for Claude Code. Read this first every session, then read `plan.
 
 ## What this is
 
-A local-network party game in the style of Mario Party. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
+A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
 
 ## Supported devices
 
@@ -23,7 +23,7 @@ A local-network party game in the style of Mario Party. Phones are controllers, 
 ```
 
 - **Server** (`server/`): Node.js. Serves static files and relays WebSocket messages between host and controllers. Manages rooms and the player-slot table (id, secret token, connected flag). It contains NO game logic.
-- **Host** (`host/`): runs in the host device's browser. Owns all authoritative game state and game logic. Renders the game with Phaser 3.
+- **Host** (`host/`): runs in the host device's browser. Owns all authoritative game state and game logic, including physics. Renders the shell (lobby) with Phaser 3; each game module brings its own renderer (Phaser, Three.js, ...).
 - **Controller** (`controller/`): plain HTML/JS, mobile-first, no framework. Joins with a room code, sends inputs, shows minimal UI for the current game state.
 - **Shared** (`shared/`): message type definitions and constants used by all three. Single source of truth for the protocol.
 
@@ -57,16 +57,16 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 ## Assets
 
-- The host preloads everything needed for the lobby and the board before it creates a room. The room code is not shown until loading finishes, so nobody can join a half-loaded game. Controllers need almost no assets and load instantly.
-- Minigame assets are lazy-loaded in the background while players are on the board. Before a minigame starts, the host confirms its assets are ready.
-- Prefer sprite atlases, small compressed images, and short audio. Keep the total payload small (target under about 50 MB). Draw as much as possible procedurally (the board track is generated from math, not images).
+- The host preloads everything needed for the lobby before it creates a room. The room code is not shown until loading finishes, so nobody can join a half-loaded game. Controllers need almost no assets and load instantly.
+- Each game's code and assets are lazy-loaded (the chosen game can start loading while players are in the lobby). Before a game starts, the host confirms its assets are ready.
+- Prefer sprite atlases, small compressed images, and short audio. Keep the total payload small (target under about 50 MB). Draw as much as possible procedurally (the stadium track is generated from math, not images).
 - Keep an `assets/manifest.json` listing every asset with a version or hash.
 
 ## Conventions
 
 - Language: JavaScript (ES modules), no TypeScript for now.
 - Keep files small and single-purpose. Prefer plain functions over class hierarchies.
-- Minigames are self-contained modules in `host/minigames/<name>/` with a matching controller UI in `controller/minigames/<name>/`, implementing the interface documented in `plan.md`.
+- Games (the 2D and 3D kart races) are self-contained modules in `host/games/<id>/` with a matching controller UI in `controller/games/<id>/`, implementing the "Game module interface" in `plan.md`. The shell never imports a game directly, only through the registry `host/games/index.js`.
 - Comment the *why* for anything non-obvious, especially networking, reconnection, and sensor logic.
 
 ## Readability (I must be able to read and change any file myself)
@@ -119,7 +119,7 @@ Every behaviour that has been built must stay working as the code changes. Autom
 ### Still needs a real device (and why)
 
 - **Real touch:** browser tests drag with mouse-generated pointer events. Real fingers, multi-touch, and iOS edge-swipe gestures stealing the touch (`pointercancel`) only happen on a phone.
-- **Closing a tab frees the slot:** a headless page close kills the socket by itself, so it cannot prove the controller's `pagehide` handler is needed or works. Real Chrome kept the socket open after the tab closed until the handler was added.
+- **Closing a tab shows "waiting to reconnect" at once:** a headless page close kills the socket by itself, so it cannot prove the controller's `pagehide` handler is needed or works. Real Chrome kept the socket open after the tab closed until the handler was added. (Since M4 a closed tab keeps its slot for the grace period, because a reload looks the same.)
 - **Real Safari:** WebKit in Playwright is Safari's engine, not Safari itself (no iOS UI, no real viewport bars, no `100dvh` behaviour while the address bar animates).
 - **Secure context and certificates:** tests load from `127.0.0.1`, which browsers always treat as a secure context, so they say nothing about HTTPS on the LAN, cert warnings, tilt permission or Wake Lock. Those need phones on the LAN IP.
 - **Sensors:** tilt and shake (M3 on) have no real source in a headless browser.

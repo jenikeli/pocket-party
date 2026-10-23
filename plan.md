@@ -4,39 +4,99 @@ Build plan for the phone-controller party game. Work through milestones in order
 
 ## Goal
 
-A Mario Party-style game for 2-9 players. A host display shows a board and minigames. Players use their own phones (iOS or Android) as controllers. The host can be any device with a browser. Start with a small, fun core (a circular stadium board plus 3 minigames that showcase tap, swipe, and tilt) and grow from there.
+A Mario Kart-style racing game for 2-9 players. A host display shows the race, and players steer with their own phones (iOS or Android) as controllers. The host can be any device with a browser. Two games are planned, both chosen from the lobby: first a **2D kart race** around a stadium track (top-down, the whole track on one screen), which is the first real game and tests the framework, then a **3D kart race** with hills and jumps and split screen. They are separate games: the 3D race is not built on the 2D one. The M3 input lab stays as a developer tool in the same game list. No other games or minigames are planned.
 
 ## Decisions already made
 
 - Controllers: Android Chrome, and iOS Safari or Chrome (iPhone and iPad), all verified in the spike with a self-signed cert that includes `extendedKeyUsage=serverAuth` and `keyUsage` (see `docs/spike-findings.md`). Host: Windows, Mac, iOS, or Android browser.
-- Host rendering and game logic: Phaser 3 (2D), 1920x1080 logical size, `FIT` scaling.
+- Host rendering and game logic: Phaser 3 (2D), 1920x1080 logical size, `FIT` scaling, for the shell (lobby) and the 2D kart race. A game module may bring its own renderer (for example Three.js for a 3D kart game) inside the container the shell gives it, so the game framework never assumes Phaser (decided before M5).
+- The host does the heavy lifting: rendering, physics and game rules all run on the host device. The server stays a relay; controllers send input and show what the host tells them.
+- Games are plug-in modules, decoupled from the shell. The shell (room, roster, lobby, join and reconnection) knows nothing about any one game; it loads a game module by id and runs it through one contract (see "Game module interface"). Each game owns everything from its own setup screen to its own results. The contract is designed for the 3D kart race from the start, so that it does not have to be rebuilt after the 2D race (decided before M5).
 - Server: Node + `ws`, relay only. Dev on my Linux home server, production on a spare non-rooted Android phone running Node in Termux. The same code and the same `npm start` must work on both. Node is v26.3.1 on the phone; pin the same major version on the dev box via `engines` and `.nvmrc`.
 - Network: the Android phone runs a hotspot and all game devices join it. Observed on my phone: the hotspot interface is `swlan0` at `10.60.55.71` and the address stayed the same after toggling the hotspot, but changed after a phone restart, so never assume a fixed IP. The phone may also be on home Wi-Fi at the same time (`wlan0`), so the server answers on several addresses.
 - Transport: WebSockets. HTTPS/WSS is required for tilt and Wake Lock, so it is a real milestone (M2), not an afterthought.
 - Reconnection: playerId + secret token in `localStorage`. The host holds a disconnected player's slot for a grace period (default 30 seconds, configurable in the lobby; it was 2 minutes until the M4 device run), because phones often drop their socket when the screen locks and the OS, not our code, decides that.
 - Host is authoritative for game state.
 - Inputs to explore first: tap, swipe, tilt.
-- Up to 9 players (`MAX_PLAYERS` in `shared/protocol.js` is the hard ceiling; the host's lobby setting picks the limit for each game). The phone's hotspot accepts 10 clients and the host display is one of them (see `docs/spike-findings.md`). With many players, board turns get long and the screen gets crowded, so M6 and the minigames must lay out and pace for 9, not 6.
+- Kart controls: the phone is held in landscape like a Nintendo Switch controller: steering on the left, buttons on the right. Each player picks their own control style on their phone, as in Mario Kart: steering by tilt or by an on-screen stick, and auto-accelerate on or off (decided before M5).
+- Up to 9 players (`MAX_PLAYERS` in `shared/protocol.js` is the hard ceiling; the host's lobby setting picks the limit for each game). The phone's hotspot accepts 10 clients and the host display is one of them (see `docs/spike-findings.md`). Each game also sets its own maximum: the 2D race takes 9, the 3D race 4 (split screen; see M6).
 - Automated tests guard every behaviour that has been built, so later changes cannot silently break earlier milestones (see "Testing" in `CLAUDE.md`). Real-device checks are kept for what automation cannot see.
 
-## Board design
+## 2D kart race design
 
-A generic circular **stadium track**: a closed loop made of two straights joined by two semicircular ends, like an athletics track.
+Decided before M5, to be refined in M5b and M5c; record changes in its notes.
 
-- 28 spaces total: 8 on each straight, 6 on each curve. The track is generated procedurally from a function `trackPoint(index) -> {x, y}`, so it needs no art assets and scales to any screen.
-- Players are colored tokens that move along the loop in one direction. Passing the start/finish line gives +5 coins.
-- Space types: **coin** (+3), **penalty** (-3), **minigame trigger**, **bonus** (swap coins with a random player, or gain a mystery reward), and **start/finish**.
-- Turn: the active player rolls a die from their controller (a tap, or a shake or flick once tilt works), the token animates along the track, and the space resolves.
-- A round ends when all players have moved. Then everyone plays a minigame, and the result awards coins.
-- The game lasts 8 rounds. Most coins wins.
+- **Track:** a stadium-shaped circuit (two straights joined by two semicircular ends, like an athletics track), seen from above, the whole track on one screen, flat. It is generated from math, not images: the road is every point whose distance from a centre line segment lies between an inner and an outer radius. That one rule gives the walls, "am I on the road", and "how far round the lap am I" as plain maths that can be unit tested.
+- **Karts:** up to 9, one per player in the roster colour, on a start grid behind the line. Karts bump into each other.
+- **Physics:** simple hand-written top-down arcade physics, no library: speed, heading, grip, walls that slow and push back, kart-to-kart bumps. Stepped at the fixed 60 Hz. Written for this game only; the 3D race has its own.
+- **Race:** a countdown, then the chosen number of laps. A lap counts only after passing a checkpoint halfway round, so driving backwards over the line does nothing. Places follow finish order; after the first kart finishes, the rest get a time limit, then are ranked by how far round they got.
+- **Not in the first version:** items, drifting, other tracks.
 
-## Minigame interface
+## Kart controller (both races)
 
-Host side:
+- **Landscape, Switch style.** Left side: steering (an on-screen stick, or the phone itself tilted like a wheel). Right side: accelerate and brake buttons (held: press and release are separate inputs).
+- **Per-player control style**, chosen on the phone in the game's setup screen and changeable there before every race: steering tilt or stick, auto-accelerate on or off. With auto-accelerate the accelerate button is hidden and the kart drives unless braking.
+- **Portrait warning.** A web page cannot lock the screen orientation on iOS (the Screen Orientation lock needs fullscreen, which iPhone Safari does not support), so a phone held upright shows "Turn your phone sideways" instead of the controls.
+- **Tilt in landscape** reads a different axis from M3's portrait tilt, and flips sign between the two landscape directions. M5c must handle both and check them on a real iPhone and Android (headless browsers have no sensor).
+- **Phone shows:** the countdown, lap x of N, current place, final place.
+- Both races should use the same controller module if their controls end up the same (decided when M7 starts; one module, not a copy).
+
+## Game settings
+
+Two kinds of settings, handled in two places:
+
+- **Room settings** stay in the shell's lobby on the host screen: max players, grace period, and which game to play. Changing game reloads nothing; the lobby only checks the game's player range (`minPlayers`, `maxPlayers` from the registry). Start is disabled with a message if too many players are present for the chosen game (for example 5 players and the 3D race).
+- **Game settings** belong to the game and are set inside it, after "Start game", on the game's own setup screen, as in Mario Kart:
+  - *Race settings* (for now only the number of laps; later perhaps the track) on the host screen, clicked like the lobby settings (`host/buttons.js`). One set for everyone, controlled only by the host (decided before M5).
+  - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onInput` as steering. The game shows who has chosen and is ready.
+  - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept) or "Back to lobby".
+- So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it goes back to the lobby; saving them between games (localStorage on the host) can be added later if it gets annoying.
+
+Rejected: putting game settings in the lobby. The lobby would have to draw settings that each game defines, which means a settings description language in the game contract; and per-player control choices do not fit a host screen anyway.
+
+## Game module interface
+
+Replaces the earlier minigame interface (`{ id, assets, init, onInput, update, isDone, results }`), which assumed a 2D game updated once per render frame. Written before M5 and expected to be refined while M5 builds it; record any change in the M5 notes.
+
+"Game" means anything the shell can run: the 2D kart race, the 3D kart race, and the input lab (developer tool). Each game lives in two folders: `host/games/<id>/` and `controller/games/<id>/`. A registry, `host/games/index.js`, lists the ids and titles and loads each module with a dynamic `import()`, so a game's code is fetched only when it is needed. That is the browser's own module loading, so it needs no bundler.
+
+Host side (`host/games/<id>/index.js`), shape to start from:
 ```
-{ id, assets, init(players), onInput(playerId, input), update(dt), isDone(), results() }
+{
+  id, title, minPlayers, maxPlayers,   (also listed in the registry, so the lobby can check them without loading)
+  load()                      -> Promise. Fetch and decode assets. The shell may call it early (while players
+                                 are in the lobby) and always awaits it before start().
+  start({ container, players, setControllerView })
+                              -> Build the game. container is an empty full-screen element the game renders into
+                                 with whatever it likes. players is the shell's roster (read-only; the connected
+                                 flag is live). setControllerView(playerId, view) changes what that phone shows.
+  onInput(playerId, input, sentAt)
+  step(dt)                    -> Advance the rules by exactly dt (fixed, 1/60 s). No DOM, no rendering.
+  render(alpha)               -> Draw. Called once per animation frame; alpha (0..1) is how far time has got
+                                 between the last two steps, for smooth drawing on 120 Hz screens.
+  onPlayerLeft(playerId)      -> A player was removed mid-game (kicked, left, grace period over).
+  isDone()                    -> true when the game wants to go back to the lobby ("Back to lobby" after a race).
+                                 The game draws its own setup, countdown and results screens; the shell has none.
+  stop()                      -> Free everything: WebGL context, listeners, timers.
+}
 ```
-Each minigame also has a controller UI module that shows the right controls and tells the controller which input type to start.
+
+Rules that keep complex games affordable:
+- **Fixed timestep.** The shell's runner (`host/game-runner.js`) owns the frame loop: each animation frame it adds the real elapsed time to an accumulator, calls `step(1/60)` as many times as fits, then calls `render(alpha)`. So a game behaves the same at 30, 60 and 120 fps, and physics stays stable. The step-counting maths is a plain module with unit tests.
+- **Rules apart from drawing.** Each game keeps its rules (state, `step`, input handling, results, physics) in DOM-free modules that run in Node, unit-tested like `host/lobby-rules.js`. The renderer only reads that state.
+- **State as plain data.** The game state is plain objects and numbers (no class instances, no references to renderer objects), so it can be copied, sent and compared. That costs nothing now and keeps two later ideas open: phones or a second screen drawing their own view from state the host sends, and resuming a game after the host tab reloads (see "Later ideas").
+- **The game owns its renderer.** While a game runs, the shell puts its own Phaser game to sleep and hides its canvas, so an iPad never runs two render loops or holds two busy WebGL contexts, and wakes it when the game stops. The game creates its renderer in `start()` and destroys it in `stop()` (iOS limits how many WebGL contexts a page may hold).
+- **Controller view is state, not events.** `setControllerView(playerId, view)` stores a small game-defined object per player and sends it in `CONTROLLER_STATE` (with the game id). Because it is state, a rejoining phone gets it again through the M4 path with no extra code. One-shot cues (a vibration when hit, "lap 2!") get their own message type when a game first needs one.
+- **Input stays `INPUT`.** Controllers keep sending `INPUT` with kinds from `INPUT_KINDS`, for steering and for menu choices alike (kind `choice`, see "Game settings"). A game that steers continuously (the kart) keeps the latest input per player and reads it in `step`, instead of acting on each message. Kinds are added to `INPUT_KINDS` when a game needs them (the kart likely needs a held button: press and release). When a player disconnects, the game must treat their input as neutral (no steering, no throttle), or their kart keeps doing whatever the last message said.
+
+Controller side (`controller/games/<id>/index.js`), loaded by dynamic `import()` when `CONTROLLER_STATE` names a game:
+```
+start(container, sendInput)   -> Build the controls and start the input modules from controller/inputs/.
+showView(view)                -> Show what the host sent with setControllerView.
+stop()
+```
+
+Flow: lobby (the host picks a game) -> "Start game" -> loading (await `load()`) -> the game: its setup screen -> race -> results -> "Race again" or "Back to lobby" -> back to the lobby, with the same room code and players, and the room open again to new players. The shell also shows an "End game" button (two clicks, like "Close room") during any game, for the input lab, which never ends by itself, and as a way out of any game.
 
 ## Pre-build spike (I run this myself before M0)
 
@@ -130,38 +190,76 @@ Notes (M4 done): Automated tests pass (unit, server, browser). Real-device check
 
 Notes (M4 follow-up, after the first device run): Device run passed (lobby, locked screens, Wi-Fi toggle, grace expiry, max players, host Wake Lock). Locked Android kept its socket for about 2 minutes, an iPhone lost it within about 5 s; the heartbeat only cuts sockets that stop answering, so Android was really still connected. Changes asked for: the host starts the game with a "Start game" button, enabled only when `canStartGame` is true (the 3 s auto countdown is gone). Once the game starts the room is closed to new players: `room.setScreen()` sends `SET_ROOM_OPEN` (open only on the lobby screen), and the server refuses new `JOIN`s with `GAME_IN_PROGRESS` (the phone stays on the join screen with "That game has already started.") but still takes rejoins. There is no way back to the lobby (a "Back to lobby" button was tried and dropped at the user's request); M6 decides what happens after a game ends. The host can remove any player, connected or waiting, in the lobby and the game (two-click "Remove" / "Sure?" buttons, `host/buttons.js`) with `KICK_PLAYER`; the server sends that phone `KICKED`, closes it, frees the slot and answers `PLAYER_LEFT`. "Close room" (lobby and game, two clicks, `drawCloseRoomButton` in `host/buttons.js`) closes the host's socket, so the server deletes the room and phones get the usual `ROOM_CLOSED`; the host shows "Room closed" with "Open a new room" (reload). Phones can "Leave game" (lobby, game, and next to "Tap to reconnect"): `LEAVE` frees the slot at once with `PLAYER_LEFT` and no reconnect attempt; leaving while the socket is down ends it on the phone at once, and `controller/background-leave.js` delivers `LEAVE { roomCode, playerId, token }` as the first message of a new socket, retrying every 2 s (up to 8 tries) until the server answers `LEFT`; the server checks the token as for a rejoin (`leaveWithToken` in `server/leaving.js`). If the network never comes back, the grace period frees the slot. The controller writes the room code into the URL (`history.replaceState`) after every `JOINED`, so a reload never meets a stale `?room=`, and clears it from the URL and the field when the room is gone (`NO_SUCH_ROOM`, `ROOM_CLOSED`). Grace period default is now 30 s (range still 0:30-10:00). Server slot freeing moved to `server/leaving.js` (grace over, kick, leave). Browser tests click the host's buttons through `test/helpers/host-buttons.js` (layout constants copied there). Real-device note: after editing `server/`, restart `npm run dev`; a stale server ignored `kick_player` and `leave` and let late joiners into the lab. Also fixed: host buttons called `setFillColor`, which Phaser rectangles do not have (`setFillStyle`), so the old -/+ hover highlight threw.
 
-### M5: Minigame framework + first minigame
-- [ ] Host loads and runs a minigame module and collects results
-- [ ] Controller swaps UI when the host announces a minigame
-- [ ] First minigame uses tap: a button-mash race with a countdown
+### M5a: Game framework (input lab moves onto it)
+Builds the "Game module interface" above and proves it on the game that already exists: the input lab stops being a special screen and becomes the first game module (kept as a developer tool). Its existing browser tests then check the framework.
+- [ ] Registry `host/games/index.js` (id, title, min and max players) and dynamic loading; `load()` is awaited before `start()`, and a game that fails to load shows an error and returns to the lobby
+- [ ] `host/game-runner.js`: fixed 60 Hz `step`, `render(alpha)` every frame, `isDone()` check, `stop()`. The accumulator maths in a plain module with unit tests (several steps in one slow frame, none in a fast one, a cap so a long pause such as a backgrounded tab does not run thousands of steps at once)
+- [ ] The shell sleeps its Phaser game and hides its canvas while a game runs, gives the game an empty container, and wakes Phaser afterwards
+- [ ] Protocol: `CONTROLLER_SCREENS.GAME` replaces `INPUT_LAB`; `CONTROLLER_STATE` gains `gameId` and `view`. Rejoining phones get both again
+- [ ] Controller loads `controller/games/<id>/index.js` by dynamic `import()` and calls `start`, `showView`, `stop`
+- [ ] Lobby: choose the game (for now just the input lab); Start checks the game's player range. "End game" during a game returns everyone to the lobby, which reopens the room to new players
+- [ ] Input lab moved to `host/games/input-lab/` and `controller/games/input-lab/`, `host/scenes/input-lab-scene.js` and the `INPUT_LAB` screen removed. M1/M3/M4 browser tests updated only where the way to reach the lab changed
 
-**Done when:** a full minigame plays from countdown to results with all players.
+**Done when:** the input lab starts from the lobby through the framework, works as in M3, ends with "End game" and returns everyone to the lobby, and every existing test passes.
 
-### M6: Board loop
-- [ ] Procedural stadium track (see Board design) with colored tokens
-- [ ] Turn order, dice roll from the controller, animated movement, space effects
-- [ ] After each round, run a minigame and award coins
-- [ ] End screen after the configured number of rounds (default 8) with the winner, plus a rounds setting in the lobby
+### M5b: 2D kart race (the race itself)
+The first real game, with fixed settings (3 laps) and stick steering only. See "2D kart race design" and "Kart controller".
+- [ ] Track geometry (`host/games/kart-2d/track.js`): the stadium shape, on-road test, wall push-back and lap progress, all plain maths with unit tests
+- [ ] Kart physics and race rules (countdown, laps, halfway checkpoint, kart bumps, places, time limit after the first finisher) in DOM-free modules with unit tests that drive whole races with scripted inputs
+- [ ] Rendering with Phaser inside the game's container: track, karts in roster colours, names, lap and place readout, countdown
+- [ ] Landscape Switch-style controller with stick steering and held accelerate and brake buttons; "Turn your phone sideways" in portrait; the phone shows countdown, lap and place
+- [ ] Results screen with places and times, then "Race again" or "Back to lobby"
+- [ ] A disconnected player's kart gets neutral input and stays in the race; when they rejoin they carry on driving
 
-**Done when:** a complete short game runs from lobby to winner.
+**Done when:** 2-9 players race a full race from countdown to results on real phones (iPhone and Android), race again, then go back to the lobby.
 
-### M7: More minigames and polish
-- [ ] A swipe minigame (for example flick to throw or slice)
-- [ ] A tilt minigame (for example balance or steer), designed from the M3 findings
+### M5c: 2D kart race setup screen and control styles
+See "Kart controller" and "Game settings".
+- [ ] Setup screen before every race: laps on the host screen, control style on each phone, ready, then the host starts the race. "Race again" returns here with the settings kept
+- [ ] Control styles: tilt steering (landscape tilt, both landscape directions, "Enable tilt", calibration, stick as the fallback) and auto-accelerate, sent as `INPUT` kind `choice`
+- [ ] A rejoining player keeps their chosen control style
+
+**Done when:** players pick their own control style and the host picks laps, on iPhone and Android, and tilt steering works in both landscape directions.
+
+Notes (decided before M5): M5 was split in three (M5a framework, M5b the race, M5c setup screen and control styles) because the framework is built to fit the 3D race later and the race alone fills a chat. The 2D race draws with Phaser: its own small Phaser game inside the container, drawn from `render()`. M5a checks first that Phaser can be driven by hand (`game.loop.sleep()`, then `game.step(time, delta)` from `render()`); if not, the 2D race keeps Phaser's own loop for drawing, the runner still owns `step`, and the notes say so. The Mario Party board and all minigames were dropped from the plan before M5.
+
+### M6: 3D, physics and split-screen spike (throwaway, like `spike.js`)
+Before building the 3D race, check the host can carry it. Measured facts, not guesses, as for the first spike. Results go in `docs/3d-findings.md`.
+- [ ] Choose and vendor a 3D library (likely Three.js, pinned ESM build in `host/vendor/`) and a physics library that handles hills and jumps (candidates: Rapier, which is WebAssembly and fast, or cannon-es, which is plain JS; a WebAssembly file also needs the server to send it as `application/wasm`); ask before adding anything
+- [ ] A stub game module on the framework: a short 3D track with a hill and a jump, 4 karts driven by the physics library, 4-way split screen (one camera behind each kart)
+- [ ] Measure on the real host devices (iPad first): frame rate with 1, 2 and 4 views, time per physics step with 4 karts, and load time split into network (files from the Termux phone over the hotspot) versus parse and decode on the device. Only the network part would be helped by more caching (see "Later ideas")
+- [ ] Note what the game module interface needed that it did not have, and change it before the 3D race is built
+
+**Done when:** the numbers are in `docs/3d-findings.md` and we know whether 4-player split screen is feasible on the iPad.
+
+Notes (decided before M6): split screen, one view per player, so the 3D race takes at most 4 players for now (each view is drawn separately, so 4 views cost up to 4 times the drawing). If the spike shows the iPad cannot carry it, or more players are wanted later, see "More screens" in "Later ideas".
+
+### M7: 3D kart race
+Its details come from the M6 findings. A second kart game in the lobby's list, 2-4 players, separate from the 2D race (its own rules and physics), with the same setup, ready and results flow as the 2D race.
+- [ ] Host runs the race: rules in DOM-free modules, physics library stepped at the fixed 60 Hz, split-screen 3D rendering in the container
+- [ ] Track with hills and jumps
+- [ ] Controllers use the same Switch-style controller as the 2D race
+- [ ] Only controller-relevant information goes back to phones: lap, place, and one-shot cues such as vibration (a new message type for cues, added then)
+
+### M8: Polish
 - [ ] Sound effects and music (MP3/M4A, small)
 - [ ] Host "Tap to start" screen (unlocks audio, requests fullscreen where supported)
-- [ ] Preload screen with a progress bar; background lazy-loading of minigame assets with a ready check before each one
-- [ ] Disconnect handling during minigames (pause, bot-fill, or forfeit; recommend one)
+- [ ] Loading screen with a progress bar (lazy loading and the ready check already exist from M5a)
+- [ ] Revisit what happens when a player drops mid-race, using the device runs of M5b, M5c and M7 (M5b's choice: the kart keeps its place with neutral input)
 
-### M8: Deploy to Termux
+### M9: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin
 - [ ] Check the hotspot does not auto-switch off when idle
 - [ ] HTTPS working on the phone using the approach chosen in M2
-- [ ] Play a full game on the real setup
+- [ ] Play a full 2D and a full 3D race on the real setup
 - [ ] Document setup in `README.md` (Termux from F-Droid, `pkg update && pkg upgrade`, clone, `npm install`, `npm start`)
 
 ## Later ideas (not now)
 
-- Service worker for a fully cached offline host (possible once HTTPS works)
-- More boards, items, and character selection
-- Spectator view or second screen
+- Service worker for a fully cached offline host (possible once HTTPS works). Only if M6 measurements show that downloading files from the server phone is what makes the host slow; caching does nothing for parse and decode time. Needs your go-ahead (hard constraint 2), and should not bring a build tool (hard constraint 6). Long-lived immutable caching needs content-hashed file names, which without a build step is practical for big assets (models, textures, audio, via `assets/manifest.json`) but not for code, which stays on `no-cache` with 304 revalidation
+- Resume a game after the host tab is refreshed or killed: the host would send periodic state snapshots for the server to keep as an opaque blob. Today a host reload ends the room (new code), so that would have to change first. Storing a blob is not game logic, but it is new server behaviour: ask before building it
+- Items, drifting, more tracks, and character or kart selection
+- More screens for the 3D race, so it can take more than 4 players or give each player a full view. Two options, both needing a new "host -> many" state broadcast in the protocol (today the host only sends per-player `CONTROLLER_STATE`), and both kept open by "State as plain data":
+  - *Each phone draws its own view.* The host still runs the physics and sends a compact state snapshot (positions, rotations) about 20-30 times a second; each phone runs Three.js and smooths between snapshots. The phone is then both screen and controller. Costs: phones need the 3D assets (against "controllers load instantly"), the hotspot carries 9 x 30 snapshots a second, and phones get hot. Tilt steering is awkward while watching the same screen.
+  - *Several host screens.* A second page (for example `/view`) on another device receives the same snapshots and draws, say, players 5-8. Fewer devices, but each needs a big screen.
+- Spectator view

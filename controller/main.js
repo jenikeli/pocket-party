@@ -1,4 +1,4 @@
-// Controller entry point: joins a room, shows the lobby or the input lab as the host says, and shows
+// Controller entry point: joins a room, shows the lobby or the host's current game as the host says, and shows
 // "Reconnecting..." while controller/connection.js gets the player back into their slot.
 // Loaded by controller/index.html.
 
@@ -8,7 +8,7 @@ import { createConnection, ROOM_CLOSED, UNREACHABLE, KICKED, LEFT } from '/contr
 import { saveSession, loadSession, clearSession, saveName, loadName } from '/controller/session-store.js';
 import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
 import { showLobbyState, showConnectedPlaceholder, onReadyChange } from '/controller/lobby-screen.js';
-import { startInputLab, stopInputLab } from '/controller/input-lab.js';
+import { showGame, stopGame } from '/controller/game-screen.js';
 
 const joinScreen = document.getElementById('join-screen');
 const joinForm = document.getElementById('join-form');
@@ -18,8 +18,8 @@ const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
 const lobbyScreen = document.getElementById('lobby-screen');
 const lobbyRoom = document.getElementById('lobby-room');
-const padScreen = document.getElementById('pad-screen');
-const padStatus = document.getElementById('pad-status');
+const gameScreen = document.getElementById('game-screen');
+const gameStatus = document.getElementById('game-status');
 const reconnectOverlay = document.getElementById('reconnect-overlay');
 const reconnectText = document.getElementById('reconnect-text');
 const reconnectButton = document.getElementById('reconnect-button');
@@ -39,15 +39,13 @@ const END_TEXT = {
 // The room no longer exists after these, so its code is cleared from the page and the address bar.
 const ROOM_GONE_REASONS = new Set([JOIN_FAILURE_REASONS.NO_SUCH_ROOM, ROOM_CLOSED]);
 
-let isLabRunning = false;
-
 const connection = createConnection({
   onJoined: (session) => {
     saveSession(session);
     showRoomCodeInUrl(session.roomCode);
     reconnectOverlay.hidden = true;
     lobbyRoom.textContent = `Room ${session.roomCode}`;
-    padStatus.textContent = `In room ${session.roomCode}`;
+    gameStatus.textContent = `In room ${session.roomCode}`;
     // After a rejoin the current screen stays up; the host's CONTROLLER_STATE follows right away either way.
     if (!joinScreen.hidden) {
       showConnectedPlaceholder();
@@ -89,39 +87,25 @@ function handleHostMessage(message) {
     console.warn('Controller ignoring unexpected message:', message);
     return;
   }
-  if (message.screen === CONTROLLER_SCREENS.INPUT_LAB) {
-    showInputLab();
+  if (message.screen === CONTROLLER_SCREENS.GAME) {
+    // After a rejoin the host sends the game again; a game that is still running just gets the view.
+    showScreen(gameScreen);
+    showGame(message.gameId, message.view, (gameMessage) => connection.send(gameMessage));
   } else {
-    stopLab();
+    stopGame();
     showLobbyState(message);
     showScreen(lobbyScreen);
   }
 }
 
-// After a rejoin the host sends the lab screen again; a lab that is still running just carries on.
-function showInputLab() {
-  showScreen(padScreen);
-  if (!isLabRunning) {
-    isLabRunning = true;
-    startInputLab((message) => connection.send(message));
-  }
-}
-
-function stopLab() {
-  if (isLabRunning) {
-    isLabRunning = false;
-    stopInputLab();
-  }
-}
-
 function showScreen(screen) {
-  for (const each of [joinScreen, lobbyScreen, padScreen]) {
+  for (const each of [joinScreen, lobbyScreen, gameScreen]) {
     each.hidden = each !== screen;
   }
 }
 
 function showJoinScreen(statusText) {
-  stopLab();
+  stopGame();
   showScreen(joinScreen);
   joinButton.disabled = false;
   joinStatus.textContent = statusText;

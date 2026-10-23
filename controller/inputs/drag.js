@@ -1,5 +1,5 @@
 // Drag input: turns a finger dragging on a surface into a virtual-stick value { kind: 'drag', x, y }.
-// Used by controller/input-lab.js. Same shape as every input module: start(surface), stop(), onInput(callback).
+// Used by controller/games/input-lab/index.js. Same shape as every input module: start(surface), stop(), onInput(callback).
 //
 // x and y run from -1 to 1: how far the finger is from where it first touched, divided by DRAG_RADIUS_PX.
 // Right and down are positive, matching screen and Phaser coordinates. Lifting the finger sends 0, 0.

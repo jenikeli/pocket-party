@@ -1,12 +1,15 @@
-// Clicks on the host's canvas buttons, for the browser tests. Positions are copied from
-// host/scenes/lobby-scene.js, host/lobby-player-list.js, host/player-card.js and host/scenes/input-lab-scene.js
-// at 1:1 scale (1920x1080 viewport); update them when that layout changes on purpose.
+// Clicks on the host's buttons, for the browser tests. Canvas positions are copied from
+// host/scenes/lobby-scene.js, host/lobby-player-list.js, host/settings-panel.js and
+// host/games/input-lab/player-card.js at 1:1 scale (1920x1080 viewport); update them when that layout changes on
+// purpose. The buttons over a running game (host/game-bar.js) are HTML, so they are clicked by id.
 
 import { waitUntil } from './browser.js';
 
 export const START_BUTTON = { x: 1160, y: 100 };
 export const CLOSE_ROOM_BUTTON = { x: 1190, y: 990 };
-export const GAME_CLOSE_ROOM_BUTTON = { x: 1650, y: 970 };
+export const NEXT_GAME_BUTTON = { x: 810, y: 60 };
+export const GAME_END_BUTTON = '#end-game-button';
+export const GAME_CLOSE_ROOM_BUTTON = '#close-room-button';
 
 // The Remove button on the lobby's row `index` (0-8).
 export function lobbyRemoveButton(index) {
@@ -33,8 +36,10 @@ export async function startGame(hostPage, controllerPage) {
 }
 
 // Clicks a confirm button twice ("Remove", then "Sure?"), with a pause so Phaser sees two separate clicks.
-export async function confirmClick(hostPage, { x, y }) {
-  await hostPage.mouse.click(x, y);
+// `button` is a canvas point { x, y }, or the selector of an HTML button over a running game.
+export async function confirmClick(hostPage, button) {
+  const click = () => (typeof button === 'string' ? hostPage.click(button) : hostPage.mouse.click(button.x, button.y));
+  await click();
   await hostPage.waitForTimeout(300);
-  await hostPage.mouse.click(x, y);
+  await click();
 }

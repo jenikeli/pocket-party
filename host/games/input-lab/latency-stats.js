@@ -1,5 +1,5 @@
 // Latency numbers for the input lab: round-trip time from PING/PONG, and jitter from input timestamps.
-// Used by host/scenes/input-lab-scene.js. Plain functions with no Phaser, so they run in Node tests.
+// Used by host/games/input-lab/index.js. Plain functions with no Phaser, so they run in Node tests.
 
 // Enough round trips (one a second) to smooth over a single slow one without hiding a lasting change.
 const ROUND_TRIP_SAMPLES = 10;

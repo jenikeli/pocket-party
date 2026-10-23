@@ -6,9 +6,11 @@ import { MESSAGE_TYPES, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
 import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
 import { DEFAULT_SETTINGS } from '/host/lobby-rules.js';
+import { GAMES } from '/host/games/index.js';
 
 // Returns the room object. Call connect() once the page has loaded, and setListener(scene) from each scene's
-// create(). The listener needs handleMessage(message, player) and handleConnectionLost(closedByHost).
+// create() (host/game-session.js takes over while a game runs). The listener needs
+// handleMessage(message, player) and handleConnectionLost(closedByHost).
 export function createRoom() {
   let socket = null;
   let listener = null;
@@ -16,19 +18,24 @@ export function createRoom() {
   let closedByHost = false;
   // playerId -> setTimeout id, for players in their grace period.
   const graceTimers = new Map();
+  // playerId -> the view the running game set for that player's controller (see setControllerView).
+  const controllerViews = new Map();
 
   const room = {
     roomCode: null,
     // Map(playerId -> player), see host/roster.js.
     players: new Map(),
-    settings: { ...DEFAULT_SETTINGS },
-    // What every controller is showing; scenes change it with setScreen().
+    // gameId is the game the lobby has chosen.
+    settings: { ...DEFAULT_SETTINGS, gameId: GAMES[0].id },
+    // What every controller is showing, and on the GAME screen which game; changed with setScreen().
     screen: CONTROLLER_SCREENS.LOBBY,
+    gameId: null,
     connect,
     setListener: (newListener) => (listener = newListener),
     send: (message) => socket.send(message),
     sendControllerState,
     setScreen,
+    setControllerView,
     setMaxPlayers,
     kickPlayer,
     close,
@@ -81,6 +88,7 @@ export function createRoom() {
         if (player) {
           endGracePeriod(player);
           room.players.delete(player.playerId);
+          controllerViews.delete(player.playerId);
         }
         break;
       case MESSAGE_TYPES.PLAYER_NAME:
@@ -134,18 +142,37 @@ export function createRoom() {
       name: displayName(player),
       color: colorText(player),
       ready: player.ready,
+      gameId: room.gameId,
+      view: controllerViews.get(player.playerId) ?? null,
     });
   }
 
   // Disconnected players are skipped: they get the current screen when they rejoin. The room takes new players
   // only in the lobby: someone joining mid-game would have no place in it, so the server turns them away.
-  function setScreen(screen) {
+  // `gameId` is the running game on the GAME screen, null for the lobby. Views belong to one game run, so a
+  // new screen starts with none.
+  function setScreen(screen, gameId = null) {
     room.screen = screen;
+    room.gameId = gameId;
+    controllerViews.clear();
     socket.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open: screen === CONTROLLER_SCREENS.LOBBY });
     for (const player of room.players.values()) {
       if (player.connected) {
         sendControllerState(player);
       }
+    }
+  }
+
+  // The running game changes what one phone shows. The view is kept, so a phone that rejoins later gets it
+  // again with the rest of its CONTROLLER_STATE, without the game doing anything.
+  function setControllerView(playerId, view) {
+    const player = room.players.get(playerId);
+    if (!player) {
+      return;
+    }
+    controllerViews.set(playerId, view);
+    if (player.connected) {
+      sendControllerState(player);
     }
   }
 

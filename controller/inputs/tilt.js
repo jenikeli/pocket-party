@@ -1,5 +1,5 @@
 // Tilt input: turns how the phone is tilted into a stick value { kind: 'tilt', x, y }, each from -1 to 1.
-// Used by controller/input-lab.js. Same shape as every input module (start, stop, onInput), plus
+// Used by controller/games/input-lab/index.js. Same shape as every input module (start, stop, onInput), plus
 // requestAccess() and calibrate(), which only tilt needs.
 //
 // Think of a ball on the screen: tilt the right edge down and x goes positive; tip the top edge away from you

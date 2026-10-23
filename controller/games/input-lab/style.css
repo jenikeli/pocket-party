@@ -1,0 +1,91 @@
+/* Input lab controls on the phone. Loaded by controller/game-screen.js before the lab starts. */
+
+#pad-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+#mode-tabs button {
+  font-size: 18px;
+  padding: 12px 4px;
+  background: #2a3145;
+}
+
+#mode-tabs button[aria-pressed="true"] {
+  background: #3498db;
+}
+
+#lab-notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #5a3a12;
+  color: #ffd79a;
+}
+
+#input-pad {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border-radius: 24px;
+  background: #1c2130;
+  color: #9aa4bf;
+}
+
+/* A short glow on each tap or swipe, so the player sees every one register. */
+#input-pad.flash {
+  animation: pad-flash 150ms ease-out;
+}
+
+@keyframes pad-flash {
+  from { background: #34405e; }
+  to { background: #1c2130; }
+}
+
+#input-pad button {
+  font-size: 24px;
+}
+
+#big-readout {
+  margin: 0;
+  font-size: 96px;
+  color: #ffffff;
+}
+
+#pad-hint {
+  margin: 0;
+}
+
+#stick-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+  border: 3px solid #3a4258;
+  border-radius: 50%;
+}
+
+#stick-knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #3498db;
+}
+
+#readout {
+  margin: 0;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}

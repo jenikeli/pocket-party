@@ -1,10 +1,11 @@
 // One player's card in the host's input lab: who it is, which phone and input, a live picture of the input,
-// and the numbers (rate, round trip, jitter, raw value). Used by host/scenes/input-lab-scene.js.
+// and the numbers (rate, round trip, jitter, raw value). Used by host/games/input-lab/index.js.
 
 import { INPUT_KINDS } from '/shared/protocol.js';
 import { drawConfirmButton } from '/host/buttons.js';
 
-// Cards sit in a 3x3 grid (MAX_PLAYERS is 9) in the 1380 px left of the join panel.
+// Cards sit in a 3x3 grid (MAX_PLAYERS is 9) in the left 1380 px; the lab's title and the shell's game buttons
+// use the rest.
 export const CARD_WIDTH = 440;
 export const CARD_HEIGHT = 340;
 export const CARD_GAP = 15;
@@ -100,7 +101,7 @@ export function createPlayerCard(scene, slotIndex, color, colorText, onRemove) {
     }
   }
 
-  // rate in Hz; roundTrip is { last, average, max } or null; jitter in ms or null (see host/latency-stats.js).
+  // rate in Hz; roundTrip is { last, average, max } or null; jitter in ms or null (see latency-stats.js).
   function showStats({ rate, roundTrip, jitter }) {
     const milliseconds = (value) => (value === null || value === undefined ? '-' : `${value} ms`);
     const lines = [

@@ -1,5 +1,5 @@
 // Swipe input: a quick flick on the surface sends { kind: 'swipe', direction, x, y, speed } when the finger lifts.
-// Used by controller/input-lab.js. Same shape as every input module: start(surface), stop(), onInput(callback).
+// Used by controller/games/input-lab/index.js. Same shape as every input module: start(surface), stop(), onInput(callback).
 //
 // direction is 'up', 'down', 'left' or 'right' (whichever axis moved most). x and y are the flick's direction
 // as a unit vector (right and down positive). speed is in surface sizes per second (the surface's shorter

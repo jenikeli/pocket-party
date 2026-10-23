@@ -1,5 +1,5 @@
 // The right-hand join panel on the host: QR code, room code, join link and player count.
-// Used by host/scenes/lobby-scene.js and host/scenes/input-lab-scene.js.
+// Used by host/scenes/lobby-scene.js.
 
 import { drawQrCode } from '/host/qr-code.js';
 

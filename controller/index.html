@@ -1,4 +1,4 @@
-<!-- Controller page (/): what each player opens on their phone. Join screen, then the lobby, then the input lab. -->
+<!-- Controller page (/): what each player opens on their phone. Join screen, then the lobby, then the game. -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -32,31 +32,14 @@
     <button type="button" class="leave-button">Leave game</button>
   </main>
 
-  <!-- The input lab: pick an input with the tabs, try it on the pad, and read what is being sent below. -->
-  <main id="pad-screen" hidden>
-    <div id="pad-top">
-      <p id="pad-status"></p>
+  <!-- A running game: the room line and Leave are the shell's; the game builds its controls in #game-container
+       (controller/game-screen.js loads controller/games/<id>/). -->
+  <main id="game-screen" hidden>
+    <div id="game-top">
+      <p id="game-status"></p>
       <button type="button" class="leave-button">Leave</button>
     </div>
-    <nav id="mode-tabs">
-      <button type="button" data-mode="drag">Drag</button>
-      <button type="button" data-mode="tap">Tap</button>
-      <button type="button" data-mode="swipe">Swipe</button>
-      <button type="button" data-mode="tilt">Tilt</button>
-    </nav>
-    <p id="lab-notice" hidden></p>
-    <div id="input-pad">
-      <div id="stick-ring"><div id="stick-knob"></div></div>
-      <p id="big-readout"></p>
-      <button type="button" id="enable-tilt-button">Enable tilt</button>
-      <button type="button" id="calibrate-button">Set zero</button>
-      <p id="pad-hint"></p>
-    </div>
-    <dl id="readout">
-      <dt>Sending</dt><dd id="readout-value">-</dd>
-      <dt>Rate</dt><dd id="readout-rate">0 Hz</dd>
-      <dt>Tilt sensor</dt><dd id="readout-tilt">not enabled</dd>
-    </dl>
+    <div id="game-container"></div>
   </main>
   <!-- Covers every screen while the phone gets its slot back after a drop. -->
   <div id="reconnect-overlay" hidden>

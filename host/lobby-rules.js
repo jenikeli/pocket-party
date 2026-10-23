@@ -1,8 +1,9 @@
-// The lobby's rules: the game settings and their limits, and when the game may start.
+// The lobby's rules: the room settings and their limits, and when the chosen game may start.
 // Plain functions (no Phaser, no DOM), so they can be unit tested. Used by host/room.js and the lobby scene.
 
 import { MAX_PLAYERS } from '../shared/protocol.js';
 
+// The lowest the max players setting goes. Each game has its own minimum too (host/games/index.js).
 export const MIN_PLAYERS = 2;
 
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -28,18 +29,26 @@ export function stepGraceSeconds(graceSeconds, step) {
   return Math.min(Math.max(next, MIN_GRACE_SECONDS), MAX_GRACE_SECONDS);
 }
 
-// The game starts once enough players are in and every one of them is connected and ready. A player in their
-// grace period holds the start up, because starting without them would leave them out of the game.
-export function canStartGame(players) {
+// The game starts once the number of players fits the chosen game (`game` is its registry entry from
+// host/games/index.js: { title, minPlayers, maxPlayers }) and every player is connected and ready. A player in
+// their grace period holds the start up, because starting without them would leave them out of the game.
+export function canStartGame(players, game) {
   const all = [...players.values()];
-  return all.length >= MIN_PLAYERS && all.every((player) => player.connected && player.ready);
+  return (
+    all.length >= game.minPlayers &&
+    all.length <= game.maxPlayers &&
+    all.every((player) => player.connected && player.ready)
+  );
 }
 
 // One line for the lobby saying what the game is waiting for.
-export function describeWaitingFor(players) {
+export function describeWaitingFor(players, game) {
   const all = [...players.values()];
-  if (all.length < MIN_PLAYERS) {
-    return `Waiting for players (at least ${MIN_PLAYERS})`;
+  if (all.length < game.minPlayers) {
+    return `Waiting for players (at least ${game.minPlayers})`;
+  }
+  if (all.length > game.maxPlayers) {
+    return `${game.title} takes at most ${game.maxPlayers} players`;
   }
   if (all.some((player) => !player.connected)) {
     return 'Waiting for a player to reconnect';

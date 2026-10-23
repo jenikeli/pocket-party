@@ -216,7 +216,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-m4-3-host-all-ready`);
       await startGame(hostPage, ana.page);
       await bo.page.waitForSelector('#pad-screen:not([hidden])');
-      assert.equal(await ana.page.textContent('#pad-status'), `In room ${roomCode}`);
+      assert.equal(await ana.page.textContent('#game-status'), `In room ${roomCode}`);
       await saveScreenshot(hostPage, `${name}-m4-3-host-lab`);
     });
 

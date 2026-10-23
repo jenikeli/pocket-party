@@ -1,5 +1,5 @@
-// The controller side of the input lab (M3): mode tabs, the input pad, the tilt permission flow, and a live
-// readout of what is being sent. Used by controller/main.js once the player has joined a room.
+// The controller side of the input lab (M3), a game module: mode tabs, the input pad, the tilt permission flow,
+// and a live readout of what is being sent. Loaded and started by controller/game-screen.js.
 
 import { MESSAGE_TYPES, INPUT_KINDS, INPUT_FALLBACK_REASONS } from '/shared/protocol.js';
 import { createRateMeter } from '/shared/rate-meter.js';
@@ -7,6 +7,7 @@ import * as dragInput from '/controller/inputs/drag.js';
 import * as tapInput from '/controller/inputs/tap.js';
 import * as swipeInput from '/controller/inputs/swipe.js';
 import * as tiltInput from '/controller/inputs/tilt.js';
+import { MARKUP } from '/controller/games/input-lab/markup.js';
 
 const INPUT_MODULES = {
   [INPUT_KINDS.DRAG]: dragInput,
@@ -34,38 +35,53 @@ const SWIPE_ARROWS = { up: '↑', down: '↓', left: '←', right: '→' };
 const KNOB_TRAVEL_PX = 60;
 const RATE_REFRESH_MS = 250;
 
-const modeTabs = document.getElementById('mode-tabs');
-const labNotice = document.getElementById('lab-notice');
-const inputPad = document.getElementById('input-pad');
-const stickRing = document.getElementById('stick-ring');
-const stickKnob = document.getElementById('stick-knob');
-const bigReadout = document.getElementById('big-readout');
-const enableTiltButton = document.getElementById('enable-tilt-button');
-const calibrateButton = document.getElementById('calibrate-button');
-const padHint = document.getElementById('pad-hint');
-const readoutValue = document.getElementById('readout-value');
-const readoutRate = document.getElementById('readout-rate');
-const readoutTilt = document.getElementById('readout-tilt');
+// The page elements, looked up by start() once MARKUP is in place.
+let modeTabs, labNotice, inputPad, stickRing, stickKnob, bigReadout;
+let enableTiltButton, calibrateButton, padHint, readoutValue, readoutRate, readoutTilt;
 
-let sendMessage = null; // set by startInputLab
+let sendMessage = null; // set by start
 let currentMode = null;
 let tapCount = 0;
 let rateMeter = createRateMeter();
 let rateTimer = null;
 
 // Starts on drag, the input M1 already had. `send` sends one message to the server.
-export function startInputLab(send) {
+export function start(container, send) {
+  container.innerHTML = MARKUP;
+  findElements();
+  modeTabs.addEventListener('click', onModeTabClick);
+  enableTiltButton.addEventListener('click', enableTilt);
+  calibrateButton.addEventListener('click', () => tiltInput.calibrate());
   sendMessage = send;
   rateMeter = createRateMeter();
   rateTimer = setInterval(showRate, RATE_REFRESH_MS);
   switchMode(INPUT_KINDS.DRAG);
 }
 
-export function stopInputLab() {
+// The host sends no view for the lab: everything the phone shows is its own.
+export function showView() {}
+
+// The shell empties the container afterwards, which takes the elements and their listeners with it.
+export function stop() {
   INPUT_MODULES[currentMode]?.stop();
   currentMode = null;
   clearInterval(rateTimer);
-  moveKnob(0, 0);
+}
+
+function findElements() {
+  const byId = (id) => document.getElementById(id);
+  modeTabs = byId('mode-tabs');
+  labNotice = byId('lab-notice');
+  inputPad = byId('input-pad');
+  stickRing = byId('stick-ring');
+  stickKnob = byId('stick-knob');
+  bigReadout = byId('big-readout');
+  enableTiltButton = byId('enable-tilt-button');
+  calibrateButton = byId('calibrate-button');
+  padHint = byId('pad-hint');
+  readoutValue = byId('readout-value');
+  readoutRate = byId('readout-rate');
+  readoutTilt = byId('readout-tilt');
 }
 
 // `fallback` is { fallbackFrom, reason } when we land here because another input could not start.
@@ -177,7 +193,7 @@ function showNotice(text) {
   labNotice.hidden = false;
 }
 
-modeTabs.addEventListener('click', (event) => {
+function onModeTabClick(event) {
   const mode = event.target.closest('button')?.dataset.mode;
   if (mode && mode !== currentMode) {
     labNotice.hidden = true;
@@ -186,9 +202,7 @@ modeTabs.addEventListener('click', (event) => {
     }
     switchMode(mode);
   }
-});
-enableTiltButton.addEventListener('click', enableTilt);
-calibrateButton.addEventListener('click', () => tiltInput.calibrate());
+}
 
 for (const module of Object.values(INPUT_MODULES)) {
   module.onInput(sendInput);

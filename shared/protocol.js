@@ -88,9 +88,11 @@ export const MESSAGE_TYPES = Object.freeze({
   // server -> host: the same plus { playerId }. The host decides, and answers with CONTROLLER_STATE.
   SET_READY: 'set_ready',
 
-  // host -> server: { playerId, screen, name, color, ready }. Everything that player's controller shows:
-  // screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c'.
-  // The host sends it on join, rejoin and whenever any of it changes.
+  // host -> server: { playerId, screen, name, color, ready, gameId, view }. Everything that player's controller
+  // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c'.
+  // On the GAME screen, gameId names the game (the controller loads controller/games/<gameId>/index.js) and
+  // view is whatever small object that game set for this player (null until it sets one); both are null in
+  // the lobby. The host sends it on join, rejoin and whenever any of it changes.
   // server -> controller: the same without playerId.
   CONTROLLER_STATE: 'controller_state',
 
@@ -137,8 +139,8 @@ export const JOIN_FAILURE_REASONS = Object.freeze({
 // What the host tells a controller to show (CONTROLLER_STATE screen).
 export const CONTROLLER_SCREENS = Object.freeze({
   LOBBY: 'lobby',
-  // Stand-in for the game until M5: the M3 input lab.
-  INPUT_LAB: 'input_lab',
+  // A game is running; CONTROLLER_STATE's gameId says which.
+  GAME: 'game',
 });
 
 // What an INPUT carries in input.kind, and what INPUT_MODE carries in mode.

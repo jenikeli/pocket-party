@@ -18,7 +18,7 @@ const CONTROLLER_DEVICES = [
   { name: 'iphone', engine: 'webkit', device: devices['iPhone 13'] },
 ];
 
-// Layout from host/join-panel.js, host/qr-code.js and host/player-card.js, at 1:1 scale (1920x1080 viewport).
+// Layout from host/join-panel.js, host/qr-code.js and host/games/input-lab/player-card.js, at 1:1 scale (1920x1080 viewport).
 const QR_CENTER = { x: 1650, y: 390 };
 const QR_SIZE_PX = 420;
 const QR_QUIET_ZONE_MODULES = 4;
@@ -125,7 +125,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
         await page.click('#ready-button');
       }
       await startGame(hostPage, controllerPage);
-      assert.equal(await controllerPage.textContent('#pad-status'), `In room ${roomCode}`);
+      assert.equal(await controllerPage.textContent('#game-status'), `In room ${roomCode}`);
 
       const dot = await waitUntil(findFirstDot, { message: 'the first player\'s dot on the host' });
       assert.ok(Math.abs(dot.centerX - FIRST_DOT_START.x) < 3, `dot x ${dot.centerX}`);

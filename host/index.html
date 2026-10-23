@@ -1,4 +1,5 @@
-<!-- Host display page (/host): runs the authoritative game and renders it with Phaser. -->
+<!-- Host display page (/host): runs the authoritative game. The shell (lobby) draws with Phaser in #shell;
+     a running game draws in its own container, created by host/game-session.js. -->
 <!doctype html>
 <html lang="en">
 
@@ -15,7 +16,13 @@
       overflow: hidden;
     }
 
-    #game {
+    /* Our display rules below would otherwise beat the browser's default for the hidden attribute. */
+    [hidden] {
+      display: none !important;
+    }
+
+    #shell,
+    #game-container {
       width: 100vw;
       height: 100dvh;
     }
@@ -30,11 +37,38 @@
       color: #5c6680;
       pointer-events: none;
     }
+
+    /* The shell's buttons over a running game, bottom right, where games keep clear. */
+    #game-bar {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      display: flex;
+      gap: 12px;
+    }
+
+    #game-bar button {
+      font: 22px sans-serif;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #2a3145;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    #game-bar button.armed {
+      background: #8e2b22;
+    }
   </style>
 </head>
 
 <body>
-  <div id="game"></div>
+  <div id="shell"></div>
+  <div id="game-bar" hidden>
+    <button type="button" id="end-game-button">End game</button>
+    <button type="button" id="close-room-button">Close room</button>
+  </div>
   <p id="wake-status"></p>
   <script type="module" src="/host/main.js"></script>
 </body>

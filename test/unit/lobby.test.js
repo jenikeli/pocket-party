@@ -102,22 +102,28 @@ test('the grace period steps by 30 seconds between 30 seconds and 10 minutes', (
   assert.equal(stepGraceSeconds(600, 1), 600);
 });
 
-test('the game starts only with enough players, all connected and ready', () => {
-  assert.equal(canStartGame(rosterOf()), false);
-  assert.equal(canStartGame(rosterOf(true)), false);
-  assert.equal(canStartGame(rosterOf(true, false)), false);
-  assert.equal(canStartGame(rosterOf(true, true)), true);
+// A registry entry like those in host/games/index.js, which the unit tests cannot import (it uses browser paths).
+const TWO_TO_THREE = { id: 'test-game', title: 'Test game', minPlayers: 2, maxPlayers: 3 };
+
+test('the game starts only with a player count in the game\'s range, all connected and ready', () => {
+  assert.equal(canStartGame(rosterOf(), TWO_TO_THREE), false);
+  assert.equal(canStartGame(rosterOf(true), TWO_TO_THREE), false);
+  assert.equal(canStartGame(rosterOf(true, false), TWO_TO_THREE), false);
+  assert.equal(canStartGame(rosterOf(true, true), TWO_TO_THREE), true);
+  assert.equal(canStartGame(rosterOf(true, true, true), TWO_TO_THREE), true);
+  assert.equal(canStartGame(rosterOf(true, true, true, true), TWO_TO_THREE), false);
 
   const withDropped = rosterOf(true, true);
   withDropped.get('p1').connected = false;
-  assert.equal(canStartGame(withDropped), false);
+  assert.equal(canStartGame(withDropped, TWO_TO_THREE), false);
 });
 
 test('the lobby says what it is waiting for', () => {
-  assert.equal(describeWaitingFor(rosterOf(true)), `Waiting for players (at least ${MIN_PLAYERS})`);
-  assert.equal(describeWaitingFor(rosterOf(true, false)), 'Waiting for 1 player to be ready');
-  assert.equal(describeWaitingFor(rosterOf(false, false, true)), 'Waiting for 2 players to be ready');
+  assert.equal(describeWaitingFor(rosterOf(true), TWO_TO_THREE), 'Waiting for players (at least 2)');
+  assert.equal(describeWaitingFor(rosterOf(true, false), TWO_TO_THREE), 'Waiting for 1 player to be ready');
+  assert.equal(describeWaitingFor(rosterOf(false, false, true), TWO_TO_THREE), 'Waiting for 2 players to be ready');
+  assert.equal(describeWaitingFor(rosterOf(true, true, true, true), TWO_TO_THREE), 'Test game takes at most 3 players');
   const withDropped = rosterOf(true, true);
   withDropped.get('p0').connected = false;
-  assert.equal(describeWaitingFor(withDropped), 'Waiting for a player to reconnect');
+  assert.equal(describeWaitingFor(withDropped, TWO_TO_THREE), 'Waiting for a player to reconnect');
 });

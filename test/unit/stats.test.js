@@ -1,9 +1,9 @@
-// Unit tests for the input lab's numbers: shared/rate-meter.js and host/latency-stats.js.
+// Unit tests for the input lab's numbers: shared/rate-meter.js and host/games/input-lab/latency-stats.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRateMeter } from '../../shared/rate-meter.js';
-import { createRoundTripStats, createJitterMeter } from '../../host/latency-stats.js';
+import { createRoundTripStats, createJitterMeter } from '../../host/games/input-lab/latency-stats.js';
 
 test('rate meter counts the events in the last second', () => {
   const meter = createRateMeter();

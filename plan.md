@@ -48,7 +48,7 @@ Two kinds of settings, handled in two places:
 - **Room settings** stay in the shell's lobby on the host screen: max players, grace period, and which game to play. Changing game reloads nothing; the lobby only checks the game's player range (`minPlayers`, `maxPlayers` from the registry). Start is disabled with a message if too many players are present for the chosen game (for example 5 players and the 3D race).
 - **Game settings** belong to the game and are set inside it, after "Start game", on the game's own setup screen, as in Mario Kart:
   - *Race settings* (for now only the number of laps; later perhaps the track) on the host screen, clicked like the lobby settings (`host/buttons.js`). One set for everyone, controlled only by the host (decided before M5).
-  - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onInput` as steering. The game shows who has chosen and is ready.
+  - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onMessage` as steering. The game shows who has chosen and is ready.
   - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept) or "Back to lobby".
 - So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it goes back to the lobby; saving them between games (localStorage on the host) can be added later if it gets annoying.
 
@@ -60,17 +60,24 @@ Replaces the earlier minigame interface (`{ id, assets, init, onInput, update, i
 
 "Game" means anything the shell can run: the 2D kart race, the 3D kart race, and the input lab (developer tool). Each game lives in two folders: `host/games/<id>/` and `controller/games/<id>/`. A registry, `host/games/index.js`, lists the ids and titles and loads each module with a dynamic `import()`, so a game's code is fetched only when it is needed. That is the browser's own module loading, so it needs no bundler.
 
-Host side (`host/games/<id>/index.js`), shape to start from:
+Host side (`host/games/<id>/index.js`) exports `createGame()`, which returns a fresh game object (a new one for every run, so nothing is left over from the last race). As built in M5a:
 ```
+registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers }
+  so the lobby can check the player range without loading the game.
 {
-  id, title, minPlayers, maxPlayers,   (also listed in the registry, so the lobby can check them without loading)
-  load()                      -> Promise. Fetch and decode assets. The shell may call it early (while players
-                                 are in the lobby) and always awaits it before start().
-  start({ container, players, setControllerView })
+  load()                      -> Promise. Fetch and decode assets. The shell awaits it before start(); today it is
+                                 called on "Start game" (loading early in the lobby can come later).
+  start({ container, players, setControllerView, removePlayer, pingPlayer })
                               -> Build the game. container is an empty full-screen element the game renders into
-                                 with whatever it likes. players is the shell's roster (read-only; the connected
-                                 flag is live). setControllerView(playerId, view) changes what that phone shows.
-  onInput(playerId, input, sentAt)
+                                 with whatever it likes. players is the shell's roster (read-only and live:
+                                 connected, name and device change while the game runs; a player who joined just
+                                 before the room closed shows up in it). setControllerView(playerId, view) changes
+                                 what that phone shows. removePlayer(playerId) removes a player (the M4 kick; the
+                                 game hears onPlayerLeft when the server confirms). pingPlayer(playerId, sentAt)
+                                 sends that phone a PING; its PONG comes back to onMessage with the same sentAt.
+  onMessage(playerId, message)
+                              -> A message from that player's phone that belongs to the game: INPUT, INPUT_MODE or
+                                 PONG (GAME_MESSAGE_TYPES in host/game-session.js). The shell keeps the rest.
   step(dt)                    -> Advance the rules by exactly dt (fixed, 1/60 s). No DOM, no rendering.
   render(alpha)               -> Draw. Called once per animation frame; alpha (0..1) is how far time has got
                                  between the last two steps, for smooth drawing on 120 Hz screens.
@@ -80,6 +87,7 @@ Host side (`host/games/<id>/index.js`), shape to start from:
   stop()                      -> Free everything: WebGL context, listeners, timers.
 }
 ```
+If `step` or `render` throws, or `start` throws, the shell stops the game and returns to the lobby with a message; the error goes to the console.
 
 Rules that keep complex games affordable:
 - **Fixed timestep.** The shell's runner (`host/game-runner.js`) owns the frame loop: each animation frame it adds the real elapsed time to an accumulator, calls `step(1/60)` as many times as fits, then calls `render(alpha)`. So a game behaves the same at 30, 60 and 120 fps, and physics stays stable. The step-counting maths is a plain module with unit tests.
@@ -87,16 +95,18 @@ Rules that keep complex games affordable:
 - **State as plain data.** The game state is plain objects and numbers (no class instances, no references to renderer objects), so it can be copied, sent and compared. That costs nothing now and keeps two later ideas open: phones or a second screen drawing their own view from state the host sends, and resuming a game after the host tab reloads (see "Later ideas").
 - **The game owns its renderer.** While a game runs, the shell puts its own Phaser game to sleep and hides its canvas, so an iPad never runs two render loops or holds two busy WebGL contexts, and wakes it when the game stops. The game creates its renderer in `start()` and destroys it in `stop()` (iOS limits how many WebGL contexts a page may hold).
 - **Controller view is state, not events.** `setControllerView(playerId, view)` stores a small game-defined object per player and sends it in `CONTROLLER_STATE` (with the game id). Because it is state, a rejoining phone gets it again through the M4 path with no extra code. One-shot cues (a vibration when hit, "lap 2!") get their own message type when a game first needs one.
-- **Input stays `INPUT`.** Controllers keep sending `INPUT` with kinds from `INPUT_KINDS`, for steering and for menu choices alike (kind `choice`, see "Game settings"). A game that steers continuously (the kart) keeps the latest input per player and reads it in `step`, instead of acting on each message. Kinds are added to `INPUT_KINDS` when a game needs them (the kart likely needs a held button: press and release). When a player disconnects, the game must treat their input as neutral (no steering, no throttle), or their kart keeps doing whatever the last message said.
+- **Input stays `INPUT`.** Controllers keep sending `INPUT` with kinds from `INPUT_KINDS`, for steering and for menu choices alike (kind `choice`, see "Game settings"); the game hears them in `onMessage`. A game that steers continuously (the kart) keeps the latest input per player and reads it in `step`, instead of acting on each message. Kinds are added to `INPUT_KINDS` when a game needs them (the kart likely needs a held button: press and release). When a player disconnects, the game must treat their input as neutral (no steering, no throttle), or their kart keeps doing whatever the last message said.
 
-Controller side (`controller/games/<id>/index.js`), loaded by dynamic `import()` when `CONTROLLER_STATE` names a game:
+Controller side (`controller/games/<id>/index.js`), loaded by dynamic `import()` when `CONTROLLER_STATE` names a game, together with `controller/games/<id>/style.css` (every controller game has one; the shell waits for both, so controls never show unstyled). Run by `controller/game-screen.js`:
 ```
-start(container, sendInput)   -> Build the controls and start the input modules from controller/inputs/.
-showView(view)                -> Show what the host sent with setControllerView.
-stop()
+start(container, send)        -> Build the controls in container and start the input modules from
+                                 controller/inputs/. send(message) sends one message to the server (INPUT, INPUT_MODE).
+showView(view)                -> Show what the host sent with setControllerView (null until it sends one).
+stop()                        -> Stop the input modules and timers; the shell empties the container afterwards.
 ```
+The shell keeps a top line on the phone's game screen ("In room ABCD" and a Leave button) above the container.
 
-Flow: lobby (the host picks a game) -> "Start game" -> loading (await `load()`) -> the game: its setup screen -> race -> results -> "Race again" or "Back to lobby" -> back to the lobby, with the same room code and players, and the room open again to new players. The shell also shows an "End game" button (two clicks, like "Close room") during any game, for the input lab, which never ends by itself, and as a way out of any game.
+Flow: lobby (the host picks a game) -> "Start game" -> loading (await `load()`; players stay in the lobby meanwhile) -> the game: its setup screen -> race -> results -> "Race again" or "Back to lobby" -> back to the lobby, with the same room code and players, and the room open again to new players. The shell also shows an "End game" button (two clicks, like "Close room") during any game, for the input lab, which never ends by itself, and as a way out of any game. It and "Close room" are HTML buttons at the bottom right of the host screen (`host/game-bar.js`), so games keep that corner clear.
 
 ## Pre-build spike (I run this myself before M0)
 
@@ -192,15 +202,17 @@ Notes (M4 follow-up, after the first device run): Device run passed (lobby, lock
 
 ### M5a: Game framework (input lab moves onto it)
 Builds the "Game module interface" above and proves it on the game that already exists: the input lab stops being a special screen and becomes the first game module (kept as a developer tool). Its existing browser tests then check the framework.
-- [ ] Registry `host/games/index.js` (id, title, min and max players) and dynamic loading; `load()` is awaited before `start()`, and a game that fails to load shows an error and returns to the lobby
-- [ ] `host/game-runner.js`: fixed 60 Hz `step`, `render(alpha)` every frame, `isDone()` check, `stop()`. The accumulator maths in a plain module with unit tests (several steps in one slow frame, none in a fast one, a cap so a long pause such as a backgrounded tab does not run thousands of steps at once)
-- [ ] The shell sleeps its Phaser game and hides its canvas while a game runs, gives the game an empty container, and wakes Phaser afterwards
-- [ ] Protocol: `CONTROLLER_SCREENS.GAME` replaces `INPUT_LAB`; `CONTROLLER_STATE` gains `gameId` and `view`. Rejoining phones get both again
-- [ ] Controller loads `controller/games/<id>/index.js` by dynamic `import()` and calls `start`, `showView`, `stop`
-- [ ] Lobby: choose the game (for now just the input lab); Start checks the game's player range. "End game" during a game returns everyone to the lobby, which reopens the room to new players
-- [ ] Input lab moved to `host/games/input-lab/` and `controller/games/input-lab/`, `host/scenes/input-lab-scene.js` and the `INPUT_LAB` screen removed. M1/M3/M4 browser tests updated only where the way to reach the lab changed
+- [x] Registry `host/games/index.js` (id, title, min and max players) and dynamic loading; `load()` is awaited before `start()`, and a game that fails to load shows an error and returns to the lobby
+- [x] `host/game-runner.js`: fixed 60 Hz `step`, `render(alpha)` every frame, `isDone()` check, `stop()`. The accumulator maths in a plain module with unit tests (several steps in one slow frame, none in a fast one, a cap so a long pause such as a backgrounded tab does not run thousands of steps at once)
+- [x] The shell sleeps its Phaser game and hides its canvas while a game runs, gives the game an empty container, and wakes Phaser afterwards
+- [x] Protocol: `CONTROLLER_SCREENS.GAME` replaces `INPUT_LAB`; `CONTROLLER_STATE` gains `gameId` and `view`. Rejoining phones get both again
+- [x] Controller loads `controller/games/<id>/index.js` by dynamic `import()` and calls `start`, `showView`, `stop`
+- [x] Lobby: choose the game (for now just the input lab); Start checks the game's player range. "End game" during a game returns everyone to the lobby, which reopens the room to new players
+- [x] Input lab moved to `host/games/input-lab/` and `controller/games/input-lab/`, `host/scenes/input-lab-scene.js` and the `INPUT_LAB` screen removed. M1/M3/M4 browser tests updated only where the way to reach the lab changed
 
 **Done when:** the input lab starts from the lobby through the framework, works as in M3, ends with "End game" and returns everyone to the lobby, and every existing test passes.
+
+Notes (M5a done): Automated tests pass (unit, server, browser). Device run passed: iPad host (lab smooth, lobby correct after End game), iPhone and Android switching lobby and lab twice without a reload with tilt working on the second run, a locked phone coming back into the lab, and the host tab coming back from the background without a burst of frames. The interface above is updated to what was built; the changes from the version written before M5: games export `createGame()` (a fresh object per run) instead of being the object; id, title and the player range live only in the registry; `onInput(playerId, input, sentAt)` became `onMessage(playerId, message)`, because the lab also needs `INPUT_MODE` and `PONG`; `start()` also gets `removePlayer` (removing a player during a game stays possible, as in M4) and `pingPlayer` (only the lab uses it); the controller `start` gets `send(message)` instead of `sendInput`, and every controller game has a `style.css` the shell loads first. Phaser can be driven by hand, checked in 3.90: Phaser starts its own requestAnimationFrame loop once booted (`game.isRunning`), so the lab's `render()` puts it to sleep the first time it sees it running (`game.loop.sleep()`) and then calls `game.step(now, deltaMs)` itself; input and FIT scaling work that way. Phaser's `destroy()` only marks the game and tears it down at the start of its next step, so `stop()` calls `destroy(true)` and then `step()` once. The lab keeps that code in `host/games/input-lab/index.js`; M5b should move it into a small shared module when the kart needs the same. The fixed-step maths is `host/fixed-step.js` (`countSteps`, cap 0.25 s = 15 steps per frame); `host/game-runner.js` uses it with requestAnimationFrame (both unit tested). `host/game-session.js` runs one game: it sleeps the shell's Phaser and hides `#shell` (the shell's div was renamed from `#game`), appends a fresh `#game-container` div, sets the room to the GAME screen, becomes the room's listener (the role a scene had), shows the HTML End game / Close room bar, and undoes all of it at the end. `CONTROLLER_STATE` now carries `gameId` and `view` (null in the lobby); `room.setControllerView` stores views per player, so a rejoining or reloading phone gets them back with no game code; a new screen clears them. No game sets a view yet (the lab has nothing to show); M5b is its first user. The lab no longer shows the join panel (the room is closed to new players during a game anyway); its card layout is unchanged. Lobby: the game picker ("Game < Input lab >") is in the header row (`drawGamePicker` in `host/settings-panel.js`); Start checks the game's `minPlayers`/`maxPlayers` (`canStartGame(players, game)`, `describeWaitingFor(players, game)`); while the game loads, Start is disabled and the status reads "Loading Input lab..."; a load failure or a crash shows one orange line under the status. After a game everyone is set to not ready (so the next Start waits for them), the room reopens, and the lab's minimum stays 2 players as before. Tests changed on purpose: the M1/M4 browser tests read the room line from `#game-status` (was `#pad-status`, now the shell's line), and "Close room during the game" clicks the HTML button (`GAME_CLOSE_ROOM_BUTTON` is a selector now); `canStartGame`/`describeWaitingFor` unit tests pass a game entry. New: `test/unit/fixed-step.test.js`, `test/unit/game-runner.test.js`, `test/browser/m5a-game-framework.test.js` (load failure, game id on phones, reload back into the game, End game, room reopens, second run).
 
 ### M5b: 2D kart race (the race itself)
 The first real game, with fixed settings (3 laps) and stick steering only. See "2D kart race design" and "Kart controller".

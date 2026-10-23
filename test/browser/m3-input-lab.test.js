@@ -19,7 +19,7 @@ const CONTROLLER_DEVICES = [
   { name: 'iphone', engine: 'webkit', device: devices['iPhone 13'], platform: 'iPhone' },
 ];
 
-// From host/player-card.js: the first card's stick ring (see test/browser/m1-flow.test.js).
+// From host/games/input-lab/player-card.js: the first card's stick ring (see test/browser/m1-flow.test.js).
 const FIRST_PLAYER_COLOR = 0xe74c3c;
 const FIRST_DOT_START = { x: 120, y: 210 };
 const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };

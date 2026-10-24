@@ -9,6 +9,8 @@ import { MAX_PLAYERS } from '/shared/protocol.js';
 export const GAMES = Object.freeze([
   Object.freeze({ id: 'input-lab', title: 'Input lab', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
   Object.freeze({ id: 'kart-2d', title: 'Kart race 2D', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
+  // A developer tool that measures the host device, so it needs no phones (M6a; M7 removes it).
+  Object.freeze({ id: 'spike-3d', title: '3D spike (dev)', minPlayers: 0, maxPlayers: MAX_PLAYERS }),
 ]);
 
 export function findGame(gameId) {

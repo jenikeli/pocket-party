@@ -70,6 +70,16 @@
     <button type="button" id="close-room-button">Close room</button>
   </div>
   <p id="wake-status"></p>
+  <!-- Three.js (used by the 3D games) and its add-ons import the bare name "three"; the import map tells the
+       browser which file that is. It must come before any module script. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/host/vendor/three-0.186.1/three.module.js",
+        "three/addons/": "/host/vendor/three-0.186.1/addons/"
+      }
+    }
+  </script>
   <script type="module" src="/host/main.js"></script>
 </body>
 

@@ -11,10 +11,10 @@ import {
   currentLap,
   countdownNumber,
   RACE_PHASES,
-  NEUTRAL_CONTROLS,
   COUNTDOWN_SECONDS,
   FINISH_TIME_LIMIT_SECONDS,
 } from '../../host/games/kart-2d/race.js';
+import { NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { LAP_LENGTH, isOnRoad } from '../../host/games/kart-2d/track.js';
 import { KART_RADIUS } from '../../host/games/kart-2d/kart-physics.js';
 import { STEADY_LEFT, followTrack } from '../helpers/kart-drivers.js';

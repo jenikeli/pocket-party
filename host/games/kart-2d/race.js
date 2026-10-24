@@ -4,6 +4,7 @@
 
 import { LAP_LENGTH, lapPosition, pointOnTrack } from './track.js';
 import { driveKart, hitWalls, bumpKarts } from './kart-physics.js';
+import { NEUTRAL_CONTROLS } from '../../kart/kart-controls.js';
 
 export const COUNTDOWN_SECONDS = 3;
 // Once the first kart finishes, the rest have this long before the race ends without them.
@@ -15,7 +16,6 @@ export const RACE_PHASES = Object.freeze({
   RESULTS: 'results',
 });
 
-export const NEUTRAL_CONTROLS = Object.freeze({ steer: 0, accelerate: false, brake: false });
 
 // The grid: three karts abreast, rows 70 px apart, the first row just behind the start line.
 const GRID_LANES = [-70, 0, 70];

@@ -1,4 +1,4 @@
-// Unit tests for host/games/kart-2d/setup.js: the laps, each player's control style and ready, and when the
+// Unit tests for host/kart/setup.js: the laps, each player's control style and ready, and when the
 // host may start the race.
 
 import { test } from 'node:test';
@@ -12,7 +12,7 @@ import {
   forgetPlayer,
   playersHoldingUpStart,
   canStartRace,
-} from '../../host/games/kart-2d/setup.js';
+} from '../../host/kart/setup.js';
 
 const ana = { playerId: 'ana', connected: true };
 const bo = { playerId: 'bo', connected: true };

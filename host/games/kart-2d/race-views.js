@@ -3,7 +3,7 @@
 // index.js and the renderer.
 
 import { kartsInPlaceOrder, currentLap, countdownNumber } from './race.js';
-import { playerSetup } from './setup.js';
+import { playerSetup } from '../../kart/setup.js';
 
 // The phase a phone's view has on the setup screen, before every race; the race's own are RACE_PHASES.
 export const SETUP_PHASE = 'setup';

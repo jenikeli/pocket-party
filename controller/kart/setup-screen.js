@@ -1,9 +1,9 @@
-// The phone's setup screen for the 2D race, before every race: steering (stick or tilt), accelerate (Go button
-// or auto) and Ready. What is picked is shown from the host's view, so the highlight only moves once the host
-// has the choice. Used by controller/games/kart-2d/index.js.
+// The phone's setup screen for both kart races, before every race: steering (stick or tilt), accelerate (Go
+// button or auto) and Ready. What is picked is shown from the host's view, so the highlight only moves once the
+// host has the choice. Used by controller/kart/controls.js.
 
 import { KART_CHOICES, KART_STEERING } from '/shared/protocol.js';
-import * as steering from '/controller/games/kart-2d/steering.js';
+import * as steering from '/controller/kart/steering.js';
 
 let elements = null; // { setup, laps, readyButton }
 let sendChoice = null; // (choice, value), set by start
@@ -15,10 +15,11 @@ export function start(pageElements, choiceSender) {
   elements.setup.addEventListener('click', onClick);
 }
 
-// `view` is a setup view from host/games/kart-2d/race-views.js: { laps, steering, autoAccelerate, ready }.
+// `view` is a race's setup view: { laps, steering, autoAccelerate, ready }. laps is null when the game has no
+// laps (the 3D test drive), and the line stays empty.
 export function show(view) {
   ready = view.ready;
-  elements.laps.textContent = view.laps === 1 ? '1 lap' : `${view.laps} laps`;
+  elements.laps.textContent = view.laps === null ? '' : view.laps === 1 ? '1 lap' : `${view.laps} laps`;
   for (const button of elements.setup.querySelectorAll('[data-choice]')) {
     const picked = String(view[button.dataset.choice]) === button.dataset.value;
     button.setAttribute('aria-pressed', String(picked));

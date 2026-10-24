@@ -1,5 +1,6 @@
-// Where each split-screen view sits on the canvas, for the M6a spike: 1 view fills it, 2 are stacked top and
-// bottom, 4 are quarters. Plain maths (no Three.js, no DOM), unit tested in Node. Used by views.js.
+// Where each split-screen view sits on the canvas: 1 view fills it, 2 are stacked top and bottom, 4 are
+// quarters (3 players get quarters too, as in MK8DX). Plain maths (no Three.js, no DOM), unit tested in Node.
+// Used by host/games/kart-3d/views.js, and by the M6a spike's views.js until M7 removes the spike.
 
 // A thin gap between views, as in MK8DX's split screen, so the views read as separate screens.
 const GAP = 4;
@@ -28,5 +29,5 @@ export function viewRects(viewCount, width, height) {
       { x: right, y: 0, width: halfWidth, height: halfHeight },
     ];
   }
-  throw new Error(`The spike draws 1, 2 or 4 views, not ${viewCount}`);
+  throw new Error(`Views come in 1, 2 or 4, not ${viewCount}`);
 }

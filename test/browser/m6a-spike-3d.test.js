@@ -18,7 +18,7 @@ import { MESSAGE_TYPES } from '../../shared/protocol.js';
 const HOST_SIZE = { width: 960, height: 540 };
 const half = (point) => ({ x: point.x / 2, y: point.y / 2 });
 const LOOK_SWITCHES = ['shadows', 'glossy', 'bloom', 'particles', 'detailedKarts'];
-// From host/games/spike-3d/view-layout.js at 960x540: the 4 px gaps between the 4 views (columns 478-481, rows
+// From host/games/kart-3d/view-layout.js at 960x540: the 4 px gaps between the 4 views (columns 478-481, rows
 // 268-271). findColor's right and bottom edges are exclusive.
 const VERTICAL_GAP = { left: 478, top: 380, right: 482, bottom: 470 };
 const HORIZONTAL_GAP = { left: 500, top: 268, right: 900, bottom: 272 };
@@ -65,8 +65,8 @@ describe('M6a 3D spike', () => {
     hostMessages = watchServerMessages(hostPage);
     await hostPage.goto(`${server.baseUrl}/host`);
     roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
-    // Input lab, Kart race 2D, then the spike.
-    for (let i = 0; i < 2; i += 1) {
+    // Input lab, Kart race 2D, Kart race 3D, then the spike.
+    for (let i = 0; i < 3; i += 1) {
       await hostPage.mouse.click(half(NEXT_GAME_BUTTON).x, half(NEXT_GAME_BUTTON).y);
       await hostPage.waitForTimeout(300);
     }

@@ -217,3 +217,55 @@ The spike ran on the M5a interface with no change to it. What it needed, and whe
 - **Freeing the context:** `stop()` calls `renderer.dispose()` and `renderer.forceContextLoss()`, so the context is freed at once and not when the canvas is garbage collected (iOS allows a page only a few contexts). The shell's own Phaser context stays alive but idle while a game runs.
 - **Capping at 30 fps** lives in the game's `render()`: it skips drawing until 1/30 s minus 4 ms has passed (the 4 ms absorbs animation-frame jitter), while the runner keeps stepping at 60 Hz. On the iPad (120 Hz) and the laptop's RTX 3070 (165 Hz) it paces evenly (p95 35 and 33 ms), so the cap can stay in the game; the runner needs no change for it. The 120 Hz iPad run raises a second question for M7: whether to cap drawing at 60 fps by default, since 120 draws a second double the GPU work for the same 60 Hz physics.
 - **Load timing** needs the game's heavy code imported inside `load()` (a dynamic `import()` of the renderer module), not imported statically by the game's `index.js`, or it loads before `load()` runs.
+
+## M6b: driving spike
+
+### What was built
+
+"3D test drive" in the lobby's game list (`host/games/kart-3d/`, kept for M7). 1-4 players pick a control style on the shared kart setup screen, then drive freely on a test track in split screen. 11 dummy karts fill the field to 12 (fewer when more players join), starting ahead of the players as in MK8DX. There are no countdown, laps or places yet. While driving, a readout at the top of the host screen shows the physics step time (average and worst over the last 4 s), the frame rate, the CPU time per drawn frame, and each player's speed, surface and lap position.
+
+The test track (`test-track.js`, about 631 units, a kart is 2) floats over the sea, so leaving it means falling. In order: start straight; a hill up 8 with no walls (the edge to fall off); a flat 90 degree turn; a 14 degree ramp up 4 then a 12-unit gap; a 180 degree hairpin of radius 20; a 20 degree banked left curve at normal gravity; a straight with 6-unit off-road shoulders; and an anti-gravity half circle (radius 34) that rolls the road up to vertical and back, karts driving on the inside of the wall.
+
+The track model from `plan.md` held up. Pieces (straights and arcs with height, roll, shoulders, walls, gap and anti-gravity) are sampled into stations 1 unit apart. Each kart is found by walking across the stations' cross-sections from the station it was at last step, which a figure-of-eight bridge test proves. **No physics library and no mesh fallback were needed.**
+
+### Starting numbers (no footage yet)
+
+The "Reference footage" step in `plan.md` was not done, so every distance below is a guess, to be checked against MK8DX footage on the device run. MK8DX's own per-frame numbers are used as ratios, scaled by our top speed. The physics steps at 60 Hz, MK8DX's own frame rate, so one of its frames is one of our steps. All constants are at the top of `kart-driving.js`, `kart-physics.js`, `kart-bumps.js` and `chase-camera.js`.
+
+| Thing | Value | Source |
+|---|---|---|
+| Top speed | 24 units/s = 12 kart lengths/s | guess (MK8DX's unit size is not public) |
+| Speed curve | each frame closes 1% of the gap to top speed, capped at 0.08/7.75 of top speed per frame: 50% after 1.15 s, 90% after 3.8 s | MK8DX level 10 (`Drive_SpdKfFwd`, `Drive_AccLmtFwd`), our reading of what they mean |
+| Steering | 0.011 rad/frame = 38 degrees/s at full steer, the same at any speed above 4 units/s; at top speed a full circle takes 9.5 s, radius 36 units (18 kart lengths) | MK8DX level 10 (`Drive_DirRotH`), read as radians per frame |
+| Braking, coasting, reverse | 30, 6 units/s²; reverse up to 6 units/s | guess |
+| Off-road | top speed halves; above it, -30 units/s² | guess (MK8DX's traction value is not public) |
+| Road width | 16 units = 8 kart lengths | guess |
+| Gravity | 25 units/s², stronger than real for snappy jumps | guess |
+| Jump | at top speed about 0.85 s in the air and 20 units; leaving the lip under about 15 units/s falls short | follows from the above |
+| Bumps | mass = weight x (0.5 standing still to 1 at top speed); players weigh 1, dummies 0.8, 1 and 1.25 in turn | MK8DX's rule (mass blends by speed), our numbers |
+| Falling off | 3 units below the road starts a 1 s wait (about 1.5 s after leaving the road), then the kart is put on the middle of the road, standing, 30 units before where it was last on the road (so a jump gets a run-up) | guess; MK8DX puts karts back closer to where they fell |
+| Chase camera | 6.5 behind, 2.4 above, looking 4 ahead, field of view 65 degrees; direction trails the kart at 5/s, up at 3/s, position at 12/s | guess |
+
+On the road a kart is stuck to the surface: each step it moves, then is put back on the road with its up along the road's normal. So slopes and banks do not change its speed (MK8DX barely slows on hills), and the anti-gravity wall works without special code. Gravity only acts in the air, toward the road in anti-gravity sections and straight down elsewhere.
+
+### Measured without a device
+
+- **Step time, Node on the dev box:** 0.05 ms per step for 12 karts (a 90 s simulation). **Headless Chromium on the dev box** (the browser test's readout): 0.085 ms average, 1.1 ms worst. That is under 1% of a 16.7 ms frame. Unless the iPad is many times slower, stepping 12 karts costs nothing next to drawing, so the kart count is set by drawing, which M6a measured at 12 karts and 4 views in under 10 ms.
+- **The dummies** (pure pursuit 10 units ahead in their own lane, braking when a full steer could not reach a point 12 or 24 units ahead) lap in about 30 s. They brake to 10-15 units/s for the hairpin, clear the jump, drive the wall, and none fell off in 65 s with all 12 together (unit-tested).
+
+### Device run
+
+Measured on 2026-10-24 on the iPad (host over HTTPS on the LAN IP): "3D test drive" with 12 karts, read off the host's readout after driving for a while. 4 players in 4 incognito tabs on the laptop as controllers, so **4 views**.
+
+| Karts (4 views) | Physics step, average / worst ms | Drawing fps | CPU ms per frame |
+|---|---|---|---|
+| 12, all moving | 0.079 / 1.0 | 60 | 2.3 |
+| 12, player karts standing still | 0.10-0.13 (average) | 60 | 2.0 |
+
+- **Stepping 12 karts costs about 0.1 ms, under 1% of a 16.7 ms frame**, so physics does not limit the kart count. Drawing does, and M6a measured the full look with 12 karts and 4 views at 6.6-9.9 ms on this iPad.
+- **So the iPad carries a full 12-kart field with 4 views at 60 fps**, measured directly here (2-2.3 ms of CPU per frame; shadows and glossy karts, no bloom). M7 fills races to 12 karts.
+- The 1 ms worst step is most likely a garbage collection pause or the browser doing other work between frames; it happened once in 4 s of steps and did not drop a frame.
+- Standing player karts made the step slightly slower, not faster. The likely cause is dummies driving into them, so the bump code has overlapping pairs to resolve every step. It is a tenth of a millisecond either way, so it was not looked into.
+- The readout showed 60 fps, not the 120 the iPad reached in M6a's second run, so the screen ran at 60 Hz this time (as in M6a's first run; the cause is still unknown).
+
+**Feel against MK8DX:** on the device run it did not feel like the real game's controls. Tuning is put off to a later pass. Drifting and mini-turbos (M6c) are a big part of how MK8DX corners and were not in this build. Still unchecked against footage: kart lengths per second on a straight; time from GO to top speed; turning circle at full steer without drifting; camera distance and height; how floaty jumps are; how hard walls and bumps push.

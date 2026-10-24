@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { roadPoint, roadFrame, pointBeside, distanceFromCentreLine, ROAD_HALF_WIDTH } from '../../host/games/spike-3d/road.js';
 import { createKarts, stepKarts, kartPose, MAX_KARTS } from '../../host/games/spike-3d/kart-paths.js';
-import { viewRects } from '../../host/games/spike-3d/view-layout.js';
+import { viewRects } from '../../host/games/kart-3d/view-layout.js';
 import { summarizeFrames, createRecentFrames } from '../../host/games/spike-3d/frame-stats.js';
 import {
   benchmarkConfigs,

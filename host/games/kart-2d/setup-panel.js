@@ -5,7 +5,7 @@
 import { drawButton } from '/host/buttons.js';
 import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
 import { MAX_PLAYERS, KART_STEERING } from '/shared/protocol.js';
-import { playerSetup, playersHoldingUpStart, canStartRace } from './setup.js';
+import { playerSetup, playersHoldingUpStart, canStartRace } from '/host/kart/setup.js';
 
 const TEXT_STYLE = { fontFamily: 'sans-serif', color: '#ffffff' };
 const MUTED_COLOR = '#9aa4bf';

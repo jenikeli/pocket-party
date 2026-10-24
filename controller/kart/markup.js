@@ -1,7 +1,7 @@
-// The 2D race's phone screens as HTML, which controller/games/kart-2d/index.js puts into the game container.
+// The kart races' phone screens as HTML, which controller/kart/controls.js puts into the game container.
 // The setup screen (control style and ready) before every race, and the controls, held sideways like a Switch
 // controller: steering on the left (the stick, or the tilt panel), the status in the middle, the pedals on the
-// right. The ids are styled in controller/games/kart-2d/style.css; data-button names match KART_BUTTONS,
+// right. The ids are styled in controller/kart/style.css; data-button names match KART_BUTTONS,
 // data-choice and data-value match KART_CHOICES and their values.
 
 export const MARKUP = `

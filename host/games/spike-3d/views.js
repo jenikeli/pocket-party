@@ -2,7 +2,7 @@
 // of one canvas (WebGL scissor viewports), so 4 views still use one WebGL context. Used by spike-renderer.js.
 
 import * as THREE from 'three';
-import { viewRects } from './view-layout.js';
+import { viewRects } from '../kart-3d/view-layout.js';
 
 const MAX_VIEWS = 4;
 // In world units (a kart is 2 long): a first guess, until M6b measures MK8DX's camera from footage.

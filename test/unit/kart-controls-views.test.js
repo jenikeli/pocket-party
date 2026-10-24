@@ -1,12 +1,12 @@
-// Unit tests for host/games/kart-2d/kart-controls.js (INPUT messages to kart controls), race-views.js (what
-// phones and the screen show) and shared/ordinal.js.
+// Unit tests for host/kart/kart-controls.js (INPUT messages to kart controls), host/games/kart-2d/race-views.js
+// (what phones and the screen show) and shared/ordinal.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createControlsTable } from '../../host/games/kart-2d/kart-controls.js';
+import { createControlsTable, NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { controllerView, setupView, standingRows, formatRaceTime } from '../../host/games/kart-2d/race-views.js';
-import { createRace, stepRace, NEUTRAL_CONTROLS } from '../../host/games/kart-2d/race.js';
-import { createSetup, applyChoice } from '../../host/games/kart-2d/setup.js';
+import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
+import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { ordinal } from '../../shared/ordinal.js';
 
 const connected = { playerId: 'p1', connected: true };

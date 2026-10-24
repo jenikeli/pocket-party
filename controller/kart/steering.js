@@ -1,6 +1,6 @@
-// The phone's steering for the 2D race: the on-screen stick or the phone turned like a wheel (tilt), whichever
-// the host's view says this player chose. Owns the tilt flow (permission, first reading, falling back to the
-// stick) and the tilt panel (Enable tilt, Recenter). Used by controller/games/kart-2d/index.js.
+// The phone's steering for both kart races: the on-screen stick or the phone turned like a wheel (tilt),
+// whichever the host's view says this player chose. Owns the tilt flow (permission, first reading, falling back
+// to the stick) and the tilt panel (Enable tilt, Recenter). Used by controller/kart/controls.js.
 
 import { KART_CHOICES, KART_STEERING, INPUT_FALLBACK_REASONS } from '/shared/protocol.js';
 import * as dragInput from '/controller/inputs/drag.js';

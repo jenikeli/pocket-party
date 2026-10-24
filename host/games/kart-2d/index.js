@@ -6,8 +6,8 @@
 import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
 import { createRace, stepRace, removeKart } from './race.js';
-import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from './setup.js';
-import { createControlsTable } from './kart-controls.js';
+import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from '/host/kart/setup.js';
+import { createControlsTable } from '/host/kart/kart-controls.js';
 import { controllerView, setupView } from './race-views.js';
 import { createRenderer } from './renderer.js';
 

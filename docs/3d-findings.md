@@ -355,3 +355,78 @@ The host's readout now has a second line per player: `Go after "2": +0.31 rocket
 4. **Drift:** drift the hairpin to an orange and a purple boost on both phones, with the stick and with tilt. Does the Drift button's colour help, or does nobody look at it?
 5. **Layout:** is Drift above Go reachable with the right thumb, does holding Drift as accelerate feel right, and does the Item place get in the way? With auto-accelerate, is a two-row Drift better?
 6. Dash panels, slipstream (follow a dummy for 3 s) and the spin boost (bump a kart on the blue wall).
+
+## M7a: feel pass
+
+### What was built
+
+The same "3D test drive" (`kart-3d`), reworked from the "Feel against MK8DX" notes above, with every number to tune on a live slider.
+
+- **Tuning panel** (host, developer only): the drive panel's **Tuning** button opens a list of sliders at the left of the screen, one per number in `host/games/kart-3d/tuning.js`, grouped (speed, steering, walls, bumps, hop and body, timing windows, camera), each showing its value. A slider changes the drive at once, mid-race. **Copy values** puts every value on the clipboard as `key = value` lines, changed ones marked `(default ...)`; paste that back to Claude, who writes them into `tuning.js` as the new defaults. If the browser refuses the clipboard, the text shows in a box, selected, to copy by hand. **Reset** brings the defaults back; **Close** (or Tuning again) hides it. Values last until the host page reloads (`npm run dev` reloads it on every file change), so copy before a reload.
+- **Steering curve:** the turn rate is `steerRate x steer + (fullSteerRate - steerRate) x steer^steerCurve`. Near the middle it is the M6 straight line (MK8DX's 0.011 rad/frame), so small movements turn as before (unit-tested: within 10% up to a fifth of the stick); at full stick it turns at `fullSteerRate`.
+- **Walls:** a hit (going into the wall faster than 1 unit/s) keeps `1 - wallGrazeLoss - wallHitLoss x sin(angle)` of the speed along the wall and bounces back with `wallBounce` of the speed into it, at least `wallBounceSpeed`. Slower contact (a kart steered along a curving wall) only scrapes. The nose still turns along the wall under `wallAlignDegrees`.
+- **Bumps:** karts part at `bumpBounce` of the speed they met at (partly elastic), never slower than `bumpMinSpeed`, the push shared by mass as before (momentum is kept).
+- **Visible bounce:** after a wall hit or a bump the kart's sideways grip is `slideGrip` instead of `grip` for `slideSeconds`, so it slides away instead of the bounce dying within a few frames (the M6 grip killed half of any sideways speed in 0.09 s).
+- **Hop:** its height and air time are tuned apart: the hop gets its own pull toward the road (`8 h / t^2`) and launch speed (`4 h / t`, plus half a step of pull so the 60 Hz steps reach the full height). A hop that goes over a ramp's lip becomes a jump at normal gravity.
+- **Smooth body:** the body animation moved to `kart-body.js`. The drift lean follows a critically damped spring (solved exactly each step, so it never overshoots at any stiffness): it starts gently and settles in `leanSeconds`, both ways, where the M6 lean jumped 15% of the way in its first frame. The lean starts during the hop, as far as the stick is over, so the kart lands already turned into the drift. A trick's roll now always plays out in full; before, a landing in the middle of the roll snapped the body upright.
+- **Phone:** a 15 ms buzz on every button press (`navigator.vibrate`, Android only; iOS Safari has none); taken out after the device run, see below. With tilt, the 3D race's layout puts Drift under the left thumb, below the tilt panel, and on the right Brake (two rows tall) left of Go, with the Item place above Go; with auto-accelerate the right side is the Item place above Brake. The stick keeps the M6c layout.
+
+### Starting numbers
+
+Defaults in `tuning.js`; the slider ranges are there too. All are guesses to be tuned by feel, except where noted.
+
+| Thing | Value | Note |
+|---|---|---|
+| Top speed | 24 units/s | unchanged |
+| Turn near the middle | 37.8 deg/s per full stick | MK8DX's 0.011 rad/frame, the M6 steering |
+| Turn at full stick | 60 deg/s | M6: 37.8. Radius at top speed 11.5 kart lengths (M6: 18). Above 69 the test track's hairpin can be taken flat out on its middle lane |
+| Steering curve | 3 | 1 would be a straight line |
+| Drift, stick into it | 65.3 deg/s | MK8DX's 0.019 rad/frame, unchanged, still tighter than a full normal turn. Tighter drifts get round the hairpin too soon for purple (see below) |
+| Drift, stick away | 0.35 of the tightest | unchanged |
+| Wall: speed lost on any hit, more on a square hit | 0.12, + 0.5 x sin(angle) | new |
+| Wall: bounce, least bounce speed, scrape | 0.4, 3 units/s, 2 per s | M6: 0.3, none, 1.6 |
+| Bumps: bounce, least parting speed | 0.6, 5 units/s | M6: 0.6, none |
+| Grip, grip after a hit, for how long | 8, 1.5 per s, 0.35 s | the slide is new |
+| Hop | 0.5 high, 0.27 s | M6: 0.23 high, 0.27 s |
+| Drift lean, lean time | 20 deg, 0.3 s | M6: 20 deg, exponential at 10/s |
+| Trick roll, spin | 0.5 s, 0.5 s | unchanged |
+| Rocket start, trick windows, camera | as in M6c | now on sliders |
+
+### Measured without a device
+
+- **Riding the wall is now the slow line.** Through the hairpin from 258 to 40 past its end, starting at top speed: the dummy driver braking for it in the middle lane takes 5.8 s. Flat out with half steer (bouncing along the outside wall) takes 7.95 s, flat out without steering 9.5 s, and following the outside wall flat out 11.8 s (unit-tested: every wall line at least 0.5 s slower). With the M6 walls, half steer took 7.35 s against the dummy's 7.8 s, so the wall was faster; with the "any hit" loss set to 0, following the wall flat out still takes only 6.9 s, so that loss is what stops it.
+- **Purple through the hairpin** needs about 2.8 s of hard drift. A tighter drift turns a smaller circle and is round the 180 degrees sooner: at 70 deg/s and up the hard drift lasted under 166 frames on every lane, so only orange. At 65.3 the middle lane (lanes -2 to 0) reaches purple without touching a wall; the unit test now drifts the middle lane (it used the outside lane, -4, with the M6 numbers).
+- With the new steering the dummies on the hairpin's two outermost lanes no longer need to brake; the dummy test checks braking only on lanes where a full steer cannot hold top speed.
+
+### Device run (first tuning)
+
+Tuned on 2026-10-24 by feel against MK8DX's 150cc, then written into `tuning.js` as the defaults. Changed from the starting numbers above (the rest were kept):
+
+| Thing | Tuned | Was |
+|---|---|---|
+| Top speed | 32 units/s (16 kart lengths/s) | 24 |
+| Turn at full stick | 67 deg/s (radius 13.7 kart lengths at the new top speed; 80 in the first pass) | 60 |
+| Drift, stick into it | 72.5 deg/s (second pass) | 65.3 (MK8DX's) |
+| Wall: speed lost on a square hit, on any hit, scrape | 0.8, 0.3, 3 per s | 0.5, 0.12, 2 |
+| Bumps: bounce | 0.25 | 0.6 |
+| Mass standing still | 0.7 of the weight | 0.5 |
+| Hop height | 0.4 | 0.5 |
+| Drift lean | 23 deg | 20 |
+| Rocket start window | 0.3 to 1.2 s after "2" (0.2 s past "1"; tuned in a second pass) | 0 to 0.6 |
+
+What it means for the rest:
+- **The drift turns tighter than full steering again** (72.5 against 67 deg/s, 1.08 times), as in MK8DX, whose data has the drift at 1.73 times the steering. The first pass had it the other way round (65.3 against 80); the second pass fixed that, and the unit test checks it again.
+- **The test track's hairpin is too tight for a full-speed drift now.** At 32 units/s it takes about 2 s at the middle lane, and purple needs 2.8 s of hard drift; a hard drift's circle (radius about 30) is also wider than the hairpin (20). A player brakes for it. The unit test for purple now drifts a long bend sized for top speed instead. M7b's course should be designed for these numbers.
+- Wall-riding stays the slow line at the tuned values (the unit test runs with whatever the defaults are).
+- **Vibration was not felt** on Android or iOS (iOS has no `navigator.vibrate`; why Android did not buzz is unknown), so it was taken out and moved to "Later ideas" in `plan.md`. **The tilt layout is fine.**
+
+After this run two things were added, both on sliders:
+- **The rocket start's boost depends on timing**, as in MK8DX: a press arriving at the start of the window boosts longest ("Rocket start, best timing", 1 s), falling evenly to "Rocket start, latest timing" (0.3 s) at the window's end. M6c gave every rocket start 1 s.
+- **Each boost's speed** has its own slider ("Boosts" group), as a share of top speed: mini-turbo 1.1 and trick boost 1.35 (MK8DX level 10), dash panel and rocket start 1.35, slipstream 1.08, spin boost 1.1. The device run found normal speed a little too fast next to boosted speed, so the gap is to be tuned with these together with top speed.
+
+### Device run procedure
+
+1. Host on the iPad over the hotspot, MK8DX running beside it. One phone on the stick, one on tilt; one with auto-accelerate.
+2. Drive the test track, open **Tuning**, and move one group at a time: steering (full turn, then the curve so small movements stay gentle), top speed, walls (hit the wall at the flat turn and the hairpin square and glancing), bumps (shove the dummies; does the slide look like MK8DX's bounce?), hop and lean (hop on the straight; drift in and out), trick roll, camera.
+3. **Copy values** after each group, and paste them to Claude before the host page reloads.
+4. On the phones: does every press buzz on Android? With tilt, is Drift under the left thumb comfortable, and is Brake left of Go reachable?

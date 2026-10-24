@@ -1,8 +1,8 @@
 // Unit tests for the 3D race's techniques (host/games/kart-3d/kart-techniques.js, kart-boosts.js,
 // slipstream.js, rocket-start.js and the hooks in kart-physics.js, kart-bumps.js and drive.js), driven with
-// scripted inputs: hop and drift, MK8DX's charge counter and mini-turbo lengths, a purple drift through the
-// test track's hairpin, the trick window at the ramp's lip, the rocket start window, dash panels, slipstream
-// and the anti-gravity spin boost.
+// scripted inputs: hop and drift, MK8DX's charge counter and mini-turbo lengths, a purple drift round a
+// long bend at full speed, the trick window at the ramp's lip, the rocket start window and its boost length,
+// dash panels, slipstream and the anti-gravity spin boost.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,14 +11,17 @@ import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { createKart, stepKart, forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
 import { bumpKarts } from '../../host/games/kart-3d/kart-bumps.js';
 import { updateSlipstreams, SLIPSTREAM_SECONDS } from '../../host/games/kart-3d/slipstream.js';
-import { sparkLevel, MIN_DRIFT_SPEED, TRICK_EARLY, TRICK_LATE } from '../../host/games/kart-3d/kart-techniques.js';
+import { sparkLevel, MIN_DRIFT_SPEED } from '../../host/games/kart-3d/kart-techniques.js';
 import { BOOST_KINDS } from '../../host/games/kart-3d/kart-boosts.js';
-import { driftTurnAngle, DRIFT_STEERING_RATE, TOP_SPEED } from '../../host/games/kart-3d/kart-driving.js';
-import { countdownNumber, judgeStart, GO_AT, STALL_SECONDS } from '../../host/games/kart-3d/rocket-start.js';
+import { driftTurnAngle, turnAngle } from '../../host/games/kart-3d/kart-driving.js';
+import { tuning } from '../../host/games/kart-3d/tuning.js';
+import { countdownNumber, judgeStart, rocketBoostSeconds, GO_AT, STALL_SECONDS } from '../../host/games/kart-3d/rocket-start.js';
 import { createDrive, stepDrive, playerKart } from '../../host/games/kart-3d/drive.js';
 import { scale, subtract, addScaled } from '../../host/games/kart-3d/vector.js';
 
 const STEP = 1 / 60;
+const TOP_SPEED = tuning.topSpeed;
+const { trickEarly: TRICK_EARLY, trickLate: TRICK_LATE } = tuning;
 const testTrack = buildTrack(TEST_TRACK);
 // A huge flat loop with no dash panels: room to drift in circles without meeting a wall.
 const field = buildTrack({
@@ -28,8 +31,6 @@ const field = buildTrack({
 });
 // The test track's features, by distance along it (see host/games/kart-3d/test-track.js).
 const LIP = 241.8;
-const HAIRPIN_START = 284.5;
-const HAIRPIN_END = 347.3;
 
 function controls(values = {}) {
   return { steer: 0, accelerate: true, brake: false, drift: false, ...values };
@@ -69,13 +70,14 @@ test('pressing Drift hops for about a quarter of a second; landing with the stic
   assert.equal(straight.driftDirection, 0, 'landing with the stick in the middle is only a hop');
 });
 
-test('a drift turns at MK8DX\'s drift rate pushed into it, wider pushed away, but always toward its side', () => {
+test('a drift turns at its tightest pushed into it, wider pushed away, but always toward its side', () => {
   const into = driftTurnAngle(1, 1, TOP_SPEED, STEP);
-  assert.ok(Math.abs(into - 0.019) < 1e-9, `${into} rad a frame into the turn`);
-  assert.ok(Math.abs(DRIFT_STEERING_RATE - 0.019 * 60) < 1e-9);
+  assert.ok(Math.abs(into - (tuning.driftTightRate * Math.PI) / 180 / 60) < 1e-9, `${into} rad a frame into the turn`);
+  // As in MK8DX, a drift pushed fully into it turns tighter than a full normal turn.
+  assert.ok(into > turnAngle(1, TOP_SPEED, STEP));
   const middle = driftTurnAngle(1, 0, TOP_SPEED, STEP);
   const away = driftTurnAngle(1, -1, TOP_SPEED, STEP);
-  assert.ok(middle > 0.011 && middle < into, `the middle (${middle}) is between a full normal turn and the tightest`);
+  assert.ok(middle < into, `the middle (${middle}) is wider than the tightest`);
   assert.ok(away > 0 && away < middle, 'pushed away it widens but still turns right');
   assert.ok(Math.abs(driftTurnAngle(-1, -1, TOP_SPEED, STEP) + into) < 1e-9, 'a left drift mirrors it');
 });
@@ -128,24 +130,36 @@ test('letting go before blue gives nothing; a drift that slows below its minimum
   assert.equal(braking.boost, null);
 });
 
-test('a player can drift the test track\'s hairpin at full speed on its outside lane to a purple mini-turbo, off the walls', () => {
-  const kart = movingKart(testTrack, 258, -4);
+test('a hard drift held round a long bend at full speed reaches a purple mini-turbo, off the walls', () => {
+  // A 180 degree bend whose radius is what a hard drift (stick 0.6 into it) turns at top speed, so the drift
+  // follows its middle lane. At the tuned top speed the test track's hairpin is over in about 2 s, too soon for
+  // the 2.8 s purple needs; a player brakes for it instead.
+  const share = tuning.driftWideShare + ((1 - tuning.driftWideShare) * 1.6) / 2;
+  const radius = Math.round(TOP_SPEED / ((tuning.driftTightRate * Math.PI) / 180 * share));
+  const bend = buildTrack({
+    halfWidth: 8,
+    startLine: 0,
+    pieces: [{ straight: 60 }, { turn: 180, radius }, { straight: 60 }, { turn: 180, radius }],
+  });
+  const bendEnd = 60 + Math.PI * radius;
+  const kart = movingKart(bend, 20, 0);
   let best = 0;
   let wallSteps = 0;
-  run(testTrack, kart, 6 * 60, (frame, each) => {
+  run(bend, kart, 6 * 60, (frame, each) => {
     best = Math.max(best, sparkLevel(each));
-    wallSteps += Math.abs(each.lateral) > TEST_TRACK.halfWidth - 1.1 ? 1 : 0;
-    // The drift starts on the straight just before the hairpin.
-    if (each.s < HAIRPIN_START - 4.5 || each.s > HAIRPIN_END + 2) {
+    wallSteps += Math.abs(each.lateral) > 8 - 1.1 ? 1 : 0;
+    // The drift starts on the straight just before the bend.
+    if (each.s < 55 || each.s > bendEnd + 2) {
       return controls();
     }
-    // Hop with the stick right, then hold the outside lane: tighter when drifting out, wider when in.
-    const steer = each.driftDirection === 0 ? 1 : Math.min(Math.max(0.75 + 0.3 * (-4 - each.lateral), -1), 1);
+    // Hop with the stick right, then hold the middle lane: tighter when drifting out, wider when in, but never
+    // under the 0.55 that charges fast.
+    const steer = each.driftDirection === 0 ? 1 : Math.min(Math.max(0.6 - 0.3 * each.lateral, 0.56), 1);
     return controls({ drift: true, steer });
   });
   assert.equal(best, 3, 'purple sparks');
   assert.equal(wallSteps, 0);
-  assert.ok(kart.s > HAIRPIN_END + 30 && kart.respawnIn === null, 'through the hairpin and on');
+  assert.ok(kart.s > bendEnd + 30 && kart.respawnIn === null, 'round the bend and on');
 });
 
 test('a trick: Drift pressed just before or after the ramp\'s lip boosts 25 frames at 1.35 times top speed on landing', () => {
@@ -178,15 +192,17 @@ test('the countdown shows 3, 2 and 1 a second each, then GO for a second', () =>
 });
 
 test('rocket start: Go arriving just after "2" and held boosts; earlier stalls; later or let go is a normal start', () => {
-  assert.equal(judgeStart(1.3).outcome, 'rocket');
-  assert.ok(Math.abs(judgeStart(1.3).offset - 0.3) < 1e-9);
-  assert.equal(judgeStart(0.9).outcome, 'stall');
-  assert.equal(judgeStart(1.8).outcome, 'normal');
+  // "2" shows from 1 s; the window is tuning.rocketFrom to tuning.rocketTo after it.
+  const inWindow = 1 + (tuning.rocketFrom + tuning.rocketTo) / 2;
+  assert.equal(judgeStart(inWindow).outcome, 'rocket');
+  assert.ok(Math.abs(judgeStart(inWindow).offset - (inWindow - 1)) < 1e-9);
+  assert.equal(judgeStart(1 + tuning.rocketFrom - 0.05).outcome, 'stall');
+  assert.equal(judgeStart(1 + tuning.rocketTo + 0.05).outcome, 'normal');
   assert.deepEqual(judgeStart(null), { outcome: 'normal', offset: null });
   const outcomes = [
-    { pressAt: 1.25, letGoAt: Infinity },
+    { pressAt: inWindow, letGoAt: Infinity },
     { pressAt: 0.5, letGoAt: Infinity },
-    { pressAt: 1.25, letGoAt: 2.5 },
+    { pressAt: inWindow, letGoAt: 2.5 },
     { pressAt: 2.5, letGoAt: Infinity },
   ].map(({ pressAt, letGoAt }) => {
     const drive = createDrive(testTrack, ['p1']);
@@ -200,9 +216,30 @@ test('rocket start: Go arriving just after "2" and held boosts; earlier stalls; 
     return { outcome: kart.startResult.outcome, stillAfterGo: speeds[(GO_AT + STALL_SECONDS) * 60 - 5] === 0, fastest: Math.max(...speeds) };
   });
   assert.deepEqual(outcomes.map((each) => each.outcome), ['rocket', 'stall', 'normal', 'normal']);
-  assert.ok(outcomes[0].fastest > TOP_SPEED, `the rocket start boosted to ${outcomes[0].fastest}`);
+  assert.ok(outcomes[0].fastest > 1.15 * outcomes[3].fastest, `the rocket start reached ${outcomes[0].fastest}, a normal one ${outcomes[3].fastest}`);
   assert.ok(outcomes[1].stillAfterGo, 'the stalled kart stood still for a second after GO');
   assert.ok(outcomes[3].fastest < TOP_SPEED * 0.7, 'a normal start just accelerates');
+});
+
+test('a rocket start boosts longest at the start of its window and shortest at its end', () => {
+  assert.equal(rocketBoostSeconds(tuning.rocketFrom), tuning.rocketBestSeconds);
+  assert.ok(Math.abs(rocketBoostSeconds(tuning.rocketTo) - tuning.rocketWorstSeconds) < 1e-9);
+  const middle = rocketBoostSeconds((tuning.rocketFrom + tuning.rocketTo) / 2);
+  assert.ok(Math.abs(middle - (tuning.rocketBestSeconds + tuning.rocketWorstSeconds) / 2) < 1e-9);
+  // At GO, the kart's boost is as long as its timing earned.
+  // Presses a tenth and nine tenths of the way into the window.
+  const boostAtGo = [0.1, 0.9].map((share) => {
+    const pressAt = 1 + tuning.rocketFrom + share * (tuning.rocketTo - tuning.rocketFrom);
+    const drive = createDrive(testTrack, ['p1']);
+    while (!drive.started) {
+      stepDrive(drive, testTrack, () => controls({ accelerate: drive.time >= pressAt }), STEP);
+    }
+    const kart = playerKart(drive, 'p1');
+    assert.equal(kart.boost.kind, BOOST_KINDS.ROCKET_START);
+    return kart.boost.timeLeft;
+  });
+  const expectedGap = 0.8 * (tuning.rocketBestSeconds - tuning.rocketWorstSeconds);
+  assert.ok(Math.abs(boostAtGo[0] - boostAtGo[1] - expectedGap) < 0.05, `early in the window ${boostAtGo[0]} s, late ${boostAtGo[1]} s`);
 });
 
 test('a dash panel boosts a kart driving over it, and a boost keeps its speed on the grass', () => {

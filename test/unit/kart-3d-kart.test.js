@@ -1,13 +1,15 @@
 // Unit tests for the 3D race's kart rules (host/games/kart-3d/kart-driving.js, kart-physics.js and
-// kart-bumps.js), driven with scripted controls: MK8DX's speed curve and steering rate, off-road, walls, the
-// jump, falling off and being put back, driving on the anti-gravity wall, and bumps decided by weight.
+// kart-bumps.js), driven with scripted controls: MK8DX's speed curve, the steering curve, off-road, the jump,
+// falling off and being put back, driving on the anti-gravity wall, and bumps decided by weight. Walls and
+// bounces (M7a) are in kart-3d-feel.test.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { locate, stationIndexAt, SURFACES } from '../../host/games/kart-3d/track.js';
-import { nextSpeed, TOP_SPEED, STEERING_RATE, OFF_ROAD_SPEED_SHARE } from '../../host/games/kart-3d/kart-driving.js';
+import { nextSpeed, turnAngle, OFF_ROAD_SPEED_SHARE } from '../../host/games/kart-3d/kart-driving.js';
+import { tuning, resetTuning } from '../../host/games/kart-3d/tuning.js';
 import { createKart, stepKart, forwardSpeed, RESPAWN_DELAY } from '../../host/games/kart-3d/kart-physics.js';
 import { KART_RADIUS } from '../../host/games/kart-3d/kart-walls.js';
 import { bumpKarts, kartMass } from '../../host/games/kart-3d/kart-bumps.js';
@@ -15,6 +17,8 @@ import { dummyControls } from '../../host/games/kart-3d/dummy-driver.js';
 import { scale, addScaled, dot, length, subtract } from '../../host/games/kart-3d/vector.js';
 
 const STEP = 1 / 60;
+const TOP_SPEED = tuning.topSpeed;
+const DEGREES = Math.PI / 180;
 const GO = Object.freeze({ steer: 0, accelerate: true, brake: false });
 const testTrack = buildTrack(TEST_TRACK);
 // A wide flat oval for driving tests that must not meet anything: straights 200 long, ends of radius 60.
@@ -60,7 +64,8 @@ test('MK8DX\'s speed curve: one frame adds at most its limit, and 90% of top spe
 
 test('braking stops the kart and then reverses it slowly; coasting rolls to a stop', () => {
   let speed = TOP_SPEED;
-  for (let frame = 0; frame < 60; frame += 1) {
+  // Braking takes 30 units/s off every second, then reverses at 8 units/s^2.
+  for (let frame = 0; frame < (TOP_SPEED / 30 + 0.5) * 60; frame += 1) {
     speed = nextSpeed(speed, { steer: 0, accelerate: false, brake: true }, false, STEP);
   }
   assert.ok(speed < 0 && speed > -6, `reversing at ${speed}`);
@@ -70,23 +75,41 @@ test('braking stops the kart and then reverses it slowly; coasting rolls to a st
 test('a kart accelerates from a standstill on the road and keeps to the ground', () => {
   const kart = createKart(oval, 10, 0);
   drive(oval, kart, GO, 2);
-  // 24 x (1 - 0.99 ^ 120) = 16.8
-  assert.ok(Math.abs(forwardSpeed(kart) - 16.8) < 0.1, `speed ${forwardSpeed(kart)} after 2 s`);
+  // Each frame closes 1% of the gap to top speed: top speed x (1 - 0.99 ^ 120).
+  const expected = TOP_SPEED * (1 - 0.99 ** 120);
+  assert.ok(Math.abs(forwardSpeed(kart) - expected) < 0.1, `speed ${forwardSpeed(kart)} after 2 s, expected ${expected}`);
   assert.equal(kart.grounded, true);
   assert.ok(Math.abs(kart.position.y) < 1e-9, 'on the flat road');
 });
 
-test('full steering turns the nose at MK8DX\'s rate, 0.011 radians a frame, at any speed above a crawl', () => {
+test('full steering turns the nose at the full steer rate, at any speed above a crawl', () => {
   for (const speed of [8, 20]) {
     const kart = movingKart(oval, 20, 0, speed);
     const before = kart.forward;
     drive(oval, kart, { steer: 1, accelerate: true, brake: false }, 0.5);
     const turned = Math.acos(Math.min(dot(before, kart.forward), 1));
-    assert.ok(Math.abs(turned - STEERING_RATE * 0.5) < 0.01, `turned ${turned} rad at ${speed}`);
-    assert.ok(Math.abs(STEERING_RATE - 0.011 * 60) < 1e-12);
+    assert.ok(Math.abs(turned - tuning.fullSteerRate * DEGREES * 0.5) < 0.01, `turned ${turned} rad at ${speed}`);
     // Steering right turns toward the road's right (+z here).
     assert.ok(kart.forward.z > 0);
   }
+});
+
+test('the steering curve: small movements turn as gently as MK8DX\'s 0.011 radians a frame, full stick much tighter', () => {
+  const perFrame = (steer) => turnAngle(steer, TOP_SPEED, STEP);
+  // The M6 steering was a straight line, 0.011 a frame at full stick.
+  for (const steer of [0.05, 0.1, 0.2]) {
+    const m6 = 0.011 * steer;
+    assert.ok(perFrame(steer) >= m6 && perFrame(steer) < m6 * 1.1, `steer ${steer}: ${perFrame(steer)} against ${m6}`);
+  }
+  assert.ok(perFrame(1) > 1.5 * 0.011, `full stick turns ${perFrame(1)} a frame`);
+  for (let steer = 0; steer < 1; steer += 0.05) {
+    assert.ok(perFrame(steer + 0.05) > perFrame(steer), 'more stick always turns more');
+  }
+  assert.ok(Math.abs(perFrame(-0.6) + perFrame(0.6)) < 1e-12, 'left mirrors right');
+  // A curve of 1 is a straight line to the full rate.
+  tuning.steerCurve = 1;
+  assert.ok(Math.abs(perFrame(0.5) - perFrame(1) / 2) < 1e-12);
+  resetTuning();
 });
 
 test('off-road the kart slows to half of top speed', () => {

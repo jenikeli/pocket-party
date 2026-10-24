@@ -1,6 +1,7 @@
 // Hand-written arcade physics for one 3D kart: driving on the road (any slope or roll), flying and landing,
 // gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Each step also
-// runs the Drift button's techniques (kart-techniques.js) and the boosts (kart-boosts.js). Plain functions on
+// runs the Drift button's techniques (kart-techniques.js), the boosts (kart-boosts.js) and the body's animation
+// (kart-body.js). Plain functions on
 // plain kart objects, unit tested in Node. Used by host/games/kart-3d/drive.js, stepped at the fixed 60 Hz.
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
@@ -12,8 +13,10 @@ import { vec, add, scale, addScaled, cross, dot, normalize, flatten, rotate } fr
 import { locate, surfaceAt, pointAt, SURFACES } from './track.js';
 import { hitWall } from './kart-walls.js';
 import { nextSpeed, turnAngle, driftTurnAngle } from './kart-driving.js';
-import { freshTechniques, useDriftButton, afterMove } from './kart-techniques.js';
+import { freshTechniques, useDriftButton, afterMove, hopGravity } from './kart-techniques.js';
 import { freshBoosts, stepBoosts } from './kart-boosts.js';
+import { freshBody, moveBody } from './kart-body.js';
+import { tuning } from './tuning.js';
 
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
@@ -32,16 +35,15 @@ const RESPAWN_BACK = 30;
 const DOWN = vec(0, -1, 0);
 // How much of the steering works in the air.
 const AIR_STEERING_SHARE = 0.5;
-// How fast sideways sliding dies away (per second), as in the 2D race.
-const GRIP = 8;
 
 // A kart standing on the road at distance `s` along it and `lateral` right of the centre line, facing along
 // the road. `weight` (about 1) decides bumps (kart-bumps.js). The kart is plain data: { position, velocity,
 // forward, up, previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded,
-// surface, antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, weight, driftHeld, lipTiming },
-// plus the fields of freshTechniques() and freshBoosts(). forward and up are unit vectors (the nose, and the
-// road's normal under it); previous* are one step ago, for smooth drawing; surface is a SURFACES value, or
-// null in the air; respawnIn counts down while it falls after leaving the road, and is null otherwise;
+// surface, antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, driftHeld,
+// lipTiming }, plus the fields of freshTechniques(), freshBoosts() and freshBody(). forward and up are unit
+// vectors (the nose, and the road's normal under it); previous* are one step ago, for smooth drawing; surface
+// is a SURFACES value, or null in the air; respawnIn counts down while it falls after leaving the road, and is
+// null otherwise; slideLeft is the seconds of loose grip left after a bump or a wall hit;
 // driftHeld is the Drift button last step, and lipTiming the last trick timing (kart-techniques.js), both kept
 // when the kart is put back on the road.
 export function createKart(track, s, lateral, weight = 1) {
@@ -68,8 +70,10 @@ function placeOnRoad(track, kart, s, lateral) {
     lateral,
     lastGroundIndex: spot.index,
     respawnIn: null,
+    slideLeft: 0,
     ...freshTechniques(),
     ...freshBoosts(),
+    ...freshBody(),
   });
   kart.previousBodyYaw = 0;
   kart.previousBodyRoll = 0;
@@ -96,7 +100,7 @@ export function stepKart(track, kart, controls, dt) {
   }
   const fromIndex = kart.trackIndex;
   // A hop leaves the road here, so wasGrounded is read after it: a hop is not a landing's take-off.
-  useDriftButton(kart, controls);
+  useDriftButton(kart, controls, dt);
   const wasGrounded = kart.grounded;
   if (kart.grounded) {
     drive(kart, controls, dt);
@@ -111,27 +115,30 @@ export function stepKart(track, kart, controls, dt) {
   settle(track, kart, contact);
   afterMove(track, kart, controls, fromIndex, wasGrounded, dt);
   stepBoosts(track, kart, dt);
+  moveBody(kart, controls, dt);
 }
 
 // On the road: the pedals (or a boost) change the speed along the nose, steering (or the drift) turns the nose
-// about the road's normal, and grip takes away sideways sliding (left over from bumps and walls). A stalled
-// start holds the kart still.
+// about the road's normal, and grip takes away sideways sliding (left over from bumps and walls). Right after
+// a bump or a wall hit the grip is loose, so the kart slides away visibly. A stalled start holds the kart still.
 function drive(kart, controls, dt) {
   const side = cross(kart.forward, kart.up);
   const offRoad = kart.surface === SURFACES.OFF_ROAD;
   const speed = kart.stallLeft > 0 ? 0 : nextSpeed(forwardSpeed(kart), controls, offRoad, dt, kart.boost);
-  const slide = dot(kart.velocity, side) * Math.exp(-GRIP * dt);
+  const grip = kart.slideLeft > 0 ? tuning.slideGrip : tuning.grip;
+  kart.slideLeft = Math.max(kart.slideLeft - dt, 0);
+  const slide = dot(kart.velocity, side) * Math.exp(-grip * dt);
   const turn = kart.driftDirection === 0 ? turnAngle(controls.steer, speed, dt) : driftTurnAngle(kart.driftDirection, controls.steer, speed, dt);
   // A right turn turns the nose clockwise seen from above the road: a negative angle about up.
   kart.forward = normalize(rotate(kart.forward, kart.up, -turn));
   kart.velocity = addScaled(scale(kart.forward, speed), cross(kart.forward, kart.up), slide);
 }
 
-// In the air: gravity pulls (toward the road in anti-gravity sections), the pedals do nothing, and steering
-// turns the kart and its flight a little.
+// In the air: gravity pulls (toward the road in anti-gravity sections, and with a hop's own pull during a hop),
+// the pedals do nothing, and steering turns the kart and its flight a little.
 function fly(kart, controls, dt) {
   const gravity = kart.antiGravity ? scale(kart.up, -1) : DOWN;
-  kart.velocity = addScaled(kart.velocity, gravity, GRAVITY * dt);
+  kart.velocity = addScaled(kart.velocity, gravity, (kart.hopping ? hopGravity() : GRAVITY) * dt);
   const angle = -turnAngle(controls.steer, forwardSpeed(kart), dt) * AIR_STEERING_SHARE;
   kart.forward = normalize(rotate(kart.forward, kart.up, angle));
   kart.velocity = rotate(kart.velocity, kart.up, angle);

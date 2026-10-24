@@ -1,9 +1,9 @@
-// The 3D kart race, for now the test drive of M6b and M6c, a game module: a setup screen (control style and
+// The 3D kart race, for now the test drive of M6 and M7a, a game module: a setup screen (control style and
 // ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players drive freely on the test
 // track in split screen, drifting and boosting, with dummy karts filling the field to 12. No laps or places
-// yet (M7). Loaded through host/games/index.js and run by the shell (host/game-session.js). The rules live in
-// DOM-free modules next to this file; this file connects them to the shell, the phones, the renderer and the
-// panels. The shell's End game goes back to the lobby.
+// yet (M7b). Loaded through host/games/index.js and run by the shell (host/game-session.js). The rules live in
+// DOM-free modules next to this file; this file connects them to the shell, the phones, the renderer, the
+// panels and the tuning sliders. The shell's End game goes back to the lobby.
 
 import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
@@ -17,6 +17,7 @@ import { countdownNumber } from './rocket-start.js';
 import { createStepTimer } from './step-timer.js';
 import { createReadout } from './readout.js';
 import { createPanels } from './panels.js';
+import { createTuningPanel } from './tuning-panel.js';
 
 const READOUT_INTERVAL_MS = 250;
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
@@ -30,6 +31,7 @@ export function createGame() {
   let rendererModule = null;
   let renderer = null;
   let panels = null;
+  let tuningPanel = null;
   let players = null;
   let setControllerView = null;
   let pingTimer = null;
@@ -58,7 +60,13 @@ export function createGame() {
     players = shell.players;
     setControllerView = shell.setControllerView;
     renderer = rendererModule.createRenderer(shell.container, track);
-    panels = createPanels(shell.container, { onStartDriving: startDriving, onBackToSetup: showSetup, onRestart: restart });
+    tuningPanel = createTuningPanel(shell.container);
+    panels = createPanels(shell.container, {
+      onStartDriving: startDriving,
+      onBackToSetup: showSetup,
+      onRestart: restart,
+      onTuning: () => tuningPanel.toggle(),
+    });
     // The PING travels host -> server -> phone and back, the path an input takes, there and back. A timer,
     // not the game's steps, which run slow when the frame rate drops. Disconnected phones are skipped.
     pingTimer = setInterval(() => {
@@ -150,6 +158,7 @@ export function createGame() {
     renderer.draw(drive, players, alpha, dt);
     framesSinceReadout += 1;
     drawMsSinceReadout += performance.now() - now;
+    tuningPanel.setVisible(drive !== null);
     if (!drive) {
       panels.showSetup(setup, players);
       startReadoutPeriod(now);

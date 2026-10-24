@@ -62,6 +62,11 @@ export function show(viewSteering) {
   showSteering();
 }
 
+// What this phone steers with now (a KART_STEERING value): the host's view, once it confirms a choice.
+export function current() {
+  return steering;
+}
+
 // Called straight from a tap (the setup screen's Tilt, or Enable tilt), because iOS only asks for the motion
 // permission inside a user gesture; requestAccess() is the first thing it does. Once tilt gives a real reading
 // the phone asks the host for tilt steering; if it cannot, the player stays on (or goes back to) the stick.

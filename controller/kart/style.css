@@ -187,21 +187,62 @@
   filter: brightness(1.4);
 }
 
-/* The 3D race: Drift above Go under the right thumb, Brake beside Go, and the later Item button's place top
-   left. With auto-accelerate there is no Go, so Drift takes the whole right column. */
-#kart-pedals.with-drift {
-  display: grid;
-  grid-template-columns: 2fr 3fr;
+/* The 3D race (with-drift): the buttons sit in the controls' own grid (the pedals box steps aside with
+   display: contents), so tilt can move Drift to the left. Steering takes 5 parts, the buttons 2 and 3.
+   With the stick: Drift above Go under the right thumb, Brake beside Go, the later Item button's place top
+   left of Drift; with auto-accelerate there is no Go, so Drift takes the whole right column. */
+#kart-controls.with-drift {
+  grid-template-columns: 5fr auto 2fr 3fr;
   grid-template-rows: 1fr 1fr;
   grid-template-areas:
-    "item drift"
-    "brake go";
+    "steer status item drift"
+    "steer status brake go";
 }
 
-#kart-pedals.with-drift.auto-accelerate {
+#kart-controls.with-drift #kart-pedals {
+  display: contents;
+}
+
+#kart-controls.with-drift.auto-accelerate {
   grid-template-areas:
-    "item drift"
-    "brake drift";
+    "steer status item drift"
+    "steer status brake drift";
+}
+
+/* With tilt the left thumb is free, so Drift moves under it, below the tilt panel; on the right Brake stands
+   left of Go, with the Item place above Go. With auto-accelerate the Item place and Brake share the right. */
+#kart-controls.with-drift.tilt {
+  grid-template-areas:
+    "steer status brake item"
+    "drift status brake go";
+}
+
+#kart-controls.with-drift.tilt.auto-accelerate {
+  grid-template-areas:
+    "steer status item item"
+    "drift status brake brake";
+}
+
+#kart-controls.with-drift #kart-stick-zone,
+#kart-controls.with-drift #kart-tilt-zone {
+  grid-area: steer;
+  min-height: 0;
+}
+
+/* Half the height is left for the tilt panel, so it lays out in a row and its wheel shrinks. */
+#kart-controls.with-drift.tilt #kart-tilt-zone {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+#kart-controls.with-drift.tilt #kart-wheel {
+  width: 70px;
+  height: 70px;
+}
+
+#kart-controls.with-drift #kart-status {
+  grid-area: status;
 }
 
 #kart-item-slot {
@@ -215,11 +256,11 @@
   font-size: 22px;
 }
 
-#kart-pedals.with-drift #kart-brake {
+#kart-controls.with-drift #kart-brake {
   grid-area: brake;
 }
 
-#kart-pedals.with-drift #kart-accelerate {
+#kart-controls.with-drift #kart-accelerate {
   grid-area: go;
 }
 

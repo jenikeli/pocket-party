@@ -3,14 +3,14 @@
 // status in the middle that each race words itself. Used by controller/games/kart-2d/index.js and
 // controller/games/kart-3d/index.js, which pass their own describeStatus and say whether they have Drift.
 
-import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
+import { MESSAGE_TYPES, INPUT_KINDS, KART_STEERING } from '/shared/protocol.js';
 import * as buttonInput from '/controller/inputs/button.js';
 import * as steering from '/controller/kart/steering.js';
 import * as setupScreen from '/controller/kart/setup-screen.js';
 import { MARKUP } from '/controller/kart/markup.js';
 
 // The page elements, looked up by start() once MARKUP is in place.
-let setup, controls, pedals, accelerateButton, driftButton, bigText, lineText;
+let setup, controls, accelerateButton, driftButton, bigText, lineText;
 let sendMessage = null; // set by start
 // (view) -> { big, line }: what the middle of the controls says for a race view. Set by start.
 let describeStatus = null;
@@ -22,24 +22,26 @@ export function start(container, send, race) {
   const byId = (id) => document.getElementById(id);
   setup = byId('kart-setup');
   controls = byId('kart-controls');
-  pedals = byId('kart-pedals');
   accelerateButton = byId('kart-accelerate');
   driftButton = byId('kart-drift');
   bigText = byId('kart-big');
   lineText = byId('kart-line');
   sendMessage = send;
   describeStatus = race.describeStatus;
-  // With Drift the buttons become a grid (controller/kart/style.css), with the Item button's place kept free.
-  pedals.classList.toggle('with-drift', race.drift);
+  // With Drift the buttons join the controls' grid (controller/kart/style.css), with the Item button's place
+  // kept free.
+  controls.classList.toggle('with-drift', race.drift);
   driftButton.hidden = !race.drift;
   byId('kart-item-slot').hidden = !race.drift;
   // A long press on a held button must not open the browser's menu.
   // On the game's own element, not the container, which the shell keeps between games.
   byId('kart-screen').addEventListener('contextmenu', (event) => event.preventDefault());
   // Registered here, not when the module loads: the input modules are shared with the input lab, and each
-  // keeps only one callback, so whichever game runs must set it again.
+  // keeps only one callback, so whichever game runs must set it again. The surface is the whole controls area:
+  // in the 3D race the buttons are laid out on its grid (the pedals element has display: contents, so no box of
+  // its own to capture fingers on), and with tilt Drift sits on the left.
   buttonInput.onInput(onButtonInput);
-  buttonInput.start(pedals);
+  buttonInput.start(controls);
   const steeringElements = {
     stickZone: byId('kart-stick-zone'),
     stickKnob: byId('kart-stick-knob'),
@@ -66,13 +68,15 @@ export function showView(view) {
     return;
   }
   steering.show(view.steering);
+  // The 3D race moves Drift to the left with tilt: the layout follows the steering the phone shows.
+  controls.classList.toggle('tilt', steering.current() === KART_STEERING.TILT);
   if (onSetup) {
     setupScreen.show(view);
     return;
   }
   // With auto-accelerate the kart drives unless braking, so there is no Go button.
   accelerateButton.hidden = view.autoAccelerate;
-  pedals.classList.toggle('auto-accelerate', view.autoAccelerate);
+  controls.classList.toggle('auto-accelerate', view.autoAccelerate);
   // The 3D race's drift shows its spark colour on the button (styled by data-spark), so a player can see the
   // level without looking up at the host screen.
   driftButton.dataset.spark = view.spark ?? '';
@@ -97,5 +101,5 @@ function sendChoice(choice, value) {
 
 function onButtonInput(input) {
   sendInput(input);
-  pedals.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
+  controls.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
 }

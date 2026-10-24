@@ -4,7 +4,7 @@
 
 import { subtract, cross, dot } from './vector.js';
 import { startBoost, BOOST_KINDS } from './kart-boosts.js';
-import { TOP_SPEED } from './kart-driving.js';
+import { tuning } from './tuning.js';
 
 // The reference says "about 3-5 s" close behind; the short end, to be checked on a device.
 export const SLIPSTREAM_SECONDS = 3;
@@ -14,7 +14,7 @@ const NEAREST_AHEAD = 1.5;
 const FARTHEST_AHEAD = 12;
 const MOST_ACROSS = 1.6;
 const MOST_ABOVE = 2;
-const MIN_SPEED = 0.6 * TOP_SPEED;
+const MIN_SPEED_SHARE = 0.6;
 // Out of the slipstream, the charge drains at this many seconds per second, so a brief wobble loses little.
 const DRAIN_RATE = 1;
 
@@ -33,7 +33,7 @@ export function updateSlipstreams(karts, dt) {
 
 // Measured in the kart's own frame, so it works the same on a wall or upside down.
 function isCloseBehind(kart, other) {
-  if (other.respawnIn !== null || dot(kart.velocity, kart.forward) < MIN_SPEED) {
+  if (other.respawnIn !== null || dot(kart.velocity, kart.forward) < MIN_SPEED_SHARE * tuning.topSpeed) {
     return false;
   }
   const offset = subtract(other.position, kart.position);

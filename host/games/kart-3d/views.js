@@ -5,7 +5,8 @@
 
 import * as THREE from 'three';
 import { viewRects } from './view-layout.js';
-import { createChaseCamera, followKart, FIELD_OF_VIEW } from './chase-camera.js';
+import { createChaseCamera, followKart } from './chase-camera.js';
+import { tuning } from './tuning.js';
 
 const MAX_VIEWS = 4;
 const LABEL_STYLE = 'position: absolute; margin: 0; padding: 4px 10px; border-radius: 6px; font: bold 20px sans-serif; ' +
@@ -14,7 +15,7 @@ const LABEL_STYLE = 'position: absolute; margin: 0; padding: 4px 10px; border-ra
 // Returns { draw(renderer, scene, targets, dt), drawOne(renderer, scene, camera), destroy() }.
 export function createViews(container) {
   const views = Array.from({ length: MAX_VIEWS }, () => ({
-    camera: new THREE.PerspectiveCamera(FIELD_OF_VIEW, 16 / 9, 0.3, 1500),
+    camera: new THREE.PerspectiveCamera(tuning.fieldOfView, 16 / 9, 0.3, 1500),
     chase: createChaseCamera(),
     label: createLabel(container),
   }));

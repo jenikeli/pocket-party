@@ -1,7 +1,8 @@
 // The 3D test drive's HTML panels over the canvas: the setup screen (each player's control style and ready,
-// and Start driving), and while driving a small readout at the top (readout.js) with Back to setup and Restart
-// (back to the grid for another countdown) buttons, and the countdown in big letters in the middle. Used by host/games/kart-3d/index.js, which owns the state; the
-// panels only show it and report clicks. The bottom right stays clear for the shell's game bar.
+// and Start driving), and while driving a small readout at the top (readout.js) with Back to setup, Restart
+// (back to the grid for another countdown) and Tuning (opens tuning-panel.js) buttons, and the countdown in big
+// letters in the middle. Used by host/games/kart-3d/index.js, which owns the state; the panels only show it and
+// report clicks. The bottom right stays clear for the shell's game bar.
 
 import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
 import { KART_STEERING } from '/shared/protocol.js';
@@ -31,9 +32,9 @@ const STYLE = `
   #kart-3d-setup button:disabled { opacity: 0.4; cursor: default; }
 `;
 
-// `onStartDriving()`, `onBackToSetup()` and `onRestart()` run on a click of those buttons.
+// `onStartDriving()`, `onBackToSetup()`, `onRestart()` and `onTuning()` run on a click of those buttons.
 // Returns { showSetup(setup, players), showDriving(readoutText, countdownText) }: one panel shows at a time.
-export function createPanels(container, { onStartDriving, onBackToSetup, onRestart }) {
+export function createPanels(container, { onStartDriving, onBackToSetup, onRestart, onTuning }) {
   const style = document.createElement('style');
   style.textContent = STYLE;
   const setupPanel = document.createElement('div');
@@ -50,6 +51,7 @@ export function createPanels(container, { onStartDriving, onBackToSetup, onResta
   drivePanel.innerHTML = `
     <button type="button" id="kart-3d-setup-button">Back to setup</button>
     <button type="button" id="kart-3d-restart-button">Restart</button>
+    <button type="button" id="kart-3d-tuning-button">Tuning</button>
     <p id="kart-3d-readout"></p>`;
   const countdown = document.createElement('p');
   countdown.id = 'kart-3d-countdown';
@@ -62,6 +64,7 @@ export function createPanels(container, { onStartDriving, onBackToSetup, onResta
   startButton.addEventListener('click', onStartDriving);
   drivePanel.querySelector('#kart-3d-setup-button').addEventListener('click', onBackToSetup);
   drivePanel.querySelector('#kart-3d-restart-button').addEventListener('click', onRestart);
+  drivePanel.querySelector('#kart-3d-tuning-button').addEventListener('click', onTuning);
   // What the rows show, as text, so they are only rebuilt when something changed (this runs every frame).
   let shownRows = null;
 

@@ -5,7 +5,7 @@
 
 import { subtract, cross, dot } from './vector.js';
 import { pointAt } from './track.js';
-import { turnAngle } from './kart-driving.js';
+import { turnAngle, steeringRate, steerForRate } from './kart-driving.js';
 import { forwardSpeed } from './kart-physics.js';
 
 // How far ahead along the road it aims, and how far it looks for bends to slow down for.
@@ -22,10 +22,11 @@ export function dummyControls(track, kart, lane) {
   const speed = forwardSpeed(kart);
   const aim = aimAt(track, kart, lane, STEER_LOOK_AHEAD);
   // Pure pursuit: the arc from the kart through the aim point has curvature 2 sin(angle) / distance, so it
-  // needs that times the speed as a turn rate. A full steer gives turnAngle(1, ...) per second.
+  // needs that times the speed as a turn rate. A kart at a crawl turns less for the same stick (turnAngle), so
+  // the stick asks for more; steerForRate finds the stick for that rate on the steering curve.
   const wantedTurnRate = (speed * 2 * Math.sin(aim.angle)) / aim.distance;
-  const fullTurnRate = Math.max(turnAngle(1, speed, 1), 1e-6);
-  const steer = Math.min(Math.max(wantedTurnRate / fullTurnRate, -1), 1);
+  const crawlShare = Math.max(turnAngle(1, speed, 1) / steeringRate(1), 1e-6);
+  const steer = steerForRate(wantedTurnRate / crawlShare);
   const bendSpeed = Math.min(...SPEED_LOOK_AHEADS.map((lookAhead) => fastestThrough(track, kart, lane, lookAhead)));
   const brake = speed > bendSpeed * BRAKE_MARGIN;
   return { steer, accelerate: !brake, brake };

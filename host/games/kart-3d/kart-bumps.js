@@ -1,20 +1,16 @@
 // Karts bumping into each other in the 3D race, decided by weight as in MK8DX: each kart's mass blends between
 // a minimum and a maximum by how fast it goes relative to its top speed, so a heavy kart at full speed shoves a
 // light one aside, and a kart standing still is easy to push. A bump ends a slipstream boost, and two karts
-// bumping in an anti-gravity section both get a spin boost, as in MK8DX. Plain functions, unit tested in Node.
-// Used by host/games/kart-3d/drive.js after every kart has stepped.
+// bumping in an anti-gravity section both get a spin boost, as in MK8DX. Karts bounce apart (partly elastic,
+// never less than a least parting speed) and slide loose for a moment, so a bump visibly throws them apart.
+// Plain functions, unit tested in Node. Used by host/games/kart-3d/drive.js after every kart has stepped. The
+// tuned numbers are tuning.js's.
 
 import { subtract, length, scale, addScaled, dot } from './vector.js';
 import { KART_RADIUS } from './kart-walls.js';
-import { TOP_SPEED } from './kart-driving.js';
+import { tuning } from './tuning.js';
 import { startBoost, endBoost, BOOST_KINDS } from './kart-boosts.js';
-import { startSpin } from './kart-techniques.js';
-
-// A kart's mass is its weight times this share at a standstill, and times 1 at top speed. MK8DX's own minimum
-// and maximum are in its data but not in the reference, so this is a guess.
-const STANDING_MASS_SHARE = 0.5;
-// How much of the closing speed bounces back (0 = none, 1 = all), as in the 2D race.
-const BOUNCE = 0.6;
+import { startSpin } from './kart-body.js';
 
 // Pushes every overlapping pair apart and bounces their velocities along the line between them. Karts that are
 // falling after leaving the road are left out.
@@ -27,9 +23,10 @@ export function bumpKarts(karts) {
   }
 }
 
+// The kart's weight times tuning.standingMassShare standing still, rising to its full weight at top speed.
 export function kartMass(kart) {
-  const speedShare = Math.min(length(kart.velocity) / TOP_SPEED, 1);
-  return kart.weight * (STANDING_MASS_SHARE + (1 - STANDING_MASS_SHARE) * speedShare);
+  const speedShare = Math.min(length(kart.velocity) / tuning.topSpeed, 1);
+  return kart.weight * (tuning.standingMassShare + (1 - tuning.standingMassShare) * speedShare);
 }
 
 function bumpPair(first, second) {
@@ -53,9 +50,14 @@ function bumpPair(first, second) {
   if (closingSpeed >= 0) {
     return;
   }
-  const impulse = ((1 + BOUNCE) * closingSpeed) / (1 / firstMass + 1 / secondMass);
-  first.velocity = addScaled(first.velocity, normal, impulse / firstMass);
-  second.velocity = addScaled(second.velocity, normal, -impulse / secondMass);
+  // They part at the bounce's share of the speed they met at, and at least the least parting speed. The push
+  // that does it is shared out by mass (the lighter kart's speed changes more), which keeps their momentum.
+  const partingSpeed = Math.max(-tuning.bumpBounce * closingSpeed, tuning.bumpMinSpeed);
+  const impulse = (partingSpeed - closingSpeed) / (1 / firstMass + 1 / secondMass);
+  first.velocity = addScaled(first.velocity, normal, -impulse / firstMass);
+  second.velocity = addScaled(second.velocity, normal, impulse / secondMass);
+  first.slideLeft = tuning.slideSeconds;
+  second.slideLeft = tuning.slideSeconds;
   // Only when they meet (closing in), not every step they stay touching.
   if (first.antiGravity && second.antiGravity) {
     for (const kart of [first, second]) {

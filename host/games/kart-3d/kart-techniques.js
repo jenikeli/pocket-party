@@ -1,7 +1,7 @@
 // MK8DX's driving techniques on the Drift button: hop, drift and mini-turbo, and the trick (jump boost) off a
-// ramp's lip. Also how the kart's body leans into a drift, rolls in a trick and spins in a spin boost, for
-// drawing. Numbers from docs/mk8dx-reference.md (level 10) where it has them. Plain functions on plain kart
-// objects, unit tested in Node. Used by kart-physics.js (every step) and kart-bumps.js (the spin).
+// ramp's lip. Numbers from docs/mk8dx-reference.md (level 10) where it has them; the hop and the trick window
+// are tuned (tuning.js). How the body leans and rolls for drawing is kart-body.js's. Plain functions on plain
+// kart objects, unit tested in Node. Used by kart-physics.js every step.
 //
 // MK8DX's rules: pressing Drift hops; the steering as the kart lands picks the drift's side; while drifting a
 // counter charges, faster with the stick pushed hard into the turn, through three spark levels; releasing
@@ -10,9 +10,9 @@
 
 import { addScaled, dot } from './vector.js';
 import { startBoost, miniTurboSeconds, BOOST_KINDS } from './kart-boosts.js';
+import { startTrickRoll } from './kart-body.js';
+import { tuning } from './tuning.js';
 
-// A hop is about 0.27 s in the air at GRAVITY 25 (a guess: MK8DX's hop is short and small).
-const HOP_SPEED = 3.4;
 // Landing with the stick at least this far over starts a drift (a guess).
 const DRIFT_START_STEER = 0.3;
 // A kart slower than this cannot start a drift, and a drift ends without a boost when the kart slows below it
@@ -26,36 +26,31 @@ const SOFT_CHARGE_PER_FRAME = 2;
 const SPARK_THRESHOLDS = [256, 542, 828];
 // What the phone and the renderer call each level (index 0 is no sparks yet).
 export const SPARK_COLORS = Object.freeze([null, 'blue', 'orange', 'purple']);
-// A press this long before the kart crosses a lip, or this long after, does a trick (guesses, to set from the
-// lip timings in the host's readout). The host judges by when the press arrives, a network trip after the thumb.
-export const TRICK_EARLY = 0.1;
-export const TRICK_LATE = 0.3;
-// Presses this close to a lip are timed for the readout, trick or not.
+// A press up to tuning.trickEarly before the kart crosses a lip, or up to tuning.trickLate after, does a trick.
+// The host judges by when the press arrives, a network trip after the thumb. Presses this close to a lip are
+// timed for the readout, trick or not.
 const LIP_TIMING_RANGE = 0.5;
-// The body turns this far into a drift (radians), easing there at this rate per second.
-const DRIFT_LEAN = 0.35;
-const LEAN_RATE = 10;
-// A trick is one roll, a spin boost one turn, taking this long.
-const TRICK_SECONDS = 0.5;
-const SPIN_SECONDS = 0.5;
 
 // The technique fields of a fresh kart (also after it is put back on the road): driftDirection -1 (left), 1
 // (right) or 0 (not drifting); driftCharge the MK8DX counter; sinceDriftPress seconds since Drift was last
-// pressed; sinceLip seconds since the kart crossed a ramp's lip, null on the ground; trickTime seconds into a
-// trick, null if none; spinTime the same for a spin boost; driftLean the body's turn into a drift; bodyYaw and
-// bodyRoll the angles the body is drawn at (lean plus spin, and the trick's roll).
+// pressed; sinceLip seconds since the kart crossed a ramp's lip, null on the ground; hopping true from a hop
+// until it lands; tricking true from a trick until the landing that boosts.
 export function freshTechniques() {
   return {
     driftDirection: 0,
     driftCharge: 0,
     sinceDriftPress: Infinity,
     sinceLip: null,
-    trickTime: null,
-    spinTime: null,
-    driftLean: 0,
-    bodyYaw: 0,
-    bodyRoll: 0,
+    hopping: false,
+    tricking: false,
   };
+}
+
+// The pull toward the road during a hop, in units per second squared: what brings a hop of tuning.hopHeight
+// down in tuning.hopSeconds (h = g t^2 / 8). A hop has its own pull, so its height and length can be tuned
+// apart; everything else in the air falls at the normal gravity (kart-physics.js).
+export function hopGravity() {
+  return (8 * tuning.hopHeight) / tuning.hopSeconds ** 2;
 }
 
 // 0 (no sparks), 1 blue, 2 orange or 3 purple.
@@ -64,8 +59,8 @@ export function sparkLevel(kart) {
 }
 
 // Before the kart moves: a press of Drift hops on the ground or tricks just after a lip; letting go of it ends
-// a drift with its mini-turbo. kart.driftHeld is the button last step.
-export function useDriftButton(kart, controls) {
+// a drift with its mini-turbo. kart.driftHeld is the button last step; `dt` is the step's length.
+export function useDriftButton(kart, controls, dt) {
   const held = controls.drift === true;
   const pressed = held && !kart.driftHeld;
   const released = !held && kart.driftHeld;
@@ -73,12 +68,12 @@ export function useDriftButton(kart, controls) {
   if (pressed) {
     kart.sinceDriftPress = 0;
     if (kart.grounded) {
-      hop(kart);
-    } else if (kart.sinceLip !== null && kart.sinceLip <= TRICK_LATE) {
+      hop(kart, dt);
+    } else if (kart.sinceLip !== null && kart.sinceLip <= tuning.trickLate) {
       startTrick(kart);
     }
     if (kart.sinceLip !== null && kart.sinceLip <= LIP_TIMING_RANGE && kart.lipTiming.offset === null) {
-      kart.lipTiming = { offset: kart.sinceLip, trick: kart.trickTime !== null };
+      kart.lipTiming = { offset: kart.sinceLip, trick: kart.tricking };
     }
   }
   if (released && kart.driftDirection !== 0) {
@@ -90,15 +85,21 @@ export function useDriftButton(kart, controls) {
   }
 }
 
-function hop(kart) {
-  kart.velocity = addScaled(kart.velocity, kart.up, HOP_SPEED);
+// Thrown up at the speed that reaches tuning.hopHeight under hopGravity (v = 4 h / t), plus half a step's
+// worth of that pull: the steps take the pull off before they move the kart, which would otherwise cut the
+// hop's top by about a tenth.
+function hop(kart, dt) {
+  const speed = (4 * tuning.hopHeight) / tuning.hopSeconds + (hopGravity() * dt) / 2;
+  kart.velocity = addScaled(kart.velocity, kart.up, speed);
   kart.grounded = false;
   kart.surface = null;
+  kart.hopping = true;
 }
 
 function startTrick(kart) {
-  if (kart.trickTime === null) {
-    kart.trickTime = 0;
+  if (!kart.tricking) {
+    kart.tricking = true;
+    startTrickRoll(kart);
   }
 }
 
@@ -116,12 +117,13 @@ export function afterMove(track, kart, controls, fromIndex, wasGrounded, dt) {
     land(kart, controls);
   }
   chargeDrift(kart, controls, dt);
-  moveBody(kart, dt);
 }
 
+// A hop that goes over the lip becomes a jump, falling at the normal gravity.
 function crossLip(kart) {
   kart.sinceLip = 0;
-  const pressedJustBefore = kart.sinceDriftPress <= TRICK_EARLY;
+  kart.hopping = false;
+  const pressedJustBefore = kart.sinceDriftPress <= tuning.trickEarly;
   if (pressedJustBefore) {
     startTrick(kart);
   }
@@ -134,8 +136,9 @@ function crossLip(kart) {
 // A trick boosts on landing. Drift still held with the stick over starts a drift, after a hop or any jump.
 function land(kart, controls) {
   kart.sinceLip = null;
-  if (kart.trickTime !== null) {
-    kart.trickTime = null;
+  kart.hopping = false;
+  if (kart.tricking) {
+    kart.tricking = false;
     startBoost(kart, BOOST_KINDS.JUMP);
   }
   const speed = dot(kart.velocity, kart.forward);
@@ -157,30 +160,4 @@ function chargeDrift(kart, controls, dt) {
   }
   const hard = controls.steer * kart.driftDirection >= HARD_STEER;
   kart.driftCharge += (hard ? HARD_CHARGE_PER_FRAME : SOFT_CHARGE_PER_FRAME) * dt * 60;
-}
-
-// Starts the body's turn of a spin boost (kart-bumps.js); the boost itself is kart-boosts.js's.
-export function startSpin(kart) {
-  kart.spinTime = 0;
-}
-
-function moveBody(kart, dt) {
-  kart.driftLean += (kart.driftDirection * DRIFT_LEAN - kart.driftLean) * (1 - Math.exp(-LEAN_RATE * dt));
-  if (kart.trickTime !== null) {
-    kart.trickTime += dt;
-  }
-  if (kart.spinTime !== null) {
-    kart.spinTime = kart.spinTime + dt >= SPIN_SECONDS ? null : kart.spinTime + dt;
-  }
-  kart.bodyYaw = kart.driftLean + turnShare(kart.spinTime, SPIN_SECONDS);
-  kart.bodyRoll = turnShare(kart.trickTime, TRICK_SECONDS);
-}
-
-// One full turn over `seconds`, eased in and out; 0 when not turning.
-function turnShare(time, seconds) {
-  if (time === null) {
-    return 0;
-  }
-  const share = Math.min(time / seconds, 1);
-  return 2 * Math.PI * share * share * (3 - 2 * share);
 }

@@ -98,6 +98,13 @@ describe('M6c 3D techniques', () => {
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
     await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
+    // The tuned window opens 0.3 s after "2", and a press made when the phone shows "2" can arrive sooner on this
+    // slow software-drawn host. This test is about the start being judged and logged, so the window opens at "2"
+    // (the host page's own tuning module, the one its rules read).
+    await hostPage.evaluate(async () => {
+      const { setTuning } = await import('/host/games/kart-3d/tuning.js');
+      setTuning('rocketFrom', 0);
+    });
     await clickNow(hostPage, '#kart-3d-start-button');
   });
 

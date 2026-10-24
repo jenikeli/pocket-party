@@ -8,7 +8,7 @@ import { bumpKarts } from './kart-bumps.js';
 import { updateSlipstreams } from './slipstream.js';
 import { startBoost, BOOST_KINDS } from './kart-boosts.js';
 import { dummyControls } from './dummy-driver.js';
-import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart } from './rocket-start.js';
+import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart, rocketBoostSeconds } from './rocket-start.js';
 
 // MK8DX always races 12 karts.
 export const FIELD_SIZE = 12;
@@ -80,7 +80,7 @@ function judgeStarts(drive) {
   for (const kart of drive.karts.filter((each) => each.playerId !== null)) {
     kart.startResult = judgeStart(kart.goPressedAt);
     if (kart.startResult.outcome === START_OUTCOMES.ROCKET) {
-      startBoost(kart, BOOST_KINDS.ROCKET_START);
+      startBoost(kart, BOOST_KINDS.ROCKET_START, rocketBoostSeconds(kart.startResult.offset));
     } else if (kart.startResult.outcome === START_OUTCOMES.STALL) {
       kart.stallLeft = STALL_SECONDS;
     }

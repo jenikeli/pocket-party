@@ -10,6 +10,8 @@ import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { progressBetween } from '../../host/games/kart-3d/track.js';
 import { createDrive, stepDrive, removeKart, playerKart, FIELD_SIZE } from '../../host/games/kart-3d/drive.js';
 import { forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
+import { steeringRate } from '../../host/games/kart-3d/kart-driving.js';
+import { tuning } from '../../host/games/kart-3d/tuning.js';
 import { KART_RADIUS } from '../../host/games/kart-3d/kart-walls.js';
 import { createChaseCamera, followKart } from '../../host/games/kart-3d/chase-camera.js';
 import { setupView, drivingView, viewTargets, kartPose, describeKart } from '../../host/games/kart-3d/drive-views.js';
@@ -23,6 +25,9 @@ import { vec, subtract, length, dot, normalize, addScaled, rotate } from '../../
 
 const STEP = 1 / 60;
 const track = buildTrack(TEST_TRACK);
+
+// A Go press that arrives inside the rocket start window, 0.45 s after "2" (shown from 1 s).
+const ROCKET_PRESS = 1.45;
 
 test('the grid: dummies fill the field to 12, players at the back, all on the road behind the line, apart', () => {
   const drive = createDrive(track, ['p1', 'p2']);
@@ -61,7 +66,13 @@ test('12 dummy karts lap the test track twice: over the jump, round the hairpin 
     assert.ok(lap.distance > 2 * track.length, `dummy ${index} drove ${lap.distance}`);
     assert.ok(lap.airSteps > 2 * 30, `dummy ${index} jumped (${lap.airSteps} steps in the air)`);
     assert.ok(lap.wallSteps > 2 * 30, `dummy ${index} drove on the vertical wall`);
-    assert.ok(lap.slowest < 16, `dummy ${index} slowed for the hairpin (${lap.slowest})`);
+    // The hairpin turns right with radius 20, so a lane `lane` right of the middle has radius 20 - lane, and a full
+    // steer gets round it at steeringRate(1) x radius at most (the dummy brakes 5% above that). The outermost
+    // lanes can be taken flat out.
+    const laneLimit = steeringRate(1) * (20 - drive.karts[index].lane);
+    if (laneLimit < tuning.topSpeed) {
+      assert.ok(lap.slowest <= laneLimit * 1.05, `dummy ${index} slowed for the hairpin (${lap.slowest})`);
+    }
   });
 });
 
@@ -193,7 +204,7 @@ test('phone views count down, then show the drift\'s spark colour and, for a mom
   const drive = createDrive(track, ['p1']);
   const countdowns = [];
   for (let step = 0; step < (GO_AT + 0.5) * 60; step += 1) {
-    stepDrive(drive, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: drive.time >= 1.2 }), STEP);
+    stepDrive(drive, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: drive.time >= ROCKET_PRESS }), STEP);
     countdowns.push(drivingView(drive, setup, 'p1').countdown);
   }
   assert.deepEqual([...new Set(countdowns)], [3, 2, 1, 0]);
@@ -235,7 +246,7 @@ test('the readout keeps each player\'s last starts across drives, the lip timing
   const players = new Map();
   addPlayer(players, 'p1');
   readout.recordRoundTrip('p1', 40);
-  for (const pressAt of [1.2, 0.5]) {
+  for (const pressAt of [ROCKET_PRESS, 0.5]) {
     const drive = createDrive(track, ['p1']);
     for (let step = 0; step < GO_AT * 60 + 1; step += 1) {
       stepDrive(drive, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: drive.time >= pressAt }), STEP);
@@ -246,7 +257,7 @@ test('the readout keeps each player\'s last starts across drives, the lip timing
     assert.match(text, /Physics step: not measured yet\nDrawing: 60 fps, 2\.0 ms CPU per frame\n/);
     assert.match(text, /units\/s/);
     if (pressAt === 0.5) {
-      assert.match(text, /Go after "2": \+0\.2\d rocket, -0\.4\d stall \| Drift from lip: none yet \| round trip 40 ms/);
+      assert.match(text, /Go after "2": \+0\.4\d rocket, -0\.4\d stall \| Drift from lip: none yet \| round trip 40 ms/);
     }
   }
 });

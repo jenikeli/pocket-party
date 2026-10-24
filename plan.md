@@ -50,7 +50,8 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 | Driving | acceleration, top speed, steering, hills, jumps and landing, walls, off-road, kart bumps decided by weight, falling off and being put back on the road | M6b |
 | Camera | chase camera with lag; pull-back while boosting | M6b; boost effect M6c |
 | Techniques | hop and drift, three mini-turbo levels (blue, orange, purple sparks), rocket start, jump boost (trick), dash panels, slipstream, anti-gravity spin boost | M6c |
-| Feel | steering, speed and scale, bounces off karts and walls, wall penalty, smooth body animation (lean, hop, trick), phone vibration | M7a |
+| Feel | steering, speed and scale, bounces off karts and walls, wall penalty, smooth body animation (lean, hop, trick) | M7a |
+| Phone vibration | a buzz on presses, bumps and boosts | later (see "Later ideas") |
 | Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7b |
 | Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles | cost measured in M6a, built in M7c |
 | CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7d |
@@ -66,7 +67,7 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 - **Portrait warning.** A web page cannot lock the screen orientation on iOS (the Screen Orientation lock needs fullscreen, which iPhone Safari does not support), so a phone held upright shows "Turn your phone sideways" instead of the controls.
 - **Tilt in landscape** reads a different axis from M3's portrait tilt, and flips sign between the two landscape directions. M5c must handle both and check them on a real iPhone and Android (headless browsers have no sensor).
 - **Phone shows:** the countdown, lap x of N, current place, final place.
-- The 3D race adds a held Drift button (hop, drift and trick, like MK8DX's R button), built in M6c above Go with an empty place for a later Item button, so its controls are the 2D race's plus buttons. Without auto-accelerate a held Drift also accelerates, since one right thumb cannot hold Go and Drift at once (M6c; the device run checks it). Both races share one phone module, `controller/kart/` (decided in M6b; see its summary below).
+- The 3D race adds a held Drift button (hop, drift and trick, like MK8DX's R button), built in M6c above Go with an empty place for a later Item button, so its controls are the 2D race's plus buttons. With tilt the left thumb is free, so Drift moves to the left, with Brake left of Go and the Item place above Go on the right (M7a). Without auto-accelerate a held Drift also accelerates, since one right thumb cannot hold Go and Drift at once (M6c; the device run checks it). Both races share one phone module, `controller/kart/` (decided in M6b; see its summary below).
 
 ## Game settings
 
@@ -237,26 +238,18 @@ First reading (one screenshot, in `docs/mk8dx-reference.md`): the road is about 
 ### M7: 3D kart race (in four parts)
 A second kart game in the lobby's list, 2-4 players, separate from the 2D race (its own rules and physics), with the same setup, ready and results flow as the 2D race. It builds on `host/games/kart-3d/` from M6b and M6c and adds the M7 rows of "3D kart race design". Split after the M6c device run, each part in its own chat: the feel comes first, because the track's size, the CPU drivers and the look are all built around the tuned speeds and turns.
 
-#### M7a: Feel pass (on the test track)
-Make driving feel like MK8DX, judged by me side by side with the real game. The device run's notes are in "Feel against MK8DX" in `docs/3d-findings.md`.
-- [ ] A tuning panel on the host (developer only, like the readout): a live slider for every number I am asked to tune (steering, top speed and scale, wall penalty, bounces, hop height, animation timings, the rocket start and trick windows, camera), each showing its value, and a "Copy values" button that puts all of them on the clipboard as text I paste back to Claude, who writes them into the code. Rule for every later milestone too: anything I tune gets a slider and goes into that copy. The clipboard API needs a secure context and a tap, which the HTTPS host has; if it fails, the values show in a text box to select by hand
-- [ ] Steering: a much tighter turn at full stick or tilt, but the same sensitivity (small movements must not turn harder than now), for example a curve from stick to turn rate instead of a straight line. Check the drift arcs against it
-- [ ] Walls: hitting one costs more speed, so riding the wall round a sharp turn is never faster than slowing down for it
-- [ ] Bumps: karts bounce off each other and off walls visibly, damped (partly elastic, not perfectly), instead of the dead push they give now
-- [ ] Smooth body animation: easing into and out of the drift lean, the hop, and the trick's spin starting from a straight kart, as MK8DX animates them (no snapping between poses)
-- [ ] Hop height: MK8DX's hop is higher than ours; a slider for it
-- [ ] World scale and speed: Claude measures road width and the kart's share of the screen from MK8DX screenshots (see "Reference footage"), I review the numbers, and top speed is tuned with the panel; the camera felt fine on the device run, so keep its look if the scale changes
-- [ ] Phone vibration on every button press (Android; iOS Safari has no `navigator.vibrate`)
-- [ ] Phone layout for tilt: Drift on the left (the left thumb is free when tilting); on the right, Brake left of Go and the Item place above Go. Keep the M6c layout for the stick, whose left thumb steers
-- [ ] Unit tests for the changed rules; the M6b and M6c tests keep passing or change on purpose
-
-**Done when:** driving, drifting and bumping on the test track feel close to MK8DX to me, and the tuned numbers are in `docs/3d-findings.md`.
+#### M7a: Feel pass (on the test track) (done)
+- Every tuned number lives in `host/games/kart-3d/tuning.js` (value, slider range and meaning); the rules read the live `tuning` object every step. The host's **Tuning** button (drive panel) opens a slider for each, and **Copy values** gives `key = value` lines (changed ones marked with their default) to paste back to Claude, who writes them into `tuning.js`. Values last until the host page reloads. Rule for every later milestone: anything tuned gets an entry there, and so a slider and a line in the copy.
+- Rules changed: a steering curve (gentle near the middle as before, 60 deg/s at full stick), wall hits that cost speed by angle and bounce (riding the wall is the slow line, unit-tested), bumps with a least parting speed, a short loose-grip slide after either, a higher hop with its own height and time, and the body animation in `kart-body.js` (a spring lean that starts in the hop, a trick roll that always finishes). Numbers and measurements: "M7a: feel pass" in `docs/3d-findings.md`.
+- Phone: with tilt the 3D race puts Drift on the left and Brake left of Go, the Item place above Go (confirmed on the device run). The buttons now lay out on `#kart-controls`' grid, which is also the button input's surface.
+- First device run done: top speed, steering, walls, bumps, hop, lean and the rocket window (0.3-1.2 s after "2") were tuned to feel like MK8DX's 150cc and are the defaults now ("Device run (first tuning)" in `docs/3d-findings.md`). Added after it: a rocket start boosts longer the earlier it lands in its window, and every boost's speed has a slider. At 32 units/s the test track's hairpin needs braking; M7b's course is designed for the tuned numbers. Tuning stays in the game for later passes.
+- The boost speeds have sliders but keep their starting values (MK8DX's where it has them); tune them against normal speed in a later pass. Steering ended at 67 deg/s at full stick and 72.5 fully into a drift (a drift must turn tighter than steering, as in MK8DX).
 
 #### M7b: The race on a real track
 - [ ] Host runs the race: countdown, laps, places, results, Race again or Back to lobby, engine classes (50, 100, 150, 200cc), rules in DOM-free modules stepped at the fixed 60 Hz, split-screen rendering in the container
 - [ ] Course study first: Claude studies a few real MK8DX courses (wiki maps, screenshots, footage) for how they play, and writes the patterns into `docs/mk8dx-reference.md` for me to review: lap time at 150cc, how long the straights are, how many corners of each kind (sweepers that hold a purple drift, tight corners, chicanes), how the road's width changes, where the jumps, dash panels, anti-gravity sections, off-road shortcuts and item rows sit, and how the course paces its quiet and busy parts. Patterns and proportions only: no layout is traced or copied
 - [ ] A full course of our own, designed from those patterns for the tuned scale, using the features M6 proved (hill, jump, hairpin, banked curve, off-road, anti-gravity, dash panels)
-- [ ] Only controller-relevant information goes back to phones: lap, place, and one-shot cues such as vibration on a hit (a new message type for cues, added then)
+- [ ] Only controller-relevant information goes back to phones: lap and place, and one-shot cues if one is needed (a new message type for cues, added then)
 - [ ] Renamed "Kart race 3D"; the 3D spike (`spike-3d`) is removed
 
 #### M7c: The look
@@ -289,3 +282,4 @@ Make driving feel like MK8DX, judged by me side by side with the real game. The 
   - *Each phone draws its own view.* The host still runs the physics and sends a compact state snapshot (positions, rotations) about 20-30 times a second; each phone runs Three.js and smooths between snapshots. The phone is then both screen and controller. Costs: phones need the 3D assets (against "controllers load instantly"), the hotspot carries 9 x 30 snapshots a second, and phones get hot. Tilt steering is awkward while watching the same screen.
   - *Several host screens.* A second page (for example `/view`) on another device receives the same snapshots and draws, say, players 5-8. Fewer devices, but each needs a big screen.
 - Spectator view
+- Phone vibration (on button presses, and later on bumps and boosts, like the Switch's rumble). M7a built a 15 ms `navigator.vibrate` on every button press, but on the device run nothing was felt on Android or iOS, so it was taken out. iOS Safari has no `navigator.vibrate` at all, so iPhones never buzz. Android Chrome has it, but did not buzz here; to find out why before trying again: a longer pulse (15 ms may be too short to feel), the phone's own vibration and touch-feedback settings, battery saver, and whether Chrome on that phone vibrates at all (a test page that calls `navigator.vibrate(200)` from a tap)

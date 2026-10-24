@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Project context for Claude Code. Read this first every session, then read `plan.md` for the current milestone.
+Project context for Claude Code. Read this first every session, then read `plan.md` for the current milestone. `docs/history.md` holds the full notes of finished milestones; `plan.md` sums each up in a few lines. Do not read `docs/history.md` at the start of a chat: open the entry for a milestone only when working on what it built and its summary is not enough.
 
 `docs/spike-findings.md` holds the results of tests I ran on my real devices before writing any game code (a throwaway `spike.js`), to check viability and pin down parameters: HTTPS requirements, latency, socket survival when the screen locks, tilt rates. Treat its numbers as measured facts that override general assumptions, and note that they come from single runs on a few devices.
 
@@ -86,7 +86,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - I'm building this partly to learn. When you make a non-obvious design decision (networking, state sync, reconnection, sensors), explain the mechanism briefly: what actually happens and why, not just what to type.
 - Work in small steps. Finish one milestone from `plan.md`, make sure it runs, then stop and tell me exactly how to test it on real devices.
 - **One milestone per chat.** Each milestone is built in its own fresh chat session. Do not start the next milestone in the same chat, even if there is time left. If a milestone is too big for one chat, say so and propose how to split it.
-- **Hand off at the end of each milestone,** because the next chat starts with no memory of this one: tick the finished checkboxes in `plan.md`, add a short "Notes" line under the milestone for any decision or deviation the next milestone needs to know, and update the Commands section below. Then give me a short walkthrough of what was built: the files added, what each does, and how one message flows through the system end to end.
+- **Hand off at the end of each milestone,** because the next chat starts with no memory of this one. Tick the finished checkboxes, then move the milestone's whole section (checklist, "done when", and detailed notes on files, decisions, deviations and tests changed on purpose) to the end of `docs/history.md`. In `plan.md`, leave a summary of a few bullets under a heading ending in "(done)" (or "(built, device run pending)" until I have tested on devices): what exists now and only what later milestones must know. Update the design sections of `plan.md` if a decision changed them, and update the Commands section below. Then give me a short walkthrough of what was built: the files added, what each does, and how one message flows through the system end to end.
 - Before adding a dependency, say what it is and why the built-ins can't do it.
 - If a request conflicts with the hard constraints above, flag it instead of working around it.
 - Never commit or push. Leave all changes uncommitted; I review and commit them myself. Don't offer to commit either.
@@ -109,7 +109,8 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 Every behaviour that has been built must stay working as the code changes. Automated tests are how we know.
 
 - Each milestone adds automated tests for the behaviour it builds, in the same chat. A milestone is not done until `npm test` (and the browser tests, once they exist) passes.
-- Run the full test suite before handing off, not only the new tests.
+- While working, run only the tests for the behaviour being changed (for example not the 2D race's browser test when only the 3D race changed). Run the full suite once before handing off, not only the new tests: it catches changes to shared code. Long runs are fine; correctness comes before speed.
+- Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel.
 - If a change breaks an existing test, fix the code, not the test. Change a test only when the intended behaviour changed on purpose, and say so in the handoff.
 - Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.
 - Tests use Node's built-in runner (`node --test`) and live in `test/`. Test dependencies are dev-only and must never be needed by `npm start`.

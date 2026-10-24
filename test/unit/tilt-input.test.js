@@ -130,3 +130,66 @@ test('stop() stops listening and ends a pending start with false', async () => {
   await wait(40);
   assert.deepEqual(sent, []);
 });
+
+// Landscape: the phone turned like a steering wheel. window.orientation says which way it is turned.
+test('landscape with the top on the left (90): raising the top end steers right, y stays 0', async () => {
+  window.orientation = 90;
+  const started = tiltInput.start();
+  orientation(5, 80); // held upright-ish, a little turned
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(17.5, 80); // the top end 12.5 degrees higher than the zero pose
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0.5, y: 0 });
+});
+
+test('landscape with the top on the right (270, or -90): the same turn steers the other way', async () => {
+  window.orientation = -90;
+  const started = tiltInput.start();
+  orientation(0, -80);
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(12.5, -80);
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: -0.5, y: 0 });
+});
+
+test('landscape: leaning the phone past upright (beta reported as 180 - beta) does not jump', async () => {
+  window.orientation = 90;
+  const started = tiltInput.start();
+  orientation(10, 85);
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(170, 85); // the same 10 degrees, as browsers report it once the screen faces a little down
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0, y: 0 });
+});
+
+test('turning the phone round to the other landscape makes the new pose zero', async () => {
+  window.orientation = 90;
+  const started = tiltInput.start();
+  orientation(0, 80);
+  await started;
+  window.orientation = 270;
+  orientation(8, -80); // first reading after the turn: recalibrates
+  for (let i = 0; i < 30; i += 1) {
+    orientation(8, -80);
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0, y: 0 });
+});
+
+test('without window.orientation, screen.orientation.angle says which way the phone is turned', async () => {
+  window.screen = { orientation: { angle: 270 } };
+  const started = tiltInput.start();
+  orientation(0, -80);
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(25, -80);
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: -1, y: 0 });
+});

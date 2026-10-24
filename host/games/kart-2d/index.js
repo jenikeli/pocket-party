@@ -1,22 +1,24 @@
-// The 2D kart race (M5b), a game module: up to 9 karts race 3 laps round a stadium track, steered from the
-// players' phones. Loaded through host/games/index.js and run by the shell (host/game-session.js). The rules
-// live in DOM-free modules next to this file; this file connects them to the shell, the phones and the renderer.
+// The 2D kart race (M5b, M5c), a game module: a setup screen (laps on the host, control style and ready on
+// each phone), then up to 9 karts race round a stadium track, steered from the players' phones. Loaded through
+// host/games/index.js and run by the shell (host/game-session.js). The rules live in DOM-free modules next to
+// this file; this file connects them to the shell, the phones and the renderer.
 
-import { MESSAGE_TYPES } from '/shared/protocol.js';
+import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
 import { createRace, stepRace, removeKart } from './race.js';
+import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from './setup.js';
 import { createControlsTable } from './kart-controls.js';
-import { controllerView } from './race-views.js';
+import { controllerView, setupView } from './race-views.js';
 import { createRenderer } from './renderer.js';
-
-// Fixed for now; the setup screen (M5c) will let the host choose.
-const LAPS = 3;
 
 // Returns a fresh race game that follows the game module interface in plan.md.
 export function createGame() {
   let players = null;
   let setControllerView = null;
   let renderer = null;
+  // Laps and control styles, kept from race to race until the game goes back to the lobby.
+  const setup = createSetup();
+  // null while the setup screen shows.
   let race = null;
   let controls = createControlsTable();
   // playerId -> the view last sent to that phone as JSON, so a view is only sent when it changes.
@@ -29,47 +31,78 @@ export function createGame() {
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
-    renderer = createRenderer(shell.container, { onRaceAgain: startRace, onBackToLobby: () => (wantsLobby = true) });
-    startRace();
+    renderer = createRenderer(shell.container, {
+      onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
+      onStartRace: startRace,
+      onRaceAgain: showSetup,
+      onBackToLobby: () => (wantsLobby = true),
+    });
+    showSetup();
+  }
+
+  // Back to the setup screen, before the first race and after each one. Everyone confirms again.
+  function showSetup() {
+    race = null;
+    clearReady(setup);
   }
 
   // Everyone in the roster gets a kart, on the grid in slot order. Inputs held from the last race are dropped.
+  // The renderer only enables Start race when canStartRace allows it; checked again here because the click
+  // can arrive in the same frame as a player dropping.
   function startRace() {
-    race = createRace(playersInSlotOrder(players).map((player) => player.playerId), LAPS);
+    const grid = playersInSlotOrder(players);
+    if (race || !canStartRace(setup, grid)) {
+      return;
+    }
+    race = createRace(grid.map((player) => player.playerId), setup.laps);
     controls = createControlsTable();
-    sendChangedViews();
   }
 
   function onMessage(playerId, message) {
-    if (message.type === MESSAGE_TYPES.INPUT) {
+    if (message.type !== MESSAGE_TYPES.INPUT) {
+      return;
+    }
+    if (message.input?.kind === INPUT_KINDS.CHOICE) {
+      applyChoice(setup, playerId, message.input, race === null);
+    } else {
       controls.handleInput(playerId, message.input);
     }
   }
 
+  // Views are sent from here only, so every change (a choice, the laps, the race moving on, a new screen)
+  // reaches the phones within one step.
   function step(dt) {
-    stepRace(race, (playerId) => controls.controlsFor(players.get(playerId)), dt);
+    if (race) {
+      const controlsFor = (playerId) => controls.controlsFor(players.get(playerId), playerSetup(setup, playerId).autoAccelerate);
+      stepRace(race, controlsFor, dt);
+    }
     sendChangedViews();
   }
 
-  // A player who joined just before the room closed has no kart, so their view stays null ("waiting for the
-  // next race") until Race again gives them one.
+  // On the setup screen every player in the roster gets a view. During a race only karts do: a player who joined
+  // just before the room closed has no kart, so their view stays null ("waiting for the next race") until the
+  // next setup screen.
   function sendChangedViews() {
-    for (const kart of race.karts) {
-      const view = controllerView(race, kart.playerId);
+    const playerIds = race ? race.karts.map((kart) => kart.playerId) : [...players.keys()];
+    for (const playerId of playerIds) {
+      const view = race ? controllerView(race, setup, playerId) : setupView(setup, playerId);
       const viewText = JSON.stringify(view);
-      if (sentViews.get(kart.playerId) !== viewText) {
-        sentViews.set(kart.playerId, viewText);
-        setControllerView(kart.playerId, view);
+      if (sentViews.get(playerId) !== viewText) {
+        sentViews.set(playerId, viewText);
+        setControllerView(playerId, view);
       }
     }
   }
 
   function render(alpha) {
-    renderer.draw(race, players, alpha);
+    renderer.draw(setup, race, players, alpha);
   }
 
   function onPlayerLeft(playerId) {
-    removeKart(race, playerId);
+    if (race) {
+      removeKart(race, playerId);
+    }
+    forgetPlayer(setup, playerId);
     sentViews.delete(playerId);
   }
 

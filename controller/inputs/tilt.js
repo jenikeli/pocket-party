@@ -1,10 +1,17 @@
 // Tilt input: turns how the phone is tilted into a stick value { kind: 'tilt', x, y }, each from -1 to 1.
-// Used by controller/games/input-lab/index.js. Same shape as every input module (start, stop, onInput), plus
-// requestAccess() and calibrate(), which only tilt needs.
+// Used by controller/games/input-lab/index.js (portrait) and controller/games/kart-2d/ (landscape, as a wheel).
+// Same shape as every input module (start, stop, onInput), plus requestAccess() and calibrate(), which only
+// tilt needs.
 //
-// Think of a ball on the screen: tilt the right edge down and x goes positive; tip the top edge away from you
-// and y goes negative (up the screen). Assumes portrait; in landscape the browser swaps what the axes mean.
-// Angles come from deviceorientation: beta is front-back (-180..180), gamma is left-right (-90..90).
+// Think of a ball on the screen as the player sees it: tilt the right edge down and x goes positive; tip the
+// top edge away from you and y goes negative (up the screen). Angles come from deviceorientation and are always
+// measured on the phone's own body, whichever way the screen is turned: beta is how far the phone's top end is
+// raised (-180..180), gamma how far its right side is lowered (-90..90). So:
+// - Portrait: x comes from gamma, y from beta.
+// - Landscape: the screen's left and right ends are the phone's top and bottom, so x comes from beta, and its
+//   sign depends on which way the phone was turned. That is turning the phone like a steering wheel. y is
+//   always 0: nothing uses it, and gamma sits at the end of its range when a landscape phone is held upright,
+//   where browsers make it jump.
 
 import { INPUT_KINDS, INPUT_FALLBACK_REASONS } from '../../shared/protocol.js';
 import { createThrottle } from './throttle.js';
@@ -21,8 +28,8 @@ const SEND_INTERVAL_MS = 33;
 const FIRST_READING_TIMEOUT_MS = 2000;
 
 let inputCallback = null;
-let zeroBeta = 0;
-let zeroGamma = 0;
+// The calibrated pose: the angles that count as "stick centered", and the screen angle they were taken at.
+let zero = { beta: 0, gamma: 0, screenAngle: 0 };
 let lastRaw = null; // { beta, gamma } of the newest real reading
 let smoothed = { x: 0, y: 0 }; // in degrees away from the zero pose
 let firstReading = null; // { resolve, timer } while start() is waiting
@@ -77,8 +84,7 @@ export function calibrate() {
   if (!lastRaw) {
     return;
   }
-  zeroBeta = lastRaw.beta;
-  zeroGamma = lastRaw.gamma;
+  zero = { ...lastRaw, screenAngle: screenAngle() };
   smoothed = { x: 0, y: 0 };
   throttle.queue({ kind: INPUT_KINDS.TILT, x: 0, y: 0 });
 }
@@ -93,10 +99,17 @@ function handleOrientation(event) {
     finishWaiting(true);
     return;
   }
+  // The phone was turned (portrait to landscape, or round to the other landscape): the old zero meant a
+  // different axis or the opposite sign, so the pose now becomes zero, as if the player had recalibrated.
+  if (screenAngle() !== zero.screenAngle) {
+    calibrate();
+    return;
+  }
   // Smooth the offset from zero, not the raw angle: beta jumps from 180 to -180 when the phone tips past
   // upside down, and averaging across that jump would swing the value through zero.
-  smoothed.x += SMOOTHING * (wrapDegrees(event.gamma - zeroGamma) - smoothed.x);
-  smoothed.y += SMOOTHING * (wrapDegrees(event.beta - zeroBeta) - smoothed.y);
+  const offset = offsetFromZero(lastRaw);
+  smoothed.x += SMOOTHING * (offset.x - smoothed.x);
+  smoothed.y += SMOOTHING * (offset.y - smoothed.y);
   throttle.queue({
     kind: INPUT_KINDS.TILT,
     x: toStickValue(smoothed.x),
@@ -111,6 +124,36 @@ function finishWaiting(gotReading) {
   clearTimeout(firstReading.timer);
   firstReading.resolve(gotReading);
   firstReading = null;
+}
+
+// How far `raw` is from the zero pose in degrees, along the screen's x and y (see the top of this file).
+function offsetFromZero(raw) {
+  if (zero.screenAngle === 90 || zero.screenAngle === 270) {
+    // At 90 the phone's top is on the left, so raising it tips the screen's right edge down: x goes positive.
+    // At 270 the top is on the right and the sign flips.
+    const sign = zero.screenAngle === 90 ? 1 : -1;
+    return { x: sign * (foldBeta(raw.beta) - foldBeta(zero.beta)), y: 0 };
+  }
+  return { x: wrapDegrees(raw.gamma - zero.gamma), y: wrapDegrees(raw.beta - zero.beta) };
+}
+
+// Which way the screen is turned: 0 portrait, 90 landscape with the phone's top on the left, 270 with it on the
+// right (180, upside-down portrait, is treated like portrait). window.orientation first: iOS Safari and Android
+// Chrome both have it, and Playwright's emulated iPhone keeps screen.orientation.angle at 0 in landscape.
+function screenAngle() {
+  const angle = typeof window.orientation === 'number' ? window.orientation : window.screen?.orientation?.angle ?? 0;
+  return ((angle % 360) + 360) % 360;
+}
+
+// A landscape phone held upright has gamma at the end of its -90..90 range. Leaned past upright (screen facing a
+// little down), gamma cannot go further, so the spec's angles describe the same pose as beta = 180 - beta (or
+// -180 - beta) with gamma coming back from 90. Folding beta into -90..90 makes both read the same, so the
+// wheel does not jump when the player leans the phone forward.
+function foldBeta(beta) {
+  if (beta > 90) {
+    return 180 - beta;
+  }
+  return beta < -90 ? -180 - beta : beta;
 }
 
 // Brings an angle difference into -180..180, so 170 - (-170) counts as -20 degrees, not 340.

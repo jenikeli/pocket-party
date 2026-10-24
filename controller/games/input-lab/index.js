@@ -53,6 +53,11 @@ export function start(container, send) {
   enableTiltButton.addEventListener('click', enableTilt);
   calibrateButton.addEventListener('click', () => tiltInput.calibrate());
   sendMessage = send;
+  // Registered here, not when the module loads: the input modules are shared with the kart race, and each
+  // keeps only one callback, so whichever game runs must set it again.
+  for (const module of Object.values(INPUT_MODULES)) {
+    module.onInput(sendInput);
+  }
   rateMeter = createRateMeter();
   rateTimer = setInterval(showRate, RATE_REFRESH_MS);
   switchMode(INPUT_KINDS.DRAG);
@@ -202,8 +207,4 @@ function onModeTabClick(event) {
     }
     switchMode(mode);
   }
-}
-
-for (const module of Object.values(INPUT_MODULES)) {
-  module.onInput(sendInput);
 }

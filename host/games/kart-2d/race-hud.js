@@ -14,7 +14,8 @@ const CLOCK_Y = 340;
 const FIRST_ROW_Y = 410;
 const ROW_HEIGHT = 40;
 
-// Returns { show(race, players) }; `players` is the shell's live roster.
+// Returns { show(race, players) }; `players` is the shell's live roster, and `race` null on the setup screen,
+// which leaves the readout empty.
 export function createRaceHud(scene) {
   const clock = scene.add.text(LEFT_X, CLOCK_Y, '', { ...TEXT_STYLE, fontSize: '40px', fontStyle: 'bold' }).setOrigin(0, 0.5);
   const timeLeft = scene.add.text(RIGHT_X, CLOCK_Y, '', { ...TEXT_STYLE, fontSize: '30px', color: '#f1c40f' }).setOrigin(1, 0.5);
@@ -34,6 +35,13 @@ export function createRaceHud(scene) {
     .setDepth(1);
 
   function show(race, players) {
+    if (!race) {
+      clock.setText('');
+      timeLeft.setText('');
+      rows.forEach((row) => showRow(row, undefined));
+      countdown.setText('');
+      return;
+    }
     clock.setText(formatRaceTime(race.time));
     const left = race.firstFinishTime === null ? null : FINISH_TIME_LIMIT_SECONDS - (race.time - race.firstFinishTime);
     timeLeft.setText(left === null ? '' : `Race ends in ${Math.ceil(Math.max(left, 0))} s`);

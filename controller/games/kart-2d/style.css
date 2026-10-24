@@ -1,4 +1,5 @@
-/* 2D race controls on the phone, held sideways. Loaded by controller/game-screen.js before the race starts. */
+/* 2D race setup screen and controls on the phone, held sideways. Loaded by controller/game-screen.js before
+   the game starts. */
 
 #kart-screen {
   flex: 1;
@@ -21,7 +22,67 @@
   min-height: 0;
 }
 
-#kart-stick-zone {
+/* The setup screen: the choices on the left, a big Ready button on the right. */
+#kart-setup {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(160px, 30%);
+  gap: 16px;
+  min-height: 0;
+}
+
+#kart-choices {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+#kart-choices p {
+  margin: 0;
+}
+
+#kart-setup-laps {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.kart-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kart-choice-row .kart-hint {
+  width: 100px;
+}
+
+#kart-setup button {
+  font-size: 22px;
+  background: #2a3145;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#kart-setup button[aria-pressed="true"] {
+  background: #3498db;
+}
+
+#kart-steering-note {
+  font-size: 16px;
+  color: #f1c40f;
+}
+
+#kart-setup #kart-ready-button {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+#kart-setup #kart-ready-button[aria-pressed="true"] {
+  background: #1e8449;
+}
+
+#kart-stick-zone,
+#kart-tilt-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,6 +100,26 @@
   height: 150px;
   border: 3px solid #3a4258;
   border-radius: 50%;
+}
+
+#kart-tilt-zone button {
+  font-size: 22px;
+}
+
+/* A wheel seen from the front: the bar turns as the phone does. */
+#kart-wheel {
+  display: flex;
+  align-items: center;
+  width: 110px;
+  height: 110px;
+  border: 6px solid #3a4258;
+  border-radius: 50%;
+}
+
+#kart-wheel-bar {
+  flex: 1;
+  height: 10px;
+  background: #3498db;
 }
 
 #kart-stick-knob {
@@ -76,9 +157,9 @@
   color: #9aa4bf;
 }
 
+/* Flex, not a grid, so Brake takes the whole side when auto-accelerate hides Go. */
 #kart-pedals {
-  display: grid;
-  grid-template-columns: 2fr 3fr;
+  display: flex;
   gap: 12px;
 }
 
@@ -93,10 +174,12 @@
 }
 
 #kart-brake {
+  flex: 2;
   background: #8e2b22;
 }
 
 #kart-accelerate {
+  flex: 3;
   background: #1e8449;
 }
 
@@ -111,7 +194,8 @@
     display: block;
   }
 
-  #kart-controls {
+  #kart-controls,
+  #kart-setup {
     display: none;
   }
 }

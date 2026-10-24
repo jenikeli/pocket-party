@@ -1,45 +1,67 @@
-// The phone side of the 2D race, a game module: a steering stick and held accelerate and brake buttons, plus
-// the countdown, lap and place the host sends as this player's view. Loaded and started by
-// controller/game-screen.js.
+// The phone side of the 2D race, a game module: the setup screen (control style and ready), then the controls
+// (steering on the left, held brake and accelerate buttons on the right) and the countdown, lap and place the
+// host sends as this player's view. Loaded and started by controller/game-screen.js.
 
-import { MESSAGE_TYPES } from '/shared/protocol.js';
+import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { ordinal } from '/shared/ordinal.js';
-import * as dragInput from '/controller/inputs/drag.js';
 import * as buttonInput from '/controller/inputs/button.js';
+import * as steering from '/controller/games/kart-2d/steering.js';
+import * as setupScreen from '/controller/games/kart-2d/setup-screen.js';
 import { MARKUP } from '/controller/games/kart-2d/markup.js';
 
-// How far (CSS px) the knob moves when the stick is all the way over.
-const KNOB_TRAVEL_PX = 45;
-
 // The page elements, looked up by start() once MARKUP is in place.
-let stickZone, stickKnob, pedals, bigText, lineText;
+let setup, controls, pedals, accelerateButton, bigText, lineText;
 let sendMessage = null; // set by start
 
 export function start(container, send) {
   container.innerHTML = MARKUP;
   const byId = (id) => document.getElementById(id);
-  stickZone = byId('kart-stick-zone');
-  stickKnob = byId('kart-stick-knob');
+  setup = byId('kart-setup');
+  controls = byId('kart-controls');
   pedals = byId('kart-pedals');
+  accelerateButton = byId('kart-accelerate');
   bigText = byId('kart-big');
   lineText = byId('kart-line');
   sendMessage = send;
   // A long press on a held button must not open the browser's menu.
   // On the game's own element, not the container, which the shell keeps between games.
   byId('kart-screen').addEventListener('contextmenu', (event) => event.preventDefault());
-  dragInput.start(stickZone);
+  // Registered here, not when the module loads: the input modules are shared with the input lab, and each
+  // keeps only one callback, so whichever game runs must set it again.
+  buttonInput.onInput(onButtonInput);
   buttonInput.start(pedals);
+  const steeringElements = {
+    stickZone: byId('kart-stick-zone'),
+    stickKnob: byId('kart-stick-knob'),
+    tiltZone: byId('kart-tilt-zone'),
+    wheel: byId('kart-wheel'),
+    enableTiltButton: byId('kart-enable-tilt'),
+    recenterButton: byId('kart-recenter'),
+    note: byId('kart-steering-note'),
+  };
+  steering.start(steeringElements, { sendChoice, sendInput });
+  setupScreen.start({ setup, laps: byId('kart-setup-laps'), readyButton: byId('kart-ready-button') }, sendChoice);
 }
 
-// `view` is what host/games/kart-2d/race-views.js made for this player (its phase is one of RACE_PHASES in
-// host/games/kart-2d/race.js), or null when they have no kart (they joined after the race was set up) or the
-// host has not sent one yet.
+// `view` is what host/games/kart-2d/race-views.js made for this player: a setup view (phase 'setup') or a race
+// view (its phase one of RACE_PHASES in host/games/kart-2d/race.js). It is null when they have no kart (they
+// joined after the race was set up) or the host has not sent one yet.
 export function showView(view) {
+  const onSetup = view?.phase === 'setup';
+  setup.hidden = !onSetup;
+  controls.hidden = onSetup;
   if (!view) {
     bigText.textContent = '';
     lineText.textContent = 'Waiting for the next race';
     return;
   }
+  steering.show(view.steering);
+  if (onSetup) {
+    setupScreen.show(view);
+    return;
+  }
+  // With auto-accelerate the kart drives unless braking, so there is no Go button.
+  accelerateButton.hidden = view.autoAccelerate;
   if (view.countdown !== null) {
     bigText.textContent = view.countdown === 0 ? 'GO!' : String(view.countdown);
   } else {
@@ -60,7 +82,7 @@ function describeLine(view) {
 
 // The shell empties the container afterwards, which takes the elements and their listeners with it.
 export function stop() {
-  dragInput.stop();
+  steering.stop();
   buttonInput.stop();
 }
 
@@ -68,13 +90,11 @@ function sendInput(input) {
   sendMessage({ type: MESSAGE_TYPES.INPUT, input, sentAt: Date.now() });
 }
 
-dragInput.onInput((input) => {
-  sendInput(input);
-  // Only left and right steer, so the knob only moves sideways.
-  stickKnob.style.transform = `translateX(${input.x * KNOB_TRAVEL_PX}px)`;
-});
+function sendChoice(choice, value) {
+  sendInput({ kind: INPUT_KINDS.CHOICE, choice, value });
+}
 
-buttonInput.onInput((input) => {
+function onButtonInput(input) {
   sendInput(input);
   pedals.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
-});
+}

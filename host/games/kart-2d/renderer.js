@@ -1,5 +1,5 @@
-// Draws the 2D race with its own Phaser game inside the game's container: the track, a sprite per kart, the
-// live readout and the results. It only reads the race state; the rules never see Phaser.
+// Draws the 2D race with its own Phaser game inside the game's container: the track, the setup screen, a sprite
+// per kart, the live readout and the results. It only reads the game state; the rules never see Phaser.
 // Used by host/games/kart-2d/index.js, which calls draw() from render().
 
 import { startHandDrivenPhaser } from '/host/hand-driven-phaser.js';
@@ -9,12 +9,14 @@ import { drawTrack } from './track-drawing.js';
 import { createKartSprite } from './kart-sprite.js';
 import { createRaceHud } from './race-hud.js';
 import { createResultsPanel } from './results-panel.js';
+import { createSetupPanel } from './setup-panel.js';
 
-// `onRaceAgain()` and `onBackToLobby()` are the results panel's buttons. Returns { draw(race, players, alpha),
-// destroy() }.
-export function createRenderer(container, { onRaceAgain, onBackToLobby }) {
+// `onLapsStep(step)` (-1 or 1) and `onStartRace()` are the setup panel's buttons, `onRaceAgain()` and
+// `onBackToLobby()` the results panel's. Returns { draw(setup, race, players, alpha), destroy() }.
+export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain, onBackToLobby }) {
   // Set once Phaser has made the scene, a frame or two after start.
   let hud = null;
+  let setupPanel = null;
   let resultsPanel = null;
   let scene = null;
   // playerId -> kart sprite.
@@ -29,29 +31,33 @@ export function createRenderer(container, { onRaceAgain, onBackToLobby }) {
       scene = newScene;
       drawTrack(scene);
       hud = createRaceHud(scene);
+      setupPanel = createSetupPanel(scene, { onLapsStep, onStartRace });
       resultsPanel = createResultsPanel(scene, { onRaceAgain, onBackToLobby });
     },
   });
 
-  // `race` is the current race state and `players` the shell's live roster.
-  function draw(race, players, alpha) {
+  // `setup` and `race` are the game state (race is null on the setup screen), `players` the shell's live roster.
+  function draw(setup, race, players, alpha) {
     if (scene) {
       showKarts(race, players, alpha);
+      setupPanel.show(race ? null : setup, players);
       hud.show(race, players);
       showResults(race, players);
     }
     phaser.drawFrame();
   }
 
+  // With no race (the setup screen) every sprite goes.
   function showKarts(race, players, alpha) {
-    const inRace = new Set(race.karts.map((kart) => kart.playerId));
+    const karts = race ? race.karts : [];
+    const inRace = new Set(karts.map((kart) => kart.playerId));
     for (const [playerId, sprite] of sprites) {
       if (!inRace.has(playerId)) {
         sprite.destroy();
         sprites.delete(playerId);
       }
     }
-    for (const kart of race.karts) {
+    for (const kart of karts) {
       const player = players.get(kart.playerId);
       if (!player) {
         continue;
@@ -64,7 +70,7 @@ export function createRenderer(container, { onRaceAgain, onBackToLobby }) {
   }
 
   function showResults(race, players) {
-    if (race.phase !== RACE_PHASES.RESULTS) {
+    if (race?.phase !== RACE_PHASES.RESULTS) {
       if (raceShowingResults) {
         resultsPanel.hide();
         raceShowingResults = null;

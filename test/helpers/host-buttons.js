@@ -1,7 +1,7 @@
 // Clicks on the host's buttons, for the browser tests. Canvas positions are copied from
 // host/scenes/lobby-scene.js, host/lobby-player-list.js, host/settings-panel.js,
-// host/games/input-lab/player-card.js and host/games/kart-2d/results-panel.js at 1:1 scale (1920x1080 viewport); update them when that layout changes on
-// purpose. The buttons over a running game (host/game-bar.js) are HTML, so they are clicked by id.
+// host/games/input-lab/player-card.js, host/games/kart-2d/results-panel.js and host/games/kart-2d/setup-panel.js
+// at 1:1 scale (1920x1080 viewport); update them when that layout changes on purpose. The buttons over a running game (host/game-bar.js) are HTML, so they are clicked by id.
 
 import { waitUntil } from './browser.js';
 
@@ -12,6 +12,9 @@ export const GAME_END_BUTTON = '#end-game-button';
 export const GAME_CLOSE_ROOM_BUTTON = '#close-room-button';
 export const RACE_AGAIN_BUTTON = { x: 760, y: 880 };
 export const BACK_TO_LOBBY_BUTTON = { x: 1160, y: 880 };
+export const LAPS_MINUS_BUTTON = { x: 1180, y: 270 };
+export const LAPS_PLUS_BUTTON = { x: 1340, y: 270 };
+export const START_RACE_BUTTON = { x: 960, y: 900 };
 
 // The Remove button on the lobby's row `index` (0-8).
 export function lobbyRemoveButton(index) {
@@ -45,4 +48,21 @@ export async function confirmClick(hostPage, button) {
   await click();
   await hostPage.waitForTimeout(300);
   await click();
+}
+
+// From the 2D race's setup screen: every phone in `controllerPages` taps Ready, then the host clicks Start race
+// until the first phone shows the countdown. The button only works once the host has seen everyone ready.
+export async function startRace(hostPage, controllerPages) {
+  for (const page of controllerPages) {
+    await page.click('#kart-ready-button');
+    await page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+  }
+  await waitUntil(
+    async () => {
+      await hostPage.mouse.click(START_RACE_BUTTON.x, START_RACE_BUTTON.y);
+      await controllerPages[0].waitForTimeout(200);
+      return controllerPages[0].isVisible('#kart-controls');
+    },
+    { message: 'the host\'s Start race button to start the race' },
+  );
 }

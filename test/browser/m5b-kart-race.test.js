@@ -1,5 +1,5 @@
-// Browser tests for M5b, the 2D kart race: picking it in the lobby, the landscape controls and the portrait
-// hint, real touches driving a kart, a dropped player's kart stopping and driving on after the rejoin, whole
+// Browser tests for M5b, the 2D kart race: picking it in the lobby, starting from the setup screen (M5c) with
+// the default controls, the landscape controls and the portrait hint, real touches driving a kart, a dropped player's kart stopping and driving on after the rejoin, whole
 // races to the results, Race again and Back to lobby. Two Android (Chromium) phones held sideways; fingers come
 // from test/helpers/touch.js, because a kart needs the stick and a pedal held at once.
 //
@@ -13,7 +13,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, NEXT_GAME_BUTTON, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, startRace, NEXT_GAME_BUTTON, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -94,6 +94,16 @@ describe('M5b 2D kart race', () => {
     await player.touch.release(1);
   }
 
+  // The next INPUT of `kind` the host receives (the Ready choices from the setup screen come first).
+  async function nextHostInput(kind) {
+    while (true) {
+      const message = await hostMessages.nextOfType(MESSAGE_TYPES.INPUT);
+      if (message.input.kind === kind) {
+        return message;
+      }
+    }
+  }
+
   async function findOnHost(color, area) {
     return findColor(pixelReader, await hostPage.screenshot(), color, area);
   }
@@ -132,9 +142,13 @@ describe('M5b 2D kart race', () => {
       await player.page.waitForSelector('#ready-button[aria-pressed="true"]');
     }
     await startGame(hostPage, ana.page, '#kart-screen');
+    await startRace(hostPage, [ana.page, bo.page]);
     const state = await nextView(bo, (view) => view.phase === 'countdown');
     assert.equal(state.gameId, 'kart-2d');
-    assert.deepEqual({ ...state.view, countdown: 0 }, { phase: 'countdown', countdown: 0, lap: 1, laps: 3, place: 2, finished: false });
+    assert.deepEqual(
+      { ...state.view, countdown: 0 },
+      { phase: 'countdown', countdown: 0, lap: 1, laps: 3, place: 2, finished: false, steering: 'stick', autoAccelerate: false },
+    );
     assert.equal(await bo.page.textContent('#kart-line'), 'Get ready!');
     assert.equal(await bo.page.isVisible('#kart-turn-hint'), false);
     await saveScreenshot(bo.page, 'm5b-1-phone-countdown');
@@ -159,12 +173,12 @@ describe('M5b 2D kart race', () => {
     assert.ok(start.count > 0, 'Ana\'s kart is on the grid');
 
     await holdAccelerate(ana);
-    const pressed = await hostMessages.nextOfType(MESSAGE_TYPES.INPUT);
+    const pressed = await nextHostInput('button');
     assert.deepEqual(pressed.input, { kind: 'button', button: 'accelerate', pressed: true });
     assert.equal(await ana.page.getAttribute('#kart-accelerate', 'class'), 'kart-pedal held');
     await ana.page.waitForTimeout(800);
     await ana.touch.release(1);
-    const released = await hostMessages.nextOfType(MESSAGE_TYPES.INPUT);
+    const released = await nextHostInput('button');
     assert.deepEqual(released.input, { kind: 'button', button: 'accelerate', pressed: false });
 
     const moved = await findOnHost(ANA_COLOR, BOTTOM_STRAIGHT);
@@ -213,8 +227,10 @@ describe('M5b 2D kart race', () => {
     await saveScreenshot(ana.page, 'm5b-8-phone-results');
   });
 
-  test('Race again puts everyone back on the grid with a new countdown', async () => {
+  test('Race again goes to the setup screen, then puts everyone back on the grid with a new countdown', async () => {
     await hostPage.mouse.click(RACE_AGAIN_BUTTON.x, RACE_AGAIN_BUTTON.y);
+    await ana.page.waitForSelector('#kart-setup:not([hidden])');
+    await startRace(hostPage, [ana.page, bo.page]);
     for (const player of [ana, bo]) {
       await nextView(player, (view) => view.phase === 'countdown');
     }

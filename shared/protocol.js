@@ -152,12 +152,32 @@ export const INPUT_KINDS = Object.freeze({
   // A held button: { kind: 'button', button, pressed }, sent once on press (pressed true) and once on release
   // (false). button names which one (KART_BUTTONS for the kart races).
   BUTTON: 'button',
+  // A menu choice on a game's setup screen: { kind: 'choice', choice, value }. choice names the setting
+  // (KART_CHOICES for the kart races), value is what the player picked. The game decides what is allowed.
+  CHOICE: 'choice',
 });
 
 // The kart races' held buttons (INPUT kind button). The phone's controls name them in data-button attributes.
 export const KART_BUTTONS = Object.freeze({
   ACCELERATE: 'accelerate',
   BRAKE: 'brake',
+});
+
+// The kart races' per-player choices (INPUT kind choice) and the values each takes.
+export const KART_CHOICES = Object.freeze({
+  // value: one of KART_STEERING.
+  STEERING: 'steering',
+  // value: true (the kart drives unless braking; the phone hides Go) or false.
+  AUTO_ACCELERATE: 'autoAccelerate',
+  // value: true or false. Only counts on the setup screen.
+  READY: 'ready',
+});
+
+export const KART_STEERING = Object.freeze({
+  // The on-screen stick (INPUT kind drag).
+  STICK: 'stick',
+  // The phone turned like a wheel (INPUT kind tilt).
+  TILT: 'tilt',
 });
 
 // Why a controller could not use the input it wanted (INPUT_MODE reason).

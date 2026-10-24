@@ -6,7 +6,7 @@ import { ordinal } from '/shared/ordinal.js';
 import * as kartControls from '/controller/kart/controls.js';
 
 export function start(container, send) {
-  kartControls.start(container, send, describeStatus);
+  kartControls.start(container, send, { describeStatus, drift: false });
 }
 
 // `view` is what host/games/kart-2d/race-views.js made for this player (see kartControls.showView).

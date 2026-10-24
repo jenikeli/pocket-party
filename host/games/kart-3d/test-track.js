@@ -1,7 +1,8 @@
 // The M6b test track: one of each thing the 3D race's track model must handle, in a loop about 630 units long
 // (a kart is 2): a start straight, a hill with no walls (the edge a kart can fall off), a flat turn, a jump
 // ramp over a gap, a hairpin, a banked curve, a straight with off-road shoulders, and an anti-gravity curve
-// that rolls the road up to a vertical wall and back. The road floats over the sea, as on MK8DX's sky courses,
+// that rolls the road up to a vertical wall and back. M6c added two dash panels: one before the jump and one
+// on the off-road straight. The road floats over the sea, as on MK8DX's sky courses,
 // so leaving it means falling. Pieces are described in track-builder.js.
 //
 // Seen from above (x right, z down the page), the loop runs clockwise: east along the start straight and over
@@ -13,6 +14,12 @@ export const TEST_TRACK = Object.freeze({
   halfWidth: 8,
   // The grid sits on the start straight just behind this line.
   startLine: 34,
+  // Distances along the centre line: the straight before the ramp runs from about 186 to 226, and the off-road
+  // straight from about 434 to 524.
+  dashPanels: [
+    { s: 205, lateral: 0 },
+    { s: 470, lateral: -3 },
+  ],
   pieces: [
     { straight: 60 },
     // Hill: up 8 and down again, no walls on either side.

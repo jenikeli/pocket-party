@@ -1,6 +1,7 @@
 // Unit tests for the 3D test drive (host/games/kart-3d/drive.js, dummy-driver.js, chase-camera.js,
-// drive-views.js and step-timer.js): the grid, a full field of dummy karts lapping the test track through every
-// feature, the chase camera, the phone views and readout, and the step timer.
+// drive-views.js, readout.js and step-timer.js): the grid, a full field of dummy karts lapping the test track
+// through every feature, the chase camera and its boost pull-back, the phone views, the drawn body's lean and
+// spin, the readout, and the step timer.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,11 +9,14 @@ import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { progressBetween } from '../../host/games/kart-3d/track.js';
 import { createDrive, stepDrive, removeKart, playerKart, FIELD_SIZE } from '../../host/games/kart-3d/drive.js';
-import { forwardSpeed, KART_RADIUS } from '../../host/games/kart-3d/kart-physics.js';
+import { forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
+import { KART_RADIUS } from '../../host/games/kart-3d/kart-walls.js';
 import { createChaseCamera, followKart } from '../../host/games/kart-3d/chase-camera.js';
 import { setupView, drivingView, viewTargets, kartPose, describeKart } from '../../host/games/kart-3d/drive-views.js';
 import { addPlayer } from '../../host/roster.js';
 import { createStepTimer } from '../../host/games/kart-3d/step-timer.js';
+import { createReadout, describeTimings } from '../../host/games/kart-3d/readout.js';
+import { GO_AT } from '../../host/games/kart-3d/rocket-start.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { vec, subtract, length, dot, normalize, addScaled, rotate } from '../../host/games/kart-3d/vector.js';
@@ -61,11 +65,11 @@ test('12 dummy karts lap the test track twice: over the jump, round the hairpin 
   });
 });
 
-test('a player kart follows its controls; a removed player\'s kart leaves the track', () => {
+test('a player kart follows its controls after the countdown; a removed player\'s kart leaves the track', () => {
   const drive = createDrive(track, ['p1']);
-  const go = { steer: 0, accelerate: true, brake: false };
-  for (let step = 0; step < 60; step += 1) {
-    stepDrive(drive, track, (playerId) => (playerId === 'p1' ? go : NEUTRAL_CONTROLS), STEP);
+  const go = { steer: 0, accelerate: true, brake: false, drift: false };
+  for (let step = 0; step < (GO_AT + 1) * 60; step += 1) {
+    stepDrive(drive, track, (playerId) => (playerId === 'p1' && drive.started ? go : NEUTRAL_CONTROLS), STEP);
   }
   assert.ok(forwardSpeed(playerKart(drive, 'p1')) > 4);
   removeKart(drive, 'p1');
@@ -115,7 +119,14 @@ test('phone views: the setup view has no laps; the driving view carries the cont
   applyChoice(setup, 'p1', { choice: 'steering', value: 'tilt' }, true);
   assert.deepEqual(setupView(setup, 'p1'), { phase: 'setup', laps: null, steering: 'tilt', autoAccelerate: false, ready: false });
   const drive = createDrive(track, ['p1']);
-  assert.deepEqual(drivingView(drive, setup, 'p1'), { phase: 'driving', steering: 'tilt', autoAccelerate: false });
+  assert.deepEqual(drivingView(drive, setup, 'p1'), {
+    phase: 'countdown',
+    steering: 'tilt',
+    autoAccelerate: false,
+    countdown: 3,
+    spark: null,
+    start: null,
+  });
   assert.equal(drivingView(drive, setup, 'late'), null, 'a player with no kart waits for the next drive');
 });
 
@@ -159,4 +170,83 @@ test('the step timer averages the kept steps and finds the worst', () => {
   }
   assert.equal(timer.summary().count, 240);
   assert.equal(timer.summary().worstMs, 0.05, 'old steps are forgotten');
+});
+
+test('while boosting the chase camera pulls back and widens its view, and comes back after', () => {
+  const camera = createChaseCamera();
+  followKart(camera, pose(0), STEP);
+  const normalBehind = -camera.position.x;
+  const normalView = camera.fieldOfView;
+  for (let frame = 0; frame < 60; frame += 1) {
+    followKart(camera, pose(0), STEP, true);
+  }
+  assert.ok(-camera.position.x > normalBehind + 1.5, `${-camera.position.x} behind while boosting`);
+  assert.ok(camera.fieldOfView > normalView + 6);
+  for (let frame = 0; frame < 240; frame += 1) {
+    followKart(camera, pose(0), STEP, false);
+  }
+  assert.ok(Math.abs(-camera.position.x - normalBehind) < 0.05);
+});
+
+test('phone views count down, then show the drift\'s spark colour and, for a moment after GO, the start', () => {
+  const setup = createSetup();
+  const drive = createDrive(track, ['p1']);
+  const countdowns = [];
+  for (let step = 0; step < (GO_AT + 0.5) * 60; step += 1) {
+    stepDrive(drive, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: drive.time >= 1.2 }), STEP);
+    countdowns.push(drivingView(drive, setup, 'p1').countdown);
+  }
+  assert.deepEqual([...new Set(countdowns)], [3, 2, 1, 0]);
+  const view = drivingView(drive, setup, 'p1');
+  assert.equal(view.phase, 'driving');
+  assert.equal(view.start, 'rocket');
+  const kart = playerKart(drive, 'p1');
+  kart.driftDirection = 1;
+  kart.driftCharge = 600;
+  assert.equal(drivingView(drive, setup, 'p1').spark, 'orange');
+  for (let step = 0; step < 2 * 60; step += 1) {
+    stepDrive(drive, track, () => NEUTRAL_CONTROLS, STEP);
+  }
+  assert.deepEqual([drivingView(drive, setup, 'p1').countdown, drivingView(drive, setup, 'p1').start], [null, null]);
+});
+
+test('the drawn body leans into a drift and spins the short way round, while the camera follows the travel', () => {
+  const kart = playerKart(createDrive(track, ['p1']), 'p1');
+  kart.previousBodyYaw = 0.3;
+  kart.bodyYaw = 0.3;
+  const leaning = kartPose(kart, 0.5);
+  assert.deepEqual(leaning.forward, kart.forward, 'the camera\'s forward is the travel');
+  const side = Math.asin(dot(leaning.bodyForward, normalize(rotate(kart.forward, kart.up, -Math.PI / 2))));
+  assert.ok(Math.abs(side - 0.3) < 1e-6, `the body is turned ${side} rad to the right`);
+  // A spin ending: from almost a full turn to 0 goes forward the last bit, not back round.
+  kart.previousBodyYaw = 2 * Math.PI - 0.1;
+  kart.bodyYaw = 0;
+  const ending = kartPose(kart, 0.5);
+  assert.ok(Math.abs(Math.acos(Math.min(dot(ending.bodyForward, kart.forward), 1)) - 0.05) < 1e-6);
+});
+
+test('the readout keeps each player\'s last starts across drives, the lip timing and the round trips', () => {
+  assert.equal(
+    describeTimings([{ outcome: 'rocket', offset: 0.31 }, { outcome: 'stall', offset: -0.2 }, { outcome: 'normal', offset: null }], { offset: 0.12, trick: true }, [42, 35, 60]),
+    'Go after "2": +0.31 rocket, -0.20 stall, no press | Drift from lip: +0.12 trick | round trip 60 ms (35-60)',
+  );
+  assert.equal(describeTimings(), 'Go after "2": none yet | Drift from lip: none yet | round trip not measured yet');
+  const readout = createReadout();
+  const players = new Map();
+  addPlayer(players, 'p1');
+  readout.recordRoundTrip('p1', 40);
+  for (const pressAt of [1.2, 0.5]) {
+    const drive = createDrive(track, ['p1']);
+    for (let step = 0; step < GO_AT * 60 + 1; step += 1) {
+      stepDrive(drive, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: drive.time >= pressAt }), STEP);
+    }
+    // Described twice, as every quarter second: each start is listed once.
+    readout.describe(drive, track, players, null, 60, 2);
+    const text = readout.describe(drive, track, players, null, 60, 2);
+    assert.match(text, /Physics step: not measured yet\nDrawing: 60 fps, 2\.0 ms CPU per frame\n/);
+    assert.match(text, /units\/s/);
+    if (pressAt === 0.5) {
+      assert.match(text, /Go after "2": \+0\.2\d rocket, -0\.4\d stall \| Drift from lip: none yet \| round trip 40 ms/);
+    }
+  }
 });

@@ -1,11 +1,14 @@
 // Karts bumping into each other in the 3D race, decided by weight as in MK8DX: each kart's mass blends between
 // a minimum and a maximum by how fast it goes relative to its top speed, so a heavy kart at full speed shoves a
-// light one aside, and a kart standing still is easy to push. Plain functions, unit tested in Node. Used by
-// host/games/kart-3d/drive.js after every kart has stepped.
+// light one aside, and a kart standing still is easy to push. A bump ends a slipstream boost, and two karts
+// bumping in an anti-gravity section both get a spin boost, as in MK8DX. Plain functions, unit tested in Node.
+// Used by host/games/kart-3d/drive.js after every kart has stepped.
 
 import { subtract, length, scale, addScaled, dot } from './vector.js';
-import { KART_RADIUS } from './kart-physics.js';
+import { KART_RADIUS } from './kart-walls.js';
 import { TOP_SPEED } from './kart-driving.js';
+import { startBoost, endBoost, BOOST_KINDS } from './kart-boosts.js';
+import { startSpin } from './kart-techniques.js';
 
 // A kart's mass is its weight times this share at a standstill, and times 1 at top speed. MK8DX's own minimum
 // and maximum are in its data but not in the reference, so this is a guess.
@@ -44,6 +47,8 @@ function bumpPair(first, second) {
   // The lighter kart is moved further apart, and its speed changes more.
   first.position = addScaled(first.position, normal, -overlap * firstShare);
   second.position = addScaled(second.position, normal, overlap * (1 - firstShare));
+  endBoost(first, BOOST_KINDS.SLIPSTREAM);
+  endBoost(second, BOOST_KINDS.SLIPSTREAM);
   const closingSpeed = dot(subtract(second.velocity, first.velocity), normal);
   if (closingSpeed >= 0) {
     return;
@@ -51,4 +56,11 @@ function bumpPair(first, second) {
   const impulse = ((1 + BOUNCE) * closingSpeed) / (1 / firstMass + 1 / secondMass);
   first.velocity = addScaled(first.velocity, normal, impulse / firstMass);
   second.velocity = addScaled(second.velocity, normal, -impulse / secondMass);
+  // Only when they meet (closing in), not every step they stay touching.
+  if (first.antiGravity && second.antiGravity) {
+    for (const kart of [first, second]) {
+      startBoost(kart, BOOST_KINDS.SPIN);
+      startSpin(kart);
+    }
+  }
 }

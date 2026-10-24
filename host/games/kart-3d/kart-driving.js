@@ -14,15 +14,28 @@ const MK8_ACCELERATION_LIMIT = 0.08;
 const MK8_RELATIVE_ACCELERATION = 0.01;
 // Drive_DirRotH. Our reading, not verified: radians per frame at full steering, about 38 degrees a second.
 const MK8_STEERING = 0.011;
+// Drift_DirRotH, read the same way: the tightest drift turns about 65 degrees a second.
+const MK8_DRIFT_STEERING = 0.019;
 const FRAMES_PER_SECOND = 60;
 
 // Our scale. A kart is 2 units long; 24 units a second is 12 kart lengths a second, a guess until MK8DX
 // footage gives the real number (see "Reference footage" in plan.md).
 export const TOP_SPEED = 24;
-export const ACCELERATION_LIMIT = (MK8_ACCELERATION_LIMIT / MK8_TOP_SPEED) * TOP_SPEED * FRAMES_PER_SECOND;
+
+// An MK8DX "distance units per frame added each frame" value in our units per second squared.
+export function fromMk8Acceleration(perFrame) {
+  return (perFrame / MK8_TOP_SPEED) * TOP_SPEED * FRAMES_PER_SECOND;
+}
+
+export const ACCELERATION_LIMIT = fromMk8Acceleration(MK8_ACCELERATION_LIMIT);
 // Radians per second at full steering, the same at any speed above STEER_FULL_SPEED, so a slower kart turns
 // tighter (as in MK8DX, where a hairpin needs braking or a drift).
 export const STEERING_RATE = MK8_STEERING * FRAMES_PER_SECOND;
+export const DRIFT_STEERING_RATE = MK8_DRIFT_STEERING * FRAMES_PER_SECOND;
+// A drift with the stick pushed away from the turn widens to this share of the tightest drift; with the stick
+// in the middle it turns halfway between (0.0128 rad a frame, a little more than a full normal turn). Our
+// guess at how MK8DX blends them: its data has only the tightest rate.
+const DRIFT_WIDEST_SHARE = 0.35;
 
 // Our own guesses (MK8DX's data has no numbers for these), in units per second and units per second squared.
 const BRAKING = 30;
@@ -39,8 +52,14 @@ const OVER_TOP_DRAG = 10;
 const STEER_FULL_SPEED = 4;
 
 // `speed` is the kart's speed along its nose (negative in reverse). `controls` is { steer, accelerate, brake }.
-// `offRoad` is true on the shoulders. Returns the speed after `dt` seconds.
-export function nextSpeed(speed, controls, offRoad, dt) {
+// `offRoad` is true on the shoulders. `boost` is the kart's boost (kart-boosts.js) or null: while it lasts the
+// kart speeds up to its speed whatever the pedals, and off-road does not slow it, as in MK8DX, where a boost
+// is the way across the grass. Returns the speed after `dt` seconds.
+export function nextSpeed(speed, controls, offRoad, dt, boost = null) {
+  if (boost) {
+    const boostSpeed = TOP_SPEED * boost.speedShare;
+    return speed < boostSpeed ? Math.min(speed + boost.acceleration * dt, boostSpeed) : Math.max(speed - OVER_TOP_DRAG * dt, boostSpeed);
+  }
   const topSpeed = offRoad ? TOP_SPEED * OFF_ROAD_SPEED_SHARE : TOP_SPEED;
   if (speed > topSpeed) {
     // Faster than the top speed (just onto the grass, or pushed by a bump): drag it down, whatever the pedals.
@@ -64,4 +83,14 @@ export function nextSpeed(speed, controls, offRoad, dt) {
 export function turnAngle(steer, speed, dt) {
   const share = Math.min(Math.max(speed / STEER_FULL_SPEED, -1), 1);
   return steer * STEERING_RATE * share * dt;
+}
+
+// How far a drifting kart turns in `dt` seconds, in radians (positive is right). `direction` is the drift's side
+// (-1 left, 1 right); `steer` (-1 to 1) pushed into the drift tightens it, pushed away widens it, but the kart
+// always turns toward the drift's side.
+export function driftTurnAngle(direction, steer, speed, dt) {
+  const into = Math.min(Math.max(steer * direction, -1), 1);
+  const share = DRIFT_WIDEST_SHARE + ((1 - DRIFT_WIDEST_SHARE) * (into + 1)) / 2;
+  const speedShare = Math.min(Math.max(speed / STEER_FULL_SPEED, -1), 1);
+  return direction * DRIFT_STEERING_RATE * share * speedShare * dt;
 }

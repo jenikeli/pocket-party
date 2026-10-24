@@ -187,6 +187,63 @@
   filter: brightness(1.4);
 }
 
+/* The 3D race: Drift above Go under the right thumb, Brake beside Go, and the later Item button's place top
+   left. With auto-accelerate there is no Go, so Drift takes the whole right column. */
+#kart-pedals.with-drift {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "item drift"
+    "brake go";
+}
+
+#kart-pedals.with-drift.auto-accelerate {
+  grid-template-areas:
+    "item drift"
+    "brake drift";
+}
+
+#kart-item-slot {
+  grid-area: item;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed #3a4258;
+  border-radius: 24px;
+  color: #3a4258;
+  font-size: 22px;
+}
+
+#kart-pedals.with-drift #kart-brake {
+  grid-area: brake;
+}
+
+#kart-pedals.with-drift #kart-accelerate {
+  grid-area: go;
+}
+
+#kart-drift {
+  grid-area: drift;
+  background: #4a5470;
+}
+
+/* The drift's spark level, from the host's view: blue, orange, then purple, as in MK8DX. */
+#kart-drift[data-spark="blue"] {
+  background: #2f80ed;
+  box-shadow: 0 0 24px #4fb3ff;
+}
+
+#kart-drift[data-spark="orange"] {
+  background: #e67e22;
+  box-shadow: 0 0 24px #ff9a1f;
+}
+
+#kart-drift[data-spark="purple"] {
+  background: #9b51e0;
+  box-shadow: 0 0 24px #d04dff;
+}
+
 /* A web page cannot lock the orientation on iOS, so an upright phone gets a hint instead of the controls.
    Last in the file, so it beats the display rules above (same specificity, later wins). */
 @media (orientation: portrait) {

@@ -1,10 +1,13 @@
 // The 3D race's road as meshes, built from the same stations the kart rules drive on, so what is drawn is
 // exactly where karts drive: asphalt with red and white curbs (blue and white in anti-gravity sections), the
-// checkered start line, grass shoulders, walls, and the road's underside and edges. Gaps are left empty.
+// checkered start line, dash panels, grass shoulders, walls, and the road's underside and edges. Gaps are left
+// empty.
 // Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
 import { addScaled } from './vector.js';
+import { progressBetween } from './track.js';
+import { DASH_PANEL_LENGTH, DASH_PANEL_WIDTH } from './kart-boosts.js';
 
 const CURB_WIDTH = 1;
 const WALL_HEIGHT = 1.2;
@@ -12,6 +15,8 @@ const THICKNESS = 0.6;
 // Curb stripes about this many stations long.
 const STRIPE_STATIONS = 2;
 const START_LINE_CELLS = 16;
+// Dash panels sit just above the asphalt, so the two never fight over which is drawn in front.
+const DASH_PANEL_LIFT = 0.03;
 const COLORS = {
   asphalt: 0x4a4e57,
   antiGravityAsphalt: 0x3b4a6b,
@@ -23,6 +28,8 @@ const COLORS = {
   antiGravityWall: 0x7fe3ff,
   underside: 0x6b6156,
   black: 0x1a1a1a,
+  dashOrange: 0xff8c1a,
+  dashYellow: 0xffe14a,
 };
 
 // Returns { road, walls, dispose() }: two meshes ready to add to the scene (the walls are seen from both sides).
@@ -37,6 +44,7 @@ export function buildTrackMesh(track) {
     const next = track.stations[(index + 1) % track.stations.length];
     const segment = { station, next, index };
     addRoadTop(surfaces, track, segment, index === startIndex || index === startIndex + 1);
+    addDashPanels(surfaces, track, segment);
     addShoulders(surfaces, track, segment);
     addUnderside(surfaces, track, segment);
     addEdges(surfaces, walls, track, segment);
@@ -76,6 +84,18 @@ function addRoadTop(builder, track, segment, onStartLine) {
   builder.strip(segment, -edge, 0, -edge + CURB_WIDTH, 0, up, curb);
   builder.strip(segment, -edge + CURB_WIDTH, 0, edge - CURB_WIDTH, 0, up, antiGravity ? COLORS.antiGravityAsphalt : COLORS.asphalt);
   builder.strip(segment, edge - CURB_WIDTH, 0, edge, 0, up, curb);
+}
+
+// Bright stripes, one per station, across each dash panel where kart-boosts.js finds it.
+function addDashPanels(builder, track, segment) {
+  const up = (station) => station.normal;
+  for (const panel of track.dashPanels) {
+    if (Math.abs(progressBetween(track, panel.s, segment.station.s)) < DASH_PANEL_LENGTH / 2) {
+      const color = segment.index % 2 === 0 ? COLORS.dashOrange : COLORS.dashYellow;
+      const from = panel.lateral - DASH_PANEL_WIDTH / 2;
+      builder.strip(segment, from, DASH_PANEL_LIFT, from + DASH_PANEL_WIDTH, DASH_PANEL_LIFT, up, color);
+    }
+  }
 }
 
 function addShoulders(builder, track, segment) {

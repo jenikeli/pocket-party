@@ -161,6 +161,9 @@ export const INPUT_KINDS = Object.freeze({
 export const KART_BUTTONS = Object.freeze({
   ACCELERATE: 'accelerate',
   BRAKE: 'brake',
+  // The 3D race only: hop, drift and trick, like MK8DX's R button. Held, it also accelerates (see
+  // host/kart/kart-controls.js).
+  DRIFT: 'drift',
 });
 
 // The kart races' per-player choices (INPUT kind choice) and the values each takes.

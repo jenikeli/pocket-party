@@ -12,7 +12,7 @@ const UP = vec(0, 1, 0);
 // The loop must end where it starts; a bigger miss is a mistake in the track's pieces.
 const CLOSING_TOLERANCE = 0.01;
 
-// `definition` is { halfWidth, startLine, pieces }. The track starts at the origin heading along +x, at
+// `definition` is { halfWidth, startLine, pieces, dashPanels }. The track starts at the origin heading along +x, at
 // height 0 with no roll. Each piece is a straight ({ straight: length }) or a turn ({ turn: degrees, radius },
 // + turns right, - left), and may also have:
 //   height    the height at its end; it changes smoothly (flat at both ends) from the previous piece's
@@ -22,7 +22,8 @@ const CLOSING_TOLERANCE = 0.01;
 //   walls     'both' (the default), 'left', 'right' or 'none': which outer edges have a wall
 //   gap       true: no road at all (a jump)
 //   antiGravity true: gravity pulls karts toward the road, so they can drive up walls
-// Returns the track: { stations, length, halfWidth, startLine }. Station i describes the road from itself to
+// dashPanels (optional) lists { s, lateral }: where each dash panel's centre is (kart-boosts.js has their size).
+// Returns the track: { stations, length, halfWidth, startLine, dashPanels }. Station i describes the road from itself to
 // station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength, shoulder,
 // wallLeft, wallRight, gap, antiGravity }, where s is the distance along the centre line from the start.
 export function buildTrack(definition) {
@@ -43,7 +44,7 @@ export function buildTrack(definition) {
     station.segmentLength = length(subtract(stations[(index + 1) % stations.length].point, station.point));
     s += station.segmentLength;
   });
-  return { stations, length: s, halfWidth: definition.halfWidth, startLine: definition.startLine };
+  return { stations, length: s, halfWidth: definition.halfWidth, startLine: definition.startLine, dashPanels: definition.dashPanels ?? [] };
 }
 
 // One sample per station: { point, roll (radians), flags }, walking the pieces from the origin.

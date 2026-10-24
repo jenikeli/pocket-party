@@ -1,8 +1,9 @@
 // The kart races' phone screens as HTML, which controller/kart/controls.js puts into the game container.
 // The setup screen (control style and ready) before every race, and the controls, held sideways like a Switch
-// controller: steering on the left (the stick, or the tilt panel), the status in the middle, the pedals on the
-// right. The ids are styled in controller/kart/style.css; data-button names match KART_BUTTONS,
-// data-choice and data-value match KART_CHOICES and their values.
+// controller: steering on the left (the stick, or the tilt panel), the status in the middle, the buttons on the
+// right (the 3D race adds Drift and an empty place for its later Item button). The ids are styled in
+// controller/kart/style.css; data-button names match KART_BUTTONS, data-choice and data-value match
+// KART_CHOICES and their values.
 
 export const MARKUP = `
   <div id="kart-screen">
@@ -40,6 +41,8 @@ export const MARKUP = `
         <p id="kart-line"></p>
       </div>
       <div id="kart-pedals">
+        <div id="kart-item-slot" hidden>Item</div>
+        <div class="kart-pedal" id="kart-drift" data-button="drift" hidden>Drift</div>
         <div class="kart-pedal" id="kart-brake" data-button="brake">Brake</div>
         <div class="kart-pedal" id="kart-accelerate" data-button="accelerate">Go</div>
       </div>

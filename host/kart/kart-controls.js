@@ -1,4 +1,5 @@
-// Turns the INPUT messages from each player's phone into their kart's controls, { steer, accelerate, brake }.
+// Turns the INPUT messages from each player's phone into their kart's controls,
+// { steer, accelerate, brake, drift } (drift is the 3D race's held Drift button; the 2D race ignores it).
 // The race reads the latest controls every step instead of acting on each message, because the stick sends
 // about 30 times a second and the race steps at 60. Plain data and functions, unit tested in Node.
 // Shared by both kart races: host/games/kart-2d/index.js and host/games/kart-3d/index.js.
@@ -6,7 +7,7 @@
 import { INPUT_KINDS, KART_BUTTONS } from '../../shared/protocol.js';
 
 // No steering, no pedals: what a kart gets from a player whose phone dropped.
-export const NEUTRAL_CONTROLS = Object.freeze({ steer: 0, accelerate: false, brake: false });
+export const NEUTRAL_CONTROLS = Object.freeze({ steer: 0, accelerate: false, brake: false, drift: false });
 
 // Returns { handleInput(playerId, input), controlsFor(player, autoAccelerate) }.
 export function createControlsTable() {
@@ -25,13 +26,18 @@ export function createControlsTable() {
   // screen locked). What they held is forgotten too: after a rejoin their phone's buttons all start released,
   // so the kart waits for fresh input instead of driving off on its own. With `autoAccelerate` (the player's
   // control style) the kart accelerates whenever brake is not held; the phone has no Go button then.
+  // Without it, a held Drift accelerates too: in MK8DX the accelerate button stays held through a drift, but a
+  // phone has one right thumb for both buttons, and it cannot press two at once.
   function controlsFor(player, autoAccelerate) {
     if (!player?.connected) {
       controlsByPlayer.delete(player?.playerId);
       return NEUTRAL_CONTROLS;
     }
     const controls = controlsByPlayer.get(player.playerId) ?? NEUTRAL_CONTROLS;
-    return autoAccelerate ? { ...controls, accelerate: !controls.brake } : controls;
+    if (autoAccelerate) {
+      return { ...controls, accelerate: !controls.brake };
+    }
+    return controls.drift ? { ...controls, accelerate: true } : controls;
   }
 
   return { handleInput, controlsFor };
@@ -50,6 +56,9 @@ function applyInput(controls, input) {
   }
   if (input?.kind === INPUT_KINDS.BUTTON && input.button === KART_BUTTONS.BRAKE) {
     return { ...controls, brake: input.pressed === true };
+  }
+  if (input?.kind === INPUT_KINDS.BUTTON && input.button === KART_BUTTONS.DRIFT) {
+    return { ...controls, drift: input.pressed === true };
   }
   return controls;
 }

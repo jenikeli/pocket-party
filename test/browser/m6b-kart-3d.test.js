@@ -12,7 +12,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -69,17 +69,6 @@ describe('M6b 3D test drive', () => {
     return match ? Number(match[1]) : null;
   }
 
-  // Clicks an HTML button on the host through the page itself. Playwright's own click first waits for the
-  // button to stay still over two animation frames, and software-drawn WebGL here gives a frame every few
-  // seconds, which pushes End game's second click past its 3 s confirm window.
-  function clickNow(selector, times = 1) {
-    return hostPage.$eval(selector, (button, count) => {
-      for (let i = 0; i < count; i += 1) {
-        button.click();
-      }
-    }, times);
-  }
-
   async function centerOf(selector, player) {
     const box = await player.page.locator(selector).boundingBox();
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
@@ -134,7 +123,7 @@ describe('M6b 3D test drive', () => {
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
     await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow('#kart-3d-start-button');
+    await clickNow(hostPage, '#kart-3d-start-button');
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
       assert.equal(await player.page.textContent('#kart-line'), 'Test drive');
@@ -168,14 +157,15 @@ describe('M6b 3D test drive', () => {
     await bo.page.close();
     await openPlayerPage(bo);
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_RECONNECTED);
-    const view = await nextView(bo, (each) => each.phase === 'driving');
-    assert.deepEqual(view, { phase: 'driving', steering: 'stick', autoAccelerate: true });
+    // Just after GO the view says how the start went for a moment; the view after that is the plain one.
+    const view = await nextView(bo, (each) => each.phase === 'driving' && each.start === null);
+    assert.deepEqual(view, { phase: 'driving', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null });
     await bo.page.waitForSelector('#kart-controls:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
   });
 
   test('Back to setup returns the phones to the setup screen with their control styles kept and ready cleared', async () => {
-    await clickNow('#kart-3d-setup-button');
+    await clickNow(hostPage, '#kart-3d-setup-button');
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-setup:not([hidden])');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="false"]');
@@ -187,7 +177,7 @@ describe('M6b 3D test drive', () => {
 
   test('End game frees the WebGL canvas and returns everyone to the lobby', async () => {
     // Twice in a row: the first click arms the button, the second ends the game.
-    await clickNow(GAME_END_BUTTON, 2);
+    await clickNow(hostPage, GAME_END_BUTTON, 2);
     await hostPage.waitForSelector('#shell:not([hidden])', { timeout: 20000 });
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 1);
     for (const player of [ana, bo]) {

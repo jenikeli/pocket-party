@@ -1,6 +1,6 @@
 // The 3D test drive's HTML panels over the canvas: the setup screen (each player's control style and ready,
-// and Start driving), and while driving a small readout at the top (physics step time, frame rate, each
-// player's speed) with a Back to setup button. Used by host/games/kart-3d/index.js, which owns the state; the
+// and Start driving), and while driving a small readout at the top (readout.js) with Back to setup and Restart
+// (back to the grid for another countdown) buttons, and the countdown in big letters in the middle. Used by host/games/kart-3d/index.js, which owns the state; the
 // panels only show it and report clicks. The bottom right stays clear for the shell's game bar.
 
 import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
@@ -22,15 +22,18 @@ const STYLE = `
     align-items: flex-start; padding: 8px 12px; border-radius: 10px; background: rgba(16, 19, 28, 0.75);
     color: #ffffff; font: 14px sans-serif; }
   #kart-3d-drive p { margin: 0; white-space: pre-line; }
+  #kart-3d-countdown { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0;
+    color: #ffd84a; font: bold 160px sans-serif; text-shadow: 0 6px 0 #a3471b, 0 0 24px rgba(0, 0, 0, 0.6);
+    pointer-events: none; }
   #kart-3d-setup button, #kart-3d-drive button { font: 22px sans-serif; padding: 12px 24px; border: none;
     border-radius: 8px; background: #2a3145; color: #ffffff; cursor: pointer; }
   #kart-3d-drive button { font-size: 16px; padding: 8px 12px; }
   #kart-3d-setup button:disabled { opacity: 0.4; cursor: default; }
 `;
 
-// `onStartDriving()` and `onBackToSetup()` run on a click of those buttons.
-// Returns { showSetup(setup, players), showDriving(readoutText) }: one panel shows at a time.
-export function createPanels(container, { onStartDriving, onBackToSetup }) {
+// `onStartDriving()`, `onBackToSetup()` and `onRestart()` run on a click of those buttons.
+// Returns { showSetup(setup, players), showDriving(readoutText, countdownText) }: one panel shows at a time.
+export function createPanels(container, { onStartDriving, onBackToSetup, onRestart }) {
   const style = document.createElement('style');
   style.textContent = STYLE;
   const setupPanel = document.createElement('div');
@@ -44,20 +47,28 @@ export function createPanels(container, { onStartDriving, onBackToSetup }) {
   const drivePanel = document.createElement('div');
   drivePanel.id = 'kart-3d-drive';
   drivePanel.hidden = true;
-  drivePanel.innerHTML = '<button type="button" id="kart-3d-setup-button">Back to setup</button><p id="kart-3d-readout"></p>';
-  container.append(style, setupPanel, drivePanel);
+  drivePanel.innerHTML = `
+    <button type="button" id="kart-3d-setup-button">Back to setup</button>
+    <button type="button" id="kart-3d-restart-button">Restart</button>
+    <p id="kart-3d-readout"></p>`;
+  const countdown = document.createElement('p');
+  countdown.id = 'kart-3d-countdown';
+  countdown.hidden = true;
+  container.append(style, setupPanel, drivePanel, countdown);
   const rows = setupPanel.querySelector('#kart-3d-rows');
   const status = setupPanel.querySelector('#kart-3d-status');
   const startButton = setupPanel.querySelector('#kart-3d-start-button');
   const readout = drivePanel.querySelector('#kart-3d-readout');
   startButton.addEventListener('click', onStartDriving);
   drivePanel.querySelector('#kart-3d-setup-button').addEventListener('click', onBackToSetup);
+  drivePanel.querySelector('#kart-3d-restart-button').addEventListener('click', onRestart);
   // What the rows show, as text, so they are only rebuilt when something changed (this runs every frame).
   let shownRows = null;
 
   function showSetup(setup, players) {
     setupPanel.hidden = false;
     drivePanel.hidden = true;
+    countdown.hidden = true;
     const inOrder = playersInSlotOrder(players);
     const entries = inOrder.map((player) => describeRow(player, playerSetup(setup, player.playerId)));
     const rowsText = JSON.stringify(entries);
@@ -70,11 +81,17 @@ export function createPanels(container, { onStartDriving, onBackToSetup }) {
     startButton.disabled = !canStartRace(setup, inOrder);
   }
 
-  function showDriving(readoutText) {
+  // `countdownText` is '3', '2', '1', 'GO!' or '' once the karts are off; it is passed every frame.
+  // `readoutText` is null to leave the readout as it is (it is rebuilt only a few times a second).
+  function showDriving(readoutText, countdownText) {
     setupPanel.hidden = true;
     drivePanel.hidden = false;
-    if (readout.textContent !== readoutText) {
+    if (readoutText !== null && readout.textContent !== readoutText) {
       readout.textContent = readoutText;
+    }
+    countdown.hidden = countdownText === '';
+    if (countdown.textContent !== countdownText) {
+      countdown.textContent = countdownText;
     }
   }
 

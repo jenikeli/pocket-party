@@ -66,3 +66,14 @@ export async function startRace(hostPage, controllerPages) {
     { message: 'the host\'s Start race button to start the race' },
   );
 }
+
+// Clicks an HTML button on the host `times` times in a row through the page itself. Playwright's own click
+// first waits for the button to stay still over two animation frames, and software-drawn WebGL (the 3D race)
+// gives a frame every few seconds, which pushes End game's second click past its 3 s confirm window.
+export function clickNow(hostPage, selector, times = 1) {
+  return hostPage.$eval(selector, (button, count) => {
+    for (let i = 0; i < count; i += 1) {
+      button.click();
+    }
+  }, times);
+}

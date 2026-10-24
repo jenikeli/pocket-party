@@ -207,6 +207,9 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.equal(await ana.page.isVisible('#kart-accelerate'), false);
     assert.equal(await ana.page.isVisible('#kart-brake'), true);
     assert.equal(await ana.page.isVisible('#kart-stick-zone'), true);
+    // Drift and the Item button's place belong to the 3D race only.
+    assert.equal(await ana.page.isVisible('#kart-drift'), false);
+    assert.equal(await ana.page.isVisible('#kart-item-slot'), false);
     await bo.page.waitForSelector('#kart-tilt-zone:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-stick-zone'), false);
     assert.equal(await bo.page.isVisible('#kart-recenter'), true);

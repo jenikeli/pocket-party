@@ -1,6 +1,7 @@
 // Hand-written arcade physics for one 3D kart: driving on the road (any slope or roll), flying and landing,
-// gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Plain functions
-// on plain kart objects, unit tested in Node. Used by host/games/kart-3d/drive.js, stepped at the fixed 60 Hz.
+// gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Each step also
+// runs the Drift button's techniques (kart-techniques.js) and the boosts (kart-boosts.js). Plain functions on
+// plain kart objects, unit tested in Node. Used by host/games/kart-3d/drive.js, stepped at the fixed 60 Hz.
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
 // its "up" set to the road's normal and its nose laid flat on the road. So hills, banks and walls rolled up to
@@ -8,11 +9,12 @@
 // barely change a kart's speed.
 
 import { vec, add, scale, addScaled, cross, dot, normalize, flatten, rotate } from './vector.js';
-import { locate, surfaceAt, outerEdge, wallOnSide, pointAt, SURFACES } from './track.js';
-import { nextSpeed, turnAngle } from './kart-driving.js';
+import { locate, surfaceAt, pointAt, SURFACES } from './track.js';
+import { hitWall } from './kart-walls.js';
+import { nextSpeed, turnAngle, driftTurnAngle } from './kart-driving.js';
+import { freshTechniques, useDriftButton, afterMove } from './kart-techniques.js';
+import { freshBoosts, stepBoosts } from './kart-boosts.js';
 
-// A kart is a ball of this radius for walls and bumps (it is 2 units long and about 1.4 wide).
-export const KART_RADIUS = 1;
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
 // How far the road may drop away or rise under a kart in one step while it stays stuck to it. Big enough for
@@ -32,22 +34,18 @@ const DOWN = vec(0, -1, 0);
 const AIR_STEERING_SHARE = 0.5;
 // How fast sideways sliding dies away (per second), as in the 2D race.
 const GRIP = 8;
-// Walls stand this high above the road; a kart flying higher goes over them.
-const WALL_HEIGHT = 1.5;
-const WALL_BOUNCE = 0.3;
-// Scraping along a wall drags the kart (per second while touching), so the wall is never the fast line.
-const WALL_SCRAPE = 1.6;
-// A kart meeting a wall at under this angle turns to slide along it instead of stopping nose first.
-const WALL_ALIGN_ANGLE = Math.PI / 4;
 
 // A kart standing on the road at distance `s` along it and `lateral` right of the centre line, facing along
 // the road. `weight` (about 1) decides bumps (kart-bumps.js). The kart is plain data: { position, velocity,
-// forward, up, previousPosition, previousForward, previousUp, grounded, surface, antiGravity, trackIndex, s,
-// lastGroundIndex, respawnIn, weight }. forward and up are unit vectors (the nose, and the road's normal under
-// it); previous* are one step ago, for smooth drawing; surface is a SURFACES value, or null in the air;
-// respawnIn counts down while it falls after leaving the road, and is null otherwise.
+// forward, up, previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded,
+// surface, antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, weight, driftHeld, lipTiming },
+// plus the fields of freshTechniques() and freshBoosts(). forward and up are unit vectors (the nose, and the
+// road's normal under it); previous* are one step ago, for smooth drawing; surface is a SURFACES value, or
+// null in the air; respawnIn counts down while it falls after leaving the road, and is null otherwise;
+// driftHeld is the Drift button last step, and lipTiming the last trick timing (kart-techniques.js), both kept
+// when the kart is put back on the road.
 export function createKart(track, s, lateral, weight = 1) {
-  const kart = { weight };
+  const kart = { weight, driftHeld: false, lipTiming: null };
   placeOnRoad(track, kart, s, lateral);
   return kart;
 }
@@ -67,9 +65,14 @@ function placeOnRoad(track, kart, s, lateral) {
     antiGravity: track.stations[spot.index].antiGravity,
     trackIndex: spot.index,
     s: track.stations[spot.index].s,
+    lateral,
     lastGroundIndex: spot.index,
     respawnIn: null,
+    ...freshTechniques(),
+    ...freshBoosts(),
   });
+  kart.previousBodyYaw = 0;
+  kart.previousBodyRoll = 0;
 }
 
 // The kart's speed along its nose, negative when reversing.
@@ -77,15 +80,24 @@ export function forwardSpeed(kart) {
   return dot(kart.velocity, kart.forward);
 }
 
-// Moves the kart for `dt` seconds. `controls` is { steer, accelerate, brake }: steer -1 (left) to 1 (right).
+// Moves the kart for `dt` seconds. `controls` is { steer, accelerate, brake, drift }: steer -1 (left) to 1
+// (right), drift the Drift button held.
 export function stepKart(track, kart, controls, dt) {
   kart.previousPosition = kart.position;
   kart.previousForward = kart.forward;
   kart.previousUp = kart.up;
+  kart.previousBodyYaw = kart.bodyYaw;
+  kart.previousBodyRoll = kart.bodyRoll;
   if (kart.respawnIn !== null) {
+    // Kept up to date while falling, so a button still held when the kart is put back does not hop it.
+    kart.driftHeld = controls.drift === true;
     stepFalling(track, kart, dt);
     return;
   }
+  const fromIndex = kart.trackIndex;
+  // A hop leaves the road here, so wasGrounded is read after it: a hop is not a landing's take-off.
+  useDriftButton(kart, controls);
+  const wasGrounded = kart.grounded;
   if (kart.grounded) {
     drive(kart, controls, dt);
   } else {
@@ -97,16 +109,21 @@ export function stepKart(track, kart, controls, dt) {
     contact = locate(track, kart.position, contact.index);
   }
   settle(track, kart, contact);
+  afterMove(track, kart, controls, fromIndex, wasGrounded, dt);
+  stepBoosts(track, kart, dt);
 }
 
-// On the road: the pedals change the speed along the nose, steering turns the nose about the road's normal,
-// and grip takes away sideways sliding (left over from bumps and walls).
+// On the road: the pedals (or a boost) change the speed along the nose, steering (or the drift) turns the nose
+// about the road's normal, and grip takes away sideways sliding (left over from bumps and walls). A stalled
+// start holds the kart still.
 function drive(kart, controls, dt) {
   const side = cross(kart.forward, kart.up);
-  const speed = nextSpeed(forwardSpeed(kart), controls, kart.surface === SURFACES.OFF_ROAD, dt);
+  const offRoad = kart.surface === SURFACES.OFF_ROAD;
+  const speed = kart.stallLeft > 0 ? 0 : nextSpeed(forwardSpeed(kart), controls, offRoad, dt, kart.boost);
   const slide = dot(kart.velocity, side) * Math.exp(-GRIP * dt);
+  const turn = kart.driftDirection === 0 ? turnAngle(controls.steer, speed, dt) : driftTurnAngle(kart.driftDirection, controls.steer, speed, dt);
   // A right turn turns the nose clockwise seen from above the road: a negative angle about up.
-  kart.forward = normalize(rotate(kart.forward, kart.up, -turnAngle(controls.steer, speed, dt)));
+  kart.forward = normalize(rotate(kart.forward, kart.up, -turn));
   kart.velocity = addScaled(scale(kart.forward, speed), cross(kart.forward, kart.up), slide);
 }
 
@@ -125,6 +142,7 @@ function settle(track, kart, contact) {
   const surface = surfaceAt(track, contact);
   kart.trackIndex = contact.index;
   kart.s = contact.s;
+  kart.lateral = contact.lateral;
   kart.antiGravity = contact.station.antiGravity;
   const nearSurface = contact.height > -GROUND_SNAP && contact.height < GROUND_SNAP;
   const landing = !kart.grounded && contact.height <= 0 && contact.height > -LANDING_DEPTH;
@@ -155,29 +173,6 @@ function stickToRoad(kart, contact, surface) {
   kart.grounded = true;
   kart.surface = surface;
   kart.lastGroundIndex = contact.index;
-}
-
-// Pushes the kart back inside a wall it went through and takes away its speed into the wall. Returns true if
-// it touched one. Edges without a wall let it through, to fall.
-function hitWall(track, kart, contact, dt) {
-  const limit = outerEdge(track, contact) - KART_RADIUS;
-  const nearRoad = contact.height < WALL_HEIGHT && contact.height > -LANDING_DEPTH;
-  if (contact.station.gap || !nearRoad || Math.abs(contact.lateral) <= limit || !wallOnSide(contact)) {
-    return false;
-  }
-  const outward = scale(contact.right, Math.sign(contact.lateral));
-  kart.position = addScaled(kart.position, outward, limit - Math.abs(contact.lateral));
-  const intoWall = dot(kart.velocity, outward);
-  if (intoWall > 0) {
-    kart.velocity = addScaled(kart.velocity, outward, -(1 + WALL_BOUNCE) * intoWall);
-  }
-  kart.velocity = scale(kart.velocity, Math.exp(-WALL_SCRAPE * dt));
-  // Nose into the wall at a shallow angle: point it along the wall instead.
-  const noseIntoWall = dot(kart.forward, outward);
-  if (noseIntoWall > 0 && Math.asin(Math.min(noseIntoWall, 1)) <= WALL_ALIGN_ANGLE) {
-    kart.forward = normalize(flatten(kart.forward, outward));
-  }
-  return true;
 }
 
 // Off the road and falling: no control, until it is put back.

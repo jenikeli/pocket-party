@@ -5,10 +5,9 @@
 
 import * as THREE from 'three';
 import { viewRects } from './view-layout.js';
-import { createChaseCamera, followKart } from './chase-camera.js';
+import { createChaseCamera, followKart, FIELD_OF_VIEW } from './chase-camera.js';
 
 const MAX_VIEWS = 4;
-const FIELD_OF_VIEW = 65;
 const LABEL_STYLE = 'position: absolute; margin: 0; padding: 4px 10px; border-radius: 6px; font: bold 20px sans-serif; ' +
   'background: rgba(16, 19, 28, 0.6); pointer-events: none;';
 
@@ -20,8 +19,9 @@ export function createViews(container) {
     label: createLabel(container),
   }));
 
-  // `targets` is 1, 2 or 4 views' worth of { pose, name, color }: the kart's pose as drawn, the label text and
-  // its CSS colour. `dt` is the real time since the last drawn frame, in seconds, for the cameras' lag.
+  // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting }: the kart's pose as drawn, the label
+  // text and its CSS colour, and whether the kart boosts (the camera pulls back). `dt` is the real time since
+  // the last drawn frame, in seconds, for the cameras' lag.
   function draw(renderer, scene, targets, dt) {
     const size = renderer.getSize(new THREE.Vector2());
     const rects = viewRects(targets.length, size.x, size.y);
@@ -31,8 +31,9 @@ export function createViews(container) {
     renderer.setScissorTest(true);
     targets.forEach((target, index) => {
       const view = views[index];
-      followKart(view.chase, target.pose, dt);
-      const { position, up, look } = view.chase;
+      followKart(view.chase, target.pose, dt, target.boosting);
+      const { position, up, look, fieldOfView } = view.chase;
+      view.camera.fov = fieldOfView;
       view.camera.position.set(position.x, position.y, position.z);
       view.camera.up.set(up.x, up.y, up.z);
       view.camera.lookAt(look.x, look.y, look.z);

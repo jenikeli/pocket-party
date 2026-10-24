@@ -269,3 +269,87 @@ Measured on 2026-10-24 on the iPad (host over HTTPS on the LAN IP): "3D test dri
 - The readout showed 60 fps, not the 120 the iPad reached in M6a's second run, so the screen ran at 60 Hz this time (as in M6a's first run; the cause is still unknown).
 
 **Feel against MK8DX:** on the device run it did not feel like the real game's controls. Tuning is put off to a later pass. Drifting and mini-turbos (M6c) are a big part of how MK8DX corners and were not in this build. Still unchecked against footage: kart lengths per second on a straight; time from GO to top speed; turning circle at full steer without drifting; camera distance and height; how floaty jumps are; how hard walls and bumps push.
+
+## M6c: techniques spike
+
+### What was built
+
+The same "3D test drive" (`kart-3d`), now with MK8DX's techniques. Every drive starts with a countdown (3, 2, 1 a second each, then GO), and the host's **Restart** button puts everyone back on the grid for another one, so starts can be tried again and again. The phone's controls gain a **Drift** button above Go, with an empty dashed **Item** place to its left (kept for the later Item button) and Brake below that. With auto-accelerate there is no Go, so Drift takes the whole right column. The Drift button turns blue, orange or purple with the drift's spark level (the `spark` field of the phone's view).
+
+**A held Drift also accelerates.** In MK8DX the accelerate button stays held through a drift, but a phone has one right thumb for Go and Drift and cannot press both. So without auto-accelerate, holding Drift counts as holding Go too (`host/kart/kart-controls.js`). After a drift the thumb moves from Drift back to Go; the coasting between the two is a few frames. The device run should say whether that feels right.
+
+Rules (DOM-free, unit tested): `kart-techniques.js` (hop, drift, charge, mini-turbo, trick, and the body's lean, roll and spin for drawing), `kart-boosts.js` (every boost, the stall, dash panels), `slipstream.js`, `rocket-start.js`, plus hooks in `kart-physics.js`, `kart-bumps.js` and `drive.js`. Walls moved from `kart-physics.js` to `kart-walls.js` to keep files short. Drawing: `effects.js` (one point cloud for the field: sparks from the rear wheels in the level's colour, flames from the exhaust while boosting, grey smoke while stalled), dash panels as orange and yellow stripes on the road, the kart's body leaning into a drift (about 20 degrees), rolling once in a trick and spinning once in a spin boost, and the chase camera dropping back 2 units and widening its view by 8 degrees while the kart boosts.
+
+### How each technique works
+
+- **Hop and drift:** pressing Drift on the road hops (about 0.27 s in the air). On landing, if Drift is still held, the stick is at least 0.3 over and the kart goes at least 8 units/s, it drifts that way. This works after any landing, so holding Drift over a jump and landing with the stick over also starts a drift. Steering during a drift sets its turn rate: 0.019 rad/frame (MK8DX's `Drift_DirRotH`) with the stick fully into the turn, down to 35% of that with the stick fully away, always toward the drift's side. With the stick in the middle it turns at 0.0128 rad/frame, a little more than a full normal turn. A drift that slows below 8 units/s ends with no boost.
+- **Mini-turbo:** MK8DX's counter (level 10), +5 a frame with the stick at least 0.55 into the turn, +2 otherwise, charged only on the road. Blue at 256, orange at 542, purple at 828: held hard that is 52, 109 and 166 frames from landing (0.87, 1.8, 2.8 s). Letting go fires a boost of 30, 90 or 150 frames at 1.1 times top speed.
+- **Trick (jump boost):** a lip is where the road ends at a gap (the test track's ramp). Drift pressed up to 0.1 s before the kart crosses the lip, or up to 0.3 s after, does a trick (one barrel roll), and the kart boosts on landing: 25 frames at 1.35 times top speed. MK8DX also tricks off bumps and edges without a gap; our tracks have only gap jumps so far.
+- **Rocket start:** the host judges when the Go press *arrives*. A press held from 0 to 0.6 s after "2" appeared boosts at GO (1 s at 1.35 times top speed); held from earlier stalls the kart for 1 s (grey smoke); later, or let go before GO, is a normal start. During the countdown auto-accelerate does not count as holding Go (or every auto-accelerate kart would stall), but Go or Drift pressed by hand does.
+- **Dash panels:** two on the test track, one before the jump (more speed over the gap) and one on the off-road straight. Driving over one boosts 1 s at 1.35 times top speed. Every boost ignores the grass's slowdown, as in MK8DX.
+- **Slipstream:** 3 s within 1.5-12 units straight behind another kart (at most 1.6 to the side), at 60% of top speed or more, gives 3 s at 1.08 times top speed. A wall or a bump ends it. There are no wind lines yet; the boost shows only as flames and the camera pull-back.
+- **Spin boost:** two karts that bump while both are in the anti-gravity section each get 30 frames at 1.1 times top speed and a spin.
+- **Boosts do not stack:** a new boost while boosting keeps the longer time and the faster speed of the two. While boosting, the pedals do nothing; the kart speeds up toward the boost speed whatever is held.
+
+### Starting numbers
+
+| Thing | Value | Source |
+|---|---|---|
+| Drift turn rate | 0.019 rad/frame into the turn, 0.0128 middle, 0.0067 away | MK8DX level 10 (`Drift_DirRotH`) for the tightest; the blend is a guess |
+| Charge, levels, boost lengths | 5 or 2 a frame; 256, 542, 828; 30, 90, 150 frames | MK8DX level 10 |
+| Hard steer for 5 a frame | 0.55 | the wiki's "slightly more than 0.5" |
+| Mini-turbo speed and push | 1.1 x top speed, 24 units/s² | MK8DX level 10; the push reads its 0.13 like the acceleration limit (units per frame each frame), which the wiki does not confirm |
+| Jump boost | 25 frames at 1.35 x top speed, 37 units/s² | MK8DX level 10 |
+| Hop | 0.27 s in the air | guess |
+| Drift start | stick 0.3 over, 8 units/s or faster | guess |
+| Trick window | 0.1 s before the lip to 0.3 s after, by arrival | guess, to set from the readout |
+| Countdown | 1 s per number | guess at MK8DX's pace |
+| Rocket start window | 0 to 0.6 s after "2", by arrival | guess, to set from the readout |
+| Rocket start, dash panel | 1 s at 1.35 x top speed | guess ("like a mushroom") |
+| Stall | 1 s | guess |
+| Slipstream | 3 s close behind, then 3 s at 1.08 x | the reference's "about 3-5 s" and "about 3 s"; the speed is a guess |
+| Spin boost | 30 frames at 1.1 x | guess |
+| Camera while boosting | 2 units further back, view 8 degrees wider | guess |
+
+### Measured without a device
+
+- **The hairpin can be drifted at full speed to purple.** A scripted driver that hops on the straight just before the hairpin and holds the outside lane (stick between about 0.55 and 1 into the turn) reaches purple sparks through it without touching a wall (unit-tested). The outside lane is where a hard drift's radius (about 21 units at top speed) matches the curve. On the inside lane it reaches only orange, because the stick has to be eased below 0.55 to stay off the wall and the counter drops to 2 a frame.
+- **Trick timings at the ramp, at top speed:** presses from 0.1 s before the lip to 0.3 s after trick; 0.15 s before and 0.35 s after do not (unit-tested).
+- **The dummies still lap twice with no falls**, now taking the dash panel before the jump (a faster jump) when their lane crosses it.
+- **Headless Chromium** (the browser test): a Go press made after the phone showed "2" arrived +0.25 s after "2" and made a rocket start; its round trip read 700-1500 ms because the software-drawn host runs at 1 fps. That says nothing about real phones.
+
+### Device run (first results)
+
+Measured on 2026-10-24, over the phone's hotspot, read off the host's readout. Not every step below was tried yet.
+
+- **Rocket start:** six starts, Go pressed when "2" appeared: arrivals +0.13, +0.35, +0.40, +0.45, +0.50 and +0.57 s after "2", all rocket starts. Round trips varied from 11 to 113 ms. Every press landed inside the 0-0.6 s window, the latest only 0.03 s from its end, so the window was not changed. With no misses yet, it may be more generous than MK8DX's.
+- **Drift:** the Drift button's colour follows the spark level.
+- **Rocket start with auto-accelerate works by holding Drift** when "2" appears (Drift counts as Go during the countdown). There is no Go button for it, which is fine for now: a phone cannot copy every Switch control.
+- **Layout:** tilt was the easiest steering. Suggested instead of the built layout: Drift on the left (the left thumb is free when tilting), Go on the right, and the Item place above Go. Not built: with the stick the left thumb is on the stick, and where Brake goes is open.
+- **Spin boost works:** bumping another kart on the blue section boosts. Driving into the wall itself does nothing, as built (MK8DX also has glowing spin posts; we have none).
+- **The trick works:** Drift pressed going off the ramp boosts on landing. Its lip timings were not noted, so the trick window was not changed.
+- **Not reported yet:** the hairpin to orange and purple, dash panels and slipstream.
+
+#### Feel against MK8DX (second device run)
+
+These go to the feel pass (M7a in `plan.md`):
+
+- **Steering:** the turning circle is too wide; a full steer should turn much tighter. Wanted: a larger maximum turn, with the same sensitivity (small stick or tilt movements should not turn harder than now).
+- **Walls are the fast line.** Riding the wall round a sharp turn is faster than slowing down for it, partly because the steering is too weak. Hitting a wall should cost more speed.
+- **Bumps feel dead,** like an inelastic collision. In MK8DX karts bounce off each other and off walls; wanted: a visible bounce, damped (not perfectly elastic).
+- **The body's changes of pose are not smooth:** leaning into a drift, the hop, and going from driving straight into the trick's spin all snap where MK8DX animates them smoothly.
+- **The hop's height differs from MK8DX's** (which way to be confirmed).
+- **Camera:** feels fine. **Boost effects:** fine.
+- **Sound:** there is none yet (planned for M8). **Look:** does not look like the real game yet (M7c).
+- **Vibration:** wanted on every button press for now (Android only; iOS Safari has no `navigator.vibrate`).
+
+### Device run procedure
+
+The host's readout now has a second line per player: `Go after "2": +0.31 rocket, -0.20 stall, ... | Drift from lip: +0.12 trick | round trip 42 ms (35-60)`. It keeps the last 6 starts across Restarts, the last lip press (negative is before the lip), and the latest phone round trip with its range over the last 20 s.
+
+1. Host on the iPad over the hotspot; an iPhone and an Android phone as players, one with auto-accelerate and one without, one on tilt.
+2. **Rocket start:** on each phone, try about 10 starts (Restart after each), pressing Go when "2" appears. Note where the arrival times cluster and the round trips, for presses watched on the host screen and on the phone. Set `ROCKET_FROM` and `ROCKET_TO` in `rocket-start.js` so a good press lands inside.
+3. **Trick:** jump the ramp several times pressing Drift at the lip; note the lip timings and set `TRICK_EARLY` and `TRICK_LATE` in `kart-techniques.js`.
+4. **Drift:** drift the hairpin to an orange and a purple boost on both phones, with the stick and with tilt. Does the Drift button's colour help, or does nobody look at it?
+5. **Layout:** is Drift above Go reachable with the right thumb, does holding Drift as accelerate feel right, and does the Item place get in the way? With auto-accelerate, is a two-row Drift better?
+6. Dash panels, slipstream (follow a dummy for 3 s) and the spin boost (bump a kart on the blue wall).

@@ -43,17 +43,18 @@ Decided before M6. The aim is a race that a Mario Kart 8 Deluxe (MK8DX) player w
 - **Players:** 2-4 on one host screen in split screen, like MK8DX's local play. Frame rate target taken from MK8DX on the Switch: 60 fps with 1-2 views, a steady 30 fps with 3-4. Physics stays at the fixed 60 Hz either way.
 - **CPU drivers, if the iPad can carry them:** MK8DX always races 12 karts and fills empty places with CPU drivers, and we want the same. M6a measures drawing 12 karts and M6b measures stepping them. Measured in M6a and M6b: the iPad holds 60 fps with 12 karts and 4 views (stepping 12 karts takes about 0.1 ms), so races fill up to 12.
 
-What gets built when. M6 tests the parts that could sink the plan; M7 and later are split into chats when M7 starts.
+What gets built when. M6 tests the parts that could sink the plan; M7 is split into four parts (decided after the M6c device run): the feel first, then the race, the look and the CPU drivers.
 
 | Area | MK8DX features | When |
 |---|---|---|
 | Driving | acceleration, top speed, steering, hills, jumps and landing, walls, off-road, kart bumps decided by weight, falling off and being put back on the road | M6b |
 | Camera | chase camera with lag; pull-back while boosting | M6b; boost effect M6c |
 | Techniques | hop and drift, three mini-turbo levels (blue, orange, purple sparks), rocket start, jump boost (trick), dash panels, slipstream, anti-gravity spin boost | M6c |
-| Look | glossy lit karts, shadows, bloom, sky, particles | cost measured in M6a, built in M7 |
-| Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7 |
-| CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7 |
-| Items and coins | item boxes, two held items, odds by place, coins up to 10 | after the M7 race works |
+| Feel | steering, speed and scale, bounces off karts and walls, wall penalty, smooth body animation (lean, hop, trick), phone vibration | M7a |
+| Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7b |
+| Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles | cost measured in M6a, built in M7c |
+| CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7d |
+| Items and coins | item boxes, two held items, odds by place, coins up to 10 | after M7 |
 | Assists | auto-accelerate and tilt (exist), Smart Steering | Smart Steering later |
 | More course types and modes | gliding, underwater, Grand Prix (4 races with points) | later |
 | Sound | engine, drift, spark levels, boosts, music | M8 |
@@ -65,7 +66,7 @@ What gets built when. M6 tests the parts that could sink the plan; M7 and later 
 - **Portrait warning.** A web page cannot lock the screen orientation on iOS (the Screen Orientation lock needs fullscreen, which iPhone Safari does not support), so a phone held upright shows "Turn your phone sideways" instead of the controls.
 - **Tilt in landscape** reads a different axis from M3's portrait tilt, and flips sign between the two landscape directions. M5c must handle both and check them on a real iPhone and Android (headless browsers have no sensor).
 - **Phone shows:** the countdown, lap x of N, current place, final place.
-- The 3D race adds a held Drift button (hop, drift and trick, like MK8DX's R button) in M6c, and later an Item button, so its controls are the 2D race's plus buttons. Both races share one phone module, `controller/kart/` (decided in M6b; see its summary below).
+- The 3D race adds a held Drift button (hop, drift and trick, like MK8DX's R button), built in M6c above Go with an empty place for a later Item button, so its controls are the 2D race's plus buttons. Without auto-accelerate a held Drift also accelerates, since one right thumb cannot hold Go and Drift at once (M6c; the device run checks it). Both races share one phone module, `controller/kart/` (decided in M6b; see its summary below).
 
 ## Game settings
 
@@ -204,47 +205,64 @@ Notes (decided before M6): split screen, one view per player, so the 3D race tak
 
 Notes (split decided before M6): the MK8DX target added the driving and technique spikes to the original performance spike, and the three do not fit one chat. M6a is throwaway, like `spike.js`. M6b and M6c are not: they write the track maths and kart rules to project standards (DOM-free, unit tested) in `host/games/kart-3d/`, because tuning the feel is the expensive part and M7 keeps it.
 
-#### Reference footage (I do this myself, optional; not done before M6b)
-MK8DX's distance unit is unknown, so measure in kart lengths from footage (my own Switch, or 150cc time-trial videos) with a middle build at 150cc. This sets our world scale and camera. Results go in `docs/mk8dx-reference.md`. M6b started from the wiki numbers and its own guesses (listed in `docs/3d-findings.md`), so these measurements are what the later feel-tuning pass checks against.
-- Road width, in kart lengths
-- Top speed on a straight, in kart lengths per second, and the time from GO to top speed without a rocket start
-- Camera: how far behind and above the kart, in kart lengths, and how much of the screen width the kart takes up
-- Time from the start of a hard drift to blue, orange and purple sparks (checks the wiki's numbers)
+#### Reference footage (I do this myself, optional; not done)
+MK8DX's distance unit is unknown, so every distance in our race is a guess (listed in `docs/3d-findings.md`). Measuring speeds from video turned out to be impractical, so M7a tunes by feel instead, with live sliders on the host while I play MK8DX side by side. Two numbers are still easy to take from a single paused screenshot (my own Switch, or a 150cc time-trial video), and they help M7a pick the world's scale. Results go in `docs/mk8dx-reference.md`.
+- Road width, in kart widths: on a straight, pause with karts on the road, and count how many karts would fit side by side across it at the same distance from the camera (or measure both in pixels on the screenshot)
+- How much of the screen's width the player's kart takes up, driving straight with no boost
 
 ### M6a: 3D performance spike (throwaway) (done)
 - Three.js r0.186.1 is vendored unminified in `host/vendor/three-0.186.1/` (12 add-ons under `addons/`), with an import map in `host/index.html` for `three` and `three/addons/`.
-- Results (`docs/3d-findings.md`): the iPad draws the full look (shadows, glossy, bloom, particles, detailed karts) with 4 views and 12 karts in under 10 ms at pixel ratio 1; at ratio 2 it takes about 20 ms. Pixels are the cost, not views, karts or triangles. Bloom is the costliest part. A laptop on integrated graphics was slower than the iPad, so M7 needs a way to drop costs on a slow host (bloom first, then resolution).
-- M7 should compile every shader while loading: switching bloom on stalled one frame for 1.8 s. A 30 fps cap inside the game's `render()` paces evenly, so the runner needs no change.
+- Results (`docs/3d-findings.md`): the iPad draws the full look (shadows, glossy, bloom, particles, detailed karts) with 4 views and 12 karts in under 10 ms at pixel ratio 1; at ratio 2 it takes about 20 ms. Pixels are the cost, not views, karts or triangles. Bloom is the costliest part. A laptop on integrated graphics was slower than the iPad, so M7c needs a way to drop costs on a slow host (bloom first, then resolution).
+- M7c should compile every shader while loading: switching bloom on stalled one frame for 1.8 s. A 30 fps cap inside the game's `render()` paces evenly, so the runner needs no change.
 - WebGL context loss ends the game through the shell's error path; `stop()` must call `renderer.forceContextLoss()` (iOS allows a page few contexts).
-- The spike is "3D spike (dev)" (`spike-3d`), last in the lobby list; M7 removes it. Headless Chromium draws WebGL in software, so WebGL browser tests run the host at 960x540.
+- The spike is "3D spike (dev)" (`spike-3d`), last in the lobby list; M7b removes it. Headless Chromium draws WebGL in software, so WebGL browser tests run the host at 960x540.
 
 ### M6b: Driving spike (MK8DX handling) (done, feel tuning put off)
-- "3D test drive" (`kart-3d`, 1-4 players): the shared setup screen, then free driving in split screen with dummy karts filling the field to 12 (players start at the back, as in MK8DX). No countdown, laps or places yet. M7 renames it "Kart race 3D" (a longer title does not fit the lobby's game picker).
+- "3D test drive" (`kart-3d`, 1-4 players): the shared setup screen, then free driving in split screen with dummy karts filling the field to 12 (players start at the back, as in MK8DX). No laps or places yet (M6c added the countdown). M7b renames it "Kart race 3D" (a longer title does not fit the lobby's game picker).
 - The track model works for every feature (hill, jump gap, hairpin, banked curve, off-road, anti-gravity wall, edges without walls); no physics library needed. Pieces become stations 1 unit apart (`track-builder.js`), and `track.js` finds a kart by walking from its last station, so a bridge cannot confuse it. On the road a kart is stuck to the surface; gravity only acts in the air (toward the road in anti-gravity sections).
 - Numbers: MK8DX's level-10 speed curve and steering rate taken literally, and every distance (top speed 24 units/s = 12 kart lengths/s, road 16 wide, camera, gravity) a guess, since no footage was measured. The table is in `docs/3d-findings.md`. On the device run the controls did not feel like MK8DX yet; tuning is put off to a later pass.
-- Measured on the iPad with 4 views: 12 karts step in about 0.1 ms and draw at 60 fps with 2-2.3 ms of CPU per frame, so M7 fills races to 12 karts.
+- Measured on the iPad with 4 views: 12 karts step in about 0.1 ms and draw at 60 fps with 2-2.3 ms of CPU per frame, so M7d fills races to 12 karts.
 - Shared phone controls: `controller/kart/` (`controls.js` plus the setup screen, steering and markup); each race's `controller/games/<id>/index.js` passes its own `describeStatus(view)`, and its `style.css` imports `controller/kart/style.css`. Host side: `host/kart/kart-controls.js` and `host/kart/setup.js`.
 - Headless Chromium draws the test drive at about 2 fps, too slow for Playwright's own clicks on End game's two-click confirm, so the M6b browser test clicks host HTML buttons through the DOM.
 
-### M6c: Techniques spike (drift, boosts, phone buttons)
-Do MK8DX's techniques work, and can a phone play them?
-- [ ] Hop and drift on a held Drift button: pressing hops; the steering direction on landing picks the drift side; steering during the drift tightens or widens it (MK8DX's drift turn rates); releasing ends it
-- [ ] Mini-turbo: MK8DX's charge counter (faster with the stick or tilt held hard into the turn), three levels with blue, orange and purple sparks, and their boost lengths and speed from the reference (level 10)
-- [ ] Rocket start: Go pressed just after "2" in the countdown boosts, too early stalls. The host judges by when the press arrives, so measure arrival times from real phones over the hotspot (iPhone and Android) and set the window from them
-- [ ] Jump boost: Drift pressed at a ramp's lip does a trick and boosts on landing
-- [ ] Dash panels, slipstream (a few seconds close behind another kart), and the spin boost when two karts bump in the anti-gravity section
-- [ ] Effects: drift sparks in the level's colour, boost flames, and a short camera pull-back while boosting
-- [ ] Phone layout: a Drift button for the right thumb next to Go, with the Item button's place kept free. Try it with and without auto-accelerate, and with tilt, on iPhone and Android. The Drift button shows the current spark colour (a field in the controller view), to see whether players use it
-- [ ] Unit tests drive the techniques with scripted inputs: a hard drift of N frames gives the expected level, each boost lasts its length, and the rocket start and trick windows
+### M6c: Techniques spike (drift, boosts, phone buttons) (built, device run pending)
+- The test drive has MK8DX's techniques, as DOM-free rules in `host/games/kart-3d/`: hop and drift, the mini-turbo charge counter and its three levels (`kart-techniques.js`), every boost, the stall and dash panels (`kart-boosts.js`), `slipstream.js`, the spin boost in `kart-bumps.js`, and the countdown with the rocket start (`rocket-start.js`). Walls moved to `kart-walls.js`. Numbers and how each works are in "M6c: techniques spike" in `docs/3d-findings.md`; the windows for the rocket start and the trick are guesses until the device run sets them.
+- Every drive starts with a countdown; the host's Restart button starts another. The readout logs, per player, when Go arrived after "2", when Drift came at the lip, and the phone's round trip (the host pings each phone every 2 s), so the device run can set the windows.
+- Phone: `KART_BUTTONS.DRIFT`; the shared `controller/kart/controls.js` takes `{ describeStatus, drift }`. The 3D race's buttons are a grid: Drift above Go, an empty Item place left of Drift, Brake below it; with auto-accelerate Drift takes both rows. A held Drift also accelerates (one thumb cannot hold both). The view carries `countdown`, `spark` (the Drift button's colour) and `start`.
+- Device run so far: rocket starts arrived +0.13 to +0.57 s after "2" with round trips of 11-113 ms, all inside the window (left at 0-0.6 s); with auto-accelerate a rocket start works by holding Drift; the spark colour on Drift, the trick and the spin boost work. The feel did not match MK8DX (steering, walls, bumps, pose transitions, hop): those notes are M7a's starting list. Not reported yet: the hairpin to orange and purple, dash panels, slipstream.
+- Drawing: drift sparks, boost flames and stall smoke (`effects.js`, one point cloud), dash panels on the road, the body leaning into drifts, rolling in tricks and spinning in spin boosts (`kartPose` returns `bodyForward`/`bodyUp` apart from the camera's `forward`/`up`), and the camera pulling back while boosting.
 
-**Done when:** on iPhone and Android I can drift through the hairpin to an orange and a purple boost, rocket start, trick off the ramp and hit a dash panel, and the controls feel playable with both thumbs. Findings and the chosen layout are in `docs/3d-findings.md`.
+### M7: 3D kart race (in four parts)
+A second kart game in the lobby's list, 2-4 players, separate from the 2D race (its own rules and physics), with the same setup, ready and results flow as the 2D race. It builds on `host/games/kart-3d/` from M6b and M6c and adds the M7 rows of "3D kart race design". Split after the M6c device run, each part in its own chat: the feel comes first, because the track's size, the CPU drivers and the look are all built around the tuned speeds and turns.
 
-### M7: 3D kart race
-Its details come from the M6 findings. A second kart game in the lobby's list, 2-4 players, separate from the 2D race (its own rules and physics), with the same setup, ready and results flow as the 2D race. It builds on `host/games/kart-3d/` from M6b and M6c and adds the M7 rows of "3D kart race design". Probably too big for one chat: split it when it starts.
-- [ ] Host runs the race: rules in DOM-free modules, the kart rules from M6b and M6c stepped at the fixed 60 Hz, split-screen 3D rendering in the container
-- [ ] A full track using the features M6 proved, and the look M6a showed the iPad can afford
-- [ ] Controllers use the 3D controls chosen in M6c
-- [ ] Only controller-relevant information goes back to phones: lap, place, and one-shot cues such as vibration (a new message type for cues, added then)
+#### M7a: Feel pass (on the test track)
+Make driving feel like MK8DX, judged by me side by side with the real game. The device run's notes are in "Feel against MK8DX" in `docs/3d-findings.md`.
+- [ ] A tuning panel on the host (developer only, like the readout): live sliders for the numbers below, a way to copy the chosen values out, so I can tune on the iPad while playing MK8DX next to it. The values found are then written into the code and the panel can stay as a dev tool
+- [ ] Steering: a much tighter turn at full stick or tilt, but the same sensitivity (small movements must not turn harder than now), for example a curve from stick to turn rate instead of a straight line. Check the drift arcs against it
+- [ ] Walls: hitting one costs more speed, so riding the wall round a sharp turn is never faster than slowing down for it
+- [ ] Bumps: karts bounce off each other and off walls visibly, damped (partly elastic, not perfectly), instead of the dead push they give now
+- [ ] Smooth body animation: easing into and out of the drift lean, the hop, and the trick's spin starting from a straight kart, as MK8DX animates them (no snapping between poses)
+- [ ] Hop height checked against MK8DX (the device run found it differs)
+- [ ] World scale and speed: top speed, road width and camera checked with the panel (and the footage numbers, if I took them); the camera felt fine on the device run, so keep its look if the scale changes
+- [ ] Phone vibration on every button press (Android; iOS Safari has no `navigator.vibrate`)
+- [ ] Phone layout for tilt: Drift on the left (the left thumb is free when tilting), Go on the right and the Item place above Go. Decide with me where Brake goes, and keep the M6c layout for the stick, whose left thumb steers
+- [ ] Unit tests for the changed rules; the M6b and M6c tests keep passing or change on purpose
+
+**Done when:** driving, drifting and bumping on the test track feel close to MK8DX to me, and the tuned numbers are in `docs/3d-findings.md`.
+
+#### M7b: The race on a real track
+- [ ] Host runs the race: countdown, laps, places, results, Race again or Back to lobby, engine classes (50, 100, 150, 200cc), rules in DOM-free modules stepped at the fixed 60 Hz, split-screen rendering in the container
+- [ ] A full track designed for the tuned scale, using the features M6 proved (hill, jump, hairpin, banked curve, off-road, anti-gravity, dash panels)
+- [ ] Only controller-relevant information goes back to phones: lap, place, and one-shot cues such as vibration on a hit (a new message type for cues, added then)
+- [ ] Renamed "Kart race 3D"; the 3D spike (`spike-3d`) is removed
+
+#### M7c: The look
+- [ ] Kart and driver models that read as MK8DX-like toys (our own, procedural or CC0, never Nintendo's), and the track dressed with scenery
+- [ ] The look M6a showed the iPad can afford: glossy lit karts, shadows, bloom, sky, particles; every shader compiled while loading
+- [ ] A quality setting that drops costs on a slow host (bloom first, then resolution)
+
+#### M7d: CPU drivers
+- [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
 
 ### M8: Polish
 - [ ] Sound effects and music (MP3/M4A, small)

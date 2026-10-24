@@ -1,6 +1,6 @@
-# 3D findings (M6 spikes)
+# 3D findings (M6 spikes and M7)
 
-Measured results of the M6 spikes, read by M6b, M6c and M7. Like `docs/spike-findings.md`, these numbers are measured facts that override general assumptions and `docs/mk8dx-reference.md`. They come from single runs on a few devices.
+Measured results of the M6 spikes and the M7 parts, read by the M6 and M7 chats. Like `docs/spike-findings.md`, these numbers are measured facts that override general assumptions and `docs/mk8dx-reference.md`. They come from single runs on a few devices.
 
 ## M6a: performance spike
 
@@ -430,3 +430,42 @@ After this run two things were added, both on sliders:
 2. Drive the test track, open **Tuning**, and move one group at a time: steering (full turn, then the curve so small movements stay gentle), top speed, walls (hit the wall at the flat turn and the hairpin square and glancing), bumps (shove the dummies; does the slide look like MK8DX's bounce?), hop and lean (hop on the straight; drift in and out), trick roll, camera.
 3. **Copy values** after each group, and paste them to Claude before the host page reloads.
 4. On the phones: does every press buzz on Android? With tilt, is Drift under the left thumb comfortable, and is Brake left of Go reachable?
+
+## M7b: the race on a real track
+
+### What was built
+
+The test drive became the race, "Kart race 3D" (`kart-3d`), on a course of our own, and the M6a spike was removed.
+
+- **Race rules** (`race.js`, replacing `drive.js`): the 12-kart grid as before (CPU karts in front, still M6b's lane-following driver until M7d), the countdown and rocket start, laps counted from the distance each kart drives from the start line (reversing over the line takes distance away, so no checkpoint is needed, as in the 2D race), finishing, places (finish time, then distance) updated every step and frozen at the results, and the engine class. The race ends when every player has finished, or 30 s after the first player finished (the 2D race's rule; MK8DX waits for every player, but a phone left on a table would hold the race up for ever). CPU karts never hold it up: those still driving are placed by how far round they got. A player who finishes, and at the results every player, hands their kart to the CPU driver, as MK8DX does, so it drives on instead of standing in the road.
+- **Engine classes:** 50, 100, 150 and 200cc, MK8DX's 150cc top speed times 0.8, 0.9, 1 and 1.5. Each kart carries its class's share (`engineClassShare`) and every rule reads `kartTopSpeed(kart)` (the tuned 150cc top speed times that share), so acceleration, boosts, the off-road limit, bump masses and the slipstream's least speed all scale with it, and the Top speed slider still means 150cc. Steering is a turn rate, not scaled, so at 200cc the same corner needs more braking or a tighter drift, as in MK8DX.
+- **Track model:** the road's width can change along the course (a piece's `halfWidth` at its end, eased like the height), and grass shoulders are set per side (`shoulderLeft`, `shoulderRight`), so a corner can have off-road on its inside only.
+- **Courses,** chosen on the host's setup screen: "Seaside Skyway" (`seaside-skyway.js`), designed from the course study ("Course patterns" in `docs/mk8dx-reference.md`), its parts and why in the file's comments; and M6b's "Test track" (`test-track.js`), whose hairpin needs braking at the tuned speed.
+- **Host screen:** the setup screen has the courses, laps (- and +) and the four engine classes; the flyover behind it shows the chosen course. During the race each split-screen view shows the player's name (top left), the lap (bottom left), the place (bottom right, as in MK8DX, lifted above the shell's End game and Close room buttons in that corner) and a "Final lap!" (for 3 s) or "Finish!" banner; the race clock is top right, with "Race ends in N s" once a player has finished. The readout now shows only while the tuning panel is open. The results are an HTML panel over the race (the karts drive on behind it): every kart's place, name (CPU karts as "CPU") and time, with Race again and Back to lobby.
+- **Phones:** the setup screen's line reads "3 laps, 150cc". During the race the big text is the countdown, then the place; the line says "Get ready!", how the start went (for 2 s), "Lap 2/3", "Final lap!" (for 3 s), "Finished!" and "Race over". All of it is state in the view, so no one-shot cue message was needed.
+
+### The course in numbers
+
+| Thing | Value |
+|---|---|
+| Lap | 1213 units (607 kart lengths) |
+| Road width | 13 (bridge) to 20 (big sweeper, item straight), 16-18 elsewhere; about 8 to 12 kart widths |
+| Height | up to 10 (the big sweeper), the jump from 8 to 3 |
+| Corners | a 90 degree right (radius 55), a chicane (two 40 degree bends, radius 40), the big sweeper (180 degrees right, radius 45, banked 12 degrees), a hairpin (180 left, radius 26), the anti-gravity half circle (radius 34), an S-bend (two 60 degree bends, radius 54), a last 90 degree right (radius 40) |
+| Features | a bridge without walls, one jump (14 gap), one anti-gravity wall, two dash panels, grass on the inside of the hairpin and the last corner, grass on both sides of the straight before it |
+
+### Measured without a device
+
+- **Lap times** with the CPU karts' driver (middle lane, braking for every corner, never drifting, from a standing start at the back of the grid), three laps: 117 s at 150cc (39 s a lap), 94 s at 200cc, 129 s at 100cc, 143 s at 50cc. MK8DX's staff ghosts lap in 38 to 44 s at 150cc with drifts and mushrooms; a player drifting and boosting here should be a few seconds a lap faster than the CPU driver.
+- **Nobody falls off** at any class: a field of 12 CPU karts lapped the course at all four classes in the unit test, jumping the gap, driving the vertical wall, and braking for the hairpin on every lane where a full steer cannot hold top speed.
+- **Corner sizes against the tuned turns** (worked out, not felt): at 150cc a full drift into the turn holds a radius of about 25 to 30 and a hard drift reaches purple after 2.8 s. The big sweeper is about 4.4 s of driving at top speed, enough for purple with a held drift; the hairpin's middle line (radius 26) needs almost the tightest drift (radius 25), and a little outside it a hard drift that charges at full rate (radius about 30) fits, so it gives orange or purple to a kart that takes it wide; the 90 degree corners last about 2 to 2.7 s (blue to orange); each chicane bend lasts under 1 s (blue at most).
+
+### Device run procedure
+
+1. Host on the iPad over the hotspot, two phones (one iPhone, one Android), one on tilt and one on the stick.
+2. A 3-lap race at 150cc: does the course feel like an MK8DX course (straights not too long, corners worth drifting, the hairpin and the big sweeper giving orange or purple, the jump and the wall fun)? Note any corner that feels too tight or too wide, and where.
+3. Is the HUD readable from the sofa on each view (name, lap, place, the banners), and the phone's place and lap?
+4. Race again at 200cc and at 50cc: is 200cc still drivable, is 50cc too slow to be fun?
+5. Let one player finish and the other wait: does the "Race ends in" countdown and the results screen work, and do the places look right?
+6. Lap times: note a good lap time at 150cc from the host's clock (it shows only the race time; divide by the laps).
+7. Choose the Test track on the setup screen: the flyover changes to it, and a race on it works as on Seaside Skyway.

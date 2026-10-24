@@ -17,9 +17,16 @@ const MK8_RELATIVE_ACCELERATION = 0.01;
 const FRAMES_PER_SECOND = 60;
 const DEGREES = Math.PI / 180;
 
-// An MK8DX "distance units per frame added each frame" value in our units per second squared.
-export function fromMk8Acceleration(perFrame) {
-  return (perFrame / MK8_TOP_SPEED) * tuning.topSpeed * FRAMES_PER_SECOND;
+// An MK8DX "distance units per frame added each frame" value in our units per second squared, for a kart whose
+// top speed is `topSpeed`.
+export function fromMk8Acceleration(perFrame, topSpeed) {
+  return (perFrame / MK8_TOP_SPEED) * topSpeed * FRAMES_PER_SECOND;
+}
+
+// The kart's top speed on the road: the tuned 150cc top speed times its engine class's share (race.js), as in
+// MK8DX, where 50, 100 and 200cc are the 150cc speeds times 0.8, 0.9 and 1.5. Accelerations and boosts follow it.
+export function kartTopSpeed(kart) {
+  return tuning.topSpeed * kart.engineClassShare;
 }
 
 // Our own guesses (MK8DX's data has no numbers for these), in units per second and units per second squared.
@@ -40,13 +47,14 @@ const STEER_FULL_SPEED = 4;
 // `speed` is the kart's speed along its nose (negative in reverse). `controls` is { steer, accelerate, brake }.
 // `offRoad` is true on the shoulders. `boost` is the kart's boost (kart-boosts.js) or null: while it lasts the
 // kart speeds up to its speed whatever the pedals, and off-road does not slow it, as in MK8DX, where a boost
-// is the way across the grass. Returns the speed after `dt` seconds.
-export function nextSpeed(speed, controls, offRoad, dt, boost = null) {
+// is the way across the grass. `roadTopSpeed` is the kart's top speed on the road (kartTopSpeed). Returns the
+// speed after `dt` seconds.
+export function nextSpeed(speed, controls, offRoad, dt, boost, roadTopSpeed) {
   if (boost) {
-    const boostSpeed = tuning.topSpeed * boost.speedShare;
+    const boostSpeed = roadTopSpeed * boost.speedShare;
     return speed < boostSpeed ? Math.min(speed + boost.acceleration * dt, boostSpeed) : Math.max(speed - OVER_TOP_DRAG * dt, boostSpeed);
   }
-  const topSpeed = offRoad ? tuning.topSpeed * OFF_ROAD_SPEED_SHARE : tuning.topSpeed;
+  const topSpeed = offRoad ? roadTopSpeed * OFF_ROAD_SPEED_SHARE : roadTopSpeed;
   if (speed > topSpeed) {
     // Faster than the top speed (just onto the grass, or pushed by a bump): drag it down, whatever the pedals.
     return Math.max(speed - (offRoad ? OFF_ROAD_DRAG : OVER_TOP_DRAG) * dt, topSpeed);
@@ -60,7 +68,7 @@ export function nextSpeed(speed, controls, offRoad, dt, boost = null) {
     }
     // The share of the gap closed in dt: MK8_RELATIVE_ACCELERATION per frame, compounded.
     const share = 1 - (1 - MK8_RELATIVE_ACCELERATION) ** (dt * FRAMES_PER_SECOND);
-    return speed + Math.min(fromMk8Acceleration(MK8_ACCELERATION_LIMIT) * dt, (topSpeed - speed) * share);
+    return speed + Math.min(fromMk8Acceleration(MK8_ACCELERATION_LIMIT, roadTopSpeed) * dt, (topSpeed - speed) * share);
   }
   return speed > 0 ? Math.max(speed - COASTING * dt, 0) : Math.min(speed + COASTING * dt, 0);
 }

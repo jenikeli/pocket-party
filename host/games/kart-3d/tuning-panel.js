@@ -1,7 +1,7 @@
 // The 3D race's tuning panel on the host (developer only, like the readout): one slider per number in tuning.js,
-// grouped, each showing its value and changing the drive at once; Copy values puts every value on the clipboard
-// as text to paste back to Claude, and Reset puts the defaults back. Opened by the drive panel's Tuning button
-// (panels.js), closed by that or its own Close (it lies over the drive panel on a narrow screen). Used by
+// grouped, each showing its value and changing the race at once; Copy values puts every value on the clipboard
+// as text to paste back to Claude, and Reset puts the defaults back. Opened by the race bar's Tuning button
+// (panels.js), closed by that or its own Close (it lies over the race bar on a narrow screen). Used by
 // host/games/kart-3d/index.js.
 
 import { TUNABLES, tuning, setTuning, resetTuning, describeTuning } from './tuning.js';
@@ -22,8 +22,9 @@ const STYLE = `
   #kart-3d-tuning-status { margin: 0; color: #9aa4bf; }
 `;
 
-// Returns { toggle(), setVisible(visible) }: toggle opens or closes it (the Tuning button); setVisible(false)
-// hides it whatever was chosen (the setup screen), setVisible(true) shows it again if it was open.
+// Returns { toggle(), setVisible(visible), isOpen() }: toggle opens or closes it (the Tuning button);
+// setVisible(false) hides it whatever was chosen (the setup screen), setVisible(true) shows it again if it was
+// open; isOpen() says whether it is open (the readout shows with it).
 export function createTuningPanel(container) {
   const style = document.createElement('style');
   style.textContent = STYLE;
@@ -71,7 +72,7 @@ export function createTuningPanel(container) {
     }
   }
 
-  return { toggle, setVisible };
+  return { toggle, setVisible, isOpen: () => open };
 }
 
 // One slider: { tunable, row, show() }, show() setting it to the live value.

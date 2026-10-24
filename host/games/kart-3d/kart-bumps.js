@@ -3,12 +3,13 @@
 // light one aside, and a kart standing still is easy to push. A bump ends a slipstream boost, and two karts
 // bumping in an anti-gravity section both get a spin boost, as in MK8DX. Karts bounce apart (partly elastic,
 // never less than a least parting speed) and slide loose for a moment, so a bump visibly throws them apart.
-// Plain functions, unit tested in Node. Used by host/games/kart-3d/drive.js after every kart has stepped. The
+// Plain functions, unit tested in Node. Used by host/games/kart-3d/race.js after every kart has stepped. The
 // tuned numbers are tuning.js's.
 
 import { subtract, length, scale, addScaled, dot } from './vector.js';
 import { KART_RADIUS } from './kart-walls.js';
 import { tuning } from './tuning.js';
+import { kartTopSpeed } from './kart-driving.js';
 import { startBoost, endBoost, BOOST_KINDS } from './kart-boosts.js';
 import { startSpin } from './kart-body.js';
 
@@ -23,9 +24,9 @@ export function bumpKarts(karts) {
   }
 }
 
-// The kart's weight times tuning.standingMassShare standing still, rising to its full weight at top speed.
+// The kart's weight times tuning.standingMassShare standing still, rising to its full weight at its top speed.
 export function kartMass(kart) {
-  const speedShare = Math.min(length(kart.velocity) / tuning.topSpeed, 1);
+  const speedShare = Math.min(length(kart.velocity) / kartTopSpeed(kart), 1);
   return kart.weight * (tuning.standingMassShare + (1 - tuning.standingMassShare) * speedShare);
 }
 

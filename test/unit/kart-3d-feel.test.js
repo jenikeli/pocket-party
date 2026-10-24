@@ -65,7 +65,7 @@ test('the rules read the live values: a higher top speed takes effect at once', 
   let speed = 0;
   setTuning('topSpeed', 36);
   for (let frame = 0; frame < 3000; frame += 1) {
-    speed = nextSpeed(speed, go, false, STEP);
+    speed = nextSpeed(speed, go, false, STEP, null, tuning.topSpeed);
   }
   assert.ok(speed > 35.9 && speed <= 36, `reached ${speed}`);
 });

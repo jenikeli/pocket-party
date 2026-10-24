@@ -74,8 +74,8 @@ test('the hill rises 8, the ramp slopes 14 degrees to its lip, and the gap has n
   // The last segment before the gap still has the ramp's full slope, so karts take off at 14 degrees.
   const lip = contactAt(GAP_START - 0.5);
   close(Math.acos(lip.normal.y) / DEGREES, Math.atan(4 / 16) / DEGREES, 0.1, 'slope at the lip');
-  assert.equal(surfaceAt(track, lip), SURFACES.ROAD);
-  assert.equal(surfaceAt(track, contactAt(GAP_START + 6)), null);
+  assert.equal(surfaceAt(lip), SURFACES.ROAD);
+  assert.equal(surfaceAt(contactAt(GAP_START + 6)), null);
 });
 
 test('the banked curve leans 20 degrees into the left turn; the wall section rolls up to vertical', () => {
@@ -92,10 +92,10 @@ test('the banked curve leans 20 degrees into the left turn; the wall section rol
 });
 
 test('road, off-road shoulders, edges and walls', () => {
-  assert.equal(surfaceAt(track, contactAt(10, 7)), SURFACES.ROAD);
-  assert.equal(surfaceAt(track, contactAt(10, 9)), null, 'no shoulders on the start straight');
-  assert.equal(surfaceAt(track, contactAt(SHOULDERS_START + 40, -11)), SURFACES.OFF_ROAD);
-  assert.equal(surfaceAt(track, contactAt(SHOULDERS_START + 40, 15)), null);
+  assert.equal(surfaceAt(contactAt(10, 7)), SURFACES.ROAD);
+  assert.equal(surfaceAt(contactAt(10, 9)), null, 'no shoulders on the start straight');
+  assert.equal(surfaceAt(contactAt(SHOULDERS_START + 40, -11)), SURFACES.OFF_ROAD);
+  assert.equal(surfaceAt(contactAt(SHOULDERS_START + 40, 15)), null);
   assert.equal(wallOnSide(contactAt(10, 7)), true);
   assert.equal(wallOnSide(contactAt(10, -7)), true);
   assert.equal(wallOnSide(contactAt(HILL_TOP, 7)), false, 'the hill has no walls');

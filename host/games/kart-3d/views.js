@@ -1,28 +1,30 @@
 // The 3D race's split-screen views: a chase camera for each (chase-camera.js), every view drawn into its own
 // rectangle of one canvas (WebGL scissor viewports, as measured in M6a, so 4 views still use one WebGL
-// context), and an HTML name label in each view's corner so players know which view is theirs.
+// context), and each view's HUD over it (view-hud.js: name, lap, place, banner).
 // Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
 import { viewRects } from './view-layout.js';
 import { createChaseCamera, followKart } from './chase-camera.js';
 import { tuning } from './tuning.js';
+import { createViewHud } from './view-hud.js';
 
 const MAX_VIEWS = 4;
-const LABEL_STYLE = 'position: absolute; margin: 0; padding: 4px 10px; border-radius: 6px; font: bold 20px sans-serif; ' +
-  'background: rgba(16, 19, 28, 0.6); pointer-events: none;';
+// The shell's game bar (End game, Close room) sits in the canvas's bottom right corner, about 66 px tall with its
+// margin (host/index.html); the view in that corner lifts its place above it.
+const GAME_BAR_CLEARANCE = 80;
 
 // Returns { draw(renderer, scene, targets, dt), drawOne(renderer, scene, camera), destroy() }.
 export function createViews(container) {
   const views = Array.from({ length: MAX_VIEWS }, () => ({
     camera: new THREE.PerspectiveCamera(tuning.fieldOfView, 16 / 9, 0.3, 1500),
     chase: createChaseCamera(),
-    label: createLabel(container),
+    hud: createViewHud(container),
   }));
 
-  // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting }: the kart's pose as drawn, the label
-  // text and its CSS colour, and whether the kart boosts (the camera pulls back). `dt` is the real time since
-  // the last drawn frame, in seconds, for the cameras' lag.
+  // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting, hud }: the kart's pose as drawn, the
+  // label text and its CSS colour, whether the kart boosts (the camera pulls back), and what its HUD shows
+  // (view-hud.js). `dt` is the real time since the last drawn frame, in seconds, for the cameras' lag.
   function draw(renderer, scene, targets, dt) {
     const size = renderer.getSize(new THREE.Vector2());
     const rects = viewRects(targets.length, size.x, size.y);
@@ -39,21 +41,22 @@ export function createViews(container) {
       view.camera.up.set(up.x, up.y, up.z);
       view.camera.lookAt(look.x, look.y, look.z);
       drawRect(renderer, scene, view.camera, rects[index]);
-      showLabel(view.label, target, rects[index], size.y);
+      const inBarCorner = rects[index].y === 0 && rects[index].x + rects[index].width === size.x;
+      view.hud.show(target, rects[index], size.y, inBarCorner ? GAME_BAR_CLEARANCE : 0);
     });
     renderer.setScissorTest(false);
-    views.slice(targets.length).forEach((view) => (view.label.hidden = true));
+    views.slice(targets.length).forEach((view) => view.hud.hide());
   }
 
-  // One view over the whole canvas from `camera`, with no labels (the setup screen's overview).
+  // One view over the whole canvas from `camera`, with no HUD (the setup screen's overview).
   function drawOne(renderer, scene, camera) {
     const size = renderer.getSize(new THREE.Vector2());
     drawRect(renderer, scene, camera, viewRects(1, size.x, size.y)[0]);
-    views.forEach((view) => (view.label.hidden = true));
+    views.forEach((view) => view.hud.hide());
   }
 
   function destroy() {
-    views.forEach((view) => view.label.remove());
+    views.forEach((view) => view.hud.remove());
   }
 
   return { draw, drawOne, destroy };
@@ -66,24 +69,4 @@ function drawRect(renderer, scene, camera, { x, y, width, height }) {
   renderer.setViewport(x, y, width, height);
   renderer.setScissor(x, y, width, height);
   renderer.render(scene, camera);
-}
-
-function createLabel(container) {
-  const label = document.createElement('p');
-  label.className = 'kart-3d-view-label';
-  label.style.cssText = LABEL_STYLE;
-  label.hidden = true;
-  container.append(label);
-  return label;
-}
-
-// Writes to the page only on change: this runs every frame.
-function showLabel(label, { name, color }, rect, canvasHeight) {
-  label.hidden = false;
-  if (label.textContent !== name) {
-    label.textContent = name;
-  }
-  label.style.color = color;
-  label.style.left = `${rect.x + 12}px`;
-  label.style.top = `${canvasHeight - rect.y - rect.height + 12}px`;
 }

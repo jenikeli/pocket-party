@@ -1,6 +1,7 @@
 // The 3D race's world around the road: a gradient sky, the sea far below (the road floats, so leaving it means
 // falling), pillars holding the road up, and the sun with one shadow map over the whole track. Built once from
-// the track's stations. Used by host/games/kart-3d/renderer.js.
+// the track's stations, all in one group, so a different course can replace it. Used by
+// host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
 
@@ -11,7 +12,8 @@ const HORIZON = 0xcfe8ff;
 const PILLAR_SPACING = 24;
 const ROAD_THICKNESS = 0.6;
 
-// Adds everything to `scene`. Returns { dispose() } for what it created.
+// Adds everything to `scene`. Returns { dispose() }, which takes it out of the scene again and frees what it
+// created.
 export function buildScenery(scene, track) {
   const disposables = [];
   const keep = (thing) => {
@@ -19,17 +21,22 @@ export function buildScenery(scene, track) {
     return thing;
   };
   scene.fog = new THREE.Fog(HORIZON, 150, 600);
-  scene.add(createSky(keep));
+  const world = new THREE.Group();
+  world.add(createSky(keep));
   const sea = new THREE.Mesh(
     keep(new THREE.PlaneGeometry(3000, 3000)),
     keep(new THREE.MeshStandardMaterial({ color: 0x2b7bb9, roughness: 0.35 })),
   );
   sea.rotation.x = -Math.PI / 2;
   sea.position.y = SEA_LEVEL;
-  scene.add(sea);
-  scene.add(createPillars(track, keep));
-  addLights(scene, track);
-  return { dispose: () => disposables.forEach((thing) => thing.dispose()) };
+  world.add(sea, createPillars(track, keep));
+  addLights(world, track, keep);
+  scene.add(world);
+  function dispose() {
+    scene.remove(world);
+    disposables.forEach((thing) => thing.dispose());
+  }
+  return { dispose };
 }
 
 // One instanced mesh for every pillar: one draw call per view.
@@ -52,8 +59,8 @@ function createPillars(track, keep) {
 }
 
 // The sun's shadow map covers the whole track, so it is drawn once per frame and shared by every view.
-function addLights(scene, track) {
-  scene.add(new THREE.HemisphereLight(0xdcefff, 0x3a5a7a, 1.3));
+function addLights(world, track, keep) {
+  world.add(new THREE.HemisphereLight(0xdcefff, 0x3a5a7a, 1.3));
   const xs = track.stations.map((station) => station.point.x);
   const zs = track.stations.map((station) => station.point.z);
   const centre = new THREE.Vector3((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
@@ -66,7 +73,9 @@ function addLights(scene, track) {
   Object.assign(sun.shadow.camera, { left: -reach, right: reach, top: reach, bottom: -reach, near: 10, far: 450 });
   sun.shadow.bias = -0.0005;
   sun.shadow.normalBias = 0.05;
-  scene.add(sun, sun.target);
+  // The shadow map's own render target, freed with the rest when the course changes.
+  keep(sun.shadow);
+  world.add(sun, sun.target);
 }
 
 // A gradient dome, drawn without lighting or fog: blue overhead fading to haze at the horizon.

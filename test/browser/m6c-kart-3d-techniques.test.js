@@ -84,7 +84,7 @@ describe('M6c 3D techniques', () => {
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    // Input lab, Kart race 2D, then the 3D test drive.
+    // Input lab, Kart race 2D, then Kart race 3D.
     for (let i = 0; i < 2; i += 1) {
       await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
       await hostPage.waitForTimeout(300);
@@ -136,7 +136,7 @@ describe('M6c 3D techniques', () => {
     const go = await centerOf(ana, '#kart-accelerate');
     await ana.touch.press(GO_FINGER, go.x, go.y);
     // The press left the phone after the host had shown "2", so it cannot arrive too early.
-    const view = await nextView(ana, (each) => each.phase === 'driving' && each.start !== null);
+    const view = await nextView(ana, (each) => each.phase === 'racing' && each.start !== null);
     assert.ok(['rocket', 'normal'].includes(view.start), `start ${view.start}`);
     const match = (await readout()).match(/Ana: [^\n]*\n\s+Go after "2": \+(\d+\.\d\d) (\w+)/);
     assert.ok(match, 'the readout lists Ana\'s start');
@@ -169,7 +169,7 @@ describe('M6c 3D techniques', () => {
       const controls = await import('/controller/kart/controls.js');
       const backgrounds = [];
       for (const spark of [null, 'blue', 'orange', 'purple']) {
-        controls.showView({ phase: 'driving', steering: 'stick', autoAccelerate: false, countdown: null, spark, start: null });
+        controls.showView({ phase: 'racing', steering: 'stick', autoAccelerate: false, countdown: null, spark: spark, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
         backgrounds.push(getComputedStyle(document.getElementById('kart-drift')).backgroundColor);
       }
       return backgrounds;
@@ -178,9 +178,9 @@ describe('M6c 3D techniques', () => {
   });
 
   test('Restart puts everyone back on the grid for another countdown', async () => {
-    // Both phones' big text was empty since GO; a number there again is the new countdown.
+    // Both phones' big text has shown their place since GO; a number there again is the new countdown.
     for (const player of [ana, bo]) {
-      assert.equal(await player.page.textContent('#kart-big'), '');
+      assert.match(await player.page.textContent('#kart-big'), /^\d+(st|nd|rd|th)$/);
     }
     await clickNow(hostPage, '#kart-3d-restart-button');
     for (const player of [ana, bo]) {

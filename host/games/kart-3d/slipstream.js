@@ -1,10 +1,10 @@
 // Slipstream (drafting) in the 3D race, as in MK8DX: a kart that stays close behind another for a while gets a
 // modest boost, which a wall or a bump ends (kart-walls.js, kart-bumps.js). Plain maths, unit tested in Node.
-// Used by host/games/kart-3d/drive.js after every kart has stepped.
+// Used by host/games/kart-3d/race.js after every kart has stepped.
 
 import { subtract, cross, dot } from './vector.js';
 import { startBoost, BOOST_KINDS } from './kart-boosts.js';
-import { tuning } from './tuning.js';
+import { kartTopSpeed } from './kart-driving.js';
 
 // The reference says "about 3-5 s" close behind; the short end, to be checked on a device.
 export const SLIPSTREAM_SECONDS = 3;
@@ -33,7 +33,7 @@ export function updateSlipstreams(karts, dt) {
 
 // Measured in the kart's own frame, so it works the same on a wall or upside down.
 function isCloseBehind(kart, other) {
-  if (other.respawnIn !== null || dot(kart.velocity, kart.forward) < MIN_SPEED_SHARE * tuning.topSpeed) {
+  if (other.respawnIn !== null || dot(kart.velocity, kart.forward) < MIN_SPEED_SHARE * kartTopSpeed(kart)) {
     return false;
   }
   const offset = subtract(other.position, kart.position);

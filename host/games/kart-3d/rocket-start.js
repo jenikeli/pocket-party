@@ -1,6 +1,6 @@
-// The countdown before a 3D drive and MK8DX's rocket start: Go pressed just after "2" appears and held to GO
+// The countdown before a 3D race and MK8DX's rocket start: Go pressed just after "2" appears and held to GO
 // boosts the kart off the line; pressed too early, the kart stalls. Plain functions, unit tested in Node. Used
-// by host/games/kart-3d/drive.js and drive-views.js.
+// by host/games/kart-3d/race.js and race-views.js.
 //
 // The host judges by when the press arrives, which is one network trip (phone -> server -> host) after the
 // thumb, and is read at the next 60 Hz step (up to 17 ms later still). So the window is about arrival times;
@@ -21,7 +21,7 @@ export const STALL_SECONDS = 1;
 
 export const START_OUTCOMES = Object.freeze({ ROCKET: 'rocket', STALL: 'stall', NORMAL: 'normal' });
 
-// What the countdown shows at drive time `time`: 3, 2, 1, 0 (GO) or null once GO has gone.
+// What the countdown shows at race time `time` (from the start of the countdown): 3, 2, 1, 0 (GO) or null once GO has gone.
 export function countdownNumber(time) {
   if (time >= GO_AT + GO_SHOWN_FOR) {
     return null;
@@ -29,7 +29,7 @@ export function countdownNumber(time) {
   return time >= GO_AT ? 0 : 3 - Math.floor(time);
 }
 
-// During the countdown, every step for each player's kart: kart.goPressedAt is the drive time the held press
+// During the countdown, every step for each player's kart: kart.goPressedAt is the race time the held press
 // of Go arrived (null while it is not held), kart.goHeld the button last step.
 export function watchGoButton(kart, accelerate, time) {
   if (accelerate && !kart.goHeld) {

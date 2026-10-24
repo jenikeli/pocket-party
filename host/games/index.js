@@ -9,11 +9,9 @@ import { MAX_PLAYERS } from '/shared/protocol.js';
 export const GAMES = Object.freeze([
   Object.freeze({ id: 'input-lab', title: 'Input lab', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
   Object.freeze({ id: 'kart-2d', title: 'Kart race 2D', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
-  // Split screen, one view per player, so at most 4 (M6). For now a test drive, which one player can try alone;
-  // M7 makes it the race, "Kart race 3D" (a longer title does not fit the lobby's game picker).
-  Object.freeze({ id: 'kart-3d', title: '3D test drive', minPlayers: 1, maxPlayers: 4 }),
-  // A developer tool that measures the host device, so it needs no phones (M6a; M7 removes it).
-  Object.freeze({ id: 'spike-3d', title: '3D spike (dev)', minPlayers: 0, maxPlayers: MAX_PLAYERS }),
+  // Split screen, one view per player, so at most 4 (M6). CPU karts fill the field, so one player can race alone,
+  // as in MK8DX.
+  Object.freeze({ id: 'kart-3d', title: 'Kart race 3D', minPlayers: 1, maxPlayers: 4 }),
 ]);
 
 export function findGame(gameId) {

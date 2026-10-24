@@ -2,7 +2,8 @@
 // the time left once someone has finished, and the big countdown. Used by host/games/kart-2d/renderer.js.
 
 import { RACE_PHASES, FINISH_TIME_LIMIT_SECONDS, countdownNumber } from './race.js';
-import { standingRows, formatRaceTime } from './race-views.js';
+import { standingRows } from './race-views.js';
+import { formatRaceTime } from '/host/kart/race-time.js';
 import { ordinal } from '/shared/ordinal.js';
 import { displayName, colorText } from '/host/roster.js';
 import { MAX_PLAYERS } from '/shared/protocol.js';

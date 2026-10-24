@@ -101,6 +101,35 @@ Measured by Claude on 2026-10-24 from one in-race screenshot of Mario Kart Stadi
 - **Limits:** one screenshot, of a start straight (often wider than the rest of a course), and a JPEG. It may be from the Wii U version, whose camera and proportions are the same as MK8DX's.
 - **What it is for:** a sanity check of our world's scale (road and camera against the kart), not a width to copy. Real courses vary their width all the way round, and we design our own courses (we never copy Nintendo's layouts). What makes a course feel like MK8DX is how its widths and turns compare with the kart's speed and turning, which M7a tunes by feel.
 
+## Course patterns (M7b study, to be reviewed)
+
+Studied by Claude on 2026-10-24 to design our own course (`host/games/kart-3d/seaside-skyway.js`). Patterns and proportions only: no layout was traced or copied. Sources: the Super Mario Wiki's course pages for [Mario Kart Stadium](https://www.mariowiki.com/Mario_Kart_Stadium), [Water Park](https://www.mariowiki.com/Water_Park), [Sweet Sweet Canyon](https://www.mariowiki.com/Sweet_Sweet_Canyon), [Thwomp Ruins](https://www.mariowiki.com/Thwomp_Ruins), [Mario Circuit](https://www.mariowiki.com/Mario_Circuit_(Mario_Kart_8)) and [Excitebike Arena](https://www.mariowiki.com/Excitebike_Arena) (layouts in words, staff ghost times), the 150cc records at [mkleaderboards.com](https://www.mkleaderboards.com/mk8dx/world_records/standard), and the fan odometer measurement cited above. The wiki pages describe layouts in words and rarely give sharpness, widths or counts, so the counts below also lean on Claude's general knowledge of the courses' maps: they are approximate, and worth checking against a course map or footage. No footage was watched for this study.
+
+### Numbers
+
+- **Lap time at 150cc:** the time trial records (a whole race, with three mushrooms) are 1:34 to 2:01 on 41 of the 48 courses, so **31 to 40 s a lap**. The other seven are shorter (Baby Park 1:02, SNES Donut Plains 3 1:12, N64 Rainbow Road 1:19, GBA Mario Circuit, Big Blue and Wii Moo Moo Meadows about 1:23, SNES Rainbow Road 1:25); some of them are not three laps of one loop. Nintendo's staff ghosts, closer to a good normal player, take 1:53 to 2:12: **38 to 44 s a lap** (Mario Kart Stadium 1:53.191, Excitebike Arena 1:58.808, Water Park 2:02.186, Sweet Sweet Canyon 2:07.205, Mario Circuit 2:08.501, Thwomp Ruins 2:12.125). A whole race is about two minutes.
+- **200cc:** staff ghosts take about 0.7 of their 150cc time (Mario Kart Stadium 1:21.984, Water Park 1:22.799), less than the 1.5 times speed suggests, since 200cc needs braking.
+- **Lap length:** one data point, Excitebike Arena at about 947 m a lap (fan odometer). Its staff ghost laps in 39.6 s, so a good lap averages about 24 m/s.
+- **Our scale:** at our tuned top speed (32 units/s) a 38 to 40 s lap is about 1200 units. Our course is 1213 units.
+
+### How the courses are put together
+
+- **Straights:** the start/finish straight is the longest, about 3 to 5 s of driving. The others are short, 1 to 3 s; a course rarely goes more than about 5 s without a corner, a jump or some other feature.
+- **Corners:** roughly 7 to 10 corners a lap worth a drift, and a good player drifts almost every one. A typical mix: one or two long sweepers where a held drift reaches purple (2.8 s or more of hard drifting), several medium corners of about 90 degrees (orange), a quick S-bend or chicane where the drift's side flips (blue at most), and one hairpin, often on a climb or a drop (Mario Kart Stadium's raised hairpin).
+- **Road width:** wide at the start and in open areas, narrower on bridges and in tunnels. Many courses split into parallel paths that rejoin (Mario Kart Stadium's three lanes, Thwomp Ruins' three routes, Sweet Sweet Canyon's two anti-gravity paths).
+- **Jumps:** one to three ramps or lips a lap where a trick boosts, and often a glide ramp in the last third (Mario Kart Stadium, Water Park, Mario Circuit, Thwomp Ruins).
+- **Dash panels:** few, up to about four a lap, mostly on an alternative line (Mario Kart Stadium's outer red path) or before a ramp.
+- **Anti-gravity:** usually one section a lap, in the middle part, twisting or banked, with posts or bumps that give spin boosts (Mario Kart Stadium after the split, Mario Circuit's Möbius loop, Water Park's loop).
+- **Off-road shortcuts:** two to five a lap, almost all across grass or sand on the inside of a corner or between two paths. Nearly all need a boost; some can be done with a Super or Ultra Mini-Turbo or a trick instead (Mario Kart Stadium's final sand patch, Thwomp Ruins' rocks).
+- **Item boxes:** rows across the whole road, usually two or three a lap (the wiki mentions two on Mario Kart Stadium), on wide straight parts: after the start, in the middle, before the last part.
+- **Pacing:** a quiet start straight, a technical first part, a showpiece in the middle (anti-gravity, underwater, a cannon), a calmer straight with item boxes, then a flourish before the line (a glide, dash panels, a last corner with a shortcut).
+
+### What our course takes from this, and what it leaves out
+
+- **Taken:** a 1213-unit lap; a start straight of about 4.7 s; a long banked sweeper for purple, two 90 degree corners for orange, a chicane and an S-bend that flip the drift, and a hairpin; the road 13 to 20 units wide (about 8 to 12 kart widths), narrowest on a bridge with no walls and widest on the sweeper and the item-box straight; one jump with a trick; one anti-gravity section mid-lap; two dash panels (one before the jump, one off the middle of a grass straight); grass on the inside of the hairpin and the last corner, to clip with a mini-turbo; quiet and busy parts in turn.
+- **Measured on it** with the CPU karts' driver (the middle lane, braking for every corner, never drifting, from a standing start at the back of the grid): 3 laps in 117 s at 150cc (39 s a lap), 94 s at 200cc, 129 s at 100cc and 143 s at 50cc. Nobody falls off at any class.
+- **Left out for now:** gliding, underwater, path splits (our track model has one centre line; a split needs a second route), course hazards, and item boxes (items come after M7). The quiet wide straight after the hairpin is where item boxes will go.
+
 ## Look and feel
 
 From watching the game, not from data. M6b checks the camera against footage.

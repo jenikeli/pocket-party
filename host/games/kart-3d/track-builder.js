@@ -13,21 +13,23 @@ const UP = vec(0, 1, 0);
 const CLOSING_TOLERANCE = 0.01;
 
 // `definition` is { halfWidth, startLine, pieces, dashPanels }. The track starts at the origin heading along +x, at
-// height 0 with no roll. Each piece is a straight ({ straight: length }) or a turn ({ turn: degrees, radius },
-// + turns right, - left), and may also have:
+// height 0 with no roll, its road halfWidth either side of the centre line. Each piece is a straight
+// ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and may also have:
 //   height    the height at its end; it changes smoothly (flat at both ends) from the previous piece's
 //   linear    true: the height changes at a steady slope instead (a ramp, whose lip must still slope)
 //   roll      the roll at its end in degrees (+ lowers the right edge, banking into a right turn), smoothly
-//   shoulder  width of off-road ground beyond each road edge (0 if not given)
+//   halfWidth the road's half width at its end, changing smoothly like the height
+//   shoulderLeft, shoulderRight  width of off-road ground beyond that road edge (0 if not given)
 //   walls     'both' (the default), 'left', 'right' or 'none': which outer edges have a wall
 //   gap       true: no road at all (a jump)
 //   antiGravity true: gravity pulls karts toward the road, so they can drive up walls
 // dashPanels (optional) lists { s, lateral }: where each dash panel's centre is (kart-boosts.js has their size).
-// Returns the track: { stations, length, halfWidth, startLine, dashPanels }. Station i describes the road from itself to
-// station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength, shoulder,
-// wallLeft, wallRight, gap, antiGravity }, where s is the distance along the centre line from the start.
+// Returns the track: { stations, length, startLine, dashPanels }. Station i describes the road from itself to
+// station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength, halfWidth,
+// shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the distance along the centre
+// line from the start.
 export function buildTrack(definition) {
-  const samples = samplePieces(definition.pieces);
+  const samples = samplePieces(definition.pieces, definition.halfWidth);
   const stations = samples.map((sample, index) => {
     const before = samples[(index - 1 + samples.length) % samples.length].point;
     const after = samples[(index + 1) % samples.length].point;
@@ -36,7 +38,7 @@ export function buildTrack(definition) {
     const tangent = normalize(subtract(after, before));
     // Right of the direction of travel with +y up is forward x up; the roll then turns it about the tangent.
     const right = rotate(normalize(cross(tangent, UP)), tangent, sample.roll);
-    return { ...sample.flags, point: sample.point, tangent, right, normal: cross(right, tangent) };
+    return { ...sample.flags, point: sample.point, halfWidth: sample.halfWidth, tangent, right, normal: cross(right, tangent) };
   });
   let s = 0;
   stations.forEach((station, index) => {
@@ -44,22 +46,24 @@ export function buildTrack(definition) {
     station.segmentLength = length(subtract(stations[(index + 1) % stations.length].point, station.point));
     s += station.segmentLength;
   });
-  return { stations, length: s, halfWidth: definition.halfWidth, startLine: definition.startLine, dashPanels: definition.dashPanels ?? [] };
+  return { stations, length: s, startLine: definition.startLine, dashPanels: definition.dashPanels ?? [] };
 }
 
-// One sample per station: { point, roll (radians), flags }, walking the pieces from the origin.
-function samplePieces(pieces) {
+// One sample per station: { point, roll (radians), halfWidth, flags }, walking the pieces from the origin.
+function samplePieces(pieces, startHalfWidth) {
   const samples = [];
   let x = 0;
   let z = 0;
   let heading = 0; // radians in the ground plane: 0 is +x, and turning right (toward +z) adds
   let height = 0;
   let roll = 0;
+  let halfWidth = startHalfWidth;
   for (const piece of pieces) {
     const turn = ((piece.turn ?? 0) * Math.PI) / 180;
     const pieceLength = piece.turn === undefined ? piece.straight : Math.abs(turn) * piece.radius;
     const endHeight = piece.height ?? height;
     const endRoll = piece.roll === undefined ? roll : (piece.roll * Math.PI) / 180;
+    const endHalfWidth = piece.halfWidth ?? halfWidth;
     const count = Math.max(1, Math.round(pieceLength / STATION_SPACING));
     const flags = pieceFlags(piece);
     for (let index = 0; index < count; index += 1) {
@@ -69,6 +73,7 @@ function samplePieces(pieces) {
       samples.push({
         point: vec(at.x, height + (endHeight - height) * ease, at.z),
         roll: roll + (endRoll - roll) * smoothstep(share),
+        halfWidth: halfWidth + (endHalfWidth - halfWidth) * smoothstep(share),
         flags,
       });
     }
@@ -77,6 +82,7 @@ function samplePieces(pieces) {
     heading += turn;
     height = endHeight;
     roll = endRoll;
+    halfWidth = endHalfWidth;
   }
   if (Math.hypot(x, z, height) > CLOSING_TOLERANCE) {
     throw new Error(`The track's pieces end at (${x.toFixed(2)}, ${height.toFixed(2)}, ${z.toFixed(2)}), not back at the start`);
@@ -101,7 +107,8 @@ function planPoint(x, z, heading, turn, pieceLength, share) {
 function pieceFlags(piece) {
   const walls = piece.walls ?? 'both';
   return {
-    shoulder: piece.shoulder ?? 0,
+    shoulderLeft: piece.shoulderLeft ?? 0,
+    shoulderRight: piece.shoulderRight ?? 0,
     wallLeft: !piece.gap && (walls === 'both' || walls === 'left'),
     wallRight: !piece.gap && (walls === 'both' || walls === 'right'),
     gap: piece.gap === true,

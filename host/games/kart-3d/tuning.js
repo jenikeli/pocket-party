@@ -103,7 +103,7 @@ export const TUNABLES = Object.freeze([
   { key: 'boostWiden', group: 'Camera', label: 'Boost widen', unit: 'deg', min: 0, max: 20, step: 1, value: 8 },
 ]);
 
-// The live values, by key. The rules read from here every step, so a slider changes the drive at once.
+// The live values, by key. The rules read from here every step, so a slider changes the race at once.
 export const tuning = {};
 resetTuning();
 

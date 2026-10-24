@@ -1,55 +1,58 @@
-// The 3D kart race, for now the test drive of M6 and M7a, a game module: a setup screen (control style and
-// ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players drive freely on the test
-// track in split screen, drifting and boosting, with dummy karts filling the field to 12. No laps or places
-// yet (M7b). Loaded through host/games/index.js and run by the shell (host/game-session.js). The rules live in
-// DOM-free modules next to this file; this file connects them to the shell, the phones, the renderer, the
-// panels and the tuning sliders. The shell's End game goes back to the lobby.
+// The 3D kart race (M6 to M7b), a game module: a setup screen (course, laps and engine class on the host,
+// control style and ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players race their
+// laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results, and
+// Race again or Back to lobby. Loaded through host/games/index.js and run by the shell (host/game-session.js).
+// The rules live in DOM-free modules next to this file; this file connects them to the shell, the phones, the
+// renderer, the panels and the tuning sliders.
 
 import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
-import { createSetup, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from '/host/kart/setup.js';
+import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from '/host/kart/setup.js';
 import { createControlsTable } from '/host/kart/kart-controls.js';
 import { buildTrack } from './track-builder.js';
-import { TEST_TRACK } from './test-track.js';
-import { createDrive, stepDrive, removeKart } from './drive.js';
-import { setupView, drivingView } from './drive-views.js';
-import { countdownNumber } from './rocket-start.js';
+import { COURSES } from './courses.js';
+import { createRace, stepRace, removeKart, ENGINE_CLASSES, DEFAULT_ENGINE_CLASS, RACE_PHASES } from './race.js';
+import { setupView, raceView, standingRows, describeClock, describeCountdown } from './race-views.js';
 import { createStepTimer } from './step-timer.js';
 import { createReadout } from './readout.js';
 import { createPanels } from './panels.js';
+import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
 
-const READOUT_INTERVAL_MS = 250;
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
 const PING_INTERVAL_MS = 2000;
 // A long pause (a hidden tab) must not swing the cameras a long way at once: the runner's own cap
 // (host/fixed-step.js).
 const MAX_FRAME_SECONDS = 0.25;
 
-// Returns a fresh test drive that follows the game module interface in plan.md.
+// Returns a fresh 3D race game that follows the game module interface in plan.md.
 export function createGame() {
   let rendererModule = null;
   let renderer = null;
   let panels = null;
+  let resultsPanel = null;
   let tuningPanel = null;
   let players = null;
   let setControllerView = null;
   let pingTimer = null;
-  const track = buildTrack(TEST_TRACK);
-  // Control styles, kept from drive to drive until the game goes back to the lobby.
+  // Every course's track, built once (a few thousand stations each, in milliseconds), by course id.
+  const tracks = new Map(COURSES.map((course) => [course.id, buildTrack(course)]));
+  // Laps and control styles, kept from race to race until the game goes back to the lobby, and the course and
+  // engine class with them.
   const setup = createSetup();
+  let courseId = COURSES[0].id;
+  let track = tracks.get(courseId);
+  let engineClass = DEFAULT_ENGINE_CLASS;
   // null while the setup screen shows.
-  let drive = null;
+  let race = null;
   let controls = createControlsTable();
   // playerId -> the view last sent to that phone as JSON, so a view is only sent when it changes.
   const sentViews = new Map();
+  let wantsLobby = false;
   const stepTimer = createStepTimer();
   const readout = createReadout();
-  // For the readout: frames drawn and CPU time spent drawing since it was last written.
+  // When the last frame was drawn, for the cameras' time step.
   let lastDrawAt = null;
-  let lastReadoutAt = 0;
-  let framesSinceReadout = 0;
-  let drawMsSinceReadout = 0;
 
   // Three.js is fetched here, when the game is chosen, not when the lobby loads.
   async function load() {
@@ -62,11 +65,15 @@ export function createGame() {
     renderer = rendererModule.createRenderer(shell.container, track);
     tuningPanel = createTuningPanel(shell.container);
     panels = createPanels(shell.container, {
-      onStartDriving: startDriving,
+      onCourse: chooseCourse,
+      onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
+      onEngineClass: chooseEngineClass,
+      onStartRace: startRace,
       onBackToSetup: showSetup,
       onRestart: restart,
       onTuning: () => tuningPanel.toggle(),
     });
+    resultsPanel = createResultsPanel(shell.container, { onRaceAgain: showSetup, onBackToLobby: () => (wantsLobby = true) });
     // The PING travels host -> server -> phone and back, the path an input takes, there and back. A timer,
     // not the game's steps, which run slow when the frame rate drops. Disconnected phones are skipped.
     pingTimer = setInterval(() => {
@@ -79,29 +86,47 @@ export function createGame() {
     showSetup();
   }
 
-  // Back to the setup screen, at the start and whenever the host asks. Everyone confirms again.
+  // Back to the setup screen, at the start, after the results, and whenever the host asks. Everyone confirms
+  // again.
   function showSetup() {
-    drive = null;
+    race = null;
     clearReady(setup);
   }
 
+  // Clicks on the setup screen only; the values come from the panel's own buttons. The overview behind the
+  // setup screen flies round the chosen course.
+  function chooseCourse(chosen) {
+    if (!race && tracks.has(chosen) && chosen !== courseId) {
+      courseId = chosen;
+      track = tracks.get(courseId);
+      renderer.showTrack(track);
+    }
+  }
+
+  function chooseEngineClass(chosen) {
+    if (!race && chosen in ENGINE_CLASSES) {
+      engineClass = chosen;
+    }
+  }
+
   // Checked again here because the click can arrive in the same frame as a player dropping.
-  function startDriving() {
-    if (!drive && canStartRace(setup, playersInSlotOrder(players))) {
+  function startRace() {
+    if (!race && canStartRace(setup, playersInSlotOrder(players))) {
       putKartsOnGrid();
     }
   }
 
   // Back to the grid for another countdown, with everyone who is in the room now (ready was given already).
   function restart() {
-    if (drive) {
+    if (race) {
       putKartsOnGrid();
     }
   }
 
-  // Everyone in the roster gets a kart, at the back of the grid in slot order, and the countdown starts.
+  // Everyone in the roster gets a kart, at the back of the grid in slot order. Inputs held from the last race are
+  // dropped.
   function putKartsOnGrid() {
-    drive = createDrive(track, playersInSlotOrder(players).map((player) => player.playerId));
+    race = createRace(track, playersInSlotOrder(players).map((player) => player.playerId), setup.laps, engineClass);
     controls = createControlsTable();
   }
 
@@ -115,7 +140,7 @@ export function createGame() {
       return;
     }
     if (message.input?.kind === INPUT_KINDS.CHOICE) {
-      applyChoice(setup, playerId, message.input, drive === null);
+      applyChoice(setup, playerId, message.input, race === null);
     } else {
       controls.handleInput(playerId, message.input);
     }
@@ -123,9 +148,9 @@ export function createGame() {
 
   // Views are sent from here only, so every change reaches the phones within one step.
   function step(dt) {
-    if (drive) {
+    if (race) {
       const startedAt = performance.now();
-      stepDrive(drive, track, controlsFor, dt);
+      stepRace(race, track, controlsFor, dt);
       stepTimer.record(performance.now() - startedAt);
     }
     sendChangedViews();
@@ -134,15 +159,17 @@ export function createGame() {
   // During the countdown auto-accelerate does not count as holding Go, or every auto-accelerate kart would
   // stall; Go (or Drift, which accelerates too) pressed by hand still makes a rocket start.
   function controlsFor(playerId) {
-    const autoAccelerate = drive.started && playerSetup(setup, playerId).autoAccelerate;
+    const autoAccelerate = race.phase !== RACE_PHASES.COUNTDOWN && playerSetup(setup, playerId).autoAccelerate;
     return controls.controlsFor(players.get(playerId), autoAccelerate);
   }
 
-  // On the setup screen every player in the roster gets a view; while driving only those with a kart do.
+  // On the setup screen every player in the roster gets a view. During a race only karts do: a player who joined
+  // just before the room closed has no kart, so their view stays null ("waiting for the next race") until the
+  // next setup screen.
   function sendChangedViews() {
-    const playerIds = drive ? drive.karts.filter((kart) => kart.playerId !== null).map((kart) => kart.playerId) : [...players.keys()];
+    const playerIds = race ? race.karts.filter((kart) => kart.playerId !== null).map((kart) => kart.playerId) : [...players.keys()];
     for (const playerId of playerIds) {
-      const view = drive ? drivingView(drive, setup, playerId) : setupView(setup, playerId);
+      const view = race ? raceView(race, setup, playerId) : setupView(setup, engineClass, playerId);
       const viewText = JSON.stringify(view);
       if (sentViews.get(playerId) !== viewText) {
         sentViews.set(playerId, viewText);
@@ -155,42 +182,39 @@ export function createGame() {
     const now = performance.now();
     const dt = lastDrawAt === null ? 0 : Math.min((now - lastDrawAt) / 1000, MAX_FRAME_SECONDS);
     lastDrawAt = now;
-    renderer.draw(drive, players, alpha, dt);
-    framesSinceReadout += 1;
-    drawMsSinceReadout += performance.now() - now;
-    tuningPanel.setVisible(drive !== null);
-    if (!drive) {
-      panels.showSetup(setup, players);
-      startReadoutPeriod(now);
+    renderer.draw(race, players, alpha, dt);
+    const readoutText = readout.frameDrawn(now, performance.now() - now, race, track, players, stepTimer.summary());
+    const racing = race !== null && race.phase !== RACE_PHASES.RESULTS;
+    tuningPanel.setVisible(racing);
+    if (!race) {
+      panels.showSetup(setup, { courseId, engineClass }, players);
+      resultsPanel.hide();
       return;
     }
-    let readoutText = null;
-    if (now - lastReadoutAt >= READOUT_INTERVAL_MS) {
-      const seconds = (now - lastReadoutAt) / 1000;
-      const drawMs = drawMsSinceReadout / framesSinceReadout;
-      readoutText = readout.describe(drive, track, players, stepTimer.summary(), framesSinceReadout / seconds, drawMs);
-      startReadoutPeriod(now);
+    panels.showRace({
+      clockText: describeClock(race),
+      countdownText: describeCountdown(race),
+      readoutText,
+      readoutShown: tuningPanel.isOpen(),
+      barShown: racing,
+    });
+    if (race.phase === RACE_PHASES.RESULTS) {
+      resultsPanel.show(standingRows(race), players);
+    } else {
+      resultsPanel.hide();
     }
-    panels.showDriving(readoutText, describeCountdown(countdownNumber(drive.time)));
-  }
-
-  function startReadoutPeriod(now) {
-    lastReadoutAt = now;
-    framesSinceReadout = 0;
-    drawMsSinceReadout = 0;
   }
 
   function onPlayerLeft(playerId) {
-    if (drive) {
-      removeKart(drive, playerId);
+    if (race) {
+      removeKart(race, playerId);
     }
     forgetPlayer(setup, playerId);
     sentViews.delete(playerId);
   }
 
-  // The test drive never ends by itself; the host ends it with the shell's End game.
   function isDone() {
-    return false;
+    return wantsLobby;
   }
 
   function stop() {
@@ -199,11 +223,4 @@ export function createGame() {
   }
 
   return { load, start, onMessage, step, render, onPlayerLeft, isDone, stop };
-}
-
-function describeCountdown(number) {
-  if (number === null) {
-    return '';
-  }
-  return number === 0 ? 'GO!' : String(number);
 }

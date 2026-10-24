@@ -15,11 +15,12 @@ export function start(pageElements, choiceSender) {
   elements.setup.addEventListener('click', onClick);
 }
 
-// `view` is a race's setup view: { laps, steering, autoAccelerate, ready }. laps is null when the game has no
-// laps (the 3D test drive), and the line stays empty.
+// `view` is a race's setup view: { laps, engineClass, steering, autoAccelerate, ready }. engineClass (the 3D
+// race's 50, 100, 150 or 200) is missing in the 2D race, which has none.
 export function show(view) {
   ready = view.ready;
-  elements.laps.textContent = view.laps === null ? '' : view.laps === 1 ? '1 lap' : `${view.laps} laps`;
+  const laps = view.laps === 1 ? '1 lap' : `${view.laps} laps`;
+  elements.laps.textContent = view.engineClass === undefined ? laps : `${laps}, ${view.engineClass}cc`;
   for (const button of elements.setup.querySelectorAll('[data-choice]')) {
     const picked = String(view[button.dataset.choice]) === button.dataset.value;
     button.setAttribute('aria-pressed', String(picked));

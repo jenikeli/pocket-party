@@ -2,7 +2,8 @@
 // "Race again" and "Back to lobby" buttons. Used by host/games/kart-2d/renderer.js.
 
 import { drawButton } from '/host/buttons.js';
-import { standingRows, formatRaceTime } from './race-views.js';
+import { standingRows } from './race-views.js';
+import { formatRaceTime } from '/host/kart/race-time.js';
 import { ordinal } from '/shared/ordinal.js';
 import { displayName, colorText } from '/host/roster.js';
 

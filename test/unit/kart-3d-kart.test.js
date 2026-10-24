@@ -47,17 +47,17 @@ function distanceAt(track, x, y, z, roughS) {
 
 test('MK8DX\'s speed curve: one frame adds at most its limit, and 90% of top speed takes about 3.8 s', () => {
   // The first frame closes 1% of the gap to top speed, just under the limit (0.08 / 7.75 of top speed).
-  assert.ok(Math.abs(nextSpeed(0, GO, false, STEP) - TOP_SPEED * 0.01) < 1e-9);
+  assert.ok(Math.abs(nextSpeed(0, GO, false, STEP, null, TOP_SPEED) - TOP_SPEED * 0.01) < 1e-9);
   assert.ok(TOP_SPEED * 0.01 < (0.08 / 7.75) * TOP_SPEED);
   let speed = 0;
   let frames = 0;
   while (speed < TOP_SPEED * 0.9) {
-    speed = nextSpeed(speed, GO, false, STEP);
+    speed = nextSpeed(speed, GO, false, STEP, null, TOP_SPEED);
     frames += 1;
   }
   assert.ok(frames >= 225 && frames <= 235, `${frames} frames to 90%`);
   for (let frame = 0; frame < 3000; frame += 1) {
-    speed = nextSpeed(speed, GO, false, STEP);
+    speed = nextSpeed(speed, GO, false, STEP, null, TOP_SPEED);
   }
   assert.ok(speed <= TOP_SPEED && speed > TOP_SPEED - 0.01);
 });
@@ -66,10 +66,10 @@ test('braking stops the kart and then reverses it slowly; coasting rolls to a st
   let speed = TOP_SPEED;
   // Braking takes 30 units/s off every second, then reverses at 8 units/s^2.
   for (let frame = 0; frame < (TOP_SPEED / 30 + 0.5) * 60; frame += 1) {
-    speed = nextSpeed(speed, { steer: 0, accelerate: false, brake: true }, false, STEP);
+    speed = nextSpeed(speed, { steer: 0, accelerate: false, brake: true }, false, STEP, null, TOP_SPEED);
   }
   assert.ok(speed < 0 && speed > -6, `reversing at ${speed}`);
-  assert.equal(nextSpeed(0.05, { steer: 0, accelerate: false, brake: false }, false, STEP), 0);
+  assert.equal(nextSpeed(0.05, { steer: 0, accelerate: false, brake: false }, false, STEP, null, TOP_SPEED), 0);
 });
 
 test('a kart accelerates from a standstill on the road and keeps to the ground', () => {

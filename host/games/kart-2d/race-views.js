@@ -1,6 +1,6 @@
 // What the 2D race shows, worked out from the setup and race state: each phone's view (sent with
-// setControllerView) and the rows of the standings and results. Plain functions, unit tested in Node. Used by
-// index.js and the renderer.
+// setControllerView) and the rows of the standings and results (times as text are host/kart/race-time.js's).
+// Plain functions, unit tested in Node. Used by index.js and the renderer.
 
 import { kartsInPlaceOrder, currentLap, countdownNumber } from './race.js';
 import { playerSetup } from '../../kart/setup.js';
@@ -47,13 +47,4 @@ export function standingRows(race) {
     lap: currentLap(race, kart),
     finishTime: kart.finishTime,
   }));
-}
-
-// 83.456 -> '1:23.45'. Hundredths are cut, not rounded, so a time never shows later than it was. The tiny
-// extra stops floating point turning 0.29 s into 28.999... hundredths.
-export function formatRaceTime(seconds) {
-  const hundredths = Math.floor(seconds * 100 + 1e-6);
-  const minutes = Math.floor(hundredths / 6000);
-  const rest = String(Math.floor(hundredths / 100) % 60).padStart(2, '0');
-  return `${minutes}:${rest}.${String(hundredths % 100).padStart(2, '0')}`;
 }

@@ -43,11 +43,11 @@ export function buildTrackMesh(track) {
     }
     const next = track.stations[(index + 1) % track.stations.length];
     const segment = { station, next, index };
-    addRoadTop(surfaces, track, segment, index === startIndex || index === startIndex + 1);
+    addRoadTop(surfaces, segment, index === startIndex || index === startIndex + 1);
     addDashPanels(surfaces, track, segment);
-    addShoulders(surfaces, track, segment);
-    addUnderside(surfaces, track, segment);
-    addEdges(surfaces, walls, track, segment);
+    addShoulders(surfaces, segment);
+    addUnderside(surfaces, segment);
+    addEdges(surfaces, walls, segment);
   });
   const road = new THREE.Mesh(surfaces.build(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 }));
   road.receiveShadow = true;
@@ -66,24 +66,26 @@ export function buildTrackMesh(track) {
   return { road, walls: wallMesh, dispose };
 }
 
-// The asphalt between the curbs, the two curbs, or the start line's checks across the whole width.
-function addRoadTop(builder, track, segment, onStartLine) {
-  const edge = track.halfWidth;
+// The asphalt between the curbs, the two curbs, or the start line's checks across the whole width. Laterals are
+// given per station (see the geometry builder), so the road follows its width as it changes.
+function addRoadTop(builder, segment, onStartLine) {
   const up = (station) => station.normal;
+  const at = (share, offset = 0) => (station) => station.halfWidth * share + offset;
   if (onStartLine) {
-    const cell = (2 * edge) / START_LINE_CELLS;
     for (let column = 0; column < START_LINE_CELLS; column += 1) {
       const color = (column + segment.index) % 2 === 0 ? COLORS.curbWhite : COLORS.black;
-      builder.strip(segment, -edge + column * cell, 0, -edge + (column + 1) * cell, 0, up, color);
+      const from = -1 + (2 * column) / START_LINE_CELLS;
+      const to = -1 + (2 * (column + 1)) / START_LINE_CELLS;
+      builder.strip(segment, at(from), 0, at(to), 0, up, color);
     }
     return;
   }
   const antiGravity = segment.station.antiGravity;
   const stripe = Math.floor(segment.index / STRIPE_STATIONS) % 2 === 0;
   const curb = stripe ? COLORS.curbWhite : antiGravity ? COLORS.curbBlue : COLORS.curbRed;
-  builder.strip(segment, -edge, 0, -edge + CURB_WIDTH, 0, up, curb);
-  builder.strip(segment, -edge + CURB_WIDTH, 0, edge - CURB_WIDTH, 0, up, antiGravity ? COLORS.antiGravityAsphalt : COLORS.asphalt);
-  builder.strip(segment, edge - CURB_WIDTH, 0, edge, 0, up, curb);
+  builder.strip(segment, at(-1), 0, at(-1, CURB_WIDTH), 0, up, curb);
+  builder.strip(segment, at(-1, CURB_WIDTH), 0, at(1, -CURB_WIDTH), 0, up, antiGravity ? COLORS.antiGravityAsphalt : COLORS.asphalt);
+  builder.strip(segment, at(1, -CURB_WIDTH), 0, at(1), 0, up, curb);
 }
 
 // Bright stripes, one per station, across each dash panel where kart-boosts.js finds it.
@@ -93,47 +95,57 @@ function addDashPanels(builder, track, segment) {
     if (Math.abs(progressBetween(track, panel.s, segment.station.s)) < DASH_PANEL_LENGTH / 2) {
       const color = segment.index % 2 === 0 ? COLORS.dashOrange : COLORS.dashYellow;
       const from = panel.lateral - DASH_PANEL_WIDTH / 2;
-      builder.strip(segment, from, DASH_PANEL_LIFT, from + DASH_PANEL_WIDTH, DASH_PANEL_LIFT, up, color);
+      builder.strip(segment, () => from, DASH_PANEL_LIFT, () => from + DASH_PANEL_WIDTH, DASH_PANEL_LIFT, up, color);
     }
   }
 }
 
-function addShoulders(builder, track, segment) {
-  const shoulder = segment.station.shoulder;
-  if (shoulder > 0) {
-    const up = (station) => station.normal;
-    builder.strip(segment, -track.halfWidth - shoulder, 0, -track.halfWidth, 0, up, COLORS.grass);
-    builder.strip(segment, track.halfWidth, 0, track.halfWidth + shoulder, 0, up, COLORS.grass);
+// Each side's shoulder is the segment's own (they change from piece to piece), so it is drawn from the
+// segment's first station at both ends.
+function addShoulders(builder, segment) {
+  const up = (station) => station.normal;
+  const { shoulderLeft, shoulderRight } = segment.station;
+  if (shoulderLeft > 0) {
+    builder.strip(segment, (station) => -station.halfWidth - shoulderLeft, 0, (station) => -station.halfWidth, 0, up, COLORS.grass);
+  }
+  if (shoulderRight > 0) {
+    builder.strip(segment, (station) => station.halfWidth, 0, (station) => station.halfWidth + shoulderRight, 0, up, COLORS.grass);
   }
 }
 
+// How far out the ground ends on `side` (-1 left, 1 right) at a station of this segment.
+function outerEdgeAt(segment, side) {
+  const shoulder = side > 0 ? segment.station.shoulderRight : segment.station.shoulderLeft;
+  return (station) => side * (station.halfWidth + shoulder);
+}
+
 // The bottom of the road, facing down: drawn right to left so its front faces away from the top.
-function addUnderside(builder, track, segment) {
-  const edge = track.halfWidth + segment.station.shoulder;
+function addUnderside(builder, segment) {
   const down = (station) => ({ x: -station.normal.x, y: -station.normal.y, z: -station.normal.z });
-  builder.strip(segment, edge, -THICKNESS, -edge, -THICKNESS, down, COLORS.underside);
+  builder.strip(segment, outerEdgeAt(segment, 1), -THICKNESS, outerEdgeAt(segment, -1), -THICKNESS, down, COLORS.underside);
 }
 
 // At each outer edge: a wall (from the road up) if it has one, and the road's side face (down to the
 // underside) either way.
-function addEdges(surfaces, walls, track, segment) {
-  const edge = track.halfWidth + segment.station.shoulder;
+function addEdges(surfaces, walls, segment) {
   const wallColor = segment.station.antiGravity ? COLORS.antiGravityWall : COLORS.wall;
   for (const side of [-1, 1]) {
     const outward = (station) => ({ x: station.right.x * side, y: station.right.y * side, z: station.right.z * side });
+    const edge = outerEdgeAt(segment, side);
     const hasWall = side > 0 ? segment.station.wallRight : segment.station.wallLeft;
     // Drawn so the front faces outward: top first on the right edge, bottom first on the left.
     const [first, second] = side > 0 ? [0, -THICKNESS] : [-THICKNESS, 0];
-    surfaces.strip(segment, edge * side, first, edge * side, second, outward, COLORS.underside);
+    surfaces.strip(segment, edge, first, edge, second, outward, COLORS.underside);
     if (hasWall) {
-      walls.strip(segment, edge * side, side > 0 ? WALL_HEIGHT : 0, edge * side, side > 0 ? 0 : WALL_HEIGHT, outward, wallColor);
+      walls.strip(segment, edge, side > 0 ? WALL_HEIGHT : 0, edge, side > 0 ? 0 : WALL_HEIGHT, outward, wallColor);
     }
   }
 }
 
 // Collects triangles with their normals and colours. strip() adds one quad between a segment's two stations:
-// from (lateral, lift) `from` to `to` across the road at each station, where lift is along the road's normal.
-// Its front face is the side from which `from` is on the left, seen looking along the road.
+// from (lateral, lift) `from` to `to` across the road at each station, where lift is along the road's normal and
+// each lateral is a function of the station (the road's width changes along it). Its front face is the side
+// from which `from` is on the left, seen looking along the road.
 function createGeometryBuilder() {
   const positions = [];
   const normals = [];
@@ -142,10 +154,10 @@ function createGeometryBuilder() {
 
   function strip({ station, next }, fromLateral, fromLift, toLateral, toLift, normalAt, hex) {
     const corner = (at, lateral, lift) => addScaled(addScaled(at.point, at.right, lateral), at.normal, lift);
-    const a0 = corner(station, fromLateral, fromLift);
-    const a1 = corner(station, toLateral, toLift);
-    const b0 = corner(next, fromLateral, fromLift);
-    const b1 = corner(next, toLateral, toLift);
+    const a0 = corner(station, fromLateral(station), fromLift);
+    const a1 = corner(station, toLateral(station), toLift);
+    const b0 = corner(next, fromLateral(next), fromLift);
+    const b1 = corner(next, toLateral(next), toLift);
     const normalA = normalAt(station);
     const normalB = normalAt(next);
     color.setHex(hex);

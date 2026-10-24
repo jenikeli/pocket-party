@@ -1,5 +1,5 @@
 // Unit tests for the 3D race's techniques (host/games/kart-3d/kart-techniques.js, kart-boosts.js,
-// slipstream.js, rocket-start.js and the hooks in kart-physics.js, kart-bumps.js and drive.js), driven with
+// slipstream.js, rocket-start.js and the hooks in kart-physics.js, kart-bumps.js and race.js), driven with
 // scripted inputs: hop and drift, MK8DX's charge counter and mini-turbo lengths, a purple drift round a
 // long bend at full speed, the trick window at the ramp's lip, the rocket start window and its boost length,
 // dash panels, slipstream and the anti-gravity spin boost.
@@ -16,7 +16,7 @@ import { BOOST_KINDS } from '../../host/games/kart-3d/kart-boosts.js';
 import { driftTurnAngle, turnAngle } from '../../host/games/kart-3d/kart-driving.js';
 import { tuning } from '../../host/games/kart-3d/tuning.js';
 import { countdownNumber, judgeStart, rocketBoostSeconds, GO_AT, STALL_SECONDS } from '../../host/games/kart-3d/rocket-start.js';
-import { createDrive, stepDrive, playerKart } from '../../host/games/kart-3d/drive.js';
+import { createRace, stepRace, playerKart, RACE_PHASES } from '../../host/games/kart-3d/race.js';
 import { scale, subtract, addScaled } from '../../host/games/kart-3d/vector.js';
 
 const STEP = 1 / 60;
@@ -205,14 +205,14 @@ test('rocket start: Go arriving just after "2" and held boosts; earlier stalls; 
     { pressAt: inWindow, letGoAt: 2.5 },
     { pressAt: 2.5, letGoAt: Infinity },
   ].map(({ pressAt, letGoAt }) => {
-    const drive = createDrive(testTrack, ['p1']);
-    const goHeld = () => drive.time >= pressAt && (drive.started || drive.time < letGoAt);
+    const race = createRace(testTrack, ['p1'], 3, 150);
+    const goHeld = () => race.time >= pressAt && (race.phase !== RACE_PHASES.COUNTDOWN || race.time < letGoAt);
     const speeds = [];
     for (let step = 0; step < (GO_AT + 1.5) * 60; step += 1) {
-      stepDrive(drive, testTrack, () => controls({ accelerate: goHeld() }), STEP);
-      speeds.push(forwardSpeed(playerKart(drive, 'p1')));
+      stepRace(race, testTrack, () => controls({ accelerate: goHeld() }), STEP);
+      speeds.push(forwardSpeed(playerKart(race, 'p1')));
     }
-    const kart = playerKart(drive, 'p1');
+    const kart = playerKart(race, 'p1');
     return { outcome: kart.startResult.outcome, stillAfterGo: speeds[(GO_AT + STALL_SECONDS) * 60 - 5] === 0, fastest: Math.max(...speeds) };
   });
   assert.deepEqual(outcomes.map((each) => each.outcome), ['rocket', 'stall', 'normal', 'normal']);
@@ -230,11 +230,11 @@ test('a rocket start boosts longest at the start of its window and shortest at i
   // Presses a tenth and nine tenths of the way into the window.
   const boostAtGo = [0.1, 0.9].map((share) => {
     const pressAt = 1 + tuning.rocketFrom + share * (tuning.rocketTo - tuning.rocketFrom);
-    const drive = createDrive(testTrack, ['p1']);
-    while (!drive.started) {
-      stepDrive(drive, testTrack, () => controls({ accelerate: drive.time >= pressAt }), STEP);
+    const race = createRace(testTrack, ['p1'], 3, 150);
+    while (race.phase === RACE_PHASES.COUNTDOWN) {
+      stepRace(race, testTrack, () => controls({ accelerate: race.time >= pressAt }), STEP);
     }
-    const kart = playerKart(drive, 'p1');
+    const kart = playerKart(race, 'p1');
     assert.equal(kart.boost.kind, BOOST_KINDS.ROCKET_START);
     return kart.boost.timeLeft;
   });

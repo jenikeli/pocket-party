@@ -1,7 +1,7 @@
-// The dummy karts' driver for the M6b test drive: follows the centre line in its own lane and brakes before
-// bends it cannot take at speed, with the same controls a phone gives. A first rough stand-in for M7's CPU
-// drivers, there to measure stepping a full field of 12 karts. Plain maths, unit tested in Node. Used by
-// host/games/kart-3d/drive.js.
+// The CPU karts' driver for now (M6b's dummy driver): follows the centre line in its own lane and brakes before
+// bends it cannot take at speed, with the same controls a phone gives. It also drives a player's kart once they
+// have finished. A first rough stand-in for M7d's CPU drivers. Plain maths, unit tested in Node. Used by
+// host/games/kart-3d/race.js.
 
 import { subtract, cross, dot } from './vector.js';
 import { pointAt } from './track.js';

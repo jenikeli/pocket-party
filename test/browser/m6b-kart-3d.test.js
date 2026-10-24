@@ -1,5 +1,5 @@
-// Browser tests for M6b, the 3D race's test drive: it starts from the lobby, phones get the shared kart setup
-// screen (no laps) and controls, the host draws two split-screen views with the players' names, auto-accelerate
+// Browser tests for M6b, the 3D race's driving (since M7b the race itself): it starts from the lobby, phones get
+// the shared kart setup screen (with the laps and engine class) and controls, the host draws two split-screen views with the players' names, auto-accelerate
 // drives a kart by itself and a held Go drives another (read from the host's readout, with the physics step
 // time), a reloaded phone gets its controls back, Back to setup keeps the control styles, and End game frees
 // the WebGL canvas. Ana is an Android phone (Chromium, real touches) on the stick and Go; Bo an iPhone (WebKit)
@@ -22,7 +22,7 @@ const HOST_SCALE = 0.5;
 const VIEW_GAP = { left: 0, top: 268, right: 960, bottom: 272 };
 const DRIVE_TIMEOUT = { timeoutMs: 30000 };
 
-describe('M6b 3D test drive', () => {
+describe('M6b 3D driving', () => {
   let server;
   let chromium;
   let webkit;
@@ -100,12 +100,12 @@ describe('M6b 3D test drive', () => {
     await server?.stop();
   });
 
-  test('Start game opens the setup screen: the phones get the kart setup without laps, the host lists the players', async () => {
+  test('Start game opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
     await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE);
     const view = await nextView(bo, (each) => each.phase === 'setup');
-    assert.deepEqual(view, { phase: 'setup', laps: null, steering: 'stick', autoAccelerate: false, ready: false });
+    assert.deepEqual(view, { phase: 'setup', laps: 3, engineClass: 150, steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
-    assert.equal(await bo.page.textContent('#kart-setup-laps'), '');
+    await waitUntil(async () => (await bo.page.textContent('#kart-setup-laps')) === '3 laps, 150cc', { message: 'Bo\'s laps line' });
     // The game's style.css only imports the shared kart styles; the setup screen's grid shows they arrived.
     assert.equal(await bo.page.evaluate(() => getComputedStyle(document.getElementById('kart-setup')).display), 'grid');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
@@ -115,7 +115,7 @@ describe('M6b 3D test drive', () => {
     await saveScreenshot(hostPage, 'm6b-1-host-setup');
   });
 
-  test('Bo picks auto-accelerate, both are ready, Start driving gives the phones their controls and the host two views', async () => {
+  test('Bo picks auto-accelerate, both are ready, Start race gives the phones their controls and the host two views', async () => {
     await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
     for (const player of [ana, bo]) {
@@ -126,12 +126,12 @@ describe('M6b 3D test drive', () => {
     await clickNow(hostPage, '#kart-3d-start-button');
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
-      assert.equal(await player.page.textContent('#kart-line'), 'Test drive');
+      assert.match(await player.page.textContent('#kart-line'), /^(Get ready!|Lap 1\/3)$/);
     }
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false, 'auto-accelerate hides Go');
     assert.equal(await ana.page.isVisible('#kart-accelerate'), true);
-    await hostPage.waitForSelector('#kart-3d-drive:not([hidden])');
-    const labels = hostPage.locator('.kart-3d-view-label:not([hidden])');
+    await hostPage.waitForSelector('#kart-3d-race-bar:not([hidden])');
+    const labels = hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-label');
     await waitUntil(async () => (await labels.count()) === 2, { message: 'a label on each view' });
     assert.deepEqual(await labels.allTextContents(), ['Ana', 'Bo']);
     await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, VIEW_GAP)).count === 960 * 4, {
@@ -158,8 +158,8 @@ describe('M6b 3D test drive', () => {
     await openPlayerPage(bo);
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_RECONNECTED);
     // Just after GO the view says how the start went for a moment; the view after that is the plain one.
-    const view = await nextView(bo, (each) => each.phase === 'driving' && each.start === null);
-    assert.deepEqual(view, { phase: 'driving', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null });
+    const view = await nextView(bo, (each) => each.phase === 'racing' && each.start === null);
+    assert.deepEqual({ ...view, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
     await bo.page.waitForSelector('#kart-controls:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
   });
@@ -172,7 +172,7 @@ describe('M6b 3D test drive', () => {
     }
     assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"][data-value="true"]', 'aria-pressed'), 'true');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    assert.equal(await hostPage.locator('.kart-3d-view-label:not([hidden])').count(), 0);
+    assert.equal(await hostPage.locator('.kart-3d-view-hud:not([hidden])').count(), 0);
   });
 
   test('End game frees the WebGL canvas and returns everyone to the lobby', async () => {

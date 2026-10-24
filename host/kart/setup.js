@@ -1,7 +1,7 @@
 // The kart races' setup screen rules: the number of laps (the host's choice), each player's control style and
 // ready (their phone's choices), and when the host may start the race. Plain data and functions, unit tested
-// in Node. Shared by host/games/kart-2d/ and host/games/kart-3d/ (which has no laps yet and ignores them); the
-// settings last for as long as the game runs.
+// in Node. Shared by host/games/kart-2d/ and host/games/kart-3d/ (whose engine class is its own, in its
+// index.js); the settings last for as long as the game runs.
 
 import { KART_CHOICES, KART_STEERING } from '../../shared/protocol.js';
 

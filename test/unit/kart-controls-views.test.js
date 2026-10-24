@@ -1,10 +1,11 @@
 // Unit tests for host/kart/kart-controls.js (INPUT messages to kart controls), host/games/kart-2d/race-views.js
-// (what phones and the screen show) and shared/ordinal.js.
+// (what phones and the screen show), host/kart/race-time.js and shared/ordinal.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createControlsTable, NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
-import { controllerView, setupView, standingRows, formatRaceTime } from '../../host/games/kart-2d/race-views.js';
+import { controllerView, setupView, standingRows } from '../../host/games/kart-2d/race-views.js';
+import { formatRaceTime } from '../../host/kart/race-time.js';
 import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { ordinal } from '../../shared/ordinal.js';
@@ -110,5 +111,5 @@ test('race times show minutes, seconds and hundredths', () => {
 });
 
 test('places read 1st, 2nd, 3rd, then th', () => {
-  assert.deepEqual([1, 2, 3, 4, 9].map(ordinal), ['1st', '2nd', '3rd', '4th', '9th']);
+  assert.deepEqual([1, 2, 3, 4, 9, 11, 12].map(ordinal), ['1st', '2nd', '3rd', '4th', '9th', '11th', '12th']);
 });

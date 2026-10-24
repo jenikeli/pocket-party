@@ -1,6 +1,6 @@
 // Questions about the 3D race's road, answered from the stations that track-builder.js made: where a point is
 // on the road, the road's surface and normal there, its edges, walls and gaps, and lap progress. Plain maths,
-// unit tested in Node. Used by the kart rules, the dummy drivers and the renderer.
+// unit tested in Node. Used by the kart rules, the CPU driver and the renderer.
 //
 // Finding a kart walks from the station it was at last step, never searching the whole track: a bridge over
 // another part of the road, or the far side of a hairpin, may be closer in a straight line, but it is not
@@ -15,11 +15,12 @@ const MAX_WALK = 64;
 export const SURFACES = Object.freeze({ ROAD: 'road', OFF_ROAD: 'offRoad' });
 
 // Where `position` is on the road, starting the walk at station `fromIndex` (the kart's station last step).
-// Returns the contact: { index, s, lateral, height, centre, forward, right, normal, station }. The point is
-// between the cross-sections of stations index and index + 1; s is the distance along the centre line, lateral
-// how far right of it (negative is left) across the road, height how far above the road's surface along its
-// normal (negative is below). forward, right and normal are the road's frame there (unit vectors), and station
-// the station whose segment it is (its walls, gap and anti-gravity).
+// Returns the contact: { index, s, lateral, height, centre, forward, right, normal, halfWidth, station }. The
+// point is between the cross-sections of stations index and index + 1; s is the distance along the centre line,
+// lateral how far right of it (negative is left) across the road, height how far above the road's surface along
+// its normal (negative is below). forward, right and normal are the road's frame there (unit vectors), halfWidth
+// the road's half width there, and station the station whose segment it is (its shoulders, walls, gap and
+// anti-gravity).
 export function locate(track, position, fromIndex) {
   const { stations } = track;
   let index = wrapIndex(track, fromIndex);
@@ -48,7 +49,8 @@ function along(station, position) {
 }
 
 // The road's frame a `fraction` of the way from station `index` to the next. Forward is the straight segment
-// between the two stations, so the surface is flat along each segment and a ramp's lip keeps its full slope.
+// between the two stations, so the surface is flat along each segment and a ramp's lip keeps its full slope. The
+// width is blended between the two stations, as the road's mesh draws it.
 function contactAt(track, index, fraction, position) {
   const station = track.stations[index];
   const nextStation = track.stations[wrapIndex(track, index + 1)];
@@ -66,22 +68,25 @@ function contactAt(track, index, fraction, position) {
     forward,
     right,
     normal,
+    halfWidth: station.halfWidth + (nextStation.halfWidth - station.halfWidth) * fraction,
     station,
   };
 }
 
 // What a contact is on: SURFACES.ROAD, SURFACES.OFF_ROAD (the shoulders), or null past the edge or over a gap.
-export function surfaceAt(track, contact) {
+export function surfaceAt(contact) {
   const across = Math.abs(contact.lateral);
-  if (contact.station.gap || across > outerEdge(track, contact)) {
+  if (contact.station.gap || across > outerEdge(contact)) {
     return null;
   }
-  return across <= track.halfWidth ? SURFACES.ROAD : SURFACES.OFF_ROAD;
+  return across <= contact.halfWidth ? SURFACES.ROAD : SURFACES.OFF_ROAD;
 }
 
-// How far from the centre line the ground ends, on either side: where a wall stands, if there is one.
-export function outerEdge(track, contact) {
-  return track.halfWidth + contact.station.shoulder;
+// How far from the centre line the ground ends on the contact's side (right if lateral > 0): the road's edge plus
+// that side's shoulder, where a wall stands, if there is one.
+export function outerEdge(contact) {
+  const shoulder = contact.lateral > 0 ? contact.station.shoulderRight : contact.station.shoulderLeft;
+  return contact.halfWidth + shoulder;
 }
 
 // True if the edge on the contact's side (right if lateral > 0) has a wall.
@@ -90,7 +95,7 @@ export function wallOnSide(contact) {
 }
 
 // The point `lateral` right of the centre line at distance `s` along it (any s: it wraps), with the road's
-// frame there: { position, forward, right, normal, index }. For placing karts and aiming the dummy drivers.
+// frame there: { position, forward, right, normal, index }. For placing karts and aiming the CPU driver.
 export function pointAt(track, s, lateral = 0) {
   const wrapped = wrapDistance(track, s);
   const index = stationIndexAt(track, wrapped);

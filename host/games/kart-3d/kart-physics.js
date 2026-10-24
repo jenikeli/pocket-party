@@ -2,7 +2,7 @@
 // gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Each step also
 // runs the Drift button's techniques (kart-techniques.js), the boosts (kart-boosts.js) and the body's animation
 // (kart-body.js). Plain functions on
-// plain kart objects, unit tested in Node. Used by host/games/kart-3d/drive.js, stepped at the fixed 60 Hz.
+// plain kart objects, unit tested in Node. Used by host/games/kart-3d/race.js, stepped at the fixed 60 Hz.
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
 // its "up" set to the road's normal and its nose laid flat on the road. So hills, banks and walls rolled up to
@@ -12,7 +12,7 @@
 import { vec, add, scale, addScaled, cross, dot, normalize, flatten, rotate } from './vector.js';
 import { locate, surfaceAt, pointAt, SURFACES } from './track.js';
 import { hitWall } from './kart-walls.js';
-import { nextSpeed, turnAngle, driftTurnAngle } from './kart-driving.js';
+import { nextSpeed, turnAngle, driftTurnAngle, kartTopSpeed } from './kart-driving.js';
 import { freshTechniques, useDriftButton, afterMove, hopGravity } from './kart-techniques.js';
 import { freshBoosts, stepBoosts } from './kart-boosts.js';
 import { freshBody, moveBody } from './kart-body.js';
@@ -37,17 +37,18 @@ const DOWN = vec(0, -1, 0);
 const AIR_STEERING_SHARE = 0.5;
 
 // A kart standing on the road at distance `s` along it and `lateral` right of the centre line, facing along
-// the road. `weight` (about 1) decides bumps (kart-bumps.js). The kart is plain data: { position, velocity,
-// forward, up, previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded,
-// surface, antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, driftHeld,
-// lipTiming }, plus the fields of freshTechniques(), freshBoosts() and freshBody(). forward and up are unit
+// the road. `weight` (about 1) decides bumps (kart-bumps.js); `engineClassShare` is its engine class's top speed
+// as a share of 150cc's (kartTopSpeed). The kart is plain data: { position, velocity, forward, up,
+// previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded, surface,
+// antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, engineClassShare,
+// driftHeld, lipTiming }, plus the fields of freshTechniques(), freshBoosts() and freshBody(). forward and up are unit
 // vectors (the nose, and the road's normal under it); previous* are one step ago, for smooth drawing; surface
 // is a SURFACES value, or null in the air; respawnIn counts down while it falls after leaving the road, and is
 // null otherwise; slideLeft is the seconds of loose grip left after a bump or a wall hit;
 // driftHeld is the Drift button last step, and lipTiming the last trick timing (kart-techniques.js), both kept
 // when the kart is put back on the road.
-export function createKart(track, s, lateral, weight = 1) {
-  const kart = { weight, driftHeld: false, lipTiming: null };
+export function createKart(track, s, lateral, weight = 1, engineClassShare = 1) {
+  const kart = { weight, engineClassShare, driftHeld: false, lipTiming: null };
   placeOnRoad(track, kart, s, lateral);
   return kart;
 }
@@ -124,7 +125,7 @@ export function stepKart(track, kart, controls, dt) {
 function drive(kart, controls, dt) {
   const side = cross(kart.forward, kart.up);
   const offRoad = kart.surface === SURFACES.OFF_ROAD;
-  const speed = kart.stallLeft > 0 ? 0 : nextSpeed(forwardSpeed(kart), controls, offRoad, dt, kart.boost);
+  const speed = kart.stallLeft > 0 ? 0 : nextSpeed(forwardSpeed(kart), controls, offRoad, dt, kart.boost, kartTopSpeed(kart));
   const grip = kart.slideLeft > 0 ? tuning.slideGrip : tuning.grip;
   kart.slideLeft = Math.max(kart.slideLeft - dt, 0);
   const slide = dot(kart.velocity, side) * Math.exp(-grip * dt);
@@ -146,7 +147,7 @@ function fly(kart, controls, dt) {
 
 // After the move: stuck to the road, taking off, landing, or falling off.
 function settle(track, kart, contact) {
-  const surface = surfaceAt(track, contact);
+  const surface = surfaceAt(contact);
   kart.trackIndex = contact.index;
   kart.s = contact.s;
   kart.lateral = contact.lateral;

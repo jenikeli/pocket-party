@@ -45,7 +45,7 @@ export function createEffects(scene) {
   let particles = [];
 
   // `sources` lists, for each kart to draw: { pose, velocity, spark, boosting, stalled } where pose has the
-  // body's position, bodyForward and bodyUp (drive-views.js kartPose), velocity is the kart's (so particles
+  // body's position, bodyForward and bodyUp (race-views.js kartPose), velocity is the kart's (so particles
   // keep up with it), and spark is a SPARK_COLORS name or null. `dt` is the real time since the last frame.
   function update(sources, dt) {
     for (const source of sources) {

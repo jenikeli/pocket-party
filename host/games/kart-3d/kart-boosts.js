@@ -3,9 +3,9 @@
 // panels on the road. Numbers from docs/mk8dx-reference.md (level 10) where it has them, guesses otherwise;
 // each boost's speed is tuned (tuning.js).
 // Plain functions on plain kart objects, unit tested in Node. Used by kart-physics.js, kart-techniques.js,
-// kart-bumps.js, slipstream.js and drive.js.
+// kart-bumps.js, slipstream.js and race.js.
 
-import { fromMk8Acceleration } from './kart-driving.js';
+import { fromMk8Acceleration, kartTopSpeed } from './kart-driving.js';
 import { tuning } from './tuning.js';
 import { progressBetween } from './track.js';
 
@@ -24,11 +24,11 @@ const FRAME = 1 / 60;
 const MINI_TURBO_FRAMES = [30, 90, 150];
 
 // seconds: how long it lasts (a mini-turbo's and a rocket start's are worked out when they start); speedKey: the
-// tuning.js number for the speed it pushes to, as a share of top speed; mk8Acceleration: how fast it gets
+// tuning.js number for the speed it pushes to, as a share of the kart's top speed; mk8Acceleration: how fast it gets
 // there, in MK8DX's units. MK8DX's boost accelerations
 // (0.12-0.14 for mini-turbos, 0.2 for the jump boost) have no unit in the reference; they are read like its
 // acceleration limit, units per frame added each frame, and turned into ours when the boost starts, so they
-// follow the tuned top speed.
+// follow the kart's top speed.
 const BOOSTS = Object.freeze({
   [BOOST_KINDS.MINI_TURBO]: { seconds: null, speedKey: 'miniTurboSpeed', mk8Acceleration: 0.13 },
   [BOOST_KINDS.JUMP]: { seconds: 25 * FRAME, speedKey: 'jumpBoostSpeed', mk8Acceleration: 0.2 },
@@ -61,7 +61,7 @@ export function miniTurboSeconds(level) {
 export function startBoost(kart, kind, seconds = BOOSTS[kind].seconds) {
   const { speedKey, mk8Acceleration } = BOOSTS[kind];
   const speedShare = tuning[speedKey];
-  const acceleration = fromMk8Acceleration(mk8Acceleration);
+  const acceleration = fromMk8Acceleration(mk8Acceleration, kartTopSpeed(kart));
   const current = kart.boost;
   kart.boost = {
     kind,

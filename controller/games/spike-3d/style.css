@@ -1,7 +1,0 @@
-/* 3D spike's phone screen. Loaded by controller/game-screen.js before the spike starts. */
-
-#spike-note {
-  margin: auto;
-  font-size: 22px;
-  text-align: center;
-}

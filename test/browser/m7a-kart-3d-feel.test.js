@@ -73,7 +73,7 @@ describe('M7a 3D feel', () => {
     return player.page.evaluate(async (view) => {
       const controls = await import('/controller/kart/controls.js');
       controls.showView(view);
-    }, { phase: 'driving', steering, autoAccelerate, countdown: null, spark: null, start: null });
+    }, { phase: 'racing', steering: steering, autoAccelerate: autoAccelerate, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
   }
 
   before(async () => {
@@ -90,7 +90,7 @@ describe('M7a 3D feel', () => {
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    // Input lab, Kart race 2D, then the 3D test drive.
+    // Input lab, Kart race 2D, then Kart race 3D.
     for (let i = 0; i < 2; i += 1) {
       await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
       await hostPage.waitForTimeout(300);

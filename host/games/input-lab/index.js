@@ -2,7 +2,7 @@
 // their input plus its rate, round-trip time and jitter. Loaded through host/games/index.js and run by the shell
 // (host/game-session.js). It draws with its own Phaser game inside the container, driven by hand from render().
 
-import * as Phaser from '/host/vendor/phaser-3.90.0.esm.min.js';
+import { startHandDrivenPhaser } from '/host/hand-driven-phaser.js';
 import { MESSAGE_TYPES } from '/shared/protocol.js';
 import { createRateMeter } from '/shared/rate-meter.js';
 import { createRoundTripStats, createJitterMeter } from '/host/games/input-lab/latency-stats.js';
@@ -16,7 +16,7 @@ const TEXT_STYLE = { fontFamily: 'sans-serif', color: '#ffffff' };
 
 // Returns a fresh lab that follows the game module interface in plan.md.
 export function createGame() {
-  let phaserGame = null;
+  let phaser = null;
   // The Phaser scene, once Phaser has created it (a frame or two after start()).
   let scene = null;
   // From start(): the shell's live roster and what the lab may ask of the shell.
@@ -24,7 +24,6 @@ export function createGame() {
   let removePlayer = null;
   let pingPlayer = null;
   let pingTimer = null;
-  let lastRenderTime = null;
   let lastStatsTime = 0;
   // playerId -> { card, mode, inputRate, roundTrips, jitter }: what the lab measures per player. Kept apart
   // from the card, because messages can arrive before Phaser is ready to draw one.
@@ -37,16 +36,12 @@ export function createGame() {
     players = shell.players;
     removePlayer = shell.removePlayer;
     pingPlayer = shell.pingPlayer;
-    phaserGame = new Phaser.Game({
-      type: Phaser.AUTO,
+    phaser = startHandDrivenPhaser({
       parent: shell.container,
       backgroundColor: '#10131c',
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: 1920, height: 1080 },
-      scene: {
-        create() {
-          scene = this;
-          drawTitle(this);
-        },
+      create(newScene) {
+        scene = newScene;
+        drawTitle(scene);
       },
     });
     // Plain setInterval, not step(): the round trip is measured in real time, whatever the frame rate.
@@ -80,15 +75,6 @@ export function createGame() {
   function step() {}
 
   function render() {
-    // Phaser boots asynchronously (it decodes its default textures first).
-    if (!phaserGame.isRunning) {
-      return;
-    }
-    // Once booted, Phaser starts its own requestAnimationFrame loop. Putting that to sleep leaves the shell's
-    // runner as the only clock, so each frame is drawn exactly once, from here.
-    if (phaserGame.loop.running) {
-      phaserGame.loop.sleep();
-    }
     const now = performance.now();
     if (scene) {
       addMissingCards();
@@ -97,8 +83,7 @@ export function createGame() {
         refreshCards();
       }
     }
-    phaserGame.step(now, lastRenderTime === null ? 0 : now - lastRenderTime);
-    lastRenderTime = now;
+    phaser.drawFrame();
   }
 
   function onPlayerLeft(playerId) {
@@ -113,10 +98,7 @@ export function createGame() {
 
   function stop() {
     clearInterval(pingTimer);
-    // Phaser only marks the game for destruction and tears it down at the start of its next step. Its own loop
-    // is asleep, so step it once here; that also frees its WebGL context and removes the canvas.
-    phaserGame.destroy(true);
-    phaserGame.step(performance.now(), 0);
+    phaser.destroy();
   }
 
   function trackFor(playerId) {

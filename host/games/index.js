@@ -8,6 +8,7 @@ import { MAX_PLAYERS } from '/shared/protocol.js';
 // host/games/ and controller/games/.
 export const GAMES = Object.freeze([
   Object.freeze({ id: 'input-lab', title: 'Input lab', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
+  Object.freeze({ id: 'kart-2d', title: 'Kart race 2D', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
 ]);
 
 export function findGame(gameId) {

@@ -1,6 +1,6 @@
 // Clicks on the host's buttons, for the browser tests. Canvas positions are copied from
-// host/scenes/lobby-scene.js, host/lobby-player-list.js, host/settings-panel.js and
-// host/games/input-lab/player-card.js at 1:1 scale (1920x1080 viewport); update them when that layout changes on
+// host/scenes/lobby-scene.js, host/lobby-player-list.js, host/settings-panel.js,
+// host/games/input-lab/player-card.js and host/games/kart-2d/results-panel.js at 1:1 scale (1920x1080 viewport); update them when that layout changes on
 // purpose. The buttons over a running game (host/game-bar.js) are HTML, so they are clicked by id.
 
 import { waitUntil } from './browser.js';
@@ -10,6 +10,8 @@ export const CLOSE_ROOM_BUTTON = { x: 1190, y: 990 };
 export const NEXT_GAME_BUTTON = { x: 810, y: 60 };
 export const GAME_END_BUTTON = '#end-game-button';
 export const GAME_CLOSE_ROOM_BUTTON = '#close-room-button';
+export const RACE_AGAIN_BUTTON = { x: 760, y: 880 };
+export const BACK_TO_LOBBY_BUTTON = { x: 1160, y: 880 };
 
 // The Remove button on the lobby's row `index` (0-8).
 export function lobbyRemoveButton(index) {
@@ -22,14 +24,15 @@ export function cardRemoveButton(slotIndex) {
   return { x: 15 + (slotIndex % 3) * 455 + 360, y: 15 + Math.floor(slotIndex / 3) * 355 + 36 };
 }
 
-// Clicks Start until `controllerPage` shows the input lab. The button only works once the host has seen
-// everyone ready, which can take a frame or two after the last ready tap.
-export async function startGame(hostPage, controllerPage) {
+// Clicks Start until `controllerPage` shows the game's controls (`controlsSelector`, the input lab's by
+// default). The button only works once the host has seen everyone ready, which can take a frame or two after
+// the last ready tap.
+export async function startGame(hostPage, controllerPage, controlsSelector = '#pad-screen') {
   await waitUntil(
     async () => {
       await hostPage.mouse.click(START_BUTTON.x, START_BUTTON.y);
       await controllerPage.waitForTimeout(200);
-      return controllerPage.isVisible('#pad-screen');
+      return controllerPage.isVisible(controlsSelector);
     },
     { message: 'the host\'s Start button to start the game' },
   );

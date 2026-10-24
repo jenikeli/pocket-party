@@ -149,6 +149,15 @@ export const INPUT_KINDS = Object.freeze({
   TAP: 'tap',
   SWIPE: 'swipe',
   TILT: 'tilt',
+  // A held button: { kind: 'button', button, pressed }, sent once on press (pressed true) and once on release
+  // (false). button names which one (KART_BUTTONS for the kart races).
+  BUTTON: 'button',
+});
+
+// The kart races' held buttons (INPUT kind button). The phone's controls name them in data-button attributes.
+export const KART_BUTTONS = Object.freeze({
+  ACCELERATE: 'accelerate',
+  BRAKE: 'brake',
 });
 
 // Why a controller could not use the input it wanted (INPUT_MODE reason).

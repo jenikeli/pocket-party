@@ -1,0 +1,117 @@
+/* 2D race controls on the phone, held sideways. Loaded by controller/game-screen.js before the race starts. */
+
+#kart-screen {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+#kart-turn-hint {
+  display: none;
+  margin: auto;
+  font-size: 32px;
+  text-align: center;
+}
+
+#kart-controls {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  min-height: 0;
+}
+
+#kart-stick-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 24px;
+  background: #1c2130;
+}
+
+#kart-stick-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 3px solid #3a4258;
+  border-radius: 50%;
+}
+
+#kart-stick-knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #3498db;
+}
+
+.kart-hint {
+  margin: 0;
+  color: #9aa4bf;
+}
+
+#kart-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  text-align: center;
+}
+
+#kart-status p {
+  margin: 0;
+}
+
+#kart-big {
+  font-size: 64px;
+  font-weight: bold;
+}
+
+#kart-line {
+  font-size: 20px;
+  color: #9aa4bf;
+}
+
+#kart-pedals {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 12px;
+}
+
+.kart-pedal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  font-size: 26px;
+  font-weight: bold;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#kart-brake {
+  background: #8e2b22;
+}
+
+#kart-accelerate {
+  background: #1e8449;
+}
+
+.kart-pedal.held {
+  filter: brightness(1.4);
+}
+
+/* A web page cannot lock the orientation on iOS, so an upright phone gets a hint instead of the controls.
+   Last in the file, so it beats the display rules above (same specificity, later wins). */
+@media (orientation: portrait) {
+  #kart-turn-hint {
+    display: block;
+  }
+
+  #kart-controls {
+    display: none;
+  }
+}

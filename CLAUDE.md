@@ -6,7 +6,7 @@ Project context for Claude Code. Read this first every session, then read `plan.
 
 ## What this is
 
-A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
+A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it, with our own assets, never Nintendo's. `docs/mk8dx-reference.md` holds the researched numbers; they are fan-wiki data, so measured findings win where they disagree. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
 
 ## Supported devices
 

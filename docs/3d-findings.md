@@ -469,3 +469,7 @@ The test drive became the race, "Kart race 3D" (`kart-3d`), on a course of our o
 5. Let one player finish and the other wait: does the "Race ends in" countdown and the results screen work, and do the places look right?
 6. Lap times: note a good lap time at 150cc from the host's clock (it shows only the race time; divide by the laps).
 7. Choose the Test track on the setup screen: the flyover changes to it, and a race on it works as on Seaside Skyway.
+
+### Device run
+
+Done: the race on Seaside Skyway felt fine, with nothing to change.

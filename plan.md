@@ -245,17 +245,20 @@ A second kart game in the lobby's list, 1-4 players, separate from the 2D race (
 - First device run done: top speed, steering, walls, bumps, hop, lean and the rocket window (0.3-1.2 s after "2") were tuned to feel like MK8DX's 150cc and are the defaults now ("Device run (first tuning)" in `docs/3d-findings.md`). Added after it: a rocket start boosts longer the earlier it lands in its window, and every boost's speed has a slider. At 32 units/s the test track's hairpin needs braking; M7b's course is designed for the tuned numbers. Tuning stays in the game for later passes.
 - The boost speeds have sliders but keep their starting values (MK8DX's where it has them); tune them against normal speed in a later pass. Steering ended at 67 deg/s at full stick and 72.5 fully into a drift (a drift must turn tighter than steering, as in MK8DX).
 
-#### M7b: The race on a real track (built, device run pending)
+#### M7b: The race on a real track (done)
 - "Kart race 3D" (`kart-3d`, 1-4 players; one player races the CPU karts): setup (course, laps and engine class on the host, control style and ready on the phones), countdown with the rocket start, laps, places, results with Race again or Back to lobby. Rules in `host/games/kart-3d/race.js` (replacing `drive.js`; phases countdown/racing/results), views in `race-views.js`. The race ends when every player has finished or 30 s after the first player did; a finished player's kart, and every kart at the results, is driven by the CPU driver. The 3D spike is gone.
 - Engine classes are a share on each kart (`engineClassShare`); every rule reads `kartTopSpeed(kart)`, so the Top speed slider still means 150cc.
 - The track model has a road width per piece (`halfWidth`, eased) and per-side grass (`shoulderLeft`, `shoulderRight`). Two courses, listed in `courses.js` (each a track definition with an `id` and a `name`) and chosen on the host's setup screen: `seaside-skyway.js` (1213 units, 39 s a lap for the CPU driver at 150cc, designed from the course study in `docs/mk8dx-reference.md`) and the M6b `test-track.js` (whose hairpin needs braking at the tuned speed). The renderer swaps a course's road and scenery in the same WebGL context (`showTrack`). A new course is a new file plus a line in `courses.js`.
 - Host HUD per view (`view-hud.js`): name, lap, place (bottom right, lifted above the shell's game bar in that corner), "Final lap!" and "Finish!" banners; the race clock top right; the readout only with the tuning panel. Phones show the place and lap; no protocol change was needed.
+- Device run passed: the race on Seaside Skyway felt fine, with nothing to change.
 - The CPU karts still use M6b's lane-following dummy driver (no drifting, no boosts); M7d replaces it. The quiet wide straight after the hairpin is where item boxes will go.
 
 #### M7c: The look
 - [ ] Kart and driver models that read as MK8DX-like toys (our own, procedural or CC0, never Nintendo's), and the track dressed with scenery
 - [ ] The look M6a showed the iPad can afford: glossy lit karts, shadows, bloom, sky, particles; every shader compiled while loading
 - [ ] A quality setting that drops costs on a slow host (bloom first, then resolution)
+
+Scope: the track design (scenery, trackside dressing, the road's look) is done only on the real race courses, Seaside Skyway for now. The Test track is only for testing and keeps its plain look. The kart models and the renderer's effects (gloss, shadows, bloom) are not per course, so they show on the Test track too.
 
 #### M7d: CPU drivers
 - [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls

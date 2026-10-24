@@ -205,10 +205,12 @@ Notes (decided before M6): split screen, one view per player, so the 3D race tak
 
 Notes (split decided before M6): the MK8DX target added the driving and technique spikes to the original performance spike, and the three do not fit one chat. M6a is throwaway, like `spike.js`. M6b and M6c are not: they write the track maths and kart rules to project standards (DOM-free, unit tested) in `host/games/kart-3d/`, because tuning the feel is the expensive part and M7 keeps it.
 
-#### Reference footage (I do this myself, optional; not done)
-MK8DX's distance unit is unknown, so every distance in our race is a guess (listed in `docs/3d-findings.md`). Measuring speeds from video turned out to be impractical, so M7a tunes by feel instead, with live sliders on the host while I play MK8DX side by side. Two numbers are still easy to take from a single paused screenshot (my own Switch, or a 150cc time-trial video), and they help M7a pick the world's scale. Results go in `docs/mk8dx-reference.md`.
+#### Reference footage (Claude measures, I review)
+MK8DX's distance unit is unknown, so every distance in our race is a guess (listed in `docs/3d-findings.md`). Speeds are tuned by feel in M7a, with live sliders on the host while I play MK8DX side by side. Two numbers come from paused screenshots of the real game, which Claude finds, measures (by eye and with a small script on the pixels) and shows me to review. Only the measurements are kept, never the images. Results go in `docs/mk8dx-reference.md`.
 - Road width, in kart widths: on a straight, pause with karts on the road, and count how many karts would fit side by side across it at the same distance from the camera (or measure both in pixels on the screenshot)
 - How much of the screen's width the player's kart takes up, driving straight with no boost
+
+First reading (one screenshot, in `docs/mk8dx-reference.md`): the road is about 9 kart widths (ours 9.6) and the kart takes 14.5% of the screen's width (ours about 12%). That is enough as a sanity check: our scale is close. Courses vary their width, and we design our own (M7b), so no more measuring is planned.
 
 ### M6a: 3D performance spike (throwaway) (done)
 - Three.js r0.186.1 is vendored unminified in `host/vendor/three-0.186.1/` (12 add-ons under `addons/`), with an import map in `host/index.html` for `three` and `three/addons/`.
@@ -225,11 +227,11 @@ MK8DX's distance unit is unknown, so every distance in our race is a guess (list
 - Shared phone controls: `controller/kart/` (`controls.js` plus the setup screen, steering and markup); each race's `controller/games/<id>/index.js` passes its own `describeStatus(view)`, and its `style.css` imports `controller/kart/style.css`. Host side: `host/kart/kart-controls.js` and `host/kart/setup.js`.
 - Headless Chromium draws the test drive at about 2 fps, too slow for Playwright's own clicks on End game's two-click confirm, so the M6b browser test clicks host HTML buttons through the DOM.
 
-### M6c: Techniques spike (drift, boosts, phone buttons) (built, device run pending)
+### M6c: Techniques spike (drift, boosts, phone buttons) (done)
 - The test drive has MK8DX's techniques, as DOM-free rules in `host/games/kart-3d/`: hop and drift, the mini-turbo charge counter and its three levels (`kart-techniques.js`), every boost, the stall and dash panels (`kart-boosts.js`), `slipstream.js`, the spin boost in `kart-bumps.js`, and the countdown with the rocket start (`rocket-start.js`). Walls moved to `kart-walls.js`. Numbers and how each works are in "M6c: techniques spike" in `docs/3d-findings.md`; the windows for the rocket start and the trick are guesses until the device run sets them.
 - Every drive starts with a countdown; the host's Restart button starts another. The readout logs, per player, when Go arrived after "2", when Drift came at the lip, and the phone's round trip (the host pings each phone every 2 s), so the device run can set the windows.
 - Phone: `KART_BUTTONS.DRIFT`; the shared `controller/kart/controls.js` takes `{ describeStatus, drift }`. The 3D race's buttons are a grid: Drift above Go, an empty Item place left of Drift, Brake below it; with auto-accelerate Drift takes both rows. A held Drift also accelerates (one thumb cannot hold both). The view carries `countdown`, `spark` (the Drift button's colour) and `start`.
-- Device run so far: rocket starts arrived +0.13 to +0.57 s after "2" with round trips of 11-113 ms, all inside the window (left at 0-0.6 s); with auto-accelerate a rocket start works by holding Drift; the spark colour on Drift, the trick and the spin boost work. The feel did not match MK8DX (steering, walls, bumps, pose transitions, hop): those notes are M7a's starting list. Not reported yet: the hairpin to orange and purple, dash panels, slipstream.
+- Device run so far: rocket starts arrived +0.13 to +0.57 s after "2" with round trips of 11-113 ms, all inside the window (left at 0-0.6 s); with auto-accelerate a rocket start works by holding Drift; the spark colour on Drift, the trick and the spin boost work. The hairpin to orange and purple, dash panels and slipstream work too. The feel did not match MK8DX (steering, walls, bumps, pose transitions, a hop too low): those notes are M7a's starting list.
 - Drawing: drift sparks, boost flames and stall smoke (`effects.js`, one point cloud), dash panels on the road, the body leaning into drifts, rolling in tricks and spinning in spin boosts (`kartPose` returns `bodyForward`/`bodyUp` apart from the camera's `forward`/`up`), and the camera pulling back while boosting.
 
 ### M7: 3D kart race (in four parts)
@@ -237,22 +239,23 @@ A second kart game in the lobby's list, 2-4 players, separate from the 2D race (
 
 #### M7a: Feel pass (on the test track)
 Make driving feel like MK8DX, judged by me side by side with the real game. The device run's notes are in "Feel against MK8DX" in `docs/3d-findings.md`.
-- [ ] A tuning panel on the host (developer only, like the readout): live sliders for the numbers below, a way to copy the chosen values out, so I can tune on the iPad while playing MK8DX next to it. The values found are then written into the code and the panel can stay as a dev tool
+- [ ] A tuning panel on the host (developer only, like the readout): a live slider for every number I am asked to tune (steering, top speed and scale, wall penalty, bounces, hop height, animation timings, the rocket start and trick windows, camera), each showing its value, and a "Copy values" button that puts all of them on the clipboard as text I paste back to Claude, who writes them into the code. Rule for every later milestone too: anything I tune gets a slider and goes into that copy. The clipboard API needs a secure context and a tap, which the HTTPS host has; if it fails, the values show in a text box to select by hand
 - [ ] Steering: a much tighter turn at full stick or tilt, but the same sensitivity (small movements must not turn harder than now), for example a curve from stick to turn rate instead of a straight line. Check the drift arcs against it
 - [ ] Walls: hitting one costs more speed, so riding the wall round a sharp turn is never faster than slowing down for it
 - [ ] Bumps: karts bounce off each other and off walls visibly, damped (partly elastic, not perfectly), instead of the dead push they give now
 - [ ] Smooth body animation: easing into and out of the drift lean, the hop, and the trick's spin starting from a straight kart, as MK8DX animates them (no snapping between poses)
-- [ ] Hop height checked against MK8DX (the device run found it differs)
-- [ ] World scale and speed: top speed, road width and camera checked with the panel (and the footage numbers, if I took them); the camera felt fine on the device run, so keep its look if the scale changes
+- [ ] Hop height: MK8DX's hop is higher than ours; a slider for it
+- [ ] World scale and speed: Claude measures road width and the kart's share of the screen from MK8DX screenshots (see "Reference footage"), I review the numbers, and top speed is tuned with the panel; the camera felt fine on the device run, so keep its look if the scale changes
 - [ ] Phone vibration on every button press (Android; iOS Safari has no `navigator.vibrate`)
-- [ ] Phone layout for tilt: Drift on the left (the left thumb is free when tilting), Go on the right and the Item place above Go. Decide with me where Brake goes, and keep the M6c layout for the stick, whose left thumb steers
+- [ ] Phone layout for tilt: Drift on the left (the left thumb is free when tilting); on the right, Brake left of Go and the Item place above Go. Keep the M6c layout for the stick, whose left thumb steers
 - [ ] Unit tests for the changed rules; the M6b and M6c tests keep passing or change on purpose
 
 **Done when:** driving, drifting and bumping on the test track feel close to MK8DX to me, and the tuned numbers are in `docs/3d-findings.md`.
 
 #### M7b: The race on a real track
 - [ ] Host runs the race: countdown, laps, places, results, Race again or Back to lobby, engine classes (50, 100, 150, 200cc), rules in DOM-free modules stepped at the fixed 60 Hz, split-screen rendering in the container
-- [ ] A full track designed for the tuned scale, using the features M6 proved (hill, jump, hairpin, banked curve, off-road, anti-gravity, dash panels)
+- [ ] Course study first: Claude studies a few real MK8DX courses (wiki maps, screenshots, footage) for how they play, and writes the patterns into `docs/mk8dx-reference.md` for me to review: lap time at 150cc, how long the straights are, how many corners of each kind (sweepers that hold a purple drift, tight corners, chicanes), how the road's width changes, where the jumps, dash panels, anti-gravity sections, off-road shortcuts and item rows sit, and how the course paces its quiet and busy parts. Patterns and proportions only: no layout is traced or copied
+- [ ] A full course of our own, designed from those patterns for the tuned scale, using the features M6 proved (hill, jump, hairpin, banked curve, off-road, anti-gravity, dash panels)
 - [ ] Only controller-relevant information goes back to phones: lap, place, and one-shot cues such as vibration on a hit (a new message type for cues, added then)
 - [ ] Renamed "Kart race 3D"; the 3D spike (`spike-3d`) is removed
 

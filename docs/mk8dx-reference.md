@@ -92,6 +92,15 @@ Fire hopping (hopping repeatedly during a boost to stretch it) worked on the Wii
 - Odds depend on place and distance from the leader. Leaders get defensive items (bananas, green shells), the middle of the pack attacking ones (triple red shells, fire flower), the back catch-up items (star, bullet bill). Per-place tables: [item probability distributions](https://www.mariowiki.com/Mario_Kart_8_item_probability_distributions) (for the Wii U version; check how MK8DX differs before using them).
 - Our items get our own names and art.
 
+## Measured from a screenshot (first reading, to be reviewed)
+
+Measured by Claude on 2026-10-24 from one in-race screenshot of Mario Kart Stadium's starting line (1280x720, the kart seen from behind by the normal chase camera, from the Super Mario Wiki's course page). Only these numbers are kept, not the image. The edges and the kart were read off zoomed crops with a pixel grid, and widths compared on the row where the rear wheels touch the road (a flat road's width in pixels shrinks evenly toward the vanishing point, so a road and a kart on the same row compare directly).
+
+- **Kart's share of the screen width:** 186 of 1280 px, **14.5%**, measured across the rear tyres. Our camera (6.5 behind, 2.4 above, 65 degrees vertical, 16:9) gives about 12% by calculation, so ours sits a little further back; the camera felt fine on the M6c device run.
+- **Road width:** **about 9 kart widths** from the yellow edge line on the left to a white dashed line on the right (reading A). Past the dashed line the asphalt continues to a yellow line by the pit wall; counting that too gives about 14 (reading B). Which one is the racing road is uncertain from one picture; reading A looks like the racing surface. Ours is 16 units, 9.6 kart widths at the tyres (1.66 wide), so it matches reading A.
+- **Limits:** one screenshot, of a start straight (often wider than the rest of a course), and a JPEG. It may be from the Wii U version, whose camera and proportions are the same as MK8DX's.
+- **What it is for:** a sanity check of our world's scale (road and camera against the kart), not a width to copy. Real courses vary their width all the way round, and we design our own courses (we never copy Nintendo's layouts). What makes a course feel like MK8DX is how its widths and turns compare with the kart's speed and turning, which M7a tunes by feel.
+
 ## Look and feel
 
 From watching the game, not from data. M6b checks the camera against footage.

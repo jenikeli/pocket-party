@@ -328,7 +328,7 @@ Measured on 2026-10-24, over the phone's hotspot, read off the host's readout. N
 - **Layout:** tilt was the easiest steering. Suggested instead of the built layout: Drift on the left (the left thumb is free when tilting), Go on the right, and the Item place above Go. Not built: with the stick the left thumb is on the stick, and where Brake goes is open.
 - **Spin boost works:** bumping another kart on the blue section boosts. Driving into the wall itself does nothing, as built (MK8DX also has glowing spin posts; we have none).
 - **The trick works:** Drift pressed going off the ramp boosts on landing. Its lip timings were not noted, so the trick window was not changed.
-- **Not reported yet:** the hairpin to orange and purple, dash panels and slipstream.
+- **Also work:** drifting the hairpin to an orange and a purple boost, dash panels and slipstream.
 
 #### Feel against MK8DX (second device run)
 
@@ -338,10 +338,12 @@ These go to the feel pass (M7a in `plan.md`):
 - **Walls are the fast line.** Riding the wall round a sharp turn is faster than slowing down for it, partly because the steering is too weak. Hitting a wall should cost more speed.
 - **Bumps feel dead,** like an inelastic collision. In MK8DX karts bounce off each other and off walls; wanted: a visible bounce, damped (not perfectly elastic).
 - **The body's changes of pose are not smooth:** leaning into a drift, the hop, and going from driving straight into the trick's spin all snap where MK8DX animates them smoothly.
-- **The hop's height differs from MK8DX's** (which way to be confirmed).
+- **MK8DX's hop is higher than ours.**
 - **Camera:** feels fine. **Boost effects:** fine.
 - **Sound:** there is none yet (planned for M8). **Look:** does not look like the real game yet (M7c).
 - **Vibration:** wanted on every button press for now (Android only; iOS Safari has no `navigator.vibrate`).
+- **Layout for tilt:** Drift on the left; on the right, Brake left of Go and the Item place above Go. The stick keeps the M6c layout.
+- **Tuning:** every number to tune gets a slider on the host and a "Copy values" button, so the values come back to the code as pasted text.
 
 ### Device run procedure
 

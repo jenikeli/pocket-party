@@ -55,10 +55,11 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 | Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7b |
 | Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles; a quality setting for slow hosts | cost measured in M6a, first pass in M7c, made close to MK8DX in M7d |
 | CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7e |
-| Items and coins | item boxes, two held items, odds by place, coins up to 10 | after M7 |
+| Items and coins | item boxes, two held items, odds by place, coins up to 10 | M8 |
+| Glide ramps and spin-boost posts | gliding off blue ramps; posts in anti-gravity sections that give a spin boost | M9 |
 | Assists | auto-accelerate and tilt (exist), Smart Steering | Smart Steering later |
-| More course types and modes | gliding, underwater, Grand Prix (4 races with points) | later |
-| Sound | engine, drift, spark levels, boosts, music | M8 |
+| More course types and modes | underwater, Grand Prix (4 races with points) | later |
+| Sound | engine, drift, spark levels, boosts, music | M10 |
 
 ## Kart controller (both races)
 
@@ -261,24 +262,54 @@ A second kart game in the lobby's list, 1-4 players, separate from the 2D race (
 - Device run on the iPad (the main host; the laptop was not tested): the karts look okay, the frame rate is good, no pause was noticed, and the Look setting comes back. Feedback for M7d: the orange dash panel is too bright with bloom, lamps lit in daylight look odd, and the whole look is too plain ("like Roblox, still a prototype") next to MK8DX.
 - Browser tests draw WebGL with Mesa's llvmpipe (`--use-angle=gl-egl --ignore-gpu-blocklist` in `test/helpers/browser.js`), about 0.25 s a frame for the dressed course; with SwiftShader it was 1.2-1.9 s and the suite took 18.5 minutes (now 7.8). The 3D behaviour tests start the host at Medium (`test/helpers/kart-3d-host.js`); the M7c test covers High and Low. Which browser tests to run is now picked by area (Testing in `CLAUDE.md`). Numbers: "M7c: the look" in `docs/3d-findings.md`.
 
-#### M7d: The look, close to MK8DX
-Asked for after the M7c device run: M7c's look reads as a prototype, and the aim is MK8DX's polish and detail. Copying MK8DX's designs is allowed (see "Copy MK8DX's designs freely" above); the whole map need not be copied, but its ideas are borrowed. Built from small parts up: first the building blocks, then the course made from them. Probably too big for one chat; the chat proposes how to split it before building.
-- [ ] Research first: Claude studies MK8DX (screenshots, footage, wiki pages) part by part and writes what it finds into `docs/mk8dx-reference.md` for me to review: road surfaces and their textures (asphalt, curbs, edge lines, the start line), barriers and fences, lamps and lights (how they look, and whether they are lit by day), signs and arrow boards, banners and flags, dash panels and anti-gravity panels, the start gate, scenery on a seaside or sky course, the sky and lighting, and the karts and drivers (the Standard Kart and its parts, how a character sits in it)
-- [ ] A kit of building blocks in MK8DX's style, each its own small module: road and curb textures, barriers, lamps, signs, banners, dash panels, anti-gravity panels, the start gate, props
-- [ ] Seaside Skyway rebuilt from the kit, borrowing ideas from MK8DX's courses
-- [ ] Karts and drivers modelled on Mario Kart's (a kart like the Standard Kart, drivers like its characters)
-- [ ] From the M7c device run: the orange dash panel is too bright with bloom; lamps should not shine in daylight
+#### M7d: The look, close to MK8DX (in four parts)
+Asked for after the M7c device run: M7c's look reads as a prototype, and the aim is MK8DX's polish and detail. Copying MK8DX's designs is allowed (see "Copy MK8DX's designs freely" above); the whole map need not be copied, but its ideas are borrowed. Built from small parts up: first the building blocks, then the course made from them. Split into four parts at the start of M7d, each in its own chat with its own device run. Textures matter as much as shapes (decided at the split): most of MK8DX's detail is in its surfaces, so every kit piece gets its own drawn texture, not a flat colour. The kit also adds interesting pieces that the course does not have yet, not only better versions of M7c's.
+
+##### M7d1: Research and the device-run fixes (done)
+- "The look, part by part" in `docs/mk8dx-reference.md` (reviewed): how MK8DX's road, curbs, start line, panels, barriers, lamps, signs, start gates, seaside and sky scenery, sky and lighting, and the Standard Kart look, with sizes against the kart, and a recommended order of new kit pieces for M7d2 (the textured road first, then start lights, a themed gate, sponsor boards, LED-style panels). I approved the whole list of 14 for building in M7d2 and M7d3. Its main finding: MK8DX's surfaces are all textured materials, and the road's edges are never empty.
+- Dash panels have their own mesh and a live "Dash panel glow" slider (Look group); lamps on Seaside Skyway are glass lit by the sun, since MK8DX lights lamps only at dusk, night or indoors.
+- Device run on the iPad: lamps confirmed; tuned defaults now Dash panel glow 1.6, bloom strength 0.2 (was 0.4), bloom radius 0.3 (was 0.2).
+- Decided at the review: 12 kart-and-driver designs, one for each racer (M7d4); items get their own milestone (M8), then glide ramps and spin-boost posts (M9), since each needs new rules.
+- For M7d2: the road texture needs `anisotropy` (it is not set) and a large-scale variation to hide its repeat.
+
+##### M7d2: The kit of building blocks
+- [ ] Each piece its own small module in `host/games/kart-3d/kit/`, with its own procedural texture, from the list "New pieces for the kit" in `docs/mk8dx-reference.md`, in its order: the textured road (asphalt, worn paint, edge lines, grid brackets, curbs, start line), start lights that count down with the race, a themed start gate with a MARIOKART sign, sponsor boards, LED-style dash and anti-gravity panels (and a full-width anti-gravity panel where a section starts), a ramp plate, block curbs, bunting, barriers and fences, small props, street lamps (off by day), a grandstand with a crowd. The seaside and sky pieces (palms, huts, lighthouse, shallows, Koopa shell, floating islands, trusses, an airship) can wait for M7d3, where they are used
+- [ ] The Test track is dressed with the kit, so the pieces can be reviewed on the iPad before a course depends on them (Seaside Skyway keeps its M7c look until M7d3)
+- If it does not fit one chat, it splits into the road surfaces and panels, then the trackside pieces
+
+##### M7d3: Seaside Skyway rebuilt from the kit
+- [ ] The same layout and driving line (no rule changes), dressed from the kit and borrowing ideas from MK8DX's seaside and sky courses: sky, lighting and sun, islands, sea and backdrop
+
+##### M7d4: Karts and drivers
+- [ ] 12 kart-and-driver designs, one for each of the 12 racers, so every kart in a race looks different: karts like the Standard Kart in each character's three colours, and drivers like Mario Kart's characters, still procedural: clean toy versions, not Nintendo-quality models. If that falls short, hand-made glTF models are a bigger decision to ask about then
+- [ ] In anti-gravity sections the wheels turn flat and their rims glow cyan, as in MK8DX
+- Decide in M7d4 how a player's design is chosen (for example by roster slot, CPU karts taking the rest); picking a character on the phone is "character and kart selection" in "Later ideas"
+- Probably too big for one chat with 12 designs: the chat proposes a split (for example the kart and 6 drivers, then the other 6)
 
 #### M7e: CPU drivers
 - [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
 
-### M8: Polish
+### M8: Items and coins
+The part of Mario Kart I want most after the race itself. Probably several chats; the first proposes how to split it.
+- [ ] Item boxes in rows across the road (the quiet straight after Seaside Skyway's hairpin was kept for them), breaking and coming back
+- [ ] Items modelled on MK8DX's (banana, green and red shells, mushrooms, and the rest), two held at once, odds by place (see "Items" in `docs/mk8dx-reference.md`)
+- [ ] The phone's Item button, in the place kept free for it since M6c
+- [ ] Coins up to 10, each adding a little top speed
+- [ ] CPU drivers (M7e) pick up and use items
+
+### M9: Glide ramps and spin-boost posts
+Both need new rules (gliding in the air; a post that gives a spin boost when hit), so each is designed in that chat before building.
+- [ ] Glide ramps: a blue ramp launches the kart into a glide with its glider, steered in the air, as in MK8DX
+- [ ] Spin-boost posts in anti-gravity sections
+- [ ] Added to Seaside Skyway or a new course
+
+### M10: Polish
 - [ ] Sound effects and music (MP3/M4A, small)
 - [ ] Host "Tap to start" screen (unlocks audio, requests fullscreen where supported)
 - [ ] Loading screen with a progress bar (lazy loading and the ready check already exist from M5a)
 - [ ] Revisit what happens when a player drops mid-race, using the device runs of M5b, M5c and M7 (M5b's choice: the kart keeps its place with neutral input)
 
-### M9: Deploy to Termux
+### M11: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin
 - [ ] Check the hotspot does not auto-switch off when idle
 - [ ] HTTPS working on the phone using the approach chosen in M2

@@ -103,13 +103,17 @@ export const TUNABLES = Object.freeze([
   { key: 'boostWiden', group: 'Camera', label: 'Boost widen', unit: 'deg', min: 0, max: 20, step: 1, value: 8 },
 
   // The look (M7c), drawn by renderer.js. Bloom makes whatever is brighter than the threshold glow (sparks,
-  // flames, glowing panels, the sun's shine on paint and sea); its strength and radius are M6a's starting
-  // values. Bloom only shows on the High quality setting (quality.js). Exposure brightens or darkens the whole
+  // flames, glowing panels, the sun's shine on paint and sea); its strength and radius were M6a's starting
+  // values (0.4 and 0.2) until the M7d1 device run on the iPad set a softer, wider glow. Bloom only shows on the High quality setting (quality.js). Exposure brightens or darkens the whole
   // picture before tone mapping.
-  { key: 'bloomStrength', group: 'Look', label: 'Bloom strength', unit: '', min: 0, max: 2, step: 0.05, value: 0.4 },
-  { key: 'bloomRadius', group: 'Look', label: 'Bloom radius', unit: '', min: 0, max: 1, step: 0.05, value: 0.2 },
+  { key: 'bloomStrength', group: 'Look', label: 'Bloom strength', unit: '', min: 0, max: 2, step: 0.05, value: 0.2 },
+  { key: 'bloomRadius', group: 'Look', label: 'Bloom radius', unit: '', min: 0, max: 1, step: 0.05, value: 0.3 },
   { key: 'bloomThreshold', group: 'Look', label: 'Bloom threshold', unit: '', min: 0.5, max: 3, step: 0.05, value: 1 },
   { key: 'exposure', group: 'Look', label: 'Exposure', unit: '', min: 0.5, max: 2, step: 0.05, value: 1 },
+  // How bright the dash panels are drawn (M7d1). Above about 1.3 their yellow stripes pass the bloom threshold;
+  // at M7c's 2.5 they bloomed too bright on the iPad, and the M7d1 device run chose 1.6 (a little glow under
+  // the softer bloom above).
+  { key: 'dashPanelGlow', group: 'Look', label: 'Dash panel glow', unit: '', min: 0.5, max: 3, step: 0.05, value: 1.6 },
 ]);
 
 // The live values, by key. The rules read from here every step, so a slider changes the race at once.

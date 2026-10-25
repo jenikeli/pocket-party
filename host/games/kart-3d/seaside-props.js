@@ -65,7 +65,7 @@ export function buildCloud() {
 }
 
 // The lighthouse's tower, `height` tall: red and white bands, a dark gallery and a glass lamp room under a red
-// roof. Its lamp is drawn apart (it glows); it sits at lighthouseLampHeight(height).
+// roof. Its lamp is drawn apart (seaside-scenery.js); it sits at lighthouseLampHeight(height).
 export function buildLighthouse(height) {
   const bands = 6;
   const towerHeight = height - 5;

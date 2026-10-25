@@ -518,3 +518,22 @@ All in headless Chromium on the dev box (software WebGL, SwiftShader), at 960x54
 ### Device run
 
 On the iPad (the main host): the karts look okay, the frame rate is good, no pause was noticed at the first race frame or when switching to High, and the Look setting comes back after End game. The laptop was not tested. Feedback for M7d: the orange dash panel is too bright with bloom, and lamps lit in daylight look odd.
+
+## M7d1: research and the device-run fixes
+
+### What was built
+
+- **Research:** "The look, part by part" in `docs/mk8dx-reference.md`, from 22 screenshots and artworks (Claude looked at each, kept only notes), with a recommended list of new kit pieces for M7d2. For review before M7d2 starts.
+- **Dash panels** have their own mesh (`dashPanels` from `buildTrackMesh`), and its unlit material's colour multiplies the stripes' vertex colours, so their brightness is a live slider: "Dash panel glow" in the tuning panel's Look group (`dashPanelGlow`, default 1.2, was a fixed 2.5 shared with the anti-gravity lines). At 1.2 the yellow stripes' brightness (luminance about 0.91) stays under the bloom threshold of 1, so they no longer bloom; from about 1.3 they start to. `renderer.js` sets it every frame in the world's `update`. The anti-gravity lines keep 2.5.
+- **Lamps are off by day:** the flag poles' and the start gate's lamps (`trackside.js`) and the lighthouse lamp (`seaside-scenery.js`) are warm glass lit by the sun (`MeshStandardMaterial`, roughness 0.15), no longer unlit and brighter than white. MK8DX's day courses do the same (see the study).
+
+### Device run procedure
+
+1. Host on the iPad, the 3D race on Seaside Skyway, Look on High.
+2. Drive over both dash panels: do they read as bright orange and yellow without blooming into a blur? If not, open Tuning, move "Dash panel glow" in the Look group, Copy values and send them.
+3. Look at the start gate's lamps, the flag poles' lamps and the lighthouse: no glow, just glass in the sun?
+4. Read "The look, part by part" in `docs/mk8dx-reference.md` and say what to change, especially the list of new kit pieces and its order.
+
+### Device run
+
+On the iPad: the lamps no longer glow, as wanted. Tuned with the sliders and made the defaults: Dash panel glow 1.6 (from 1.2, so the yellow stripes glow a little), bloom strength 0.2 (from 0.4) and bloom radius 0.3 (from 0.2): a softer, wider glow on everything that blooms (sparks, flames, panels, the sun). At the review the user approved the list of new kit pieces and asked for 12 kart-and-driver designs, one for each racer.

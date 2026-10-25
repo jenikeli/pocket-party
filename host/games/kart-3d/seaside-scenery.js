@@ -1,8 +1,8 @@
 // Seaside Skyway's scenery (M7c), added to the plain world of scenery.js: sandy islands with palms and rocks under
-// and around the road, a lighthouse with a glowing lamp, hills on the horizon, sailboats bobbing, clouds above
-// and below the road, ripples on the sea that catch the sun, and the trackside dressing (trackside.js). Placed
-// from seaside-layout.js; random scatter (palms, rocks, clouds) comes from a fixed seed, so every host draws the
-// same course. Each set of one prop is one instanced mesh: a draw call per set per view. Used by scenery.js.
+// and around the road, a lighthouse, hills on the horizon, sailboats bobbing, clouds above and below the road,
+// ripples on the sea that catch the sun, and the trackside dressing (trackside.js). Placed from
+// seaside-layout.js; random scatter (palms, rocks, clouds) comes from a fixed seed, so every host draws the same
+// course. Each set of one prop is one instanced mesh: a draw call per set per view. Used by scenery.js.
 
 import * as THREE from 'three';
 import { ISLANDS, LIGHTHOUSE, BOATS, islandHeightAt } from './seaside-layout.js';
@@ -15,8 +15,9 @@ import { buildTrackside } from './trackside.js';
 const COLORS = { sand: 0xeedc9a, grass: 0x5aa83a, hillGrass: 0x4d8d3c, hillRock: 0x7c8070 };
 // Islands taller than this are the horizon's hills, with rock on their upper half.
 const HILL_HEIGHT = 20;
-// The lamp glows far brighter than white.
-const LAMP_COLOR = new THREE.Color(1, 0.85, 0.45).multiplyScalar(5);
+// The lighthouse's lamp is switched off by day: warm glass lit by the sun (a lit lamp looked odd in daylight on
+// the M7c device run).
+const LAMP_GLASS = { color: 0xffe9b8, roughness: 0.15 };
 // The sea's ripples repeat every this many units and drift this many repeats a second.
 const RIPPLE_TILE = 36;
 const RIPPLE_DRIFT = 0.012;
@@ -36,7 +37,7 @@ export function buildSeasideScenery({ world, track, sea, keep }) {
     ground,
   );
   land.receiveShadow = true;
-  const lamp = new THREE.Mesh(keep(new THREE.SphereGeometry(1.3, 12, 8)), keep(new THREE.MeshBasicMaterial({ color: LAMP_COLOR })));
+  const lamp = new THREE.Mesh(keep(new THREE.SphereGeometry(1.3, 12, 8)), keep(new THREE.MeshStandardMaterial(LAMP_GLASS)));
   lamp.position.set(lighthouseIsland.x, lighthouseBase + lighthouseLampHeight(LIGHTHOUSE.height), lighthouseIsland.z);
   const boats = createBoats(ground, keep, seaLevel);
   world.add(land, lamp, createPalms(ground, keep, seaLevel, random), createRocks(ground, keep, seaLevel, random), boats.mesh);

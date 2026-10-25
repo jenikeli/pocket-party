@@ -2,7 +2,8 @@
 // kept (quality.js), the gaps between split-screen views (view-layout.js), the seeded random source (random.js),
 // where the trackside dressing stands (trackside-spots.js), where Seaside Skyway's scenery stands
 // (seaside-layout.js), the front wheels following the steering (kart-body.js), the course's scenery passed
-// through the track (track-builder.js), and the look's sliders (tuning.js).
+// through the track (track-builder.js), and the look's sliders (tuning.js), the dash panels' glow (M7d1)
+// included.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -209,7 +210,7 @@ test('a course\'s scenery is passed through to its track: Seaside Skyway is dres
   assert.equal(buildTrack(TEST_TRACK).scenery, null);
 });
 
-test('the look has sliders: bloom strength, radius and threshold, and exposure', () => {
+test('the look has sliders: bloom strength, radius and threshold, exposure, and the dash panels\' glow', () => {
   const look = TUNABLES.filter((tunable) => tunable.group === 'Look').map((tunable) => [tunable.key, tunable.value]);
-  assert.deepEqual(look, [['bloomStrength', 0.4], ['bloomRadius', 0.2], ['bloomThreshold', 1], ['exposure', 1]]);
+  assert.deepEqual(look, [['bloomStrength', 0.2], ['bloomRadius', 0.3], ['bloomThreshold', 1], ['exposure', 1], ['dashPanelGlow', 1.6]]);
 });

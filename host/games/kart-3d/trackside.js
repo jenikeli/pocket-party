@@ -1,7 +1,7 @@
 // Draws a dressed course's trackside dressing (M7c) at the spots trackside-spots.js picks: red arrow boards on the
-// walls round corners, flag poles with glowing lamps along the straights, and the start gate over the line,
-// a blue arch with a checkered banner and a row of lamps. The lamps are unlit and brighter than white, so they
-// glow on the High quality setting. Used by host/games/kart-3d/seaside-scenery.js.
+// walls round corners, flag poles with lamps along the straights, and the start gate over the line, a blue arch
+// with a checkered banner and a row of lamps. The lamps are switched off (glass lit by the sun): lit lamps in
+// daylight looked odd on the M7c device run. Used by host/games/kart-3d/seaside-scenery.js.
 
 import * as THREE from 'three';
 import { boardSpots, poleSpots, startGateIndex } from './trackside-spots.js';
@@ -13,13 +13,13 @@ const WALL_HEIGHT = 1.2;
 const POLE_HEIGHT = 5;
 const GATE_HEIGHT = 8;
 const FLAG_HEXES = [0xe8402f, 0xffd23f, 0x2f7fe8, 0x3fbf4f, 0xff8c1a, 0xf4f4f4];
-const LAMP_COLOR = new THREE.Color(1, 0.92, 0.7).multiplyScalar(1.8);
+const LAMP_GLASS = { color: 0xfff4dc, roughness: 0.15 };
 
 // Adds everything to `world`; `keep(thing)` registers what must be disposed with it.
 export function buildTrackside(world, track, keep) {
   const lampSpots = [];
   world.add(...createBoards(track, keep), ...createPoles(track, keep, lampSpots), ...createGate(track, keep, lampSpots));
-  const lamps = new THREE.InstancedMesh(keep(new THREE.SphereGeometry(0.25, 10, 8)), keep(new THREE.MeshBasicMaterial({ color: LAMP_COLOR })), lampSpots.length);
+  const lamps = new THREE.InstancedMesh(keep(new THREE.SphereGeometry(0.25, 10, 8)), keep(new THREE.MeshStandardMaterial(LAMP_GLASS)), lampSpots.length);
   lampSpots.forEach((matrix, index) => lamps.setMatrixAt(index, matrix));
   world.add(lamps);
 }

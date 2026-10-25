@@ -175,13 +175,18 @@ export function createRenderer(container, track, qualityLevel) {
 function buildWorld(scene, track) {
   const scenery = buildScenery(scene, track);
   const trackMesh = buildTrackMesh(track);
-  scene.add(trackMesh.road, trackMesh.walls, trackMesh.glow);
+  const meshes = [trackMesh.road, trackMesh.walls, trackMesh.glow, trackMesh.dashPanels];
+  scene.add(...meshes);
+  function update(dt) {
+    trackMesh.dashPanels.material.color.setScalar(tuning.dashPanelGlow);
+    scenery.update(dt);
+  }
   function dispose() {
-    scene.remove(trackMesh.road, trackMesh.walls, trackMesh.glow);
+    scene.remove(...meshes);
     trackMesh.dispose();
     scenery.dispose();
   }
-  return { ...extentOf(track), update: scenery.update, dispose };
+  return { ...extentOf(track), update, dispose };
 }
 
 // The middle of the course seen from above, and how far it reaches from there (half its longer side).

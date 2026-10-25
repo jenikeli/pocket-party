@@ -90,7 +90,7 @@ Fire hopping (hopping repeatedly during a boost to stretch it) worked on the Wii
 
 - Item boxes sit in rows across the road. MK8DX lets a racer hold two items, and double item boxes give two at once ([MK8DX](https://www.mariowiki.com/Mario_Kart_8_Deluxe)).
 - Odds depend on place and distance from the leader. Leaders get defensive items (bananas, green shells), the middle of the pack attacking ones (triple red shells, fire flower), the back catch-up items (star, bullet bill). Per-place tables: [item probability distributions](https://www.mariowiki.com/Mario_Kart_8_item_probability_distributions) (for the Wii U version; check how MK8DX differs before using them).
-- Our items get our own names and art.
+- Our items copy MK8DX's (names, looks and behaviour), built by us like everything else (see "What we copy and what we do not").
 
 ## Measured from a screenshot (first reading, to be reviewed)
 
@@ -129,6 +129,122 @@ Studied by Claude on 2026-10-24 to design our own course (`host/games/kart-3d/se
 - **Taken:** a 1213-unit lap; a start straight of about 4.7 s; a long banked sweeper for purple, two 90 degree corners for orange, a chicane and an S-bend that flip the drift, and a hairpin; the road 13 to 20 units wide (about 8 to 12 kart widths), narrowest on a bridge with no walls and widest on the sweeper and the item-box straight; one jump with a trick; one anti-gravity section mid-lap; two dash panels (one before the jump, one off the middle of a grass straight); grass on the inside of the hairpin and the last corner, to clip with a mini-turbo; quiet and busy parts in turn.
 - **Measured on it** with the CPU karts' driver (the middle lane, braking for every corner, never drifting, from a standing start at the back of the grid): 3 laps in 117 s at 150cc (39 s a lap), 94 s at 200cc, 129 s at 100cc and 143 s at 50cc. Nobody falls off at any class.
 - **Left out for now:** gliding, underwater, path splits (our track model has one centre line; a split needs a second route), course hazards, and item boxes (items come after M7). The quiet wide straight after the hairpin is where item boxes will go.
+
+## The look, part by part (M7d1 study, to be reviewed)
+
+Studied by Claude on 2026-10-25 for the M7d kit (M7d2), the rebuilt Seaside Skyway (M7d3) and the karts (M7d4). Unlike the earlier studies, this one comes mostly from looking at screenshots, not from wiki text: the wiki pages say almost nothing about how things look. Claude downloaded 22 in-game screenshots and official artworks from the Super Mario Wiki's pages, looked at each one (zooming into crops for the dash panel and the asphalt), and threw the images away afterwards; only these notes are kept. Courses looked at: [Mario Kart Stadium](https://www.mariowiki.com/Mario_Kart_Stadium) (5 shots), [Mario Circuit](https://www.mariowiki.com/Mario_Circuit_(Mario_Kart_8)) (3), [Toad Harbor](https://www.mariowiki.com/Toad_Harbor), [Wii Koopa Cape](https://www.mariowiki.com/Koopa_Cape), [Wii Daisy Circuit](https://www.mariowiki.com/Daisy_Circuit), [3DS Toad Circuit](https://www.mariowiki.com/Toad_Circuit), [DS Cheep Cheep Beach](https://www.mariowiki.com/Cheep_Cheep_Beach), [Dolphin Shoals](https://www.mariowiki.com/Dolphin_Shoals) (2), [Sunshine Airport](https://www.mariowiki.com/Sunshine_Airport) (2), [Cloudtop Cruise](https://www.mariowiki.com/Cloudtop_Cruise) (2) and [Water Park](https://www.mariowiki.com/Water_Park) (one shot each where no count is given); plus the [Standard Kart](https://www.mariowiki.com/Standard_Kart) page and the Deluxe artwork of Mario in it. No footage was watched, so nothing here says how things move unless it says so. Sizes are by eye, against the kart in the same picture (our kart is 2 units long and 1.66 wide at the tyres), and are good to about a third. Some shots are from the Wii U version, which looks the same.
+
+### What makes it read as MK8DX
+
+What the screenshots have in common, and what M7c's look lacks most:
+
+- **Every surface has a texture made of real material.** Coarse asphalt with stones in it, paint that shows the asphalt through it, riveted metal plates, wood grain, rock in layers, grass you can see blades in. Nothing large is a flat colour. M7c's road is a flat grey with a faint grain, and its walls, posts and props are flat colours.
+- **Lots of small things beside the road.** Sponsor boards, cones, tyre stacks, pipes, flags, bunting, lamp posts, spectators, trucks. Seen from the kart, the edge of the road is never empty for long.
+- **Each course has a theme and dresses every piece in it,** the start gate included (a harbour town's lamps and striped rails; Koopa Cape's warp-pipe gate and block curbs; Cloudtop Cruise's wooden sign held up by beanstalk vines).
+- **Bright, saturated colour under a warm sun:** soft long shadows, a deep blue sky, white cumulus clouds, haze toward the horizon, lens flare when looking at the sun. Plastic and paint are glossy (a sharp highlight on karts, characters' heads, item boxes); everything else is matte.
+- **Chunky, rounded, toy-like shapes:** bevelled edges, bolts and rivets that are big enough to see, bulging pipes and blocks.
+
+### Road surfaces and their textures
+
+- **Asphalt** (Mario Kart Stadium, zoomed in): coarse aggregate, three tones: a mid-grey base, light grey to white stones and dark gaps between them, with high contrast (much more than our grain's "about 0.9"). Near the camera, a stone is about a tenth of a rear tyre's width, about 0.04 of our units. It stays crisp far down the road, so the texture must be filtered at grazing angles (Three.js `texture.anisotropy`; ours is not set). Other courses vary: Mario Circuit's asphalt is darker and smoother, Toad Harbor's is warm grey with lighter patches, Toad Circuit's is light. None shows an obvious repeat, so the texture needs a large-scale variation on top (patches, a darker racing line) to hide its tiling.
+- **Painted markings show the asphalt through them.** The yellow edge line, white dashes, the start line and the painted checks of the pit area all carry the stone texture and look a little worn. So paint is best drawn into the road texture, or blended over the grain, not as clean flat strips.
+- **Edge lines:** a solid line a little in from each edge (yellow at Mario Kart Stadium, white at Toad Harbor and Daisy Circuit, orange at Mario Circuit), white dashed lane lines on wide straights (Toad Harbor has four lanes), and at Daisy Circuit a narrow strip of small black-and-white checks between the curb and the road. Lines are about a fifth of a kart width wide.
+- **Curbs:** red and white stripes on the inside of corners (Mario Circuit, Toad Circuit, Mario Kart Stadium's hairpin), each stripe about one to two kart lengths long and the curb about a kart width wide. At Toad Circuit they are cut at a slant and raised with a bevel. The pastel version (pink and white) is at Daisy Circuit. **Koopa Cape's are different:** a row of raised blocks with round studs on top, green and yellow in turn, like toy bricks, about half a kart high (see the new pieces below).
+- **Start line:** a band of checks across the whole road, two rows (three at Mario Kart Stadium), about 14 to 24 squares across. Colours follow the course: black and white at Mario Kart Stadium and Mario Circuit, coral and pale teal at Toad Harbor, yellow and black at Koopa Cape. At Mario Kart Stadium the white squares are glossy.
+- **Grid marks:** each starting place has a white bracket painted on the road, a bar across with short legs pointing back, open toward the kart behind it. A bracket is about two kart widths wide with legs about half a kart length. The places are staggered in two columns.
+- **Other surfaces:** a riveted steel plate on ramps (Mario Kart Stadium: grey plates with seams and round bolt heads, big white chevrons painted on them); riveted, slightly blue metal panels on the track at Water Park and in anti-gravity pipes; pale concrete for an airport runway; packed tan dirt with small stones at Koopa Cape; cream sand with darker wet sand at the water's edge at Cheep Cheep Beach; grass-and-moss rock at Dolphin Shoals.
+- **Grass** beside the road is bright, mown in stripes on circuits, with tall clumps of 3D grass blades at the edges at Mario Circuit.
+
+### Dash panels, anti-gravity panels and ramps
+
+- **Dash panel** (Cloudtop Cruise, zoomed in): a rectangle set in a raised grey metal frame. Inside it looks like a lit LED sign: fine lines across it, a gradient from yellow to orange to red, and two or three chevrons pointing forward whose edges are made of dots (the wiki calls the arrows "pixelated"). Chevrons are lighter than the panel. It is bright, but in the screenshots it does not bloom into a blur: the chevrons stay readable. The panel is drawn as glowing (it looks the same in a dark tunnel), but **is not** a light source on the road around it. Its size could not be measured well; ours (4 wide, 3 long) stays as the rules have it. By the usual Mario Kart look the chevrons scroll forward; no footage was watched to confirm it.
+- **Anti-gravity panel** (Mario Circuit's panel where its anti-gravity section starts, and Water Park's glide ramp, which looks the same): a band across the whole road, glowing blue to cyan, made of the same fine lines, with white chevrons made of dots. M7c has no panel at the start of its anti-gravity section, only lines along the edges.
+- **Anti-gravity road:** cyan glowing lines along the edges and dashed cyan lines down the middle at Mario Kart Stadium; the track itself is often metal there (rails on white struts). Karts' wheels turn flat and their rims glow cyan in anti-gravity (see the karts below).
+- **Ramps:** a steel plate tilted up, with a bolted frame and big white chevrons (Mario Kart Stadium). Glide ramps are blue like the anti-gravity panel (we have no gliding).
+
+### Barriers and fences
+
+- **Padded walls with sponsor boards** (Mario Kart Stadium, Toad Circuit): low blue or purple walls, each panel a printed ad in bold colours (in-game brands: Bowser Oil in yellow and black, Lemmy's Tire Service, Golden Wheel, MKTV, Burning DK sports drink, Bullet Bill Speed Trial, Mario Motors, Super Marine World, Toad's Polar Expedition). A chain-link fence often stands on top.
+- **Steel guardrail** (Mario Circuit): a silver W-shaped beam on short yellow posts, about half a kart high.
+- **Striped guardrail** (Toad Harbor): two rounded rails painted in orange and white diagonal stripes, on a concrete base.
+- **Seaside railings:** a grey rail fence of posts with pointed tops and two rails (Koopa Cape), and blue iron railings with round posts along a promenade (Daisy Circuit).
+- **Stone walls** with moss along the edge on wild courses (Dolphin Shoals), and **tyre stacks** at Mario Kart Stadium.
+
+### Lamps and lights (and whether they are lit by day)
+
+- **By day, lamps are off.** Toad Harbor's iron street lamps (a dark post with a lantern of glass panes) and the lanterns hanging from Mario Circuit's start gate do not glow in daylight: they are just glass and metal in the sun. The M7c device run found the same: lit lamps in daylight look odd. **At sunset or night they are lit:** Daisy Circuit's three-headed lamps glow warm at sunset, and Mario Kart Stadium at night has floodlight towers, light beams and fireworks. So a lamp is lit only on a dusk, night or indoor course.
+- **Lamp shapes:** an iron post with a curved arm and a lantern of four glass panes under a little roof (Toad Harbor, Mario Circuit); a stone or iron post with three lanterns on a crossbar (Daisy Circuit); short square post lights along the road at Mario Kart Stadium.
+- **Lights that do glow by day:** the start lights (below), screens and LED signs, dash and anti-gravity panels, item boxes.
+
+### Signs, banners and flags
+
+- **Sponsor boards** everywhere: on walls, on A-frame stands, on fences, on the gate's posts. Bold logos with thick outlines in red, yellow, blue, white and black.
+- **Turn boards:** red-and-white chevron boards round the outside of corners (Mario Circuit's last turn); ours are already like this.
+- **Bunting:** strings of triangular pennants in pastel colours (purple, yellow, pink, blue, orange) across and beside the road (Mario Circuit, near its start gate).
+- **Hanging banners:** tall vertical banners from the roof with cup emblems (Mario Kart Stadium), small banners on lamp posts (Toad Harbor).
+- **Flags:** red pennant flags with an emblem on top of the start sign (Cloudtop Cruise); flags on poles along straights.
+- **Course map screens and standings boards** in the pit at Mario Kart Stadium.
+
+### The start gate and the start lights
+
+- **Every course has a gate over the start line that says MARIOKART** in big letters, styled for the course: a yellow arch with white letters, a red base stripe and sponsor boards on its posts (Mario Kart Stadium); a dark green iron arch with hanging lanterns and a red board with chrome letters (Mario Circuit); two green warp pipes holding a red riveted frame with chain-link mesh and orange 3D letters (Koopa Cape); an oval wooden sign held by beanstalk vines (Cloudtop Cruise); an oval blue LED sign on yellow cranes with red-and-white checked posts (Sunshine Airport); a stone sign grown over with coral (Dolphin Shoals). A badge or emblem often sits on top (a mushroom "WELCOME" badge at Mario Kart Stadium).
+- **The start lights:** Lakitu floats in front of the grid on a cloud holding a fishing rod with a black box of three round lamps, which light in turn for the countdown. We could hang a light box from our gate instead and light it with the countdown (drawing only, from the race's countdown).
+
+### Scenery on seaside and sky courses
+
+- **Water:** turquoise shallows over sand that turn deep blue further out, with white foam where water meets land (Cheep Cheep Beach, Koopa Cape). Ours is one blue.
+- **Palms:** curved, ringed trunks and bright, many-bladed fronds that droop (Cheep Cheep Beach, Toad Harbor, Daisy Circuit).
+- **Buildings:** thatched huts on stilts over the water (Cheep Cheep Beach), pastel houses with orange and yellow roofs (Toad Harbor), a stone lighthouse with a green balcony and an orange dome (Daisy Circuit).
+- **Landmarks in the water:** a giant Koopa shell half sunk off Koopa Cape; a cruise ship on the horizon at Daisy Circuit.
+- **Sky courses** (Mario Circuit, Cloudtop Cruise): islands floating in the sky with grass on top and cliffs in brown and orange layers below, round bushy trees made of clumps, roads on viaducts held up by steel trusses, a white lattice bridge; airships and huge cumulus clouds with blue-grey shading.
+- **Plants:** hedges trimmed into rounded shapes with pink flowers (Daisy Circuit), tall grass clumps, giant flowers and vines.
+
+### The sky and lighting
+
+- **Day:** the sky is a deep saturated blue overhead, pale near the horizon, with big white cumulus clouds that are shaded blue-grey underneath. The sun is low enough to cast long soft shadows and is warm in colour. Looking toward it gives lens flare with ghost rings, sometimes a rainbow (Koopa Cape). Far things fade into a pale blue haze.
+- **Sunset (Daisy Circuit):** orange and pink sky, the sun low on the sea, lamps lit, warm light on everything.
+- **Lighting technique:** Digital Foundry praised the Wii U version's "vast array of dynamic light sources (headlights, item boxes, special effects)" and guessed it used deferred rendering ([Nintendo Life on Digital Foundry, 2014](https://www.nintendolife.com/news/2014/05/digital_foundry_pins_down_mario_kart_8s_resolution_and_framerate)). The Switch version runs at 1080p docked and 720p handheld ([Nintendo Wire](https://nintendowire.com/news/2017/04/20/digital-foundry-tackle-mario-kart-8-deluxe-praise-performance/)). No source describes its bloom or shaders; what we see is soft glow on lights, sharp highlights on glossy surfaces and soft shadows.
+
+### The karts and drivers
+
+- **The Standard Kart** (the Deluxe artwork and the wiki's Standard Kart page): an open go-kart.
+  - The nose is a low wedge in the character's main colour, with a white band and the character's emblem in a white circle on the front.
+  - A curved front fairing sweeps up from the nose to the height of the steering wheel and back round the driver's legs, white with a red edge.
+  - Two flat side pods: a red top, a white stripe with a notch in it, and a blue lower half.
+  - Behind the seat, two big black exhaust pipes point up and back over the rear wheels, ending in wide gold bell tips (the wiki: "black with yellow tips"). Between them sits an engine block with chrome bolts. At the back are a blue bumper and an amber rectangular tail light.
+  - The steering wheel is small and black with a silver three-spoke hub, on a column from the nose, and the seat is a dark bucket.
+- **Colours:** the body is in the character's three colours (the wiki: Mario's is red with white and blue, Luigi's green with white and dark blue, Peach's pink with white and yellow, Wario's yellow with white and purple). So each player can have a three-colour scheme, not one colour.
+- **Standard tyres:** fat black tyres with a deep block tread and MARIOKART in white on the sidewall, with gold hubs that have three slots and a small centre cap. The rear tyres are bigger than the front ones.
+- **How the driver sits:** upright and high. The driver is about three heads tall (big head, short body), the head as wide as the kart's body. Seated, the top of the head is about as high off the ground as the kart is long. The arms reach forward to the wheel, the feet go into the nose, and the gloves are white.
+- **In anti-gravity** the wheels turn flat under the kart and their rims glow cyan (seen on several karts at Mario Kart Stadium and Cloudtop Cruise). We do not do this yet.
+- **Character look:** soft, glossy, rounded shapes with clean colours. A cap with an emblem, big round eyes, a big nose. Our drivers are procedural, so M7d4 can only reach a clean toy version of this.
+
+### New pieces for the kit (beyond what Seaside Skyway has)
+
+Chosen from the courses above. Everything here is drawing only, unless it says it needs a rule. Recommended for M7d2 first, roughly in order of how much they add:
+
+1. **The textured road:** asphalt with three-tone stones and large patches, worn paint for the edge lines, dashed lane lines and grid brackets, and textured curbs. This is the single biggest change.
+2. **Start lights** that count down with the race: a box of three lamps hanging from the gate, lit red in turn and then green.
+3. **A themed start gate with a MARIOKART sign** (letters drawn into a canvas texture), replacing M7c's blue posts and checkered beam.
+4. **Sponsor boards** with in-game brands drawn on canvases, on the walls and on A-frame stands.
+5. **Dash panel and anti-gravity panel** as lit LED-style panels: a gradient, fine lines, dotted chevrons scrolling forward, a metal frame; and a new full-width anti-gravity panel where an anti-gravity section starts.
+6. **Ramp plate:** riveted steel with white chevrons, on our jump's lip.
+7. **Block curbs:** Koopa Cape's raised studded blocks in green and yellow, for the edges of a seaside section.
+8. **Bunting** strung across the road and along fences.
+9. **Barriers:** a steel guardrail on posts, an orange-and-white striped rail, a seaside rail fence, chain-link fence on top of walls.
+10. **Small trackside props:** cones, tyre stacks, warp pipes, a giant mushroom, an MKTV van.
+11. **Street lamps** in two styles, unlit by day.
+12. **Seaside pieces:** curved palms, huts on stilts, a stone lighthouse, turquoise shallows and foam rings round islands, a giant Koopa shell in the sea.
+13. **Sky pieces:** floating islands with layered cliffs and round trees, steel truss supports under the road, an airship or blimp drifting by.
+14. **A grandstand with a crowd** of small instanced spectators, and floodlight towers (lit only at night).
+
+Not in the kit: glide ramps and spin-boost posts in anti-gravity sections (they need new rules: M9), coins and item boxes (M8), anything at night (Seaside Skyway is a day course). Approved at the review: the whole list above.
+
+### Limits of this study
+
+- 22 pictures, all chosen by the wiki's editors (start lines and press shots more than ordinary corners). No footage, so movement (scrolling chevrons, flags, water) is from general knowledge of the series, not seen.
+- Sizes are by eye against the kart, good to about a third.
+- The in-game brands (Bowser Oil and the rest) are Nintendo's designs. Copying them is fine for this private game (see "What we copy and what we do not").
 
 ## Look and feel
 

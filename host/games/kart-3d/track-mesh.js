@@ -1,7 +1,8 @@
 // The 3D race's road as meshes, built from the same stations the kart rules drive on, so what is drawn is
 // exactly where karts drive: asphalt with red and white curbs (blue and white in anti-gravity sections), the
-// checkered start line, grass shoulders, walls, and the road's underside and edges; and, unlit and brighter than
-// white so they glow on the High quality setting, the dash panels and blue lines along anti-gravity sections.
+// checkered start line, grass shoulders, walls, and the road's underside and edges; unlit and brighter than
+// white so they glow on the High quality setting, blue lines along anti-gravity sections; and the dash panels,
+// unlit too, as bright as the Dash panel glow slider says (renderer.js sets it every frame).
 // Gaps are left empty. A dressed course (one with scenery, M7c) also gets asphalt grain, mown stripes in the
 // grass and walls in coloured panels; the Test track keeps its plain look.
 // Used by host/games/kart-3d/renderer.js.
@@ -43,13 +44,15 @@ const COLORS = {
   dashYellow: 0xffe14a,
 };
 
-// Returns { road, walls, glow, dispose() }: three meshes ready to add to the scene (the walls are seen from both
-// sides).
+// Returns { road, walls, glow, dashPanels, dispose() }: four meshes ready to add to the scene (the walls are seen
+// from both sides). The dash panels have their own mesh so that their brightness can change live: an unlit
+// material's colour multiplies the vertex colours.
 export function buildTrackMesh(track) {
   const dressed = track.scenery !== null;
   const surfaces = createStripBuilder();
   const walls = createStripBuilder();
   const glow = createStripBuilder(GLOW_BRIGHTNESS);
+  const dashPanels = createStripBuilder();
   const startIndex = track.stations.findIndex((station) => station.s + station.segmentLength > track.startLine);
   track.stations.forEach((station, index) => {
     if (station.gap) {
@@ -58,7 +61,8 @@ export function buildTrackMesh(track) {
     const next = track.stations[(index + 1) % track.stations.length];
     const segment = { station, next, index };
     addRoadTop(surfaces, segment, index === startIndex || index === startIndex + 1);
-    addGlow(glow, track, segment);
+    addDashPanels(dashPanels, track, segment);
+    addAntiGravityLines(glow, segment);
     addShoulders(surfaces, segment, dressed);
     addUnderside(surfaces, segment);
     addEdges(surfaces, walls, segment, dressed);
@@ -73,14 +77,15 @@ export function buildTrackMesh(track) {
   wallMesh.receiveShadow = true;
   wallMesh.castShadow = true;
   const glowMesh = new THREE.Mesh(glow.build(), new THREE.MeshBasicMaterial({ vertexColors: true }));
+  const dashPanelMesh = new THREE.Mesh(dashPanels.build(), new THREE.MeshBasicMaterial({ vertexColors: true }));
   function dispose() {
-    for (const mesh of [road, wallMesh, glowMesh]) {
+    for (const mesh of [road, wallMesh, glowMesh, dashPanelMesh]) {
       mesh.geometry.dispose();
       mesh.material.dispose();
     }
     grain?.dispose();
   }
-  return { road, walls: wallMesh, glow: glowMesh, dispose };
+  return { road, walls: wallMesh, glow: glowMesh, dashPanels: dashPanelMesh, dispose };
 }
 
 // The asphalt between the curbs, the two curbs, or the start line's checks across the whole width. Laterals are
@@ -105,9 +110,8 @@ function addRoadTop(builder, segment, onStartLine) {
   builder.strip(segment, at(1, -CURB_WIDTH), 0, at(1), 0, up, curb);
 }
 
-// Bright stripes, one per station, across each dash panel where kart-boosts.js finds it, and in anti-gravity
-// sections a line along each edge between the curb and the asphalt.
-function addGlow(builder, track, segment) {
+// Stripes, one per station, across each dash panel where kart-boosts.js finds it.
+function addDashPanels(builder, track, segment) {
   const up = (station) => station.normal;
   for (const panel of track.dashPanels) {
     if (Math.abs(progressBetween(track, panel.s, segment.station.s)) < DASH_PANEL_LENGTH / 2) {
@@ -116,6 +120,11 @@ function addGlow(builder, track, segment) {
       builder.strip(segment, () => from, GLOW_LIFT, () => from + DASH_PANEL_WIDTH, GLOW_LIFT, up, color);
     }
   }
+}
+
+// In anti-gravity sections, a bright line along each edge between the curb and the asphalt.
+function addAntiGravityLines(builder, segment) {
+  const up = (station) => station.normal;
   if (segment.station.antiGravity) {
     for (const side of [-1, 1]) {
       const byCurb = (station) => side * (station.halfWidth - CURB_WIDTH);

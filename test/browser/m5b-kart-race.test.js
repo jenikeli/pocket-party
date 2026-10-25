@@ -4,7 +4,8 @@
 // from test/helpers/touch.js, because a kart needs the stick and a pedal held at once.
 //
 // The phones cannot see the track, so to finish a race they hold accelerate with the stick a fifth of the way
-// left (STEADY_LEFT in test/helpers/kart-drivers.js): the walls guide them round. A race takes about 35 s.
+// left (STEADY_LEFT in test/helpers/kart-drivers.js): the walls guide them round. A 3-lap race takes about 35 s,
+// so the second race, which only has to show that Race again and Back to lobby work, is set to 1 lap.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,7 +14,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, startRace, NEXT_GAME_BUTTON, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, startRace, NEXT_GAME_BUTTON, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON, LAPS_MINUS_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -230,6 +231,11 @@ describe('M5b 2D kart race', () => {
   test('Race again goes to the setup screen, then puts everyone back on the grid with a new countdown', async () => {
     await hostPage.mouse.click(RACE_AGAIN_BUTTON.x, RACE_AGAIN_BUTTON.y);
     await ana.page.waitForSelector('#kart-setup:not([hidden])');
+    // 3 laps down to 1, so the second race is short; the pause lets Phaser see two separate clicks.
+    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
+    await hostPage.waitForTimeout(150);
+    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
+    await nextView(ana, (view) => view.laps === 1);
     await startRace(hostPage, [ana.page, bo.page]);
     for (const player of [ana, bo]) {
       await nextView(player, (view) => view.phase === 'countdown');
@@ -242,8 +248,9 @@ describe('M5b 2D kart race', () => {
     assert.ok(anaOnGrid.count > 0 && anaOnGrid.centerX < 960, 'Ana is back behind the start line');
   });
 
-  test('after the second race, Back to lobby returns everyone to the lobby', RACE_TIMEOUT, async () => {
-    await driveRaceToResults();
+  test('after the second race (1 lap), Back to lobby returns everyone to the lobby', RACE_TIMEOUT, async () => {
+    const views = await driveRaceToResults();
+    assert.ok(views.every((view) => view.finished && view.lap === 1));
     await hostPage.mouse.click(BACK_TO_LOBBY_BUTTON.x, BACK_TO_LOBBY_BUTTON.y);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#lobby-screen:not([hidden])');

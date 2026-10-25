@@ -1,51 +1,90 @@
-// The 3D race's kart models, built from simple shapes: a glossy painted body, nose and engine, a dark seat,
-// four tyres and a driver in a painted helmet. One model per kart in the field; each has its own paint, so it
-// can take its player's roster colour, which the chase camera sees on the engine and helmet from behind.
-// Used by host/games/kart-3d/renderer.js.
+// The 3D race's kart models (shapes in kart-shapes.js): one per kart in the field, each with its own glossy paint
+// so it can take its player's roster colour, which the chase camera sees on the wings, cowl and helmet from
+// behind. Each frame a model is placed at its kart's pose, its wheels roll with the kart's speed and its front
+// wheels turn with the steering. Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
+import { buildKartShapes, WHEELS } from './kart-shapes.js';
+import { forwardSpeed } from './kart-physics.js';
 
-// Where the wheels sit (x, z): front and back, left and right. Karts face +z with their bottom at y = 0.
-const WHEEL_SPOTS = [[-0.65, 0.7], [0.65, 0.7], [-0.68, -0.75], [0.68, -0.75]];
-const WHEEL_RADIUS = 0.32;
+// How far the front wheels turn at full steering.
+const WHEEL_TURN_ANGLE = (25 * Math.PI) / 180;
 
-// Returns { karts, paint(index, hex), dispose() }: `count` groups ready to add to the scene. Their matrices are
-// set by hand each frame (matrixAutoUpdate is off), since a kart's pose is a full frame, not an angle.
+// Returns { karts, show(index, kart, pose, hex, dt), hide(index), dispose() }: `count` groups ready to add to
+// the scene. Their matrices are set by hand each frame (matrixAutoUpdate is off), since a kart's pose is a full
+// frame, not an angle.
 export function createKartModels(count) {
-  const shapes = {
-    body: new THREE.BoxGeometry(1.3, 0.35, 2).translate(0, 0.45, 0),
-    nose: new THREE.BoxGeometry(1, 0.25, 0.45).translate(0, 0.4, 1.1),
-    seat: new THREE.BoxGeometry(0.7, 0.5, 0.4).translate(0, 0.8, -0.5),
-    engine: new THREE.BoxGeometry(0.8, 0.4, 0.4).translate(0, 0.55, -1),
-    tyre: new THREE.CylinderGeometry(WHEEL_RADIUS, WHEEL_RADIUS, 0.3, 14).rotateZ(Math.PI / 2),
-    helmet: new THREE.SphereGeometry(0.3, 16, 12).translate(0, 1.32, -0.32),
-    face: new THREE.SphereGeometry(0.22, 12, 8).translate(0, 1.27, -0.18),
-  };
+  const shapes = buildKartShapes();
   const shared = {
-    trim: new THREE.MeshStandardMaterial({ color: 0x22252c, roughness: 0.4, metalness: 0.6 }),
-    tyre: new THREE.MeshStandardMaterial({ color: 0x15161a, roughness: 0.85 }),
-    skin: new THREE.MeshStandardMaterial({ color: 0xf2c49b, roughness: 0.6 }),
+    dark: new THREE.MeshStandardMaterial({ color: 0x23252d, roughness: 0.4, metalness: 0.2 }),
+    chrome: new THREE.MeshStandardMaterial({ color: 0xe8ebf0, roughness: 0.3, metalness: 1 }),
+    white: new THREE.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.5 }),
+    wheel: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }),
   };
   const paints = [];
   const karts = [];
+  // Each model's wheels, and how far its wheels have rolled along the road (units), from which each wheel's
+  // turn follows by its own size.
+  const wheelSets = [];
+  const rolled = [];
   for (let index = 0; index < count; index += 1) {
-    const paint = new THREE.MeshPhysicalMaterial({ roughness: 0.3, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.08 });
+    // The clear coat is not quite a mirror: a perfectly sharp one turns the low sun into a glare far brighter
+    // than anything else, which bloom then spreads over the whole kart.
+    const paint = new THREE.MeshPhysicalMaterial({ roughness: 0.35, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.25 });
     paints.push(paint);
     const kart = new THREE.Group();
     kart.matrixAutoUpdate = false;
-    kart.add(new THREE.Mesh(shapes.body, paint), new THREE.Mesh(shapes.nose, paint), new THREE.Mesh(shapes.engine, paint));
-    kart.add(new THREE.Mesh(shapes.seat, shared.trim), new THREE.Mesh(shapes.helmet, paint), new THREE.Mesh(shapes.face, shared.skin));
-    for (const [x, z] of WHEEL_SPOTS) {
-      const tyre = new THREE.Mesh(shapes.tyre, shared.tyre);
-      tyre.position.set(x, WHEEL_RADIUS, z);
-      kart.add(tyre);
-    }
+    kart.add(new THREE.Mesh(shapes.paint, paint), new THREE.Mesh(shapes.dark, shared.dark));
+    kart.add(new THREE.Mesh(shapes.chrome, shared.chrome), new THREE.Mesh(shapes.white, shared.white));
+    const wheels = WHEELS.map((spot, wheelIndex) => {
+      const wheel = new THREE.Mesh(shapes.wheels[wheelIndex], shared.wheel);
+      wheel.position.set(spot.x, spot.radius, spot.z);
+      // Turned for steering first, then rolled about its own axle.
+      wheel.rotation.order = 'YXZ';
+      return wheel;
+    });
+    kart.add(...wheels);
     kart.traverse((part) => (part.castShadow = true));
     karts.push(kart);
+    wheelSets.push(wheels);
+    rolled.push(0);
+  }
+
+  const xAxis = new THREE.Vector3();
+  const yAxis = new THREE.Vector3();
+  const zAxis = new THREE.Vector3();
+  // `pose` is the kart as drawn this frame (race-views.js kartPose), `hex` its paint, `dt` the real time since
+  // the last drawn frame.
+  function show(index, kart, pose, hex, dt) {
+    const model = karts[index];
+    model.visible = true;
+    setPaint(index, hex);
+    const { position, bodyForward, bodyUp } = pose;
+    // The model faces +z with +y up, so its axes are: x = up x forward (the kart's left), y = up, z = forward
+    // made square to up.
+    yAxis.set(bodyUp.x, bodyUp.y, bodyUp.z);
+    xAxis.set(bodyForward.x, bodyForward.y, bodyForward.z).cross(yAxis).negate().normalize();
+    zAxis.crossVectors(xAxis, yAxis);
+    model.matrix.makeBasis(xAxis, yAxis, zAxis).setPosition(position.x, position.y, position.z);
+    model.matrixWorldNeedsUpdate = true;
+    // The wheels roll only on the ground; in the air they keep turning as they were (rolled stays).
+    if (kart.grounded) {
+      rolled[index] += forwardSpeed(kart) * dt;
+    }
+    wheelSets[index].forEach((wheel, wheelIndex) => {
+      const spot = WHEELS[wheelIndex];
+      wheel.rotation.x = rolled[index] / spot.radius;
+      // A right turn turns the wheels clockwise seen from above: a negative angle about up.
+      wheel.rotation.y = spot.front ? -kart.wheelTurn * WHEEL_TURN_ANGLE : 0;
+    });
+  }
+
+  function hide(index) {
+    karts[index].visible = false;
   }
 
   // Three.js converts the colour each time it is set, so it is only set when it changes.
-  function paint(index, hex) {
+  function setPaint(index, hex) {
     if (paints[index].userData.hex !== hex) {
       paints[index].userData.hex = hex;
       paints[index].color.setHex(hex);
@@ -53,10 +92,10 @@ export function createKartModels(count) {
   }
 
   function dispose() {
-    Object.values(shapes).forEach((shape) => shape.dispose());
+    [shapes.paint, shapes.dark, shapes.chrome, shapes.white, ...shapes.wheels].forEach((shape) => shape.dispose());
     Object.values(shared).forEach((material) => material.dispose());
     paints.forEach((material) => material.dispose());
   }
 
-  return { karts, paint, dispose };
+  return { karts, show, hide, dispose };
 }

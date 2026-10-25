@@ -3,7 +3,8 @@
 // drives a kart by itself and a held Go drives another (read from the host's readout, with the physics step
 // time), a reloaded phone gets its controls back, Back to setup keeps the control styles, and End game frees
 // the WebGL canvas. Ana is an Android phone (Chromium, real touches) on the stick and Go; Bo an iPhone (WebKit)
-// on auto-accelerate. Headless Chromium draws WebGL in software, so the host page is half the usual size.
+// on auto-accelerate. Headless Chromium draws WebGL in software, so the host page is
+// half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,6 +14,7 @@ import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '.
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { presetQuality, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -82,6 +84,7 @@ describe('M6b 3D driving', () => {
     hostPage = await chromium.newPage({ viewport: HOST_SIZE });
     hostPage.on('pageerror', (error) => pageErrors.push(error));
     hostMessages = watchServerMessages(hostPage);
+    await presetQuality(hostPage, 'medium');
     await hostPage.goto(`${server.baseUrl}/host`);
     roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
@@ -101,7 +104,7 @@ describe('M6b 3D driving', () => {
   });
 
   test('Start game opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE);
+    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     const view = await nextView(bo, (each) => each.phase === 'setup');
     assert.deepEqual(view, { phase: 'setup', laps: 3, engineClass: 150, steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
@@ -156,7 +159,9 @@ describe('M6b 3D driving', () => {
   test('a reloaded phone rejoins straight into its driving controls, still on auto-accelerate', async () => {
     await bo.page.close();
     await openPlayerPage(bo);
-    await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_RECONNECTED);
+    // The host page is busy drawing CPU-drawn WebGL frames, which delays its frames' events: a margin kept from
+    // when frames took over a second.
+    await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_RECONNECTED, 10000);
     // Just after GO the view says how the start went for a moment; the view after that is the plain one.
     const view = await nextView(bo, (each) => each.phase === 'racing' && each.start === null);
     assert.deepEqual({ ...view, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });

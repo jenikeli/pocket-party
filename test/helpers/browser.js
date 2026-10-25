@@ -9,11 +9,16 @@ import { createMessageQueue } from './message-queue.js';
 
 const SCREENSHOT_DIR = path.join(ROOT_DIR, 'test-results', 'screenshots');
 const ENGINES = { chromium, webkit };
+// Headless Chromium draws WebGL on the CPU. By default it uses its own SwiftShader; these flags make it use
+// Mesa's llvmpipe instead (also CPU, but measured about 5 times faster on the dev box: 0.23 s against 1.17 s a
+// frame of the 3D race). llvmpipe is on Chromium's GPU blocklist, so without the second flag WebGL silently
+// fails. WebKit has no such switch and only runs the phone pages, which draw no WebGL.
+const LAUNCH_OPTIONS = { chromium: { args: ['--use-angle=gl-egl', '--ignore-gpu-blocklist'] }, webkit: {} };
 
 // Launches a headless browser, with a hint when the browser or its system libraries are missing.
 export async function launchBrowser(engineName) {
   try {
-    return await ENGINES[engineName].launch();
+    return await ENGINES[engineName].launch(LAUNCH_OPTIONS[engineName]);
   } catch (error) {
     throw new Error(
       `Could not launch ${engineName}. If it is not installed, run once:\n` +

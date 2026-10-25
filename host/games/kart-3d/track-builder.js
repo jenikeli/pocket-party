@@ -12,7 +12,7 @@ const UP = vec(0, 1, 0);
 // The loop must end where it starts; a bigger miss is a mistake in the track's pieces.
 const CLOSING_TOLERANCE = 0.01;
 
-// `definition` is { halfWidth, startLine, pieces, dashPanels }. The track starts at the origin heading along +x, at
+// `definition` is { halfWidth, startLine, pieces, dashPanels, scenery }. The track starts at the origin heading along +x, at
 // height 0 with no roll, its road halfWidth either side of the centre line. Each piece is a straight
 // ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and may also have:
 //   height    the height at its end; it changes smoothly (flat at both ends) from the previous piece's
@@ -24,10 +24,12 @@ const CLOSING_TOLERANCE = 0.01;
 //   gap       true: no road at all (a jump)
 //   antiGravity true: gravity pulls karts toward the road, so they can drive up walls
 // dashPanels (optional) lists { s, lateral }: where each dash panel's centre is (kart-boosts.js has their size).
-// Returns the track: { stations, length, startLine, dashPanels }. Station i describes the road from itself to
-// station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength, halfWidth,
-// shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the distance along the centre
-// line from the start.
+// scenery (optional) names the dressing drawn round the course (scenery.js); without it the course has the
+// plain look.
+// Returns the track: { stations, length, startLine, dashPanels, scenery }. Station i describes the road from
+// itself to station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength,
+// halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the distance along
+// the centre line from the start.
 export function buildTrack(definition) {
   const samples = samplePieces(definition.pieces, definition.halfWidth);
   const stations = samples.map((sample, index) => {
@@ -46,7 +48,13 @@ export function buildTrack(definition) {
     station.segmentLength = length(subtract(stations[(index + 1) % stations.length].point, station.point));
     s += station.segmentLength;
   });
-  return { stations, length: s, startLine: definition.startLine, dashPanels: definition.dashPanels ?? [] };
+  return {
+    stations,
+    length: s,
+    startLine: definition.startLine,
+    dashPanels: definition.dashPanels ?? [],
+    scenery: definition.scenery ?? null,
+  };
 }
 
 // One sample per station: { point, roll (radians), halfWidth, flags }, walking the pieces from the origin.

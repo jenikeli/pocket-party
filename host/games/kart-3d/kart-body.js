@@ -1,5 +1,6 @@
 // How a 3D kart's body is drawn apart from where it travels: turned into a drift, rolled once in a trick and
-// turned once in a spin boost, each easing in and out instead of snapping between poses. Drawing only: the rules
+// turned once in a spin boost, each easing in and out instead of snapping between poses, and its front wheels
+// turned with the steering. Drawing only: the rules
 // never read these angles. Plain functions on plain kart objects, unit tested in Node. Used by kart-physics.js
 // (every step), kart-techniques.js (the trick) and kart-bumps.js (the spin). Timings are tuning.js's.
 
@@ -9,13 +10,16 @@ const DEGREES = Math.PI / 180;
 // The lean spring's speed: at 6 / leanSeconds, a critically damped spring has covered about 98% of the way by
 // leanSeconds.
 const SPRING_STIFFNESS = 6;
+// How quickly the front wheels follow the stick, per second: quick, but a tap does not flick them.
+const WHEEL_TURN_RATE = 15;
 
 // The body fields of a fresh kart (also after it is put back on the road): driftLean the body's turn into a
 // drift and leanSpeed how fast it is changing (the spring's state); trickTime seconds into a trick's roll and
 // spinTime into a spin boost's turn, null when not rolling or turning; bodyYaw and bodyRoll the angles the body
-// is drawn at (lean plus spin, and the trick's roll).
+// is drawn at (lean plus spin, and the trick's roll); wheelTurn how far the front wheels are turned, -1 (left)
+// to 1 (right).
 export function freshBody() {
-  return { driftLean: 0, leanSpeed: 0, trickTime: null, spinTime: null, bodyYaw: 0, bodyRoll: 0 };
+  return { driftLean: 0, leanSpeed: 0, trickTime: null, spinTime: null, bodyYaw: 0, bodyRoll: 0, wheelTurn: 0 };
 }
 
 // Starts the trick's barrel roll (kart-techniques.js). It plays out in full, even if the kart lands first.
@@ -38,6 +42,7 @@ export function moveBody(kart, controls, dt) {
   kart.spinTime = advance(kart.spinTime, tuning.spinSeconds, dt);
   kart.bodyYaw = kart.driftLean + turnShare(kart.spinTime, tuning.spinSeconds);
   kart.bodyRoll = turnShare(kart.trickTime, tuning.trickSeconds);
+  kart.wheelTurn += (controls.steer - kart.wheelTurn) * (1 - Math.exp(-WHEEL_TURN_RATE * dt));
 }
 
 // -1 to 1: fully toward the drift's side while drifting, and already during the hop that may start one (Drift

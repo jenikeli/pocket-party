@@ -1,5 +1,5 @@
-// The 3D kart race (M6 to M7b), a game module: a setup screen (course, laps and engine class on the host,
-// control style and ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players race their
+// The 3D kart race (M6 to M7c), a game module: a setup screen (course, laps, engine class and drawing quality on
+// the host, control style and ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players race their
 // laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results, and
 // Race again or Back to lobby. Loaded through host/games/index.js and run by the shell (host/game-session.js).
 // The rules live in DOM-free modules next to this file; this file connects them to the shell, the phones, the
@@ -18,6 +18,7 @@ import { createReadout } from './readout.js';
 import { createPanels } from './panels.js';
 import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
+import { QUALITY_LEVELS, loadQuality, saveQuality } from './quality.js';
 
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
 const PING_INTERVAL_MS = 2000;
@@ -43,6 +44,8 @@ export function createGame() {
   let courseId = COURSES[0].id;
   let track = tracks.get(courseId);
   let engineClass = DEFAULT_ENGINE_CLASS;
+  // The host device's drawing quality, remembered between games (quality.js).
+  let quality = loadQuality();
   // null while the setup screen shows.
   let race = null;
   let controls = createControlsTable();
@@ -62,12 +65,13 @@ export function createGame() {
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
-    renderer = rendererModule.createRenderer(shell.container, track);
+    renderer = rendererModule.createRenderer(shell.container, track, quality);
     tuningPanel = createTuningPanel(shell.container);
     panels = createPanels(shell.container, {
       onCourse: chooseCourse,
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onEngineClass: chooseEngineClass,
+      onQuality: chooseQuality,
       onStartRace: startRace,
       onBackToSetup: showSetup,
       onRestart: restart,
@@ -106,6 +110,14 @@ export function createGame() {
   function chooseEngineClass(chosen) {
     if (!race && chosen in ENGINE_CLASSES) {
       engineClass = chosen;
+    }
+  }
+
+  function chooseQuality(chosen) {
+    if (!race && Object.hasOwn(QUALITY_LEVELS, chosen) && chosen !== quality) {
+      quality = chosen;
+      saveQuality(quality);
+      renderer.setQuality(quality);
     }
   }
 
@@ -187,7 +199,7 @@ export function createGame() {
     const racing = race !== null && race.phase !== RACE_PHASES.RESULTS;
     tuningPanel.setVisible(racing);
     if (!race) {
-      panels.showSetup(setup, { courseId, engineClass }, players);
+      panels.showSetup(setup, { courseId, engineClass, quality }, players);
       resultsPanel.hide();
       return;
     }

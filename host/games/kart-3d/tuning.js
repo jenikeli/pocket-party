@@ -101,6 +101,15 @@ export const TUNABLES = Object.freeze([
   // While boosting the camera drops back and widens its view.
   { key: 'boostPullBack', group: 'Camera', label: 'Boost pull-back', unit: 'units', min: 0, max: 6, step: 0.1, value: 2 },
   { key: 'boostWiden', group: 'Camera', label: 'Boost widen', unit: 'deg', min: 0, max: 20, step: 1, value: 8 },
+
+  // The look (M7c), drawn by renderer.js. Bloom makes whatever is brighter than the threshold glow (sparks,
+  // flames, glowing panels, the sun's shine on paint and sea); its strength and radius are M6a's starting
+  // values. Bloom only shows on the High quality setting (quality.js). Exposure brightens or darkens the whole
+  // picture before tone mapping.
+  { key: 'bloomStrength', group: 'Look', label: 'Bloom strength', unit: '', min: 0, max: 2, step: 0.05, value: 0.4 },
+  { key: 'bloomRadius', group: 'Look', label: 'Bloom radius', unit: '', min: 0, max: 1, step: 0.05, value: 0.2 },
+  { key: 'bloomThreshold', group: 'Look', label: 'Bloom threshold', unit: '', min: 0.5, max: 3, step: 0.05, value: 1 },
+  { key: 'exposure', group: 'Look', label: 'Exposure', unit: '', min: 0.5, max: 2, step: 0.05, value: 1 },
 ]);
 
 // The live values, by key. The rules read from here every step, so a slider changes the race at once.

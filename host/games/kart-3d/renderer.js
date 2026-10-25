@@ -1,19 +1,21 @@
 // Draws the 3D race with Three.js: builds the world (the course's scenery and road, which another course can
 // replace, and the karts), then each frame places the karts between their last two steps, moves the particles
-// (sparks, flames, smoke) and draws one view per player with its HUD, or, on the setup screen, a slow flight
-// round the course. Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the
-// game starts. Used by host/games/kart-3d/index.js.
+// (sparks, flames, smoke, dust) and the scenery (waves, boats), and draws one view per player with its HUD, or,
+// on the setup screen, a slow flight round the course; with bloom on the High quality setting (quality.js).
+// Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the game starts. Used by
+// host/games/kart-3d/index.js.
 
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { PLAYER_COLORS, displayName, colorText } from '/host/roster.js';
-import { buildScenery } from './scenery.js';
+import { buildScenery, createSkyEnvironment } from './scenery.js';
 import { buildTrackMesh } from './track-mesh.js';
 import { createKartModels } from './kart-models.js';
 import { createViews } from './views.js';
-import { createEffects } from './effects.js';
+import { createEffects, describeEffects } from './effects.js';
+import { createBloom } from './bloom.js';
+import { QUALITY_LEVELS } from './quality.js';
+import { tuning } from './tuning.js';
 import { kartPose, viewTargets, viewHud } from './race-views.js';
-import { sparkLevel, SPARK_COLORS } from './kart-techniques.js';
 import { FIELD_SIZE } from './race.js';
 
 // CPU karts are drawn in greys so the players' colours stand out.
@@ -24,11 +26,10 @@ const ORBIT_SECONDS = 60;
 const ORBIT_REACH = 1.6;
 const ORBIT_HEIGHT = 0.8;
 
-// `track` is the course to draw first. Returns { draw(race, players, alpha, dt), showTrack(track), destroy() }.
-export function createRenderer(container, track) {
+// `track` is the course to draw first, `qualityLevel` a key of QUALITY_LEVELS. Returns { draw(race, players,
+// alpha, dt), showTrack(track), setQuality(level), destroy() }.
+export function createRenderer(container, track, qualityLevel) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  // M6a: pixels are what costs on the iPad, and at ratio 1 it drew the full look with 4 views in under 10 ms.
-  renderer.setPixelRatio(1);
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -40,29 +41,37 @@ export function createRenderer(container, track) {
   renderer.domElement.addEventListener('webglcontextlost', () => (contextLost = true));
 
   const scene = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  pmrem.dispose();
-  // The reflections only add shine to the karts: the sun and sky light the scene already.
-  scene.environmentIntensity = 0.35;
+  const environment = createSkyEnvironment(renderer);
+  scene.environment = environment.texture;
+  // The reflections mostly add shine to the karts: the sun and the hemisphere light light the scene already.
+  scene.environmentIntensity = 0.4;
   // The course's road and scenery, and where its middle is and how far it reaches (for the overview camera).
   let world = buildWorld(scene, track);
   const kartModels = createKartModels(FIELD_SIZE);
   scene.add(...kartModels.karts);
   const effects = createEffects(scene);
   const views = createViews(container);
+  const bloom = createBloom(renderer);
+  let quality = QUALITY_LEVELS[qualityLevel];
   const overviewCamera = new THREE.PerspectiveCamera(50, 16 / 9, 1, 1500);
   let orbitTime = 0;
 
   function resize() {
     renderer.setSize(container.clientWidth, container.clientHeight);
+    bloom.setSize(container.clientWidth, container.clientHeight);
   }
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(container);
-  resize();
+  setQuality(qualityLevel);
   // Builds every shader now, while the game starts, not in the middle of the first frames (M6a saw a 1.8 s
-  // stall the first time a new kind of material was drawn).
+  // stall the first time a new kind of material was drawn): the scene's materials (the karts too, which are
+  // still visible here), then one frame through bloom, which builds the shadow and bloom shaders, so even
+  // switching to High later does not stall.
   renderer.compile(scene, overviewCamera);
+  overviewCamera.position.set(world.centre.x, world.reach, world.centre.z + world.reach);
+  overviewCamera.lookAt(world.centre);
+  renderer.shadowMap.needsUpdate = true;
+  bloom.render((target) => views.drawOne(renderer, scene, overviewCamera, target));
 
   // `race` is the race state, or null on the setup screen. `alpha` is from the game runner (between the last
   // two steps); `dt` the real time since the last drawn frame in seconds, for the cameras.
@@ -71,8 +80,12 @@ export function createRenderer(container, track) {
       throw new Error('The WebGL context was lost (the browser took the graphics memory back)');
     }
     renderer.shadowMap.needsUpdate = true;
+    renderer.toneMappingExposure = tuning.exposure;
+    world.update(dt);
     if (!race) {
-      kartModels.karts.forEach((model) => (model.visible = false));
+      for (let index = 0; index < FIELD_SIZE; index += 1) {
+        kartModels.hide(index);
+      }
       orbitTime += dt;
       const angle = (2 * Math.PI * orbitTime) / ORBIT_SECONDS;
       const radius = world.reach * ORBIT_REACH;
@@ -80,11 +93,11 @@ export function createRenderer(container, track) {
       overviewCamera.position.set(world.centre.x + Math.cos(angle) * radius, height, world.centre.z + Math.sin(angle) * radius);
       overviewCamera.lookAt(world.centre);
       effects.update([], dt);
-      views.drawOne(renderer, scene, overviewCamera);
+      drawFrame((target) => views.drawOne(renderer, scene, overviewCamera, target), 1);
       return;
     }
     const poses = race.karts.map((kart) => kartPose(kart, alpha));
-    placeKarts(race, players, poses);
+    placeKarts(race, players, poses, dt);
     effects.update(race.karts.map((kart, index) => describeEffects(kart, poses[index])), dt);
     const targets = viewTargets(race, players).map(({ kart, player }) => ({
       pose: poses[race.karts.indexOf(kart)],
@@ -93,31 +106,41 @@ export function createRenderer(container, track) {
       boosting: kart.boost !== null,
       hud: viewHud(race, kart),
     }));
-    views.draw(renderer, scene, targets, dt);
+    drawFrame((target) => views.draw(renderer, scene, targets, dt, target), targets.length);
   }
 
-  const xAxis = new THREE.Vector3();
-  const yAxis = new THREE.Vector3();
-  const zAxis = new THREE.Vector3();
+  // `drawViews(target)` draws the frame's views into `target`: through bloom on High (then the gaps between the
+  // views are cleared of its glow), or straight onto the canvas (target null).
+  function drawFrame(drawViews, viewCount) {
+    if (quality.bloom) {
+      bloom.render(drawViews);
+      views.clearGaps(renderer, viewCount);
+    } else {
+      drawViews(null);
+    }
+  }
+
   // `poses` are the karts' poses as drawn this frame, in the order of race.karts.
-  function placeKarts(race, players, poses) {
+  function placeKarts(race, players, poses, dt) {
     kartModels.karts.forEach((model, index) => {
       const kart = race.karts[index];
-      model.visible = Boolean(kart);
       if (!kart) {
+        kartModels.hide(index);
         return;
       }
       const player = kart.playerId === null ? null : players.get(kart.playerId);
-      kartModels.paint(index, player ? PLAYER_COLORS[player.colorIndex] : CPU_COLORS[index % CPU_COLORS.length]);
-      const { position, bodyForward, bodyUp } = poses[index];
-      // The model faces +z with +y up, so its axes are: x = up x forward (the kart's left), y = up, z = forward
-      // made square to up.
-      yAxis.set(bodyUp.x, bodyUp.y, bodyUp.z);
-      xAxis.set(bodyForward.x, bodyForward.y, bodyForward.z).cross(yAxis).negate().normalize();
-      zAxis.crossVectors(xAxis, yAxis);
-      model.matrix.makeBasis(xAxis, yAxis, zAxis).setPosition(position.x, position.y, position.z);
-      model.matrixWorldNeedsUpdate = true;
+      const hex = player ? PLAYER_COLORS[player.colorIndex] : CPU_COLORS[index % CPU_COLORS.length];
+      kartModels.show(index, kart, poses[index], hex, dt);
     });
+  }
+
+  // Another level chosen on the setup screen. The drawing buffer's size follows the pixel ratio; bloom's
+  // shaders were built at the start, so turning it on does not stall.
+  function setQuality(level) {
+    quality = QUALITY_LEVELS[level];
+    renderer.setPixelRatio(quality.pixelRatio);
+    bloom.setPixelRatio(quality.pixelRatio);
+    resize();
   }
 
   // Another course chosen on the setup screen: its road and scenery replace the old ones in the same scene and
@@ -134,40 +157,31 @@ export function createRenderer(container, track) {
   function destroy() {
     resizeObserver.disconnect();
     views.destroy();
+    bloom.dispose();
     effects.dispose();
     kartModels.dispose();
     world.dispose();
-    scene.environment.dispose();
+    environment.dispose();
     renderer.dispose();
     renderer.forceContextLoss();
   }
 
-  return { draw, showTrack, destroy };
+  return { draw, showTrack, setQuality, destroy };
 }
 
-// Adds the course's road and scenery to `scene`. Returns { centre, reach, dispose() }: the course's middle seen
-// from above and how far it reaches from there, and taking it all out of the scene again.
+// Adds the course's road and scenery to `scene`. Returns { centre, reach, update(dt), dispose() }: the course's
+// middle seen from above and how far it reaches from there, moving the scenery on, and taking it all out of the
+// scene again.
 function buildWorld(scene, track) {
   const scenery = buildScenery(scene, track);
   const trackMesh = buildTrackMesh(track);
-  scene.add(trackMesh.road, trackMesh.walls);
+  scene.add(trackMesh.road, trackMesh.walls, trackMesh.glow);
   function dispose() {
-    scene.remove(trackMesh.road, trackMesh.walls);
+    scene.remove(trackMesh.road, trackMesh.walls, trackMesh.glow);
     trackMesh.dispose();
     scenery.dispose();
   }
-  return { ...extentOf(track), dispose };
-}
-
-// What effects.js draws for one kart: sparks while it drifts, flames while it boosts, smoke while it stalls.
-function describeEffects(kart, pose) {
-  return {
-    pose,
-    velocity: kart.velocity,
-    spark: kart.grounded ? SPARK_COLORS[sparkLevel(kart)] : null,
-    boosting: kart.boost !== null,
-    stalled: kart.stallLeft > 0,
-  };
+  return { ...extentOf(track), update: scenery.update, dispose };
 }
 
 // The middle of the course seen from above, and how far it reaches from there (half its longer side).

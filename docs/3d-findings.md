@@ -473,3 +473,48 @@ The test drive became the race, "Kart race 3D" (`kart-3d`), on a course of our o
 ### Device run
 
 Done: the race on Seaside Skyway felt fine, with nothing to change.
+
+## M7c: the look
+
+### What was built
+
+All procedural, no image or model files: the payload grew by 12 new code files (about 46 KB) and changes to 13 others.
+
+- **Karts** (`kart-shapes.js`, `kart-models.js`): a toy kart of our own: a rounded nose, side pods, a front wing, an engine cowl, a rear wing and bumper, two chrome exhausts, and a driver in a dark suit with white gloves on the steering wheel and a round helmet (the player's colour, a white stripe, a dark visor). Fat tyres with silver hubs, the rear ones bigger. Parts are merged by material: 4 draw calls per kart plus one per wheel (8; the M7b kart was 10). The wheels roll with the kart's speed and the front ones turn with the steering (`wheelTurn` in `kart-body.js`, drawing only, eased toward the stick).
+- **Bloom** (`bloom.js`): M6a's method. All views are drawn into one 4x multisampled half-float buffer, then `UnrealBloomPass` runs once over the whole frame and `OutputPass` tone-maps onto the canvas. Bloom spreads glow into the black gaps between split-screen views, so they are cleared again afterwards (`gapRects` in `view-layout.js`). Strength 0.4, radius 0.2, threshold 1 (M6a's), with sliders in a new "Look" group of the tuning panel, and an Exposure slider.
+- **What glows** (colours above 1, so only on High): drift sparks (2.5x their colour), boost flames a little (1.2x: a flame is many particles on top of each other, and at 3x they bloomed into a white blob over the kart), dash panels and the blue lines along anti-gravity sections (unlit, 2.5x, on every course), the sun in the sky, the lighthouse lamp, the start gate's and the poles' lamps, and the sun glinting on paint and sea.
+- **Reflections:** the karts' paint (clear coat) and chrome now reflect our own sky (`createSkyEnvironment` in `scenery.js`: the sky dome, with sea blue below the horizon, through PMREM) instead of Three.js's `RoomEnvironment`. The studio's bright light panels showed up in the clear coat brighter than white, and bloom turned every kart into a white blur. The clear coat is also less sharp (roughness 0.25, was 0.08), so the low sun is a highlight, not a glare. `RoomEnvironment.js` was removed from `host/vendor/`.
+- **Every course:** the sun sits lower (about 34 degrees up, behind the karts on the start straight and ahead of them on the way back), so shadows are longer and the sun shows in the sky, with a halo.
+- **Seaside Skyway only** (`scenery: 'seaside'` in its definition; the Test track keeps its plain look): asphalt grain on the road, mown stripes in the grass, walls in blue and white panels (`track-mesh.js`); sandy islands with palms and rocks under and around the road, a red and white lighthouse with a glowing lamp ahead of the start straight, four hills on the horizon, six sailboats rocking, clouds above and below the road, ripples on the sea that drift and catch the sun (`seaside-scenery.js`, `seaside-props.js`, placed from `seaside-layout.js`); a start gate (blue posts, a checkered beam, five lamps), red arrow boards on the walls round the outside of every corner, and flag poles with lamps along the straights (`trackside.js`, placed by `trackside-spots.js`). Every set of one prop is one instanced mesh, so the dressing adds about 15 draw calls per view. Textures are drawn on canvases while the game starts (`textures.js`).
+- **Quality setting** (`quality.js`), "Look" on the host's setup screen: High (bloom, pixel ratio 1), Medium (no bloom, ratio 1), Low (no bloom, ratio 0.7, about half the pixels). It belongs to the host device, so it is saved in the host's localStorage and comes back next time; High on a host that never chose.
+- **Shaders compiled while loading:** at the start the renderer compiles the scene's materials (the karts included) and draws one frame through bloom, so the shadow and bloom shaders exist before the first race frame, and switching to High later does not stall (M6a saw a 1.8 s stall).
+
+### Measured without a device
+
+All in headless Chromium on the dev box (software WebGL, SwiftShader), at 960x540: these say nothing about real GPUs, only about what was added and about the browser tests' speed.
+
+| Frame (2 views, Seaside Skyway unless named) | Before M7c | M7c |
+|---|---|---|
+| High | (no bloom then) | 1.9 s |
+| Medium | 0.79 s | 1.27 s |
+| Low | | 1.1 s |
+| Test track, Medium-equivalent / High / Low | 0.70 s | 0.70 / 1.47 / 0.74 s |
+
+- Of the Seaside frame at Medium, the karts cost about 0.5 s and the dressing about 0.4 s in software. Real GPUs measured in M6a barely noticed triangles or draw calls (10,912-triangle karts added 0.3 ms on the iPad); pixels and bloom were the cost, which is what the quality setting drops.
+- Starting the game (building the world, compiling, one warm-up frame) takes about 4.3 s on Seaside and 1.3-2 s on the Test track in software; before M7c it took 0.3 s, but that skipped the warm-up frame (the first race frame paid instead). Two traps found on the way: drawing the asphalt grain as 540 soft circles on a canvas and reading it back took 4.1 s, and canvases kept on the GPU stalled the next WebGL resize by about 4 s. The textures are now worked out pixel by pixel into canvases kept in plain memory (`willReadFrequently`); the grain takes about 0.2 s.
+- The race's clock slows with slow frames (the runner steps at most 15 times a frame), so the 3D browser tests about behaviour now start the host at Medium (`test/helpers/kart-3d-host.js`); the M7c test covers High and Low.
+- **Faster headless WebGL (after the device run):** Chromium's `--use-angle=gl-egl --ignore-gpu-blocklist` makes it draw with Mesa's llvmpipe instead of SwiftShader. Both run on the CPU, but llvmpipe measured 0.23 s against 1.17 s a frame (Seaside, 2 views, Medium) and 0.28 s against 1.6 s at High. The browser suite went from 18.5 to 7.8 minutes. The dev box's Intel HD 520 is not used: the user is not in the `render` group, so Chromium cannot open `/dev/dri/renderD128` (the `iris` driver is installed; untested).
+
+### Device run procedure
+
+1. Host on the iPad over the hotspot, two phones. The 3D race, Seaside Skyway, Look on High (the default).
+2. Look: do the karts read as toys from behind and from the side (helmet colour, wings, wheels rolling, front wheels steering)? Is the course recognisable as a seaside sky course (islands, lighthouse ahead on the start straight, boats, clouds below the road, sparkling sea)? Note anything ugly or confusing, and where.
+3. Bloom: do sparks, the dash panels, the anti-gravity lines, the lamps and the sun glow without washing out the karts? If not, open Tuning during a race and move the Look sliders (strength, radius, threshold, exposure); Copy values and send them.
+4. Frame rate: drive with 2 and with 4 views on High. Is it smooth (60 fps with 1-2 views, a steady 30 with 3-4 is MK8DX's bar)? Open Tuning to see the readout's frame times. If it stutters, try Medium, then Low.
+5. The first race frame after Start race, and the switch from Medium to High on the setup screen: any pause?
+6. The laptop on its integrated graphics (Chrome not set to High performance): which level holds 60 with 2 views?
+7. Start the game again later: does the Look setting come back as chosen?
+
+### Device run
+
+On the iPad (the main host): the karts look okay, the frame rate is good, no pause was noticed at the first race frame or when switching to High, and the Look setting comes back after End game. The laptop was not tested. Feedback for M7d: the orange dash panel is too bright with bloom, and lamps lit in daylight look odd.

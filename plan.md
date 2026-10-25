@@ -36,14 +36,14 @@ Decided before M5, to be refined in M5b and M5c; record changes in its notes.
 
 Decided before M6. The aim is a race that a Mario Kart 8 Deluxe (MK8DX) player would recognise by feel: the same techniques, timings and race format, and a similar camera and look. Starting numbers and their sources are in `docs/mk8dx-reference.md`; tune them on real devices and record changes in the milestone notes.
 
-- **Own assets only.** Copy mechanics, numbers, feel and look. Never use Nintendo's models, textures, sounds, music, characters, names or course layouts. Draw procedurally where possible, CC0 assets otherwise, within the payload target in `CLAUDE.md`.
+- **Copy MK8DX's designs freely, build them ourselves** (changed after the M7c device run). The game is for private use only and is never published, so the karts, drivers, track pieces, signs, textures and course ideas may copy MK8DX's look as closely as we can (M7d). We still make every model and texture ourselves (procedurally where possible, CC0 assets otherwise) rather than extracting files from the game, within the payload target in `CLAUDE.md`.
 - **Kart rules written by hand, like the 2D race.** MK8DX's own parameters are a turn rate per frame, a speed curve and boost multipliers: arcade rules, not a simulated car. So the kart rules are plain DOM-free functions that use MK8DX's structure and numbers, unit tested in Node. This replaces the earlier idea of a physics library (Rapier or cannon-es); a library is added only if the track model below cannot do something we need, and only after asking.
 - **Track from maths.** The road is a closed centre line (a smooth curve through control points) with a width, height and roll at each point. Hills, jumps (a gap in the road), banked curves and anti-gravity wall sections (the road rolled up to vertical) all come from that one description, and "where am I on the road", the surface normal, walls, off-road and lap progress are maths, as in the 2D track. M6b proved it for every feature on its test track, so the fallback (a triangle-mesh track with ray casts, three-mesh-bvh or Rapier) was not needed.
 - **Rendering:** Three.js, vendored in `host/vendor/` (M6a measures it).
 - **Players:** 1-4 on one host screen in split screen, like MK8DX's local play (CPU karts fill the field, so one player can race alone). Frame rate target taken from MK8DX on the Switch: 60 fps with 1-2 views, a steady 30 fps with 3-4. Physics stays at the fixed 60 Hz either way.
 - **CPU drivers, if the iPad can carry them:** MK8DX always races 12 karts and fills empty places with CPU drivers, and we want the same. M6a measures drawing 12 karts and M6b measures stepping them. Measured in M6a and M6b: the iPad holds 60 fps with 12 karts and 4 views (stepping 12 karts takes about 0.1 ms), so races fill up to 12.
 
-What gets built when. M6 tests the parts that could sink the plan; M7 is split into four parts (decided after the M6c device run): the feel first, then the race, the look and the CPU drivers.
+What gets built when. M6 tests the parts that could sink the plan; M7 is split into five parts (four decided after the M6c device run, the second look pass after the M7c device run): the feel first, then the race, the look, the look made close to MK8DX, and the CPU drivers.
 
 | Area | MK8DX features | When |
 |---|---|---|
@@ -53,8 +53,8 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 | Feel | steering, speed and scale, bounces off karts and walls, wall penalty, smooth body animation (lean, hop, trick) | M7a |
 | Phone vibration | a buzz on presses, bumps and boosts | later (see "Later ideas") |
 | Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7b |
-| Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles | cost measured in M6a, built in M7c |
-| CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7d |
+| Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles; a quality setting for slow hosts | cost measured in M6a, first pass in M7c, made close to MK8DX in M7d |
+| CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7e |
 | Items and coins | item boxes, two held items, odds by place, coins up to 10 | after M7 |
 | Assists | auto-accelerate and tilt (exist), Smart Steering | Smart Steering later |
 | More course types and modes | gliding, underwater, Grand Prix (4 races with points) | later |
@@ -78,6 +78,7 @@ Two kinds of settings, handled in two places:
   - *Race settings* (the number of laps, and in the 3D race the course and engine class) on the host screen, clicked like the lobby settings (`host/buttons.js` in the 2D race, HTML buttons in the 3D race). One set for everyone, controlled only by the host (decided before M5).
   - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onMessage` as steering. The game shows who has chosen and is ready.
   - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept) or "Back to lobby".
+- *Look* (the 3D race's drawing quality, M7c) sits on the host's setup screen too, but belongs to the host device rather than the race: it is saved in the host's localStorage and comes back next time.
 - So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it goes back to the lobby; saving them between games (localStorage on the host) can be added later if it gets annoying.
 
 Rejected: putting game settings in the lobby. The lobby would have to draw settings that each game defines, which means a settings description language in the game contract; and per-player control choices do not fit a host screen anyway.
@@ -214,7 +215,7 @@ MK8DX's distance unit is unknown, so every distance in our race is a guess (list
 First reading (one screenshot, in `docs/mk8dx-reference.md`): the road is about 9 kart widths (ours 9.6) and the kart takes 14.5% of the screen's width (ours about 12%). That is enough as a sanity check: our scale is close. Courses vary their width, and we design our own (M7b), so no more measuring is planned.
 
 ### M6a: 3D performance spike (throwaway) (done)
-- Three.js r0.186.1 is vendored unminified in `host/vendor/three-0.186.1/` (12 add-ons under `addons/`), with an import map in `host/index.html` for `three` and `three/addons/`.
+- Three.js r0.186.1 is vendored unminified in `host/vendor/three-0.186.1/` (11 add-ons under `addons/` since M7c removed `RoomEnvironment`), with an import map in `host/index.html` for `three` and `three/addons/`.
 - Results (`docs/3d-findings.md`): the iPad draws the full look (shadows, glossy, bloom, particles, detailed karts) with 4 views and 12 karts in under 10 ms at pixel ratio 1; at ratio 2 it takes about 20 ms. Pixels are the cost, not views, karts or triangles. Bloom is the costliest part. A laptop on integrated graphics was slower than the iPad, so M7c needs a way to drop costs on a slow host (bloom first, then resolution).
 - M7c should compile every shader while loading: switching bloom on stalled one frame for 1.8 s. A 30 fps cap inside the game's `render()` paces evenly, so the runner needs no change.
 - WebGL context loss ends the game through the shell's error path; `stop()` must call `renderer.forceContextLoss()` (iOS allows a page few contexts).
@@ -224,7 +225,7 @@ First reading (one screenshot, in `docs/mk8dx-reference.md`): the road is about 
 - "3D test drive" (`kart-3d`, 1-4 players): the shared setup screen, then free driving in split screen with dummy karts filling the field to 12 (players start at the back, as in MK8DX). M7b made it the race, "Kart race 3D" (a longer title does not fit the lobby's game picker).
 - The track model works for every feature (hill, jump gap, hairpin, banked curve, off-road, anti-gravity wall, edges without walls); no physics library needed. Pieces become stations 1 unit apart (`track-builder.js`), and `track.js` finds a kart by walking from its last station, so a bridge cannot confuse it. On the road a kart is stuck to the surface; gravity only acts in the air (toward the road in anti-gravity sections).
 - Numbers: MK8DX's level-10 speed curve and steering rate taken literally, and every distance (top speed 24 units/s = 12 kart lengths/s, road 16 wide, camera, gravity) a guess, since no footage was measured. The table is in `docs/3d-findings.md`. On the device run the controls did not feel like MK8DX yet; tuning is put off to a later pass.
-- Measured on the iPad with 4 views: 12 karts step in about 0.1 ms and draw at 60 fps with 2-2.3 ms of CPU per frame, so M7d fills races to 12 karts.
+- Measured on the iPad with 4 views: 12 karts step in about 0.1 ms and draw at 60 fps with 2-2.3 ms of CPU per frame, so M7e (planned as M7d until the M7c device run) fills races to 12 karts.
 - Shared phone controls: `controller/kart/` (`controls.js` plus the setup screen, steering and markup); each race's `controller/games/<id>/index.js` passes its own `describeStatus(view)`, and its `style.css` imports `controller/kart/style.css`. Host side: `host/kart/kart-controls.js` and `host/kart/setup.js`.
 - Headless Chromium draws the test drive at about 2 fps, too slow for Playwright's own clicks on End game's two-click confirm, so the M6b browser test clicks host HTML buttons through the DOM.
 
@@ -235,7 +236,7 @@ First reading (one screenshot, in `docs/mk8dx-reference.md`): the road is about 
 - Device run so far: rocket starts arrived +0.13 to +0.57 s after "2" with round trips of 11-113 ms, all inside the window (left at 0-0.6 s); with auto-accelerate a rocket start works by holding Drift; the spark colour on Drift, the trick and the spin boost work. The hairpin to orange and purple, dash panels and slipstream work too. The feel did not match MK8DX (steering, walls, bumps, pose transitions, a hop too low): those notes are M7a's starting list.
 - Drawing: drift sparks, boost flames and stall smoke (`effects.js`, one point cloud), dash panels on the road, the body leaning into drifts, rolling in tricks and spinning in spin boosts (`kartPose` returns `bodyForward`/`bodyUp` apart from the camera's `forward`/`up`), and the camera pulling back while boosting.
 
-### M7: 3D kart race (in four parts)
+### M7: 3D kart race (in five parts)
 A second kart game in the lobby's list, 1-4 players, separate from the 2D race (its own rules and physics), with the same setup, ready and results flow as the 2D race. It builds on `host/games/kart-3d/` from M6b and M6c and adds the M7 rows of "3D kart race design". Split after the M6c device run, each part in its own chat: the feel comes first, because the track's size, the CPU drivers and the look are all built around the tuned speeds and turns.
 
 #### M7a: Feel pass (on the test track) (done)
@@ -251,16 +252,24 @@ A second kart game in the lobby's list, 1-4 players, separate from the 2D race (
 - The track model has a road width per piece (`halfWidth`, eased) and per-side grass (`shoulderLeft`, `shoulderRight`). Two courses, listed in `courses.js` (each a track definition with an `id` and a `name`) and chosen on the host's setup screen: `seaside-skyway.js` (1213 units, 39 s a lap for the CPU driver at 150cc, designed from the course study in `docs/mk8dx-reference.md`) and the M6b `test-track.js` (whose hairpin needs braking at the tuned speed). The renderer swaps a course's road and scenery in the same WebGL context (`showTrack`). A new course is a new file plus a line in `courses.js`.
 - Host HUD per view (`view-hud.js`): name, lap, place (bottom right, lifted above the shell's game bar in that corner), "Final lap!" and "Finish!" banners; the race clock top right; the readout only with the tuning panel. Phones show the place and lap; no protocol change was needed.
 - Device run passed: the race on Seaside Skyway felt fine, with nothing to change.
-- The CPU karts still use M6b's lane-following dummy driver (no drifting, no boosts); M7d replaces it. The quiet wide straight after the hairpin is where item boxes will go.
+- The CPU karts still use M6b's lane-following dummy driver (no drifting, no boosts); M7e replaces it. The quiet wide straight after the hairpin is where item boxes will go.
 
-#### M7c: The look
-- [ ] Kart and driver models that read as MK8DX-like toys (our own, procedural or CC0, never Nintendo's), and the track dressed with scenery
-- [ ] The look M6a showed the iPad can afford: glossy lit karts, shadows, bloom, sky, particles; every shader compiled while loading
-- [ ] A quality setting that drops costs on a slow host (bloom first, then resolution)
+#### M7c: The look (done)
+- Toy karts of our own (`kart-shapes.js`, `kart-models.js`: helmeted driver in the player's colour, wheels that roll and steer from `kart.wheelTurn`, drawing only), glossy paint reflecting our own sky (`createSkyEnvironment` in `scenery.js`; `RoomEnvironment` is gone from `host/vendor/`), bloom once over all views (`bloom.js`, the gaps between views cleared again after it), a lower sun, glowing sparks, dash panels and anti-gravity lines, off-road dust. Every shader, bloom's included, is built while the game starts (a warm-up frame).
+- A course is dressed when its definition names a `scenery` (`buildTrack` passes it through; `SCENERY_BUILDERS` in `scenery.js`). Seaside Skyway is (`seaside-scenery.js`, `seaside-props.js`, `seaside-layout.js`, `trackside.js`, `trackside-spots.js`, textures drawn on canvases in `textures.js`); the Test track keeps the plain look. A new course's dressing is a builder there plus its name in the course file.
+- "Look" on the host's setup screen (`quality.js`): High (bloom, pixel ratio 1), Medium (no bloom), Low (no bloom, ratio 0.7). A host-device setting, saved in the host's localStorage, unlike the race settings. Bloom strength, radius and threshold and the exposure are sliders in the tuning panel's "Look" group.
+- Device run on the iPad (the main host; the laptop was not tested): the karts look okay, the frame rate is good, no pause was noticed, and the Look setting comes back. Feedback for M7d: the orange dash panel is too bright with bloom, lamps lit in daylight look odd, and the whole look is too plain ("like Roblox, still a prototype") next to MK8DX.
+- Browser tests draw WebGL with Mesa's llvmpipe (`--use-angle=gl-egl --ignore-gpu-blocklist` in `test/helpers/browser.js`), about 0.25 s a frame for the dressed course; with SwiftShader it was 1.2-1.9 s and the suite took 18.5 minutes (now 7.8). The 3D behaviour tests start the host at Medium (`test/helpers/kart-3d-host.js`); the M7c test covers High and Low. Which browser tests to run is now picked by area (Testing in `CLAUDE.md`). Numbers: "M7c: the look" in `docs/3d-findings.md`.
 
-Scope: the track design (scenery, trackside dressing, the road's look) is done only on the real race courses, Seaside Skyway for now. The Test track is only for testing and keeps its plain look. The kart models and the renderer's effects (gloss, shadows, bloom) are not per course, so they show on the Test track too.
+#### M7d: The look, close to MK8DX
+Asked for after the M7c device run: M7c's look reads as a prototype, and the aim is MK8DX's polish and detail. Copying MK8DX's designs is allowed (see "Copy MK8DX's designs freely" above); the whole map need not be copied, but its ideas are borrowed. Built from small parts up: first the building blocks, then the course made from them. Probably too big for one chat; the chat proposes how to split it before building.
+- [ ] Research first: Claude studies MK8DX (screenshots, footage, wiki pages) part by part and writes what it finds into `docs/mk8dx-reference.md` for me to review: road surfaces and their textures (asphalt, curbs, edge lines, the start line), barriers and fences, lamps and lights (how they look, and whether they are lit by day), signs and arrow boards, banners and flags, dash panels and anti-gravity panels, the start gate, scenery on a seaside or sky course, the sky and lighting, and the karts and drivers (the Standard Kart and its parts, how a character sits in it)
+- [ ] A kit of building blocks in MK8DX's style, each its own small module: road and curb textures, barriers, lamps, signs, banners, dash panels, anti-gravity panels, the start gate, props
+- [ ] Seaside Skyway rebuilt from the kit, borrowing ideas from MK8DX's courses
+- [ ] Karts and drivers modelled on Mario Kart's (a kart like the Standard Kart, drivers like its characters)
+- [ ] From the M7c device run: the orange dash panel is too bright with bloom; lamps should not shine in daylight
 
-#### M7d: CPU drivers
+#### M7e: CPU drivers
 - [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
 
 ### M8: Polish

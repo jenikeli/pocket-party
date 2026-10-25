@@ -6,7 +6,7 @@ Project context for Claude Code. Read this first every session, then read `plan.
 
 ## What this is
 
-A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it, with our own assets, never Nintendo's. `docs/mk8dx-reference.md` holds the researched numbers; they are fan-wiki data, so measured findings win where they disagree. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
+A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it. It is for my private use and never published, so copying MK8DX's designs (karts, drivers, track pieces, look) is fine; we build every model and texture ourselves rather than extracting files from the game. `docs/mk8dx-reference.md` holds the researched numbers; they are fan-wiki data, so measured findings win where they disagree. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
 
 ## Supported devices
 
@@ -101,15 +101,28 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - `npm run gen-cert`: make a self-signed cert for every current LAN IP plus 127.0.0.1 (needs `openssl`; Termux: `pkg install openssl-tool`). Writes to `CERT_PATH`/`KEY_PATH` if set, else `certs/`. Rerun whenever the IP changes (phone restart), then start with `CERT_PATH=certs/cert.pem KEY_PATH=certs/key.pem npm start`
 - `npm run check`: check Node version, env vars, cert files (valid, matching key, covers the current IPs) and port, then print the reachable URLs
 - `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, under 10 s
-- `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). About 10 minutes (one M4 test waits out the 30 s grace period, the M5b test drives two full 3-lap races, the M5c test a 1-lap race, and the M6b, M6c, M7a and M7b tests wait on software-rendered WebGL). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
+- `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). About 7.5 minutes (one M4 test waits out the 30 s grace period, the M5b test drives a 3-lap and a 1-lap race, the M5c test a 1-lap race, and each 3D file takes about 35 s: Chromium draws WebGL on the CPU with Mesa's llvmpipe, set in `test/helpers/browser.js`, about 0.25 s a frame; M6b to M7b start the host at Medium quality, M7c runs High). Run chosen files with `node --test --test-timeout=60000 --test-concurrency=1 test/browser/m7c-kart-3d-look.test.js test/browser/m7b-kart-3d-race.test.js` (which files: see Testing below). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing
 
 Every behaviour that has been built must stay working as the code changes. Automated tests are how we know.
 
-- Each milestone adds automated tests for the behaviour it builds, in the same chat. A milestone is not done until `npm test` (and the browser tests, once they exist) passes.
-- While working, run only the tests for the behaviour being changed (for example not the 2D race's browser test when only the 3D race changed). Run the full suite once before handing off, not only the new tests: it catches changes to shared code. Long runs are fine; correctness comes before speed.
+- Each milestone adds automated tests for the behaviour it builds, in the same chat. A milestone is not done until `npm test` and the browser tests picked by the rule below pass.
+- Which tests to run, while working and before handing off:
+  - Always `npm test` (unit and server tests, under 10 s).
+  - Browser tests: only the files for the areas the change touched (plus any new ones), from this map:
+
+    | Area changed | Browser test files |
+    |---|---|
+    | 3D look (`renderer.js`, `scenery.js` and the dressing, kart models, `track-mesh.js`, effects, quality, views) | `m7c`, `m7b` |
+    | 3D rules (kart physics, techniques, boosts, race, tuning, `index.js`, panels) | `m6b`, `m6c`, `m7a`, `m7b` |
+    | Shared kart phone controls and setup (`controller/kart/`, `host/kart/`) | `m5b`, `m5c`, `m6b`, `m6c`, `m7a` |
+    | 2D race (`host/games/kart-2d/`, `controller/games/kart-2d/`) | `m5b`, `m5c` |
+    | Input lab and input modules (`host/games/input-lab/`, `controller/inputs/`) | `m3` |
+
+  - The full browser suite only when shared code changed: `server/`, `shared/`, the host shell (`host/*.js`, `host/index.html`), the controller shell (`controller/*.js`, `controller/index.html`), `host/games/index.js`, or `test/helpers/`. Say in the handoff which browser files ran and why.
+  - If unsure which area a file belongs to, run the wider set. Correctness comes before speed.
 - Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel.
 - If a change breaks an existing test, fix the code, not the test. Change a test only when the intended behaviour changed on purpose, and say so in the handoff.
 - Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.

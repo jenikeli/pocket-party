@@ -4,8 +4,8 @@ What the 3D kart race copies from Mario Kart 8 Deluxe (Nintendo Switch, "MK8DX" 
 
 ## What we copy and what we do not
 
-- **Copy:** the mechanics, the numbers, the feel, the camera, the HUD layout and the general look (bright, glossy, toy-like).
-- **Do not copy:** Nintendo's assets or names. No ripped models, textures, sounds or music, no Mario characters, logos, item artwork or real course layouts. Mechanics and numbers are generally not covered by copyright, but those assets are, and Nintendo has had hundreds of fan games taken down for using them ([Nintendo Life, 2021](https://www.nintendolife.com/news/2021/01/nintendo_issues_mass_dmca_takedown_379_fan-made_games_forcibly_removed)). Use procedural or CC0 assets, for example [Kenney's Racing Kit](https://opengameart.org/content/racing-kit) (CC0, glTF: road pieces, barriers, flags, tents).
+- **Copy:** the mechanics, the numbers, the feel, the camera, the HUD layout and, since the M7c device run, the designs themselves: karts and drivers modelled on Mario Kart's, MK8DX's track pieces, signs, textures and course ideas, as closely as we can. The game is for private use only and is never published, so the takedown risk that made earlier milestones avoid this ([Nintendo Life, 2021](https://www.nintendolife.com/news/2021/01/nintendo_issues_mass_dmca_takedown_379_fan-made_games_forcibly_removed)) does not apply.
+- **Do not:** extract files from the game (models, textures, sounds, music). We build every model and texture ourselves, procedurally where possible, or from CC0 assets such as [Kenney's Racing Kit](https://opengameart.org/content/racing-kit) (CC0, glTF: road pieces, barriers, flags, tents).
 
 ## Race format
 

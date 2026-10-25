@@ -31,3 +31,20 @@ export function viewRects(viewCount, width, height) {
   }
   throw new Error(`Views come in 1, 2 or 4, not ${viewCount}`);
 }
+
+// The gaps between the views, as rectangles counted like viewRects: the canvas left over once the views are
+// drawn. Bloom spreads glow into them, so they are cleared to black again after it.
+export function gapRects(viewCount, width, height) {
+  if (viewCount === 1) {
+    return [];
+  }
+  const rects = viewRects(viewCount, width, height);
+  const topLeft = rects[0];
+  const bottomRight = rects[rects.length - 1];
+  const across = { x: 0, y: bottomRight.height, width, height: topLeft.y - bottomRight.height };
+  if (viewCount === 2) {
+    return [across];
+  }
+  const down = { x: topLeft.width, y: 0, width: bottomRight.x - topLeft.width, height };
+  return [across, down];
+}

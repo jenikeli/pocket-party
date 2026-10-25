@@ -29,15 +29,17 @@ export function cardRemoveButton(slotIndex) {
 
 // Clicks Start until `controllerPage` shows the game's controls (`controlsSelector`, the input lab's by
 // default). The button only works once the host has seen everyone ready, which can take a frame or two after
-// the last ready tap. `scale` is the host page's size over 1920x1080 (the lobby is scaled to fit).
-export async function startGame(hostPage, controllerPage, controlsSelector = '#pad-screen', scale = 1) {
+// the last ready tap. `scale` is the host page's size over 1920x1080 (the lobby is scaled to fit). `timeoutMs`
+// is how long the game may take to start: the 3D race builds its world and draws a first frame in software
+// WebGL, which takes several seconds.
+export async function startGame(hostPage, controllerPage, controlsSelector = '#pad-screen', scale = 1, timeoutMs = 5000) {
   await waitUntil(
     async () => {
       await hostPage.mouse.click(START_BUTTON.x * scale, START_BUTTON.y * scale);
       await controllerPage.waitForTimeout(200);
       return controllerPage.isVisible(controlsSelector);
     },
-    { message: 'the host\'s Start button to start the game' },
+    { timeoutMs, message: 'the host\'s Start button to start the game' },
   );
 }
 

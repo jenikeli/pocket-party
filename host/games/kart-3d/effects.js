@@ -1,17 +1,25 @@
 // The 3D race's particles: drift sparks from the rear wheels in the spark level's colour, flames from the
-// exhaust while a kart boosts, and smoke from the wheels of a stalled start. One Three.js point cloud for the
+// exhausts while a kart boosts, smoke from the wheels of a stalled start, and dust from the wheels off-road.
+// Sparks and flames are brighter than white, so on the High quality setting they glow (bloom.js). One Three.js point cloud for the
 // whole field (one draw call per view, as measured in M6a), moved on the CPU every drawn frame. Particles are
 // only drawing: they live here, not in the game state. Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
+import { sparkLevel, SPARK_COLORS } from './kart-techniques.js';
+import { SURFACES } from './track.js';
 
 const MAX_PARTICLES = 1500;
 const SPARK_HEX = { blue: 0x4fb3ff, orange: 0xff9a1f, purple: 0xd04dff };
 const FLAME_HEXES = [0xff7a1a, 0xffc94a];
 const SMOKE_HEX = 0x6a6a6a;
-// Where particles start on a kart's body: x left, y up, z forward (the model's own axes, kart-models.js).
-const REAR_WHEELS = [[0.68, 0.1, -0.75], [-0.68, 0.1, -0.75]];
-const EXHAUST = [0, 0.55, -1.25];
+const DUST_HEX = 0x6b5a3c;
+// Sparks are this many times brighter than their colour, flames a little: a flame is many particles on top of
+// each other (they add up), which would bloom into a white blob over the kart.
+const SPARK_GLOW = 2.5;
+const FLAME_GLOW = 1.2;
+// Where particles start on a kart's body: x left, y up, z forward (the model's own axes, kart-shapes.js).
+const REAR_WHEELS = [[0.66, 0.1, -0.72], [-0.66, 0.1, -0.72]];
+const EXHAUSTS = [[0.33, 0.72, -1.3], [-0.33, 0.72, -1.3]];
 // Particles a second from each source, and how long each lives (seconds).
 const SPARKS_PER_SECOND = 90;
 const SPARK_LIFE = 0.22;
@@ -19,6 +27,10 @@ const FLAMES_PER_SECOND = 160;
 const FLAME_LIFE = 0.16;
 const SMOKE_PER_SECOND = 40;
 const SMOKE_LIFE = 0.6;
+const DUST_PER_SECOND = 50;
+const DUST_LIFE = 0.5;
+// Below this speed an off-road kart raises no dust.
+const DUST_SPEED = 3;
 
 // Returns { update(sources, dt), dispose() }; the point cloud is added to `scene`.
 export function createEffects(scene) {
@@ -44,19 +56,23 @@ export function createEffects(scene) {
   // Each particle: { position, velocity, life, maxLife, color (THREE.Color) }.
   let particles = [];
 
-  // `sources` lists, for each kart to draw: { pose, velocity, spark, boosting, stalled } where pose has the
-  // body's position, bodyForward and bodyUp (race-views.js kartPose), velocity is the kart's (so particles
-  // keep up with it), and spark is a SPARK_COLORS name or null. `dt` is the real time since the last frame.
+  // `sources` lists, for each kart to draw: { pose, velocity, spark, boosting, stalled, dusty } where pose has
+  // the body's position, bodyForward and bodyUp (race-views.js kartPose), velocity is the kart's (so particles
+  // keep up with it), spark is a SPARK_COLORS name or null, and dusty is true while it drives off-road. `dt` is
+  // the real time since the last frame.
   function update(sources, dt) {
     for (const source of sources) {
       if (source.spark) {
-        REAR_WHEELS.forEach((spot) => emit(source, spot, SPARKS_PER_SECOND * dt, SPARK_LIFE, SPARK_HEX[source.spark], sparkSpeed));
+        REAR_WHEELS.forEach((spot) => emit(source, spot, SPARKS_PER_SECOND * dt, SPARK_LIFE, SPARK_HEX[source.spark], sparkSpeed, SPARK_GLOW));
       }
       if (source.boosting) {
-        emit(source, EXHAUST, FLAMES_PER_SECOND * dt, FLAME_LIFE, FLAME_HEXES, flameSpeed);
+        EXHAUSTS.forEach((spot) => emit(source, spot, (FLAMES_PER_SECOND / 2) * dt, FLAME_LIFE, FLAME_HEXES, flameSpeed, FLAME_GLOW));
       }
       if (source.stalled) {
-        REAR_WHEELS.forEach((spot) => emit(source, spot, SMOKE_PER_SECOND * dt, SMOKE_LIFE, SMOKE_HEX, smokeSpeed));
+        REAR_WHEELS.forEach((spot) => emit(source, spot, SMOKE_PER_SECOND * dt, SMOKE_LIFE, SMOKE_HEX, smokeSpeed, 1));
+      }
+      if (source.dusty) {
+        REAR_WHEELS.forEach((spot) => emit(source, spot, DUST_PER_SECOND * dt, DUST_LIFE, DUST_HEX, smokeSpeed, 1));
       }
     }
     particles = particles.filter((particle) => (particle.life -= dt) > 0);
@@ -72,7 +88,8 @@ export function createEffects(scene) {
   }
 
   // `count` is fractional: its fraction is a chance of one more, so a slow frame rate emits the same per second.
-  function emit(source, spot, count, life, hex, speedFor) {
+  // `brightness` multiplies the colour; above 1 it glows.
+  function emit(source, spot, count, life, hex, speedFor, brightness) {
     const whole = Math.floor(count) + (Math.random() < count % 1 ? 1 : 0);
     const { position, bodyForward, bodyUp } = source.pose;
     const forward = new THREE.Vector3(bodyForward.x, bodyForward.y, bodyForward.z);
@@ -84,7 +101,7 @@ export function createEffects(scene) {
         .addScaledVector(up, spot[1])
         .addScaledVector(forward, spot[2]);
       const velocity = new THREE.Vector3(source.velocity.x, source.velocity.y, source.velocity.z).add(speedFor(forward, up, left, spot));
-      const color = new THREE.Color(Array.isArray(hex) ? hex[Math.floor(Math.random() * hex.length)] : hex);
+      const color = new THREE.Color(Array.isArray(hex) ? hex[Math.floor(Math.random() * hex.length)] : hex).multiplyScalar(brightness);
       particles.push({ position: start, velocity, life: life * (0.6 + 0.4 * Math.random()), maxLife: life, color });
     }
   }
@@ -99,8 +116,22 @@ export function createEffects(scene) {
   return { update, dispose };
 }
 
-// Sparks fly back, outward from their wheel and up; flames shoot straight back; smoke rises slowly. Each is the
-// particle's speed relative to its kart.
+// What to draw for one kart, as update() takes it: sparks while it drifts, flames while it boosts, smoke while
+// it stalls, dust while it drives off-road. `pose` is the kart as drawn this frame.
+export function describeEffects(kart, pose) {
+  const speed = Math.hypot(kart.velocity.x, kart.velocity.y, kart.velocity.z);
+  return {
+    pose,
+    velocity: kart.velocity,
+    spark: kart.grounded ? SPARK_COLORS[sparkLevel(kart)] : null,
+    boosting: kart.boost !== null,
+    stalled: kart.stallLeft > 0,
+    dusty: kart.grounded && kart.surface === SURFACES.OFF_ROAD && speed > DUST_SPEED,
+  };
+}
+
+// Sparks fly back, outward from their wheel and up; flames shoot straight back; smoke and dust rise slowly.
+// Each is the particle's speed relative to its kart.
 function sparkSpeed(forward, up, left, spot) {
   return new THREE.Vector3()
     .addScaledVector(forward, -2 - 2 * Math.random())

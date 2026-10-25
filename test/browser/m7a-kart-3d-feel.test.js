@@ -1,7 +1,8 @@
 // Browser tests for M7a, the 3D race's feel pass on real pages: the host's tuning panel (a slider per tuned
 // number that changes the drive at once, and Copy values, with a text box when the clipboard refuses), the
 // phones' layout for tilt (Drift on the left; Brake left of Go, the Item place above Go), with the buttons still
-// working from their new places. Ana is an Android phone (Chromium, real touches) and Bo an iPhone (WebKit). Headless Chromium draws WebGL in software, so the host page is half the usual size.
+// working from their new places. Ana is an Android phone (Chromium, real touches) and Bo an iPhone (WebKit). Headless Chromium draws WebGL in software, so the host page is
+// half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,6 +11,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { presetQuality, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 import { TUNABLES } from '../../host/games/kart-3d/tuning.js';
 
@@ -85,6 +87,7 @@ describe('M7a 3D feel', () => {
     hostPage = await hostContext.newPage();
     hostPage.on('pageerror', (error) => pageErrors.push(error));
     hostMessages = watchServerMessages(hostPage);
+    await presetQuality(hostPage, 'medium');
     await hostPage.goto(`${server.baseUrl}/host`);
     roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
@@ -95,7 +98,7 @@ describe('M7a 3D feel', () => {
       await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
       await hostPage.waitForTimeout(300);
     }
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE);
+    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     for (const player of [ana, bo]) {
       await player.page.click('#kart-ready-button');

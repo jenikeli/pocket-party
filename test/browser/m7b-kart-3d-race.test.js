@@ -7,7 +7,8 @@
 // the game through the shell's error path. Ana is an
 // Android phone (Chromium), Bo an iPhone (WebKit). A whole race is not driven here: software-drawn WebGL runs
 // at a few frames a second and nothing can steer blind round the course, so the unit tests drive whole races.
-// Headless Chromium draws WebGL in software, so the host page is half the usual size.
+// Headless Chromium draws WebGL in software, so the host page is
+// half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,6 +16,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { presetQuality, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -82,12 +84,13 @@ describe('M7b 3D race', () => {
     hostPage = await chromium.newPage({ viewport: HOST_SIZE });
     hostPage.on('pageerror', (error) => pageErrors.push(error));
     hostMessages = watchServerMessages(hostPage);
+    await presetQuality(hostPage, 'medium');
     await hostPage.goto(`${server.baseUrl}/host`);
     roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
     await chooseKartRace3d();
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE);
+    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
   });
 
@@ -210,7 +213,7 @@ describe('M7b 3D race', () => {
   test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', async () => {
     // The room reopened after the game; a new player joins so the race can start again.
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
-    await startGame(hostPage, cy.page, '#kart-setup', HOST_SCALE);
+    await startGame(hostPage, cy.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('[data-course-id="seaside-skyway"]', 'aria-pressed'), 'true', 'a new game starts on the first course');
     await clickNow(hostPage, '[data-course-id="test-track"]');

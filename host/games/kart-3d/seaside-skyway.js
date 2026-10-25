@@ -29,6 +29,8 @@ export const SEASIDE_SKYWAY = Object.freeze({
   name: 'Seaside Skyway',
   halfWidth: 9,
   startLine: 45,
+  // Islands, boats and clouds round it, and its trackside dressing (seaside-scenery.js, trackside.js).
+  scenery: 'seaside',
   dashPanels: [
     // On the bridge before the jump: a boosted kart flies far.
     { s: 610, lateral: 0 },

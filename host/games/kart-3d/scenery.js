@@ -1,19 +1,29 @@
-// The 3D race's world around the road: a gradient sky, the sea far below (the road floats, so leaving it means
-// falling), pillars holding the road up, and the sun with one shadow map over the whole track. Built once from
+// The 3D race's world around the road: a gradient sky with the sun in it, the sea far below (the road floats, so
+// leaving it means falling), pillars holding the road up, and the sun with one shadow map over the whole track.
+// A course that names a scenery (track.scenery) is dressed further by that scenery's builder. Built once from
 // the track's stations, all in one group, so a different course can replace it. Used by
 // host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
+import { buildSeasideScenery } from './seaside-scenery.js';
 
 const SEA_LEVEL = -30;
 const SKY_TOP = 0x3d8bff;
 const HORIZON = 0xcfe8ff;
+const SEA = 0x2b7bb9;
 // A pillar every this many stations, where the road is flat enough to stand on one.
 const PILLAR_SPACING = 24;
 const ROAD_THICKNESS = 0.6;
+// Where the sun is, seen from the course's middle: low enough (about 34 degrees up) to show in the sky on the
+// legs that head toward it and to cast long shadows, as on MK8DX's sunny courses.
+const SUN_OFFSET = new THREE.Vector3(-90, 120, -150);
+const SUN_DIRECTION = SUN_OFFSET.clone().normalize();
+// Each scenery's builder, by the name a course gives in its `scenery`. A builder gets { world, track, sea, keep }
+// and returns { update(dt) } for whatever it moves.
+const SCENERY_BUILDERS = { seaside: buildSeasideScenery };
 
-// Adds everything to `scene`. Returns { dispose() }, which takes it out of the scene again and frees what it
-// created.
+// Adds everything to `scene`. Returns { update(dt), dispose() }: update moves the scenery on by the real time
+// since the last drawn frame (waves, boats); dispose takes it out of the scene again and frees what it created.
 export function buildScenery(scene, track) {
   const disposables = [];
   const keep = (thing) => {
@@ -22,21 +32,28 @@ export function buildScenery(scene, track) {
   };
   scene.fog = new THREE.Fog(HORIZON, 150, 600);
   const world = new THREE.Group();
-  world.add(createSky(keep));
+  const sky = createSky();
+  keep(sky.geometry);
+  keep(sky.material);
+  world.add(sky);
   const sea = new THREE.Mesh(
     keep(new THREE.PlaneGeometry(3000, 3000)),
-    keep(new THREE.MeshStandardMaterial({ color: 0x2b7bb9, roughness: 0.35 })),
+    keep(new THREE.MeshStandardMaterial({ color: SEA, roughness: 0.35 })),
   );
   sea.rotation.x = -Math.PI / 2;
   sea.position.y = SEA_LEVEL;
   world.add(sea, createPillars(track, keep));
   addLights(world, track, keep);
+  const dressing = track.scenery === null ? null : SCENERY_BUILDERS[track.scenery]({ world, track, sea, keep });
   scene.add(world);
+  function update(dt) {
+    dressing?.update(dt);
+  }
   function dispose() {
     scene.remove(world);
     disposables.forEach((thing) => thing.dispose());
   }
-  return { dispose };
+  return { update, dispose };
 }
 
 // One instanced mesh for every pillar: one draw call per view.
@@ -66,7 +83,7 @@ function addLights(world, track, keep) {
   const centre = new THREE.Vector3((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
   const reach = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) / 2 + 20;
   const sun = new THREE.DirectionalLight(0xfff4e0, 2.6);
-  sun.position.copy(centre).add(new THREE.Vector3(80, 200, 60));
+  sun.position.copy(centre).add(SUN_OFFSET);
   sun.target.position.copy(centre);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -78,29 +95,57 @@ function addLights(world, track, keep) {
   world.add(sun, sun.target);
 }
 
-// A gradient dome, drawn without lighting or fog: blue overhead fading to haze at the horizon.
-function createSky(keep) {
-  const material = keep(new THREE.ShaderMaterial({
+// What glossy surfaces (the karts' paint and chrome) reflect, the same for every course: the sky dome below,
+// blurred by Three.js's PMREM into an environment map. Our own sky, not a studio scene, so the karts mirror blue
+// sky and sea and glint only where the sun is. Returns the map's render target; dispose it when done.
+export function createSkyEnvironment(renderer) {
+  const sky = createSky();
+  const skyScene = new THREE.Scene().add(sky);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  // The far plane must reach the dome.
+  const environment = pmrem.fromScene(skyScene, 0, 1, 1000);
+  pmrem.dispose();
+  sky.geometry.dispose();
+  sky.material.dispose();
+  return environment;
+}
+
+// A gradient dome, drawn without lighting or fog: blue overhead fading to haze at the horizon and sea blue below
+// it (hidden by the sea in the race, seen in reflections), with the sun in it: a small disc far brighter than
+// white (it glows on the High quality setting) in a soft halo. The caller disposes its geometry and material.
+function createSky() {
+  const material = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
     fog: false,
-    uniforms: { top: { value: new THREE.Color(SKY_TOP) }, horizon: { value: new THREE.Color(HORIZON) } },
+    uniforms: {
+      top: { value: new THREE.Color(SKY_TOP) },
+      horizon: { value: new THREE.Color(HORIZON) },
+      sea: { value: new THREE.Color(SEA) },
+      sunDirection: { value: SUN_DIRECTION },
+    },
     vertexShader: `
-      varying float height;
+      varying vec3 direction;
       void main() {
-        height = normalize(position).y;
+        direction = normalize(position);
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }`,
     fragmentShader: `
       uniform vec3 top;
       uniform vec3 horizon;
-      varying float height;
+      uniform vec3 sea;
+      uniform vec3 sunDirection;
+      varying vec3 direction;
       void main() {
-        gl_FragColor = vec4(mix(horizon, top, clamp(height * 2.0, 0.0, 1.0)), 1.0);
+        float height = normalize(direction).y;
+        vec3 sky = height >= 0.0 ? mix(horizon, top, clamp(height * 2.0, 0.0, 1.0)) : mix(horizon, sea, clamp(-height * 4.0, 0.0, 1.0));
+        float towardSun = max(dot(normalize(direction), sunDirection), 0.0);
+        vec3 sun = vec3(1.0, 0.95, 0.85) * (pow(towardSun, 2000.0) * 8.0 + pow(towardSun, 16.0) * 0.4);
+        gl_FragColor = vec4(sky + sun, 1.0);
         // Three.js's own output steps, so the sky matches the lit materials.
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
-  }));
-  return new THREE.Mesh(keep(new THREE.SphereGeometry(900, 32, 16)), material);
+  });
+  return new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), material);
 }

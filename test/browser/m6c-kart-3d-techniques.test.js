@@ -3,7 +3,8 @@
 // Go pressed after the phone shows "2" is judged and logged in the host's readout, holding Drift with the stick
 // over drifts the kart, the Drift button takes the spark colour of a view, and Restart starts another
 // countdown. Ana is an Android phone (Chromium, real touches) on the stick and Go; Bo an iPhone (WebKit) on
-// auto-accelerate. Headless Chromium draws WebGL in software, so the host page is half the usual size.
+// auto-accelerate. Headless Chromium draws WebGL in software, so the host page is
+// half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,6 +13,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { presetQuality, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -79,6 +81,7 @@ describe('M6c 3D techniques', () => {
     hostPage = await chromium.newPage({ viewport: HOST_SIZE });
     hostPage.on('pageerror', (error) => pageErrors.push(error));
     hostMessages = watchServerMessages(hostPage);
+    await presetQuality(hostPage, 'medium');
     await hostPage.goto(`${server.baseUrl}/host`);
     roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
@@ -89,7 +92,7 @@ describe('M6c 3D techniques', () => {
       await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
       await hostPage.waitForTimeout(300);
     }
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE);
+    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');

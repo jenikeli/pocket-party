@@ -1,11 +1,13 @@
-// The 3D race's world around the road: a gradient sky with the sun in it, the sea far below (the road floats, so
-// leaving it means falling), pillars holding the road up, and the sun with one shadow map over the whole track.
-// A course that names a scenery (track.scenery) is dressed further by that scenery's builder. Built once from
-// the track's stations, all in one group, so a different course can replace it. Used by
-// host/games/kart-3d/renderer.js.
+// The 3D race's world: a gradient sky with the sun in it, the sea far below (the road floats, so leaving it
+// means falling), pillars holding the road up, the sun with one shadow map over the whole track, and the road.
+// A course that names a scenery (track.scenery) gets that scenery's road and dressing round it; without one it
+// has M7c's plain road (track-mesh.js) and nothing more. Built once from the track's stations, all in one
+// group, so a different course can replace it. Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
+import { buildTrackMesh } from './track-mesh.js';
 import { buildSeasideScenery } from './seaside-scenery.js';
+import { buildTestTrackRoad, buildTestTrackScenery } from './test-track-scenery.js';
 
 const SEA_LEVEL = -30;
 const SKY_TOP = 0x3d8bff;
@@ -18,12 +20,19 @@ const ROAD_THICKNESS = 0.6;
 // legs that head toward it and to cast long shadows, as on MK8DX's sunny courses.
 const SUN_OFFSET = new THREE.Vector3(-90, 120, -150);
 const SUN_DIRECTION = SUN_OFFSET.clone().normalize();
-// Each scenery's builder, by the name a course gives in its `scenery`. A builder gets { world, track, sea, keep }
-// and returns { update(dt) } for whatever it moves.
-const SCENERY_BUILDERS = { seaside: buildSeasideScenery };
+// What each scenery draws, by the name a course gives in its `scenery`: buildRoad(track) returns { meshes,
+// update(dt, race), dispose() }; buildDressing gets { world, track, sea, keep } and returns { update(dt, race) }
+// for whatever it moves. Seaside Skyway keeps M7c's road until M7d3 rebuilds it from the kit; the Test track
+// shows the kit's pieces (M7d2).
+const SCENERIES = {
+  seaside: { buildRoad: buildTrackMesh, buildDressing: buildSeasideScenery },
+  'test-track': { buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
+};
+const PLAIN = { buildRoad: buildTrackMesh, buildDressing: null };
 
-// Adds everything to `scene`. Returns { update(dt), dispose() }: update moves the scenery on by the real time
-// since the last drawn frame (waves, boats); dispose takes it out of the scene again and frees what it created.
+// Adds everything to `scene`. Returns { update(dt, race), dispose() }: update moves the scenery on by the real
+// time since the last drawn frame (waves, boats, panels) and shows the race's state on it (the start lights;
+// race is null on the setup screen); dispose takes it out of the scene again and frees what it created.
 export function buildScenery(scene, track) {
   const disposables = [];
   const keep = (thing) => {
@@ -44,13 +53,18 @@ export function buildScenery(scene, track) {
   sea.position.y = SEA_LEVEL;
   world.add(sea, createPillars(track, keep));
   addLights(world, track, keep);
-  const dressing = track.scenery === null ? null : SCENERY_BUILDERS[track.scenery]({ world, track, sea, keep });
+  const { buildRoad, buildDressing } = track.scenery === null ? PLAIN : SCENERIES[track.scenery];
+  const road = buildRoad(track);
+  world.add(...road.meshes);
+  const dressing = buildDressing?.({ world, track, sea, keep });
   scene.add(world);
-  function update(dt) {
-    dressing?.update(dt);
+  function update(dt, race) {
+    road.update(dt, race);
+    dressing?.update(dt, race);
   }
   function dispose() {
     scene.remove(world);
+    road.dispose();
     disposables.forEach((thing) => thing.dispose());
   }
   return { update, dispose };

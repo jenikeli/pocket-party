@@ -2,16 +2,17 @@
 // exactly where karts drive: asphalt with red and white curbs (blue and white in anti-gravity sections), the
 // checkered start line, grass shoulders, walls, and the road's underside and edges; unlit and brighter than
 // white so they glow on the High quality setting, blue lines along anti-gravity sections; and the dash panels,
-// unlit too, as bright as the Dash panel glow slider says (renderer.js sets it every frame).
+// unlit too, as bright as the Dash panel glow slider says (update sets it every frame).
 // Gaps are left empty. A dressed course (one with scenery, M7c) also gets asphalt grain, mown stripes in the
-// grass and walls in coloured panels; the Test track keeps its plain look.
-// Used by host/games/kart-3d/renderer.js.
+// grass and walls in coloured panels. Courses dressed from the M7d kit draw the kit's road instead (kit/road.js).
+// Used by host/games/kart-3d/scenery.js.
 
 import * as THREE from 'three';
 import { progressBetween } from './track.js';
 import { DASH_PANEL_LENGTH, DASH_PANEL_WIDTH } from './kart-boosts.js';
 import { createStripBuilder } from './strip-builder.js';
 import { createGrainTexture } from './textures.js';
+import { tuning } from './tuning.js';
 
 const CURB_WIDTH = 1;
 const WALL_HEIGHT = 1.2;
@@ -44,9 +45,9 @@ const COLORS = {
   dashYellow: 0xffe14a,
 };
 
-// Returns { road, walls, glow, dashPanels, dispose() }: four meshes ready to add to the scene (the walls are seen
-// from both sides). The dash panels have their own mesh so that their brightness can change live: an unlit
-// material's colour multiplies the vertex colours.
+// Returns { meshes, update(), dispose() }: the road, the walls (seen from both sides), the glowing lines and the
+// dash panels, ready to add to the scene. The dash panels have their own mesh so that their brightness can
+// change live (update, every frame): an unlit material's colour multiplies the vertex colours.
 export function buildTrackMesh(track) {
   const dressed = track.scenery !== null;
   const surfaces = createStripBuilder();
@@ -78,6 +79,9 @@ export function buildTrackMesh(track) {
   wallMesh.castShadow = true;
   const glowMesh = new THREE.Mesh(glow.build(), new THREE.MeshBasicMaterial({ vertexColors: true }));
   const dashPanelMesh = new THREE.Mesh(dashPanels.build(), new THREE.MeshBasicMaterial({ vertexColors: true }));
+  function update() {
+    dashPanelMesh.material.color.setScalar(tuning.dashPanelGlow);
+  }
   function dispose() {
     for (const mesh of [road, wallMesh, glowMesh, dashPanelMesh]) {
       mesh.geometry.dispose();
@@ -85,7 +89,7 @@ export function buildTrackMesh(track) {
     }
     grain?.dispose();
   }
-  return { road, walls: wallMesh, glow: glowMesh, dashPanels: dashPanelMesh, dispose };
+  return { meshes: [road, wallMesh, glowMesh, dashPanelMesh], update, dispose };
 }
 
 // The asphalt between the curbs, the two curbs, or the start line's checks across the whole width. Laterals are

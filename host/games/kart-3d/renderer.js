@@ -1,14 +1,14 @@
 // Draws the 3D race with Three.js: builds the world (the course's scenery and road, which another course can
 // replace, and the karts), then each frame places the karts between their last two steps, moves the particles
-// (sparks, flames, smoke, dust) and the scenery (waves, boats), and draws one view per player with its HUD, or,
-// on the setup screen, a slow flight round the course; with bloom on the High quality setting (quality.js).
+// (sparks, flames, smoke, dust) and the scenery (waves, boats, panels, start lights), and draws one view per
+// player with its HUD, or, on the setup screen, a slow flight round the course; with bloom on the High quality
+// setting (quality.js).
 // Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the game starts. Used by
 // host/games/kart-3d/index.js.
 
 import * as THREE from 'three';
 import { PLAYER_COLORS, displayName, colorText } from '/host/roster.js';
 import { buildScenery, createSkyEnvironment } from './scenery.js';
-import { buildTrackMesh } from './track-mesh.js';
 import { createKartModels } from './kart-models.js';
 import { createViews } from './views.js';
 import { createEffects, describeEffects } from './effects.js';
@@ -81,7 +81,7 @@ export function createRenderer(container, track, qualityLevel) {
     }
     renderer.shadowMap.needsUpdate = true;
     renderer.toneMappingExposure = tuning.exposure;
-    world.update(dt);
+    world.update(dt, race);
     if (!race) {
       for (let index = 0; index < FIELD_SIZE; index += 1) {
         kartModels.hide(index);
@@ -169,24 +169,11 @@ export function createRenderer(container, track, qualityLevel) {
   return { draw, showTrack, setQuality, destroy };
 }
 
-// Adds the course's road and scenery to `scene`. Returns { centre, reach, update(dt), dispose() }: the course's
-// middle seen from above and how far it reaches from there, moving the scenery on, and taking it all out of the
-// scene again.
+// Adds the course's road and scenery to `scene`. Returns { centre, reach, update(dt, race), dispose() }: the
+// course's middle seen from above and how far it reaches from there, moving the scenery on (race is null on the
+// setup screen), and taking it all out of the scene again.
 function buildWorld(scene, track) {
-  const scenery = buildScenery(scene, track);
-  const trackMesh = buildTrackMesh(track);
-  const meshes = [trackMesh.road, trackMesh.walls, trackMesh.glow, trackMesh.dashPanels];
-  scene.add(...meshes);
-  function update(dt) {
-    trackMesh.dashPanels.material.color.setScalar(tuning.dashPanelGlow);
-    scenery.update(dt);
-  }
-  function dispose() {
-    scene.remove(...meshes);
-    trackMesh.dispose();
-    scenery.dispose();
-  }
-  return { ...extentOf(track), update, dispose };
+  return { ...extentOf(track), ...buildScenery(scene, track) };
 }
 
 // The middle of the course seen from above, and how far it reaches from there (half its longer side).

@@ -13,6 +13,8 @@
 export const TEST_TRACK = Object.freeze({
   id: 'test-track',
   name: 'Test track',
+  // Dressed with the M7d kit's pieces, to look at them (test-track-scenery.js).
+  scenery: 'test-track',
   // Road width 16, 8 kart lengths: a guess until it is measured from MK8DX footage.
   halfWidth: 8,
   // The grid sits on the start straight just behind this line.

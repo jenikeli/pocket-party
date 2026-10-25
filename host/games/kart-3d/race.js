@@ -49,13 +49,11 @@ export function createRace(track, playerIds, laps, engineClass) {
   const cpuCount = Math.max(FIELD_SIZE - playerIds.length, 0);
   const karts = [];
   for (let gridIndex = 0; gridIndex < cpuCount + playerIds.length; gridIndex += 1) {
-    const row = Math.floor(gridIndex / GRID_LANES.length);
-    const column = gridIndex % GRID_LANES.length;
-    const s = track.startLine - GRID_FIRST_ROW - row * GRID_ROW_SPACING - column * GRID_STAGGER;
+    const { s, lateral } = gridSpot(track, gridIndex);
     const isCpu = gridIndex < cpuCount;
     const weight = isCpu ? CPU_WEIGHTS[gridIndex % CPU_WEIGHTS.length] : PLAYER_WEIGHT;
     karts.push({
-      ...createKart(track, s, GRID_LANES[column], weight, ENGINE_CLASSES[engineClass]),
+      ...createKart(track, s, lateral, weight, ENGINE_CLASSES[engineClass]),
       playerId: isCpu ? null : playerIds[gridIndex - cpuCount],
       lane: isCpu ? CPU_LANES[gridIndex % CPU_LANES.length] : null,
       goHeld: false,
@@ -70,6 +68,14 @@ export function createRace(track, playerIds, laps, engineClass) {
     });
   }
   return { phase: RACE_PHASES.COUNTDOWN, time: 0, laps, engineClass, firstPlayerFinishTime: null, karts };
+}
+
+// Where the kart in grid place `gridIndex` (0 is pole position) starts: { s, lateral }, its middle's distance
+// along the road and how far right of the centre line. Also where the road's grid marks are painted (kit/).
+export function gridSpot(track, gridIndex) {
+  const row = Math.floor(gridIndex / GRID_LANES.length);
+  const column = gridIndex % GRID_LANES.length;
+  return { s: track.startLine - GRID_FIRST_ROW - row * GRID_ROW_SPACING - column * GRID_STAGGER, lateral: GRID_LANES[column] };
 }
 
 // The race's own clock: seconds since GO (0 before it).

@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { boardSpots, poleSpots, startGateIndex } from './trackside-spots.js';
 import { at, mergeShapes } from './shape-utils.js';
+import { frameAt } from './kit/frames.js';
 import { createArrowTexture, createCheckerTexture } from './textures.js';
 
 // Matches track-mesh.js's walls: boards and poles stand on top of them.
@@ -22,17 +23,6 @@ export function buildTrackside(world, track, keep) {
   const lamps = new THREE.InstancedMesh(keep(new THREE.SphereGeometry(0.25, 10, 8)), keep(new THREE.MeshStandardMaterial(LAMP_GLASS)), lampSpots.length);
   lampSpots.forEach((matrix, index) => lamps.setMatrixAt(index, matrix));
   world.add(lamps);
-}
-
-// A frame at a station: x along `right`, y up the road's normal, z `facing`, at (lateral, lift) on the road.
-function frameAt(station, lateral, lift, facing) {
-  const y = new THREE.Vector3(station.normal.x, station.normal.y, station.normal.z);
-  const z = facing.clone().normalize();
-  const x = new THREE.Vector3().crossVectors(y, z);
-  const position = new THREE.Vector3(station.point.x, station.point.y, station.point.z)
-    .addScaledVector(new THREE.Vector3(station.right.x, station.right.y, station.right.z), lateral)
-    .addScaledVector(y, lift);
-  return new THREE.Matrix4().makeBasis(x, y, z).setPosition(position);
 }
 
 // Facing back down the road toward the karts coming, turned a little toward the road's middle.

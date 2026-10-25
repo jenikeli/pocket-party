@@ -1,9 +1,9 @@
 // Small helpers for building the 3D race's models out of Three.js's simple shapes: placing a shape, stretching
 // one between two points, colouring one per vertex, and merging many into one geometry (one draw call). Used by
-// kart-shapes.js, seaside-scenery.js, seaside-props.js and trackside.js.
+// kart-shapes.js, seaside-scenery.js, seaside-props.js, trackside.js and the kit's pieces (kit/).
 
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export function at(geometry, x, y, z) {
   return geometry.translate(x, y, z);
@@ -31,8 +31,41 @@ export function coloured(geometry, hex) {
   return geometry;
 }
 
-// One geometry from many, which are disposed. Three.js's shapes are all indexed with position, normal and uv;
-// merged shapes must all have colours or none.
+// A box `width` by `height` by `depth` round its middle with every edge rounded by about `radius`, for the
+// kit's chunky, toy-like pieces: a rounded rectangle pushed out along z with rounded (bevelled) front and back
+// edges. Indexed, like Three.js's own shapes, so it merges with them.
+export function roundedBox(width, height, depth, radius) {
+  const halfWidth = width / 2 - radius;
+  const halfHeight = height / 2 - radius;
+  const corner = radius / 2;
+  const outline = new THREE.Shape();
+  outline.moveTo(-halfWidth + corner, -halfHeight);
+  outline.lineTo(halfWidth - corner, -halfHeight);
+  outline.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + corner);
+  outline.lineTo(halfWidth, halfHeight - corner);
+  outline.quadraticCurveTo(halfWidth, halfHeight, halfWidth - corner, halfHeight);
+  outline.lineTo(-halfWidth + corner, halfHeight);
+  outline.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - corner);
+  outline.lineTo(-halfWidth, -halfHeight + corner);
+  outline.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + corner, -halfHeight);
+  const shape = new THREE.ExtrudeGeometry(outline, {
+    depth: Math.max(depth - 2 * radius, 0.001),
+    bevelEnabled: true,
+    bevelSize: radius,
+    bevelThickness: radius,
+    bevelSegments: 2,
+    curveSegments: 3,
+  });
+  shape.translate(0, 0, -(depth - 2 * radius) / 2);
+  // Extruded shapes come unindexed; merging their identical corners indexes them, and keeps their flat faces
+  // flat (corners whose normals differ stay apart).
+  const indexed = mergeVertices(shape);
+  shape.dispose();
+  return indexed;
+}
+
+// One geometry from many, which are disposed. Three.js's shapes (and roundedBox) are all indexed with position,
+// normal and uv; merged shapes must all have colours or none.
 export function mergeShapes(geometries) {
   const merged = mergeGeometries(geometries);
   if (!merged) {

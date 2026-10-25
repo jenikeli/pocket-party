@@ -3,7 +3,7 @@
 // where the trackside dressing stands (trackside-spots.js), where Seaside Skyway's scenery stands
 // (seaside-layout.js), the front wheels following the steering (kart-body.js), the course's scenery passed
 // through the track (track-builder.js), and the look's sliders (tuning.js), the dash panels' glow (M7d1)
-// included.
+// included. The M7d kit has its own file (kart-3d-kit.test.js).
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -205,9 +205,10 @@ test('the front wheels ease toward the steering and never turn past it', () => {
   assert.ok(Math.abs(kart.wheelTurn + 0.5) < 0.01);
 });
 
-test('a course\'s scenery is passed through to its track: Seaside Skyway is dressed, the Test track plain', () => {
+test('a course\'s scenery is passed through to its track, and a course without one is plain', () => {
   assert.equal(seaside.scenery, 'seaside');
-  assert.equal(buildTrack(TEST_TRACK).scenery, null);
+  assert.equal(buildTrack(TEST_TRACK).scenery, 'test-track');
+  assert.equal(buildTrack({ ...TEST_TRACK, scenery: undefined }).scenery, null);
 });
 
 test('the look has sliders: bloom strength, radius and threshold, exposure, and the dash panels\' glow', () => {

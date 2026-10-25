@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import { createRandom } from './random.js';
+import { createCanvas, canvasTexture, repeatingTexture } from './canvas-texture.js';
 
 const SIZE = 256;
 
@@ -37,7 +38,7 @@ export function createGrainTexture() {
     }
   }
   context.putImageData(image, 0, 0);
-  return repeating(canvas);
+  return repeatingTexture(canvas);
 }
 
 // White arrows on red, pointing right; `mirrored` points them left (a left turn's boards).
@@ -56,7 +57,7 @@ export function createArrowTexture(mirrored) {
     context.lineTo(left + 32, SIZE / 4);
     context.fill();
   }
-  const texture = finished(canvas);
+  const texture = canvasTexture(canvas);
   if (mirrored) {
     texture.wrapS = THREE.RepeatWrapping;
     texture.repeat.x = -1;
@@ -74,7 +75,7 @@ export function createCheckerTexture() {
       context.fillRect(column * cell, row * cell, cell, cell);
     }
   }
-  return finished(canvas);
+  return canvasTexture(canvas);
 }
 
 // A normal map of small crossing ripples, for the sea to catch the sun in sparkles. Every wave fits a whole
@@ -108,32 +109,8 @@ export function createRippleTexture() {
     }
   }
   context.putImageData(image, 0, 0);
-  const texture = repeating(canvas);
+  const texture = repeatingTexture(canvas);
   // A normal map holds directions, not colours.
   texture.colorSpace = THREE.NoColorSpace;
-  return texture;
-}
-
-// willReadFrequently keeps the canvas in plain memory: it is only drawn once and then copied into WebGL, and a
-// canvas kept on the GPU stalled the next WebGL resize by seconds in a software-drawn browser.
-function createCanvas(width, height) {
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  return { canvas, context: canvas.getContext('2d', { willReadFrequently: true }) };
-}
-
-function finished(canvas) {
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  // Sharp at the low angles a chase camera sees the road at; Three.js lowers it to what the GPU allows.
-  texture.anisotropy = 8;
-  return texture;
-}
-
-function repeating(canvas) {
-  const texture = finished(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
   return texture;
 }

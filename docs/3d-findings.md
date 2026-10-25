@@ -579,3 +579,7 @@ In headless Chromium on the dev box (llvmpipe, software), so these say how much 
 3. Drive a lap slowly. At each piece, note what looks wrong or plain: the curbs, edge and middle lines and grid brackets; the dash panels (do the chevrons read as arrows and scroll forward?) and the anti-gravity panel at the start of the wall; the ramp plate; every barrier (sponsor wall and fence, guardrail, striped rail, rail fence, block curbs, the plain and anti-gravity walls); the decks and their props (van, stands, tyres, cones, lamps, floodlights, pipes, mushroom); the grandstand and crowd; the bunting.
 4. Frame rate with 2 and with 4 views on High (open Tuning for the readout's frame times). If the Test track stutters where Seaside Skyway did not, try Medium, then Low, and say which holds.
 5. Say which pieces should change before M7d3 builds Seaside Skyway from them, and which seaside and sky pieces matter most there.
+
+### Device run
+
+On the iPad, the Test track on High: the start lights count down and are easy to see from the back of the grid; the road and every piece look great, much better than M7c's look; the race holds 60 fps with no stutter (the iPad sometimes caps the frame rate itself, but reaches 60 easily), so no quality level had to be lowered. The grandstand and its crowd at the start line were the favourite. For M7d3: the roads can stay like the kit's, but a course should have sections themed on its name, and its surroundings should look much less sparse: even the dressed Test track still looks sparse.

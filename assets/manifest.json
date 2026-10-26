@@ -1,3 +1,36 @@
 {
-  "assets": []
+  "assets": [
+    {
+      "path": "textures/Asphalt023S_1K-JPG_Color.jpg",
+      "sha256": "1f8dd25d2b68a0b96e2d1129bdee3c772c0f3bbf608e5340f8c3bd62b9ba3285",
+      "bytes": 1532531,
+      "source": "https://ambientcg.com/a/Asphalt023S",
+      "licence": "CC0 1.0",
+      "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
+    },
+    {
+      "path": "textures/Asphalt023S_1K-JPG_NormalGL.jpg",
+      "sha256": "845394a166e4502bf9c83e15c89463d5890f0b7007c24e47f4b52106ebd5713e",
+      "bytes": 2266738,
+      "source": "https://ambientcg.com/a/Asphalt023S",
+      "licence": "CC0 1.0",
+      "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
+    },
+    {
+      "path": "textures/Asphalt023S_1K-JPG_Roughness.jpg",
+      "sha256": "3556c73c63df811f1fab3eab1583c3fd6e79ee7b3a79b1000d6ffdb4a4a0e0bf",
+      "bytes": 651388,
+      "source": "https://ambientcg.com/a/Asphalt023S",
+      "licence": "CC0 1.0",
+      "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
+    },
+    {
+      "path": "textures/Asphalt023S_1K-JPG_AmbientOcclusion.jpg",
+      "sha256": "4078acd7b5bf2726c15abb8b73ff138cd3225554a06471c3d8db926a76597073",
+      "bytes": 473590,
+      "source": "https://ambientcg.com/a/Asphalt023S",
+      "licence": "CC0 1.0",
+      "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
+    }
+  ]
 }

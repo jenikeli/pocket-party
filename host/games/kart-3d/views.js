@@ -14,9 +14,9 @@ const MAX_VIEWS = 4;
 // margin (host/index.html); the view in that corner lifts its place above it.
 const GAME_BAR_CLEARANCE = 80;
 
-// Returns { draw(renderer, scene, targets, dt, renderTarget), drawOne(renderer, scene, camera, renderTarget),
-// clearGaps(renderer, viewCount), destroy() }. renderTarget is where to draw: null for the canvas, or the bloom's
-// buffer.
+// Returns { draw(renderer, scene, targets, dt, renderTarget, beforeView), drawOne(renderer, scene, camera,
+// renderTarget), clearGaps(renderer, viewCount), destroy() }. renderTarget is where to draw: null for the canvas,
+// or the bloom's buffer.
 export function createViews(container) {
   const views = Array.from({ length: MAX_VIEWS }, () => ({
     camera: new THREE.PerspectiveCamera(tuning.fieldOfView, 16 / 9, 0.3, 1500),
@@ -27,7 +27,9 @@ export function createViews(container) {
   // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting, hud }: the kart's pose as drawn, the
   // label text and its CSS colour, whether the kart boosts (the camera pulls back), and what its HUD shows
   // (view-hud.js). `dt` is the real time since the last drawn frame, in seconds, for the cameras' lag.
-  function draw(renderer, scene, targets, dt, renderTarget = null) {
+  // beforeView(camera) is called with each view's camera, placed, just before that view is drawn (the sun's
+  // shadow map can follow each view: renderer.js).
+  function draw(renderer, scene, targets, dt, renderTarget, beforeView) {
     const size = renderer.getSize(new THREE.Vector2());
     const rects = viewRects(targets.length, size.x, size.y);
     // Each render() clears only its own view, so the gaps between views are cleared first.
@@ -42,6 +44,7 @@ export function createViews(container) {
       view.camera.position.set(position.x, position.y, position.z);
       view.camera.up.set(up.x, up.y, up.z);
       view.camera.lookAt(look.x, look.y, look.z);
+      beforeView(view.camera);
       drawRect(renderer, scene, view.camera, rects[index], renderTarget);
       const inBarCorner = rects[index].y === 0 && rects[index].x + rects[index].width === size.x;
       view.hud.show(target, rects[index], size.y, inBarCorner ? GAME_BAR_CLEARANCE : 0);

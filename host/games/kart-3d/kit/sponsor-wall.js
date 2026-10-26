@@ -3,16 +3,18 @@
 // chain-link fence on posts above it. Since M7d4 built up as MK8DX's is (docs/mk8dx-reference.md, "The kit's
 // objects up close"): each board set back in a frame with a bolt at each corner, a dark kick strip along the
 // foot, a fat cushion of a pad with a seam between boards, and the fence on capped posts with a rail along its
-// top. Returns { add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: end closes
-// the wall's cross-section and puts a fence post at the wall's end.
+// top. In M7d4b2's trial of detail in textures the boards' frames and bolts and the pad's seams are drawn in maps
+// instead (kit/sponsor-wall-detail.js). Returns { add(segment, side), end(station, index, side, facing), meshes() }
+// for kit/barriers.js: end closes the wall's cross-section and puts a fence post at the wall's end.
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';
-import { extrudeSegment, capProfile, roundProfile, offsetProfile, stationBetween, tubeProfile } from './extrude.js';
+import { extrudeSegment, capProfile, roundProfile, offsetProfile, stationBetween, tubeProfile, profileLength } from './extrude.js';
 import { sponsorUv } from './sponsors.js';
 import { frameAt, facingAlong, edgeLateral, placeInstances, withShadows } from './frames.js';
 import { createCanvas, repeatingTexture } from '../canvas-texture.js';
 import { at, coloured, mergeShapes, roundedCylinder } from '../shape-utils.js';
+import { createSponsorWallDetail } from './sponsor-wall-detail.js';
 
 const HEIGHT = 1.2;
 // The boards are set back this far behind the frame round them, between these heights.
@@ -49,22 +51,30 @@ const FENCE_TILE = 0.5;
 const TOP_RAIL = tubeProfile(FENCE_OUT, FENCE_TOP, 0.035);
 const POST_STATIONS = 4;
 
-export function createSponsorWall({ keep, sponsors }) {
+export function createSponsorWall({ keep, sponsors, drawing }) {
   const boards = createStripBuilder();
   const padding = createStripBuilder();
+  const pads = createStripBuilder();
   const fence = createStripBuilder();
   const steel = createStripBuilder();
   const posts = [];
   const bolts = [];
+  const padLength = profileLength(PAD);
+  const padRidge = profileLength(PAD, PAD.reduce((top, point, index) => (point[1] > PAD[top][1] ? index : top), 0));
+  const detail = drawing.textureDetail === 1 ? createSponsorWallDetail(keep, { length: BOARD_STATIONS, padLength, padRidge, padColor: PAD_COLOR }) : null;
   return {
     add(segment, side) {
       extrudeSegment(boards, segment, side, FACE, 0xffffff, { uvOf: boardUv(segment, side) });
       extrudeSegment(padding, segment, side, KICK, KICK_COLOR, { smooth: true });
-      extrudeSegment(padding, segment, side, PAD, PAD_COLOR, { smooth: true });
+      if (detail) {
+        extrudeSegment(pads, segment, side, PAD, detail.padColor, { smooth: true, uvOf: padUv(segment, side, padLength) });
+      } else {
+        extrudeSegment(padding, segment, side, PAD, PAD_COLOR, { smooth: true });
+      }
       extrudeSegment(padding, segment, side, BACK, PAD_COLOR);
       extrudeSegment(fence, segment, side, FENCE, 0xffffff, { uvOf: (around, s) => [around / FENCE_TILE, s / FENCE_TILE] });
       extrudeSegment(steel, segment, side, TOP_RAIL, 0xffffff, { smooth: true });
-      if (segment.index % BOARD_STATIONS === 0) {
+      if (!detail && segment.index % BOARD_STATIONS === 0) {
         addFrameStrip(segment, side);
       }
       if (segment.index % POST_STATIONS === 0) {
@@ -82,18 +92,20 @@ export function createSponsorWall({ keep, sponsors }) {
       // The wire is cut out of the fence's texture (alphaTest), seen from both sides.
       const wire = keep(new THREE.MeshStandardMaterial({ map: keep(drawChainLink()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.4, metalness: 0.6 }));
       const metal = keep(new THREE.MeshStandardMaterial({ vertexColors: true, color: 0x9aa0a8, roughness: 0.4, metalness: 0.7 }));
-      // A flattened ball half sunk in the frame, so it shows on either side; too small for a shadow worth drawing.
-      const bolt = keep(new THREE.SphereGeometry(0.028, 6, 4).scale(0.5, 1, 1));
-      const boltHeads = placeInstances(bolt, keep(new THREE.MeshStandardMaterial({ color: 0x7c828c, roughness: 0.35, metalness: 0.7 })), bolts);
-      boltHeads.castShadow = false;
-      return [
-        withShadows(new THREE.Mesh(keep(boards.build()), sponsors)),
+      const shared = [
         withShadows(new THREE.Mesh(keep(padding.build()), padded)),
         withShadows(new THREE.Mesh(keep(fence.build()), wire)),
         withShadows(new THREE.Mesh(keep(steel.build()), metal)),
         placeInstances(keep(buildPost()), metal, posts),
-        boltHeads,
       ];
+      if (detail) {
+        return [withShadows(new THREE.Mesh(keep(boards.build()), detail.boardMaterial)), withShadows(new THREE.Mesh(keep(pads.build()), detail.padMaterial)), ...shared];
+      }
+      // A flattened ball half sunk in the frame, so it shows on either side; too small for a shadow worth drawing.
+      const bolt = keep(new THREE.SphereGeometry(0.028, 6, 4).scale(0.5, 1, 1));
+      const boltHeads = placeInstances(bolt, keep(new THREE.MeshStandardMaterial({ color: 0x7c828c, roughness: 0.35, metalness: 0.7 })), bolts);
+      boltHeads.castShadow = false;
+      return [withShadows(new THREE.Mesh(keep(boards.build()), sponsors)), ...shared, boltHeads];
     },
   };
 
@@ -132,6 +144,15 @@ function boardUv({ station, index }, side) {
   return (around, s) => {
     const along = ((index % BOARD_STATIONS) + (s - station.s) / station.segmentLength) / BOARD_STATIONS;
     return sponsorUv(brand, side > 0 ? 1 - along : along, around / (BOARD_TOP - BOARD_BOTTOM));
+  };
+}
+
+// The pad's texture coordinates on this segment (M7d4b2's trial): one tile a board along the road, read from the
+// road like the boards (boardUv), and once round the pad's cross-section, `padLength` round.
+function padUv({ station, index }, side, padLength) {
+  return (around, s) => {
+    const along = ((index % BOARD_STATIONS) + (s - station.s) / station.segmentLength) / BOARD_STATIONS;
+    return [side > 0 ? 1 - along : along, around / padLength];
   };
 }
 

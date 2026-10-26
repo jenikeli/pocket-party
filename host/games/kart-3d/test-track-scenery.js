@@ -14,32 +14,37 @@ import { buildGrandstand } from './kit/grandstand.js';
 import { buildBunting } from './kit/bunting.js';
 import { buildSupports } from './kit/supports.js';
 import { buildTurnBoards } from './kit/turn-boards.js';
-import { turnBoardSpots } from './kit/layout-rules.js';
-import { createKit } from './kit/kit.js';
+import { turnBoardSpots, KIT_PARTS } from './kit/layout-rules.js';
+import { createKit, kitPart } from './kit/kit.js';
 import { BARRIER_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from './test-track-layout.js';
 
 const ROAD_THEME = Object.freeze({ asphalt: 0xffffff, edgeLine: 0xffc82a, curb: [0xd8302a, 0xf4f4f0], checks: [0xf4f4f0, 0x1a1a1e] });
 const GATE_THEME = Object.freeze({ post: 0xf4f4f0, band: 0xd8302a, body: 0xffc61e, background: '#ffd21e', stripe: '#d8302a', outline: '#a3141a' });
 
-export function buildTestTrackRoad(track) {
-  return buildKitRoad(track, ROAD_THEME);
+// `photoAsphalt` is the photo-scanned asphalt's textures, or null for our own drawn asphalt (kit/road.js).
+export function buildTestTrackRoad(track, photoAsphalt) {
+  return buildKitRoad(track, ROAD_THEME, photoAsphalt);
 }
 
 // `world` is the group to add to, `sea` the sea's mesh (its height is where pillars reach down to), `keep(thing)`
-// registers what must be disposed with the world. Returns { update(dt, race) }.
-export function buildTestTrackScenery({ world, track, sea, keep }) {
-  const kit = createKit({ world, track, keep });
-  buildSupports(kit, sea.position.y, []);
-  buildBarriers(kit, BARRIER_RUNS);
-  buildTurnBoards(kit, turnBoardSpots(track, BARRIER_RUNS));
-  buildPlatforms(kit, PLATFORMS, sea.position.y);
-  buildProps(kit, PROPS);
-  buildBunting(kit, BUNTING);
-  const startLights = buildStartLights(kit, buildStartGate(kit, GATE_THEME));
-  const grandstand = buildGrandstand(GRANDSTAND.length, kit);
+// registers what must be disposed with the world, `drawing` the Drawing switches it is built with (kit/kit.js).
+// Returns { update(dt, race) }.
+export function buildTestTrackScenery({ world, track, sea, keep, drawing }) {
+  const kit = createKit({ world, track, keep, drawing });
+  buildSupports(kitPart(kit, KIT_PARTS.SUPPORTS), sea.position.y, []);
+  const barriers = kitPart(kit, KIT_PARTS.BARRIERS);
+  buildBarriers(barriers, BARRIER_RUNS);
+  buildTurnBoards(barriers, turnBoardSpots(track, BARRIER_RUNS));
+  buildPlatforms(kitPart(kit, KIT_PARTS.DECKS), PLATFORMS, sea.position.y);
+  const props = kitPart(kit, KIT_PARTS.PROPS);
+  buildProps(props, PROPS);
+  buildBunting(props, BUNTING);
+  const gate = kitPart(kit, KIT_PARTS.GATE);
+  const startLights = buildStartLights(gate, buildStartGate(gate, GATE_THEME));
+  const grandstand = buildGrandstand(GRANDSTAND.length, props);
   grandstand.object.matrixAutoUpdate = false;
   grandstand.object.matrix.copy(spotFrame(track, GRANDSTAND));
-  world.add(grandstand.object);
+  props.world.add(grandstand.object);
   return {
     update(dt, race) {
       startLights.update(race);

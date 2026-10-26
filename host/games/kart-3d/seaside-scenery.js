@@ -14,8 +14,8 @@ import { buildGrandstand } from './kit/grandstand.js';
 import { buildBunting } from './kit/bunting.js';
 import { buildSupports } from './kit/supports.js';
 import { buildTurnBoards } from './kit/turn-boards.js';
-import { turnBoardSpots } from './kit/layout-rules.js';
-import { createKit } from './kit/kit.js';
+import { turnBoardSpots, KIT_PARTS } from './kit/layout-rules.js';
+import { createKit, kitPart } from './kit/kit.js';
 import { buildSeasideSurroundings } from './seaside-surroundings.js';
 import { buildSeasideSky } from './seaside-sky.js';
 import { BARRIER_RUNS, TRUSS_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from './seaside-layout.js';
@@ -24,28 +24,33 @@ const ROAD_THEME = Object.freeze({ asphalt: 0xfff6ec, edgeLine: 0xf6f6f2, curb: 
 // A sea-blue sign with a coral stripe on white posts banded in blue.
 const GATE_THEME = Object.freeze({ post: 0xf6f6f2, band: 0x1f7fd8, body: 0x1f8fe0, background: '#2aa8f0', stripe: '#ff6a4f', outline: '#0a3f8a' });
 
-export function buildSeasideRoad(track) {
-  return buildKitRoad(track, ROAD_THEME);
+// `photoAsphalt` is the photo-scanned asphalt's textures, or null for our own drawn asphalt (kit/road.js).
+export function buildSeasideRoad(track, photoAsphalt) {
+  return buildKitRoad(track, ROAD_THEME, photoAsphalt);
 }
 
 // `world` is the group to add to, `sea` the sea's mesh (its height is the sea level), `keep(thing)` registers
-// what must be disposed with the world. Returns { update(dt, race) }.
-export function buildSeasideScenery({ world, track, sea, keep }) {
-  const kit = createKit({ world, track, keep });
+// what must be disposed with the world, `drawing` the Drawing switches it is built with (kit/kit.js). Returns {
+// update(dt, race) }.
+export function buildSeasideScenery({ world, track, sea, keep, drawing }) {
+  const kit = createKit({ world, track, keep, drawing });
   const seaLevel = sea.position.y;
-  buildSupports(kit, seaLevel, TRUSS_RUNS);
-  buildBarriers(kit, BARRIER_RUNS);
-  buildTurnBoards(kit, turnBoardSpots(track, BARRIER_RUNS));
-  buildPlatforms(kit, PLATFORMS, seaLevel);
-  buildProps(kit, PROPS);
-  buildBunting(kit, BUNTING);
-  const startLights = buildStartLights(kit, buildStartGate(kit, GATE_THEME));
-  const grandstand = buildGrandstand(GRANDSTAND.length, kit);
+  buildSupports(kitPart(kit, KIT_PARTS.SUPPORTS), seaLevel, TRUSS_RUNS);
+  const barriers = kitPart(kit, KIT_PARTS.BARRIERS);
+  buildBarriers(barriers, BARRIER_RUNS);
+  buildTurnBoards(barriers, turnBoardSpots(track, BARRIER_RUNS));
+  buildPlatforms(kitPart(kit, KIT_PARTS.DECKS), PLATFORMS, seaLevel);
+  const props = kitPart(kit, KIT_PARTS.PROPS);
+  buildProps(props, PROPS);
+  buildBunting(props, BUNTING);
+  const gate = kitPart(kit, KIT_PARTS.GATE);
+  const startLights = buildStartLights(gate, buildStartGate(gate, GATE_THEME));
+  const grandstand = buildGrandstand(GRANDSTAND.length, props);
   grandstand.object.matrixAutoUpdate = false;
   grandstand.object.matrix.copy(spotFrame(track, GRANDSTAND));
-  world.add(grandstand.object);
-  const surroundings = buildSeasideSurroundings(kit, sea);
-  const sky = buildSeasideSky(kit, seaLevel, middleOf(track));
+  props.world.add(grandstand.object);
+  const surroundings = buildSeasideSurroundings(kitPart(kit, KIT_PARTS.SURROUNDINGS), sea);
+  const sky = buildSeasideSky(kitPart(kit, KIT_PARTS.SKY), seaLevel, middleOf(track));
   return {
     update(dt, race) {
       startLights.update(race);

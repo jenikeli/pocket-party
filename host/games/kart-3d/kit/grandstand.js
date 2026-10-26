@@ -106,6 +106,8 @@ function buildCrowd(length, keep) {
   const details = new THREE.InstancedMesh(keep(buildFaceDetails()), keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 })), people.length);
   details.receiveShadow = true;
   meshes.push(details);
+  // Moved spectator by spectator below, so never cut into cells (split-meshes.js).
+  meshes.forEach((mesh) => (mesh.userData.keepWhole = true));
   const matrix = new THREE.Matrix4();
   let time = 0;
 

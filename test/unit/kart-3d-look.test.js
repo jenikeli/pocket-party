@@ -132,7 +132,7 @@ test('a course\'s scenery is passed through to its track, and a track built with
   assert.equal(buildTrack({ ...TEST_TRACK, scenery: undefined }).scenery, null);
 });
 
-test('the look has sliders: bloom strength, radius and threshold, exposure, and the dash panels\' glow', () => {
+test('the look has sliders: bloom strength, radius and threshold, exposure, the dash panels\' glow and the course light\'s strength', () => {
   const look = TUNABLES.filter((tunable) => tunable.group === 'Look').map((tunable) => [tunable.key, tunable.value]);
-  assert.deepEqual(look, [['bloomStrength', 0.2], ['bloomRadius', 0.3], ['bloomThreshold', 1], ['exposure', 1], ['dashPanelGlow', 1.6]]);
+  assert.deepEqual(look, [['bloomStrength', 0.2], ['bloomRadius', 0.3], ['bloomThreshold', 1], ['exposure', 1], ['dashPanelGlow', 1.6], ['courseLightStrength', 0.7]]);
 });

@@ -7,8 +7,10 @@
 
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 
-// The 3D race builds its world and draws a first frame while it starts.
-export const GAME_START_TIMEOUT = 30000;
+// The 3D race builds its world and draws a first frame while it starts. Since M7d4b2 that takes about 10 s more
+// in software: with its trials on (the defaults), the course's shade is baked from about a hundred depth maps,
+// its light taken from six views of it, and the detailed pieces' maps drawn pixel by pixel.
+export const GAME_START_TIMEOUT = 60000;
 
 // Makes the host page load with `level` (a key of QUALITY_LEVELS) saved, as if chosen on an earlier visit.
 // Call before the page's goto; it applies to every later load of that page too.

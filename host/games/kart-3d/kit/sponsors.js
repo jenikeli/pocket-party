@@ -11,6 +11,9 @@ import { createCanvas, canvasTexture } from '../canvas-texture.js';
 const CELL_WIDTH = 256;
 const CELL_HEIGHT = 80;
 const COLUMNS = 4;
+// A board's texture coordinates stay this many pixels (of the atlas drawn at scale 1) inside its cell
+// (sponsorCell).
+const CELL_INSET = 3;
 // Each design: background, outline colour, and up to two lines of text (big, then small) with their colours;
 // `emblem` names a small picture drawn at the left (EMBLEMS).
 const DESIGNS = [
@@ -39,14 +42,26 @@ export function createSponsorMaterial(keep) {
 
 // The atlas as a texture. Not repeating: each board shows exactly its cell.
 function createSponsorTexture() {
-  const { canvas, context } = createCanvas(CELL_WIDTH * COLUMNS, CELL_HEIGHT * ROWS);
-  DESIGNS.forEach((design, index) => {
+  return canvasTexture(drawSponsorAtlas(1).canvas);
+}
+
+// The atlas drawn `scale` times as many pixels each way (M7d4b2: the padded wall's framed boards draw over a
+// sharper copy). Returns { canvas, context, cells }: cells is each brand's { left, top, width, height } in the
+// canvas's pixels, the part its board shows (inside the cell by CELL_INSET), in brand order.
+export function drawSponsorAtlas(scale) {
+  const { canvas, context } = createCanvas(CELL_WIDTH * COLUMNS * scale, CELL_HEIGHT * ROWS * scale);
+  context.scale(scale, scale);
+  const cells = DESIGNS.map((design, index) => {
+    const [left, top] = [(index % COLUMNS) * CELL_WIDTH, Math.floor(index / COLUMNS) * CELL_HEIGHT];
     context.save();
-    context.translate((index % COLUMNS) * CELL_WIDTH, Math.floor(index / COLUMNS) * CELL_HEIGHT);
+    context.translate(left, top);
     drawBoard(context, design);
     context.restore();
+    const inset = CELL_INSET;
+    return { left: (left + inset) * scale, top: (top + inset) * scale, width: (CELL_WIDTH - 2 * inset) * scale, height: (CELL_HEIGHT - 2 * inset) * scale };
   });
-  return canvasTexture(canvas);
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  return { canvas, context, cells };
 }
 
 // Brand `index`'s cell in texture coordinates: { left, right, bottom, top }, pulled in a little from its edges
@@ -55,8 +70,8 @@ function sponsorCell(index) {
   const wrapped = ((index % SPONSOR_COUNT) + SPONSOR_COUNT) % SPONSOR_COUNT;
   const column = wrapped % COLUMNS;
   const row = Math.floor(wrapped / COLUMNS);
-  const insetU = 3 / (CELL_WIDTH * COLUMNS);
-  const insetV = 3 / (CELL_HEIGHT * ROWS);
+  const insetU = CELL_INSET / (CELL_WIDTH * COLUMNS);
+  const insetV = CELL_INSET / (CELL_HEIGHT * ROWS);
   // The canvas's top row is the texture's top (v 1).
   return {
     left: column / COLUMNS + insetU,

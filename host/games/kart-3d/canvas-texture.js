@@ -29,9 +29,10 @@ export function repeatingTexture(canvas) {
   return texture;
 }
 
-// A normal map (M7d4) from `canvas`, whose colours are surface directions, not colours, so they are read as
-// they are (no colour space); repeating like its colour map, or not.
-export function reliefTexture(canvas, repeat) {
+// A texture whose colours are numbers, not colours, so they are read as they are (no colour space): a normal map
+// (M7d4), whose colours are surface directions, or since M7d4b2 a shade (ambient occlusion) or roughness map;
+// repeating like its colour map, or not.
+export function dataTexture(canvas, repeat) {
   const texture = repeat ? repeatingTexture(canvas) : canvasTexture(canvas);
   texture.colorSpace = THREE.NoColorSpace;
   return texture;

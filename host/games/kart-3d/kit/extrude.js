@@ -90,6 +90,16 @@ export function offsetProfile(profile, distance) {
   });
 }
 
+// How far it is round `profile` from its first point to point `upTo` (its last unless given), the distance
+// uvOf's `around` counts.
+export function profileLength(profile, upTo = profile.length - 1) {
+  let length = 0;
+  for (let index = 0; index < upTo; index += 1) {
+    length += faceLength(profile, index);
+  }
+  return length;
+}
+
 function faceLength(points, index) {
   return Math.hypot(points[index + 1][0] - points[index][0], points[index + 1][1] - points[index][1]);
 }

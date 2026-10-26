@@ -675,3 +675,176 @@ In headless Chromium on the dev box (llvmpipe, software), at the back of the gri
 ### Device run
 
 On the iPad: the user found it looks fine, with nothing to change. No frame rates or load times were reported, so M7d4b's first measurement gives the iPad's numbers.
+
+## M7d4b1: the Measure tool and the cheap wins
+
+### What was built
+
+M7d4b was split at the start of its chat (plan.md): this first part builds a way to measure on the iPad where a frame's time goes, and three cheap wins from the research ("How games look detailed and still run smoothly" in `docs/mk8dx-reference.md`), each a switch so the iPad can measure and see it both ways. No rule changes, no new files in `assets/`.
+
+- **The Measure tool** (`measure-plan.js`, `measure-run.js`, `measure-panel.js`; the Measure button by Look on the setup screen). No phones needed: a race of 12 karts driving themselves, four of them standing in for players (so there are 1 and 4 views to draw), stopped at four moments (on the grid before the countdown, then 10, 20 and 30 s into the race). Each moment is drawn with 1 and 4 views in each of about 20 looks: High, Medium, Low, Medium without shadows, Medium without each part of the course in turn (road, sea, supports, barriers, decks, props, gate, surroundings, sky, karts), and Medium with each drawing switch the other way, ending with M7d4a's own drawing (no cells, one shadow map) as the baseline. Each case draws 3 frames untimed (new shaders and buffers), then 8 timed. The report is text to copy: per look and view count, the average of the moments' median frame times, the worst moment, the CPU's part, and the draw calls and triangles (shadow passes included).
+- **How a frame is timed on Safari:** Safari has no GPU timer queries, and the screen's refresh rate caps the frame rate (the iPad showed 80-90 fps, which hides how much room is left). So each measured frame ends by reading back one pixel (`gpu-probe.js`), which makes the browser wait until the GPU has finished the frame. The time to there is the frame's full cost, CPU and GPU one after the other (a little more than a real frame, where the two overlap); the time to the end of `draw()` is the CPU's part.
+- **Cells** (`split-meshes.js`, with the maths in `cells.js`; "Cull cell size" in the tuning panel's new "Drawing" group, 0 = off). Three.js skips a mesh outside a camera's view only by its one bounding sphere, and since M7d2 every barrier style, the ledge, the road and each prop kind were one mesh round the whole lap (the census: 76 of Seaside's 112 meshes reach over 60 units from their middle, with 687,000 of its 796,000 triangles), so all of it was drawn for every view and again for the shadow pass. Once a course is built, every mesh wider than a cell is cut into one mesh per square cell of the ground: a merged mesh's pieces share its vertex buffers, each with its own list of triangles and its own bounds; an instanced mesh becomes one per cell. Instanced meshes moved instance by instance every frame (the boats, the crowd) are marked `userData.keepWhole` and stay whole.
+- **A shadow map per view** (`sun.js`, `shadow-fit.js`; "Shadow map per view"). Before, one 2048 map covered the whole course (about 0.2 units a texel on Seaside) and was drawn once a frame with every caster. Now each view can get its own 1024 map over a square 140 units across, centred 45 units ahead of its camera on level ground, drawn just before that view (0.14 units a texel: sharper, and four views fill as many shadow pixels as the one map did). With cells, its shadow pass skips the casters outside its box. The square is moved only in whole texels as the sun sees it, or every shadow's edge would crawl as the camera moves. The setup screen's overview keeps the whole-course map.
+- **Small parts' shadows** ("Small parts cast shadows"): posts, post blocks and other parts under 0.6 units in radius (one instance's size) cast no shadow when off. M7d4a had already turned off the bolts' shadows; the ones left are the guardrail's and fences' posts and the striped rail's blocks, about 160,000 triangles in Seaside's shadow pass.
+- **Parts by name:** the road is a group called `road`, the sea is named `sea`, and each course's dressing builds every piece into a named part (`kitPart` in `kit/kit.js`, names in `KIT_PARTS` in `kit/layout-rules.js`), so a look can hide one part at a time (`showParts` in `scenery.js`, `setLook` in `renderer.js`). A quality level is now one such look.
+
+### Measured without a device
+
+In headless Chromium on the dev box (llvmpipe, software), 960x540. Software frames say little about the iPad's GPU (M6a found it barely notices triangles, and draw calls cost the CPU differently), so these only show that each switch does what it should and what it trades.
+
+One view following a kart 10 s into the race on Seaside Skyway, Medium (the scratch harness, the GPU waited for):
+
+| | Draw calls | Triangles drawn | Frame |
+|---|---|---|---|
+| As M7d4a: no cells, one shadow map | 308 | 1,153,000 | 0.62 s |
+| Cells of 100, one shadow map | 614 | 793,000 | 0.51 s |
+| Cells of 100, a map per view | 434 | 509,000 | 0.42 s |
+
+The whole Measure run through the real setup screen (144 cases, 19 minutes in software; it began before the "as M7d4a" look was added, so that row is missing), Medium, averaged over the four moments:
+
+| Look (cells of 100, a map per view, unless named) | 1 view: calls / k triangles | 4 views: calls / k triangles |
+|---|---|---|
+| Medium | 523 / 639 | 2,078 / 2,581 |
+| No shadows | 322 / 377 | 1,260 / 1,490 |
+| No barriers | 410 / 270 | 1,620 / 1,076 |
+| No props | 462 / 549 | 1,830 / 2,215 |
+| No karts | 340 / 571 | 1,375 / 2,319 |
+| Small parts' shadows off | 509 / 555 | 2,020 / 2,222 |
+| One shadow map over the course | 688 / 911 | 1,626 / 2,024 |
+| No cells (a map per view) | 308 / 1,195 | 1,203 / 4,770 |
+| Cells of 200 | 429 / 805 | 1,697 / 3,265 |
+
+- **The barriers are the biggest part:** without them a 1-view frame draws 270,000 triangles instead of 639,000. The karts cost the most draw calls (12 karts of 8 meshes each, plus their shadows).
+- **Cells trade draw calls for triangles.** With one view they cut the triangles drawn by a third to a half. With 4 views a frame makes about 2,000 draw calls, against 1,200 without cells: whether that is cheaper on the iPad than the triangles saved is the device run's question (Safari's cost per draw call is unknown here).
+- **A map per view wins with one view, not with four:** four shadow passes draw more than one pass over the whole course (2,581,000 triangles against 2,024,000 with cells). It also needs cells: without them every lap-long mesh is in every view's shadow pass (4,770,000).
+- The software frame times are noisy (High measured faster than Medium in the first look); the iPad's run is what decides.
+- Cutting into cells adds under 0.1 s to building a course: Seaside Skyway's 112 meshes become 635 with cells of 100 and 385 with cells of 200 (the Test track's 87 become 158 and 103).
+
+### Device run procedure
+
+1. Host on the iPad, the 3D race, Seaside Skyway. No phones are needed for step 2.
+2. On the setup screen, tap **Measure** (next to Look). It takes a minute or two; the progress line says what it is drawing. Then tap **Copy** and paste the report back to Claude. If Copy fails, the report shows in a box: select it and copy by hand. Once more with the Test track chosen, if there is time.
+3. With one phone, then four: start a race, open **Tuning**, and in the "Drawing" group flip each switch while driving: "Shadow map per view" (do shadows look sharper at 1, and does any shadow pop in or crawl as you drive?), "Small parts cast shadows" (do you miss the posts' shadows at 0?), "Cull cell size" (each change rebuilds the course, about a second: does anything vanish or flicker at the edges of the screen at 100 or 200?). Note the readout's fps for each.
+4. Anything that looks broken: missing pieces, shadows cut off at the edge of a square, the crowd or the boats frozen.
+
+### Device run
+
+On the iPad (Safari 27, canvas 1366x846 CSS pixels drawn at pixel ratio 1), Seaside Skyway, the Measure report (ms with the GPU made to finish each frame, averaged over the four moments, worst moment in brackets):
+
+| Look | 1 view | 4 views | 4 views: calls / k triangles |
+|---|---|---|---|
+| High | 7.5 (9.0) | 11.9 (14.0) | 2,051 / 2,520 |
+| Medium (cells of 100, a map per view, small parts casting) | 6.1 (7.0) | 9.3 (13.0) | 2,037 / 2,520 |
+| Low | 6.0 (7.5) | 8.9 (13.0) | |
+| Medium, no shadows | 4.9 | 7.4 | 1,220 / 1,431 |
+| Medium, no barriers | 5.1 | 6.8 | 1,590 / 1,055 |
+| Medium, no props | 5.9 | 8.4 | |
+| Medium, no karts | 6.0 | 8.5 | 1,344 / 2,262 |
+| Medium, small parts' shadows off | 6.5 | 8.5 | |
+| Medium, one shadow map over the course | 6.9 | 8.3 | 1,586 / 1,964 |
+| Medium, no cells (a map per view) | 6.0 | 9.3 | 1,190 / 4,749 |
+| Medium, cells of 200 | 5.6 | 8.9 | |
+| Medium, as M7d4a (no cells, one map) | 5.6 (7.5) | 8.3 (10.0) | 768 / 3,234 |
+
+The other parts (road, sea, supports, decks, gate, surroundings, sky) each changed the frame by under a millisecond either way. CPU time was 1.0-1.4 ms with one view and 2.3-3.9 ms with four.
+
+- **The iPad has plenty of room.** Even High with 4 views takes 12 ms (14 at the worst moment), the GPU waited for, against 16.7 ms for 60 fps and the 33 ms of MK8DX's 30 fps with 3-4 players. And these times are a little pessimistic, since a real frame overlaps the CPU's and the GPU's work.
+- **Triangles barely matter, as M6a found:** 4.7 million triangles with 4 views (no cells, a map per view) took the same 9.3 ms as 2.5 million with cells. Differences under about a millisecond are noise (hiding the decks measured slower than drawing them).
+- **The cheap wins buy no speed on the iPad.** M7d4a's own drawing was as fast as the new defaults (5.6 against 6.1 ms with one view, 8.3 against 9.3 with four), and cells made no difference that shows above the noise. The draw calls they add cost the CPU about a millisecond with 4 views (2.3 against 3.5 ms).
+- **What does cost:** shadows (1.2 ms with one view, 1.9 with four), bloom (1.4 and 2.6), and the barriers (1 and 2.5; the biggest part).
+- **Seen while driving:** a shadow map per view looks nicer (sharper); small parts' shadows look nicer on; changing the cell size made no visible difference; nothing broke (no missing pieces, cut-off shadows, frozen crowd or boats). "The shadows and sun really make this look a lot nicer."
+
+**The laptop** (Windows, Chrome 155 on its integrated AMD Radeon graphics, the discrete GPU off; canvas 1707x791 CSS pixels drawn at pixel ratio 1), the same report on Seaside Skyway:
+
+| Look | 1 view | 4 views | 4 views: CPU, calls |
+|---|---|---|---|
+| High | 23.4 (29.3) | 31.6 (36.1) | 12.6 ms, 2,157 |
+| Medium (cells of 100, a map per view) | 9.8 (11.9) | 15.7 (18.3) | 10.3 ms, 2,143 |
+| Low | 7.3 | 13.6 | |
+| Medium, no shadows | 8.7 | 14.5 | |
+| Medium, no barriers | 8.2 | 12.5 | |
+| Medium, small parts' shadows off | 9.3 | 14.3 | |
+| Medium, one shadow map over the course | 10.3 | 14.8 | 8.9 ms, 1,691 |
+| Medium, no cells (a map per view) | 9.9 | 17.4 (19.3) | 8.2 ms, 1,214 |
+| Medium, cells of 200 | 9.5 | 15.1 (17.4) | 8.3 ms, 1,726 |
+| Medium, as M7d4a (no cells, one map) | 10.0 | 15.8 (17.9) | 6.0 ms, 792 |
+
+- **The laptop is the slow host, as M6a found, and bloom is what it cannot afford:** High costs 13.6 ms more than Medium with one view (23.4 against 9.8), and 16 ms more with four. On Medium it holds 60 fps with one view and stays well inside 30 fps with four (worst 18.3 ms). Bloom at a lower resolution would be the way to make High affordable there.
+- **Draw calls cost its CPU** far more than the iPad's: 10.3 ms with 4 views and cells of 100, against 6.0 ms for M7d4a's 792 calls.
+- **Cells pay here, with a map per view:** without them 4 views take 17.4 ms (every lap-long mesh in all four shadow passes), with cells of 200 15.1 ms, the best of the per-view choices (cells of 100 15.7, with more draw calls). With one map over the course, cells make no difference (M7d4a's 15.8).
+
+## M7d4b2: detail in textures and light
+
+### What was built
+
+The second half of the techniques spike (plan.md, M7d4b). M7d4b1's choices are now fixed, and four trials try "detail in textures and light, not triangles" against M7d4a's drawing. Each trial is a switch in the tuning panel's "Drawing" group (1 on, 0 drawn as M7d4a did), on by default. A change rebuilds the course, and the Measure tool times each switch the other way and all of them off. No rule changes.
+
+- **M7d4b1's choices, fixed:** cells of 200 (`CELL_SIZE` in `scenery.js`), a shadow map per view in races (`sun.js`; the setup screen's overview keeps one map over the course), and small parts cast shadows. The three M7d4b1 switches and the Measure looks that tried them are gone.
+- **Detail in textures** (`textureDetail`), on three pieces. The bolts, seams and panel edges that M7d4a built as shapes are drawn instead in four maps on simpler shapes: colour, relief (a normal map), shade (an ambient occlusion map) and roughness. A new drawing kit, `kit/surface-maps.js`, places a panel, a groove or a bolt in all four maps at once. The relief comes from a height field (M7d4a's `toReliefTexture`), and the shade from the same height field (`toShadeTexture`, new in `kit/pixel-image.js`: darker where the surface lies lower than its surroundings).
+  - *The gate's posts* (`kit/gate-post-detail.js`): one rounded shaft per post replaces the core, three panels and 48 bolt heads. The shaft carries their maps, wrapped round it by `wrapUv` (new in `shape-utils.js`). The maps add things the shapes did not have: a fine line cut round each panel, and grime toward each panel's foot. The plinth, band and capital stay shapes, since they change the outline.
+  - *The striped rail* (`kit/striped-rail-detail.js`): rebuilt to the study's second look at Toad Harbor. The rails are padded bars 0.38 tall and 0.2 deep with flat faces and rounded edges, nearly filling the height, with a thin dark rod in the gap. Their slanted orange bands have chipped edges and soft dimples in the maps. The post blocks are plain rounded boxes, with their bolts, grime and the dark crease round each rail drawn in maps.
+  - *The padded sponsor wall* (`kit/sponsor-wall-detail.js`): every board gets a raised light rim with a bolt in each corner, drawn over a copy of the sponsor atlas at twice the resolution, so the print is sharper too. The pad's maps add a seam between boards, the cushion bulging between seams, two rows of stitching, and MARIO KART printed tone on tone on its front slope, as at Mario Kart Stadium. M7d4a's frame strips, bolt heads and pad seams are gone.
+- **Baked shade** (`bakedShade`; `baked-shade.js`, maths in `occlusion.js`): ambient occlusion baked into the vertex colours of the stretch round the start line (50 stations behind it, 70 ahead), once, while the course builds. In three pieces of the stretch, the course is drawn into a 512 depth map from each of 32 directions spread over the sphere (Three.js's depth material, packed into RGBA bytes and read back). A vertex that something stands in front of in a direction gets no sky from it. Its colour is multiplied by the share of the sky it sees (cosine-weighted), down to 0.45 where it sees none. Only meshes coloured per vertex can take it: instanced parts share one shape. Two lessons:
+  - The road had a vertex only every 2 units across, and a vertex at a wall's foot cannot tell the wall from itself. So the road's outer lanes are cut again 0.5 and 1.5 units from each edge (`kit/road.js`), and the shade shows as a soft band along the walls' feet.
+  - At grazing angles a surface shaded itself (the shadow-acne problem). An offset along the normal and a slack that grows with the slope, both in depth-map texels, fixed it.
+- **Light from the course** (`courseLight`; `course-light.js`): an environment map taken from the course itself, as a light probe. Once the course is built, the scene is drawn in six directions from 3 units above the start line and blurred by PMREM. Every material reads its ambient light and reflections from it, at "Light from the course, strength" (a new Look slider, default 1.5). The flat sky light drops to 30% (`scenery.js`). The sea keeps the sky's reflections at M7d4a's strength: at the course light's strength it mirrored so much pale horizon that it turned whitish (seen in software screenshots).
+- **Photo-scanned asphalt** (`photoAsphalt`; `photo-asphalt.js`): ambientCG's Asphalt 023 S (CC0, a 1.25 m scan with light and dark stones) as four 1K JPG maps in `assets/textures/` (colour, OpenGL normal, roughness, AO; 4.9 MB, listed with hashes in `assets/manifest.json`). They are loaded in the game's `load()` and laid on the road's asphalt in tiles of 5 units, four times larger than life (at 3 units the stones were too fine to see from the kart). No KTX2. Five sets were compared; 023 S was the one with visible stones, like MK8DX's coarse asphalt (the "clean" sets read as flat grey).
+- **Simpler far dressing or LOD: not built.** M7d4b1's numbers say it would not pay. Triangles barely matter on either host (4.7 million took the iPad as long as 2.5 million). LOD swaps would add draw calls, which are what the laptop's CPU pays for. The far dressing's share of the frame (surroundings and sky) was under a millisecond on the iPad.
+- **Not redone:** the guardrail (Daisy Circuit's taller three-ridge beam). That waits for the decision below, as do the trial's other pieces.
+
+
+### Measured without a device
+
+In headless Chromium on the dev box (llvmpipe, software), in a scratch viewer kept out of the repo (as in M7d4a), and in the browser tests. Software says little about the iPad's GPU; these numbers show what each trial costs to build and to draw.
+
+| | Seaside Skyway, every trial off | Seaside Skyway, texture detail on | Test track, off | Test track, on |
+|---|---|---|---|---|
+| Triangles in the course (karts not counted) | 805,000 | 790,000 | 322,000 | 308,000 |
+| The gate's triangles | 14,200 | 9,600 | 14,100 | 9,500 |
+| The barriers' triangles | 435,000 | 424,000 | 213,000 | 203,000 |
+
+- **Detail in textures saves few triangles** (about 15,000 on each course; the road's new edge lanes are in both columns). Its point is the look, as M7d4b1 found triangles barely matter. It adds about 1.5 s to building a course in software, for drawing the maps pixel by pixel, mostly the sponsor atlas at twice the resolution (2048x480, four maps).
+- **Building a course in software:** about 3.4 s with every trial off. Then 4.0-4.5 s for the bake (96 depth maps of 512, read back), and 1.4-2.2 s for the course light (7 s the first time, when it builds every material's shaders, work the warm-up frame did before). On the iPad these are GPU renders and small readbacks, so the device run's "how long until the course appears" is the number that matters.
+- **The bake:** 32 directions over three pieces of the stretch. 40 directions over four pieces took 6.5 s and looked the same. Without the edge lanes and the texel-scaled bias it showed almost nothing at the walls' feet, while open road read as half shaded.
+- **The course light at 1.0** looked a little darker than M7d4a's sky light; 1.5 is the default to start from. It turns the road a little bluer (the sky in it) and makes the karts' paint shine more.
+- **The browser tests:** the full suite took 17 min 55 s (113 tests), against about 14 minutes before. M7d4b's file takes 2 min 40 s, as its new test rebuilds the course twice.
+
+### Device run procedure
+
+1. Host on the iPad, the 3D race, Seaside Skyway, Look on High; every trial is on by default. Note how long the course takes to appear on the setup screen: since M7d3 about a second, and it now also bakes the shade, takes the light and draws the maps. Note the same when switching to the Test track and back.
+2. **Measure** (no phones), then Copy and paste the report back. It now ends with each trial switched off in turn, then all four off (M7d4a's drawing).
+3. With one phone, start a race, park where each piece is, open **Tuning**, and in the "Drawing" group flip each switch off and on again. Each flip rebuilds the course, for a second or two. Which way looks closer to MK8DX?
+   - "Detail in textures": the gate's posts, up close from the grid (panels, seams, bolts, the line round each panel). The sponsor walls along the start straight (framed boards with corner bolts, the pad's seams and stitching, MARIO KART on the pad). The striped rails on the right after the straight (just past the promenade, s 100-150), and again in the sky (s 700-776): taller padded bars, a dark rod between them, chipped bands, blocks with bolts.
+   - "Baked shade": on the grid, look for a soft darker band along the foot of the walls, on the ledges and under the gate. Does the shade stop visibly where the baked stretch ends, about 70 units past the start line?
+   - "Light from the course": the whole picture (road, walls, the shade side of things, the karts' shine). Try "Light from the course, strength" in the Look group between about 0.5 and 2.5 and note the best value.
+   - "Photo-scanned asphalt": the road near and far. Do the stones show? Does the tile repeat visibly? Is it better or worse than ours?
+4. With four phones: the readout's fps on High with every trial on, then every trial off.
+5. If there is time, the laptop: Measure only.
+6. Anything that looks broken: black or missing pieces, stretched textures on the posts or blocks, a pale sea, dark blotches on the road.
+
+### Device run
+
+On the iPad (Safari 27, canvas 1366x892 CSS pixels drawn at pixel ratio 1 on High and Medium), Seaside Skyway, every trial on. The Measure report (ms with the GPU made to finish each frame, averaged over the four moments, worst moment in brackets):
+
+| Look | 1 view | 4 views | 4 views: calls / k triangles |
+|---|---|---|---|
+| High | 11.4 (14.0) | 13.3 (15.0) | 1,680 / 3,124 |
+| Medium (every trial on) | 7.8 (9.0) | 11.9 (13.0) | 1,666 / 3,124 |
+| Low | 7.8 (9.0) | 11.6 (13.0) | |
+| Medium, no shadows | 7.5 | 10.5 | 951 / 1,739 |
+| Medium, no barriers | 7.6 | 9.5 | 1,329 / 1,213 |
+| Medium, no karts | 8.6 | 11.4 | 975 / 2,867 |
+| Medium, textureDetail off | 7.6 | 11.8 | 1,651 / 3,177 |
+| Medium, bakedShade off | 7.4 | 11.1 | |
+| Medium, courseLight off | 7.5 | 11.3 | |
+| Medium, photoAsphalt off | 7.8 | 11.5 | |
+| Medium, as M7d4a (every trial off) | 6.9 (8.5) | 11.3 (12.0) | 1,651 / 3,177 |
+
+The other parts (road, sea, supports, decks, props, gate, surroundings, sky) each moved the frame by under a millisecond either way, as in M7d4b1. CPU time was 1.8-3.0 ms with one view and 3.5-4.5 ms with four.
+
+- **The trials cost little:** all four on against all off is 0.9 ms with one view and 0.6 ms with four, about M7d4b1's noise. Alone, each costs 0.0-0.4 ms with one view and 0.1-0.8 ms with four; the bake and the course light are the dearest. Texture detail draws 15 fewer draw calls and 53,000 fewer triangles with 4 views.
+- **Plenty of room still:** High with 4 views takes 13.3 ms (15 at worst), against 16.7 ms for 60 fps. Bloom cost 3.6 ms with one view (1.4 in M7d4b1, on a slightly smaller canvas). The barriers are still the biggest part (2.4 ms with 4 views).
+- **The course appears in under 2 s** on the setup screen (about 1 s after M7d3), with the shade baked, the light taken and the maps drawn.
+- **Seen while driving:** with every switch on, the look is closer to MK8DX than with any of them off, so all four trials stay. "Light from the course, strength" tuned to **0.7** (now the default; software suggested 1.5). Nothing looked broken.
+- **The readout showed a steady 60 fps with 4 players** on High, where the M7d3 run showed 80-90. The Measure times allow about 75 fps, and a rate pinned at exactly 60 looks like a cap rather than the GPU running out. Not checked: whether Safari's "Prefer Page Rendering Updates near 60fps" feature flag (Settings, Apps, Safari, Advanced, Feature Flags) was on for this run and not for M7d3's.

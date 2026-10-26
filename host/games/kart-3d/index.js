@@ -1,7 +1,7 @@
-// The 3D kart race (M6 to M7c), a game module: a setup screen (course, laps, engine class and drawing quality on
-// the host, control style and ready on each phone), then a countdown with MK8DX's rocket start, and 1-4 players race their
-// laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results, and
-// Race again or Back to lobby. Loaded through host/games/index.js and run by the shell (host/game-session.js).
+// The 3D kart race (M6 to M7d4b2), a game module: a setup screen (course, laps, engine class and drawing quality
+// on the host, with the Measure tool, and control style and ready on each phone), then a countdown with MK8DX's
+// rocket start, and 1-4 players race their laps in split screen, drifting and boosting, with CPU karts filling
+// the field to 12; then the results, and Race again or Back to lobby. Loaded through host/games/index.js and run by the shell (host/game-session.js).
 // The rules live in DOM-free modules next to this file; this file connects them to the shell, the phones, the
 // renderer, the panels and the tuning sliders.
 
@@ -18,6 +18,7 @@ import { createReadout } from './readout.js';
 import { createPanels } from './panels.js';
 import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
+import { createMeasurePanel } from './measure-panel.js';
 import { QUALITY_LEVELS, loadQuality, saveQuality } from './quality.js';
 
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
@@ -29,10 +30,13 @@ const MAX_FRAME_SECONDS = 0.25;
 // Returns a fresh 3D race game that follows the game module interface in plan.md.
 export function createGame() {
   let rendererModule = null;
+  // The photo-scanned asphalt's textures (photo-asphalt.js), for its trial; the renderer frees them.
+  let photoAsphalt = null;
   let renderer = null;
   let panels = null;
   let resultsPanel = null;
   let tuningPanel = null;
+  let measurePanel = null;
   let players = null;
   let setControllerView = null;
   let pingTimer = null;
@@ -57,21 +61,26 @@ export function createGame() {
   // When the last frame was drawn, for the cameras' time step.
   let lastDrawAt = null;
 
-  // Three.js is fetched here, when the game is chosen, not when the lobby loads.
+  // Three.js is fetched here, when the game is chosen, not when the lobby loads, and so are the photo-scanned
+  // asphalt's maps (about 5 MB).
   async function load() {
     rendererModule = await import('./renderer.js');
+    const { loadPhotoAsphalt } = await import('./photo-asphalt.js');
+    photoAsphalt = await loadPhotoAsphalt();
   }
 
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
-    renderer = rendererModule.createRenderer(shell.container, track, quality);
+    renderer = rendererModule.createRenderer(shell.container, track, quality, photoAsphalt);
     tuningPanel = createTuningPanel(shell.container);
+    measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(quality));
     panels = createPanels(shell.container, {
       onCourse: chooseCourse,
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onEngineClass: chooseEngineClass,
       onQuality: chooseQuality,
+      onMeasure: startMeasuring,
       onStartRace: startRace,
       onBackToSetup: showSetup,
       onRestart: restart,
@@ -121,9 +130,16 @@ export function createGame() {
     }
   }
 
+  // The Measure tool runs from the setup screen only, on the course chosen there.
+  function startMeasuring() {
+    if (!race && !measurePanel.isRunning()) {
+      measurePanel.start(track, COURSES.find((course) => course.id === courseId).name);
+    }
+  }
+
   // Checked again here because the click can arrive in the same frame as a player dropping.
   function startRace() {
-    if (!race && canStartRace(setup, playersInSlotOrder(players))) {
+    if (!race && !measurePanel.isRunning() && canStartRace(setup, playersInSlotOrder(players))) {
       putKartsOnGrid();
     }
   }
@@ -194,6 +210,12 @@ export function createGame() {
     const now = performance.now();
     const dt = lastDrawAt === null ? 0 : Math.min((now - lastDrawAt) / 1000, MAX_FRAME_SECONDS);
     lastDrawAt = now;
+    // The Measure tool draws its own frames (from the setup screen; a race cannot start meanwhile).
+    if (measurePanel.isRunning()) {
+      panels.hideAll();
+      measurePanel.frame();
+      return;
+    }
     renderer.draw(race, players, alpha, dt);
     const readoutText = readout.frameDrawn(now, performance.now() - now, race, track, players, stepTimer.summary());
     const racing = race !== null && race.phase !== RACE_PHASES.RESULTS;

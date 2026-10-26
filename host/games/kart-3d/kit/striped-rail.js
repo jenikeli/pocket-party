@@ -1,9 +1,10 @@
 // The kit's striped rail (M7d2), as at Toad Harbor: two rails painted in orange and white stripes that wind round
 // them, on a low concrete kerb. Since M7d4 built as Toad Harbor's is (docs/mk8dx-reference.md, "The kit's objects
 // up close"): fat rails, oval rather than round, held every few metres in a chunky white post block with rounded
-// edges and two bolt heads on its face, on a kerb with a rounded top edge. Returns { add(segment, side),
-// end(station, index, side, facing), meshes() } for kit/barriers.js: end closes the kerb and puts a post block
-// where the rails start or stop, so their ends are hidden in it.
+// edges and two bolt heads on its face, on a kerb with a rounded top edge. In M7d4b2's trial of detail in
+// textures the rails, a rod between them and the blocks are kit/striped-rail-detail.js's instead. Returns {
+// add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: end closes the kerb and
+// puts a post block where the rails start or stop, so their ends are hidden in it.
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';
@@ -11,6 +12,7 @@ import { extrudeSegment, capProfile, roundProfile, tubeProfile } from './extrude
 import { frameAt, facingAlong, edgeLateral, placeInstances, withShadows } from './frames.js';
 import { createCanvas, repeatingTexture } from '../canvas-texture.js';
 import { at, coloured, mergeShapes, roundedBox, shaded } from '../shape-utils.js';
+import { createStripedRailDetail } from './striped-rail-detail.js';
 
 // [outward, lift] (see kit/extrude.js): the kerb, with a rounded top edge.
 const BASE = roundProfile([[0, 0], [0, 0.34], [0.48, 0.34], [0.48, 0]], 0.06);
@@ -26,19 +28,25 @@ const POST_STATIONS = 4;
 // The post block: its size across the road, up and along it, standing on the kerb.
 const BLOCK = { across: 0.4, height: 0.92, along: 0.32 };
 
-export function createStripedRail({ keep, textures }) {
+export function createStripedRail({ keep, textures, drawing }) {
   const base = createStripBuilder();
   const rails = createStripBuilder();
+  const rods = createStripBuilder();
   const posts = [];
   const postAt = (station, side) => frameAt(station, edgeLateral(station, side) + side * RAIL_OUT, 0, facingAlong(station));
-  const tubes = RAIL_LIFTS.map((lift) => tubeProfile(RAIL_OUT, lift, RAIL_HALF_DEPTH, 12, RAIL_HALF_HEIGHT));
+  const detail = drawing.textureDetail === 1 ? createStripedRailDetail(RAIL_OUT, keep) : null;
+  const tubes = detail ? detail.railProfiles : RAIL_LIFTS.map((lift) => tubeProfile(RAIL_OUT, lift, RAIL_HALF_DEPTH, 12, RAIL_HALF_HEIGHT));
   // Round an oval, about.
   const circumference = Math.PI * (RAIL_HALF_DEPTH + RAIL_HALF_HEIGHT);
+  const railUv = detail ? detail.railUv : (around, s) => [around / circumference, s / STRIPE_LENGTH];
   return {
     add(segment, side) {
       extrudeSegment(base, segment, side, BASE, BASE_COLOR, { smooth: true });
       for (const tube of tubes) {
-        extrudeSegment(rails, segment, side, tube, 0xffffff, { uvOf: (around, s) => [around / circumference, s / STRIPE_LENGTH], smooth: true });
+        extrudeSegment(rails, segment, side, tube, 0xffffff, { uvOf: railUv, smooth: true });
+      }
+      if (detail) {
+        extrudeSegment(rods, segment, side, detail.rodProfile, detail.rodColor, { smooth: true });
       }
       if (segment.index % POST_STATIONS === 0) {
         posts.push(postAt(segment.station, side));
@@ -52,14 +60,20 @@ export function createStripedRail({ keep, textures }) {
     },
     meshes() {
       const concrete = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.concrete, normalMap: textures.concreteRelief, roughness: 0.85 }));
+      const kerb = withShadows(new THREE.Mesh(keep(base.build()), concrete));
+      if (detail) {
+        const steel = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.6 }));
+        return [
+          kerb,
+          withShadows(new THREE.Mesh(keep(rails.build()), detail.railMaterial)),
+          withShadows(new THREE.Mesh(keep(rods.build()), steel)),
+          placeInstances(detail.blockGeometry, detail.blockMaterial, posts),
+        ];
+      }
       // Rough enough that the sun's glint along a rail does not bloom into a white smear (M7d3).
       const painted = keep(new THREE.MeshStandardMaterial({ map: keep(drawStripes()), roughness: 0.55 }));
       const blockPaint = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 }));
-      return [
-        withShadows(new THREE.Mesh(keep(base.build()), concrete)),
-        withShadows(new THREE.Mesh(keep(rails.build()), painted)),
-        placeInstances(keep(buildBlock()), blockPaint, posts),
-      ];
+      return [kerb, withShadows(new THREE.Mesh(keep(rails.build()), painted)), placeInstances(keep(buildBlock()), blockPaint, posts)];
     },
   };
 }

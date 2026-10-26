@@ -1,6 +1,6 @@
 // Questions about the 3D race's road, answered from the stations that track-builder.js made: where a point is
 // on the road, the road's surface and normal there, its edges, walls and gaps, lap progress, how much the road
-// turns ahead and where the start line is. Plain maths, unit tested in Node. Used by the kart rules, the CPU
+// turns ahead, where the start line is and how far the course reaches. Plain maths, unit tested in Node. Used by the kart rules, the CPU
 // driver, the renderer and the kit (kit/).
 //
 // Finding a kart walks from the station it was at last step, never searching the whole track: a bridge over
@@ -159,4 +159,14 @@ export function turnAhead(track, index) {
 // The station whose segment holds the start line.
 export function startLineIndex(track) {
   return track.stations.findIndex((station) => station.s + station.segmentLength > track.startLine);
+}
+
+// The course's middle seen from above ({ x, z }, the middle of its stations' box) and how far it reaches from
+// there (half the box's longer side).
+export function courseExtent(track) {
+  const xs = track.stations.map((station) => station.point.x);
+  const zs = track.stations.map((station) => station.point.z);
+  const centre = { x: (Math.min(...xs) + Math.max(...xs)) / 2, z: (Math.min(...zs) + Math.max(...zs)) / 2 };
+  const reach = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) / 2;
+  return { centre, reach };
 }

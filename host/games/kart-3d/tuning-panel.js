@@ -5,6 +5,7 @@
 // host/games/kart-3d/index.js.
 
 import { TUNABLES, tuning, setTuning, resetTuning, describeTuning } from './tuning.js';
+import { copyText } from './copy-text.js';
 
 const STYLE = `
   #kart-3d-tuning { position: fixed; z-index: 1; left: 8px; top: 8px; width: 360px; max-height: calc(100dvh - 16px);
@@ -41,14 +42,14 @@ export function createTuningPanel(container) {
     <textarea id="kart-3d-tuning-text" readonly hidden></textarea>`;
   container.append(style, panel);
   const status = panel.querySelector('#kart-3d-tuning-status');
-  const copyText = panel.querySelector('#kart-3d-tuning-text');
+  const copyBox = panel.querySelector('#kart-3d-tuning-text');
   const sliders = TUNABLES.map((tunable) => createSlider(tunable));
   for (const group of new Set(TUNABLES.map((tunable) => tunable.group))) {
     const heading = document.createElement('h3');
     heading.textContent = group;
     panel.append(heading, ...sliders.filter((slider) => slider.tunable.group === group).map((slider) => slider.row));
   }
-  panel.querySelector('#kart-3d-tuning-copy').addEventListener('click', () => copyValues(status, copyText));
+  panel.querySelector('#kart-3d-tuning-copy').addEventListener('click', () => copyText(describeTuning(), status, copyBox));
   panel.querySelector('#kart-3d-tuning-reset').addEventListener('click', () => {
     resetTuning();
     sliders.forEach((slider) => slider.show());
@@ -101,21 +102,4 @@ function createSlider(tunable) {
   });
   show();
   return { tunable, row, show };
-}
-
-// The clipboard needs a secure context (the HTTPS host has one) and a tap, which this click is. If the browser
-// still refuses, the text shows in a box, selected, to copy by hand.
-async function copyValues(status, copyText) {
-  const text = describeTuning();
-  try {
-    await navigator.clipboard.writeText(text);
-    copyText.hidden = true;
-    status.textContent = 'Copied';
-  } catch (error) {
-    console.error('Copying the tuning values failed, showing them to copy by hand', error);
-    copyText.hidden = false;
-    copyText.value = text;
-    copyText.select();
-    status.textContent = 'Select and copy the text below';
-  }
 }

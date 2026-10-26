@@ -1,11 +1,23 @@
 // The words a course's layout uses for the kit (M7d2), and the rules that read them: which barrier stands on each
 // of the kart rules' walls (the styles a course can choose for stretches of its walls, and the plain wall, or in
 // anti-gravity sections the anti-gravity wall, wherever it chooses none), which side of the road a deck or prop
-// is on, the props a deck can carry with how far each reaches from its spot, how deep a deck is along it, and
-// where turn boards stand (M7d3).
+// is on, the props a deck can carry with how far each reaches from its spot, how deep a deck is along it, where
+// turn boards stand (M7d3), and the parts a dressing is built in (M7d4b).
 // Plain data and maths, no Three.js, unit tested in Node. Used by the kit's builders and the courses' layouts.
 
 import { turnAhead } from '../track.js';
+
+// The parts a course's dressing builds its pieces in (kit/kit.js's kitPart), by name; the Measure tool
+// (measure-plan.js) hides them one at a time and reports them by these names.
+export const KIT_PARTS = Object.freeze({
+  SUPPORTS: 'supports',
+  BARRIERS: 'barriers',
+  DECKS: 'decks',
+  PROPS: 'props',
+  GATE: 'gate',
+  SURROUNDINGS: 'surroundings',
+  SKY: 'sky',
+});
 
 export const BARRIER_STYLES = Object.freeze({
   WALL: 'wall',

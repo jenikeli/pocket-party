@@ -2,7 +2,8 @@
 // karts drive: textured asphalt with large lighter and darker patches (so its tile does not show), riveted metal
 // in anti-gravity sections, grass shoulders mown in stripes, concrete underneath and down the sides, and on top
 // the paint (kit/road-paint.js), the LED panels (kit/led-panels.js) and the ramp plates (kit/ramp-plate.js).
-// Walls are not drawn here: a course's barriers stand on them (kit/barriers.js). Gaps are left empty.
+// Walls are not drawn here: a course's barriers stand on them (kit/barriers.js). Gaps are left empty. Since
+// M7d4b2 the asphalt can be the photo-scanned CC0 set instead (photo-asphalt.js, the tuning panel's trial).
 // Used by a kit-dressed course's scenery (see scenery.js).
 
 import * as THREE from 'three';
@@ -17,8 +18,11 @@ import { buildRampPlates } from './ramp-plate.js';
 
 // The road's thickness, under its surface: what holds it up (kit/supports.js) starts below this.
 export const ROAD_THICKNESS = 0.6;
-// The asphalt is drawn in this many lanes across, so its patches can vary across the road too.
+// The asphalt is drawn in this many lanes across, so its patches can vary across the road too, with two narrow
+// lanes more along each edge, this far in from it (M7d4b2): shade baked into the colours at the corners (a vertex
+// at the foot of a wall cannot tell it from itself) needs vertices close to the walls to show.
 const ASPHALT_LANES = 8;
+const EDGE_LANES = [0.5, 1.5];
 // Patches about this many units across, big and small; laid over the lap so they repeat once a lap.
 const BIG_PATCH = 18;
 const SMALL_PATCH = 5;
@@ -26,19 +30,22 @@ const PATCH_ACROSS = 48;
 const MOWN_STATIONS = 4;
 const COLORS = { metal: 0xc4d8ff, grass: 0xffffff, grassMown: 0xd8ecc8, concrete: 0xc8c2b8 };
 
-// `theme` is the course's road colours: { asphalt, edgeLine, curb: [first, second], checks: [light, dark] }.
-// Returns { meshes, update(dt), dispose() }.
-export function buildKitRoad(track, theme) {
+// `theme` is the course's road colours: { asphalt, edgeLine, curb: [first, second], checks: [light, dark] };
+// `photoAsphalt` the photo-scanned asphalt's maps ({ map, normalMap, roughnessMap, aoMap }, not freed here), or
+// null for our own drawn asphalt. Returns { meshes, update(dt), dispose() }.
+export function buildKitRoad(track, theme, photoAsphalt) {
   const concrete = createConcreteTexture();
-  const textures = {
-    asphalt: createAsphaltTexture(),
-    metal: createMetalTexture(),
-    grass: createGrassTexture(),
-    concrete: concrete.map,
+  // Each surface's maps, by surface name; the concrete has its relief (M7d4).
+  const ownMaps = {
+    metal: { map: createMetalTexture() },
+    grass: { map: createGrassTexture() },
+    concrete: { map: concrete.map, normalMap: concrete.relief },
   };
-  // The surfaces with relief (M7d4): normal maps by surface name.
-  const reliefs = { concrete: concrete.relief };
-  const builders = Object.fromEntries(Object.keys(textures).map((name) => [name, createStripBuilder()]));
+  if (!photoAsphalt) {
+    ownMaps.asphalt = { map: createAsphaltTexture() };
+  }
+  const maps = { asphalt: photoAsphalt, ...ownMaps };
+  const builders = Object.fromEntries(Object.keys(maps).map((name) => [name, createStripBuilder()]));
   const shadeOf = createPatchShade(track);
   track.stations.forEach((station, index) => {
     if (station.gap) {
@@ -53,12 +60,12 @@ export function buildKitRoad(track, theme) {
     addShoulders(builders.grass, segment);
     addUnderside(builders.concrete, segment);
   });
-  const roughness = { asphalt: 0.85, metal: 0.4, grass: 0.95, concrete: 0.9 };
-  const surfaces = Object.keys(textures).map((name) => {
+  // The photo-scanned asphalt's roughness map gives its roughness in full.
+  const roughness = { asphalt: photoAsphalt ? 1 : 0.85, metal: 0.4, grass: 0.95, concrete: 0.9 };
+  const surfaces = Object.keys(maps).map((name) => {
     const material = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      map: textures[name],
-      normalMap: reliefs[name] ?? null,
+      ...maps[name],
       roughness: roughness[name],
       metalness: name === 'metal' ? 0.5 : 0,
     });
@@ -75,7 +82,7 @@ export function buildKitRoad(track, theme) {
       mesh.geometry.dispose();
       mesh.material.dispose();
     }
-    [...Object.values(textures), ...Object.values(reliefs)].forEach((texture) => texture.dispose());
+    Object.values(ownMaps).flatMap((surfaceMaps) => Object.values(surfaceMaps)).forEach((texture) => texture.dispose());
     [paint, panels, plates].forEach((part) => part.dispose());
   }
 
@@ -96,14 +103,22 @@ function createPatchShade(track) {
   };
 }
 
-// The road between its edges in `lanes` strips across, so a shade can change across it.
+// The road between its edges in `lanes` strips across and the narrow ones along each edge, so a shade can
+// change across it.
 function addLanes(builder, segment, hex, lanes, shadeOf) {
   const up = (station) => station.normal;
-  for (let lane = 0; lane < lanes; lane += 1) {
-    const from = (station) => station.halfWidth * (-1 + (2 * lane) / lanes);
-    const to = (station) => station.halfWidth * (-1 + (2 * (lane + 1)) / lanes);
-    builder.strip(segment, from, 0, to, 0, up, hex, { shadeOf });
+  const edgesAt = (station) => laneEdges(station.halfWidth, lanes);
+  for (let lane = 0; lane < lanes + 2 * EDGE_LANES.length; lane += 1) {
+    builder.strip(segment, (station) => edgesAt(station)[lane], 0, (station) => edgesAt(station)[lane + 1], 0, up, hex, { shadeOf });
   }
+}
+
+// Where the lanes meet across a road `halfWidth` each way, from left to right: `lanes` even lanes, the first and
+// last cut again at EDGE_LANES from the edge.
+function laneEdges(halfWidth, lanes) {
+  const even = Array.from({ length: lanes + 1 }, (unused, index) => halfWidth * (-1 + (2 * index) / lanes));
+  const nearEdges = EDGE_LANES.flatMap((inset) => [inset - halfWidth, halfWidth - inset]);
+  return [...even, ...nearEdges].sort((first, second) => first - second);
 }
 
 // Each side's grass between its edges at both stations (shoulders ease in and out, see track-builder.js).

@@ -3,9 +3,10 @@
 // browser (M7c). Pixels wrap round the edges, so a tile drawn with it repeats without a seam. Colours are
 // [r, g, b] in 0..255. Used by the kit's pieces that draw textures.
 
-import { createCanvas, canvasTexture, repeatingTexture, reliefTexture } from '../canvas-texture.js';
+import { createCanvas, canvasTexture, repeatingTexture, dataTexture } from '../canvas-texture.js';
 
-// Returns { width, height, fill, mix, dot, rect, toCanvas, toTexture, toReliefTexture }.
+// Returns { width, height, fill, mix, dot, rect, valueAt, toCanvas, toTexture, toDataTexture, toReliefTexture,
+// toShadeTexture }.
 export function createPixelImage(width, height) {
   const pixels = new Float32Array(width * height * 3);
   const offsetOf = (x, y) => ((((Math.round(y) % height) + height) % height) * width + (((Math.round(x) % width) + width) % width)) * 3;
@@ -49,6 +50,12 @@ export function createPixelImage(width, height) {
     }
   }
 
+  // The pixel's [r, g, b] at (x, y), wrapping round the edges like everything here.
+  function valueAt(x, y) {
+    const offset = offsetOf(x, y);
+    return [pixels[offset], pixels[offset + 1], pixels[offset + 2]];
+  }
+
   function toCanvas() {
     const { canvas, context } = createCanvas(width, height);
     const image = context.createImageData(width, height);
@@ -65,6 +72,11 @@ export function createPixelImage(width, height) {
   // A repeating tile, or (repeat false) a picture stretched once over its surface.
   function toTexture({ repeat = true } = {}) {
     return repeat ? repeatingTexture(toCanvas()) : canvasTexture(toCanvas());
+  }
+
+  // The same, read as numbers rather than colours (M7d4b2): a roughness map (Three.js reads its green), for one.
+  function toDataTexture({ repeat = true } = {}) {
+    return dataTexture(toCanvas(), repeat);
   }
 
   // Read as a height field (its red channel: 0 low, 255 high), the normal map that makes a surface catch the
@@ -90,8 +102,42 @@ export function createPixelImage(width, height) {
       }
     }
     context.putImageData(image, 0, 0);
-    return reliefTexture(canvas, repeat);
+    return dataTexture(canvas, repeat);
   }
 
-  return { width, height, fill, mix, dot, rect, toCanvas, toTexture, toReliefTexture };
+  // Read as a height field like toReliefTexture, the shade map (ambient occlusion, M7d4b2) that darkens what lies
+  // lower than the surface round it, within `reach` pixels each way: seams, gaps and the creases round a raised
+  // part's foot, which the sky and the light bounced off the course reach less. `strength` is how dark a pixel
+  // gets for each step of 255 it lies below the average round it (1 would make a full step black). Three.js
+  // uses a shade map only for the light that is not the sun's, as such shade is.
+  function toShadeTexture({ reach, strength, repeat = true }) {
+    const heights = Float32Array.from({ length: width * height }, (unused, index) => pixels[index * 3]);
+    const average = boxAverage(boxAverage(heights, reach, 1, 0), reach, 0, 1);
+    const shade = createPixelImage(width, height);
+    shade.fill((x, y) => {
+      const below = Math.max(0, average[y * width + x] - heights[y * width + x]) / 255;
+      const value = 255 * Math.max(0, 1 - strength * below);
+      return [value, value, value];
+    });
+    return shade.toDataTexture({ repeat });
+  }
+
+  // `values` (one per pixel, row by row) averaged over `reach` pixels either way along (stepX, stepY), wrapping.
+  function boxAverage(values, reach, stepX, stepY) {
+    const averaged = new Float32Array(values.length);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        let sum = 0;
+        for (let step = -reach; step <= reach; step += 1) {
+          const atX = (((x + step * stepX) % width) + width) % width;
+          const atY = (((y + step * stepY) % height) + height) % height;
+          sum += values[atY * width + atX];
+        }
+        averaged[y * width + x] = sum / (2 * reach + 1);
+      }
+    }
+    return averaged;
+  }
+
+  return { width, height, fill, mix, dot, rect, valueAt, toCanvas, toTexture, toDataTexture, toReliefTexture, toShadeTexture };
 }

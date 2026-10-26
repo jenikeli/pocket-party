@@ -126,6 +126,8 @@ function addKoopaShell({ world, keep }, seaLevel) {
 function addBoats({ world, keep }, seaLevel) {
   const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide }));
   const mesh = new THREE.InstancedMesh(keep(buildSailboat()), material, BOATS.length);
+  // Moved boat by boat in bob(), so never cut into cells (split-meshes.js).
+  mesh.userData.keepWhole = true;
   world.add(mesh);
   const matrix = new THREE.Matrix4();
   const turn = new THREE.Quaternion();

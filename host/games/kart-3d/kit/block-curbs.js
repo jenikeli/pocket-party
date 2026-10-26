@@ -1,18 +1,22 @@
-// The kit's block curbs (M7d2), as at Koopa Cape: a row of raised blocks with round studs on top like toy bricks,
-// green and yellow in turn, about half a kart high, along the road's edge. Returns { add(segment, side),
-// end(station, index, side, facing), meshes() } for kit/barriers.js: no block reaches past the row's ends, so
-// the row stops on a whole block where it meets the next barrier.
+// The kit's block curbs (M7d2), as at Koopa Cape: a row of chunky raised blocks along the road's edge, green and
+// yellow in turn, about half a kart high. Since M7d4 shaped as MK8DX's are (docs/mk8dx-reference.md, "The kit's
+// objects up close"): each block about as tall as it is deep, with well rounded edges and no studs, lighter on
+// top and darker at its foot, a little gap between one block and the next so the row bends round corners like a
+// chain. Returns { add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: no
+// block reaches past the row's ends, so the row stops on a whole block where it meets the next barrier.
 
 import * as THREE from 'three';
 import { frameAt, facingAlong, edgeLateral, placeInstances } from './frames.js';
-import { at, mergeShapes } from '../shape-utils.js';
+import { at, coloured, roundedBox, shaded } from '../shape-utils.js';
 
 const COLORS = [0x2fae3a, 0xffd21e];
 const BLOCK_OUT = 0.42;
 // A block every this far along the row, so they sit end to end on the inside of a bend and the outside alike.
 const BLOCK_SPACING = 1;
-// A block's length along the row.
-const BLOCK_LENGTH = 0.96;
+// A block's size: across the road, up and along the row (a little shorter than the spacing, for the gap).
+const BLOCK_WIDTH = 0.84;
+const BLOCK_HEIGHT = 0.6;
+const BLOCK_LENGTH = 0.88;
 
 export function createBlockCurbs({ keep }) {
   const blocks = [];
@@ -43,7 +47,7 @@ export function createBlockCurbs({ keep }) {
       rowEnds.push({ side, point: new THREE.Vector3().setFromMatrixPosition(frameAt(station, edgeLateral(station, side) + side * BLOCK_OUT, 0, facingAlong(station))) });
     },
     meshes() {
-      const plastic = keep(new THREE.MeshStandardMaterial({ roughness: 0.3 }));
+      const plastic = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35 }));
       const clear = blocks.map((block, index) => {
         const middle = new THREE.Vector3().setFromMatrixPosition(block);
         return rowEnds.every((rowEnd) => rowEnd.side !== sides[index] || rowEnd.point.distanceTo(middle) >= BLOCK_LENGTH / 2);
@@ -54,9 +58,8 @@ export function createBlockCurbs({ keep }) {
   };
 }
 
-// A block 0.84 wide, 0.5 high and 0.96 long (along the road) with four studs on top; white, coloured per
-// instance.
+// A rounded block, white (coloured per instance) shading to grey at its foot, where it meets the ledge.
 function buildBlock() {
-  const studs = [-0.22, 0.22].flatMap((x) => [-0.24, 0.24].map((z) => at(new THREE.CylinderGeometry(0.14, 0.14, 0.1, 6), x, 0.55, z)));
-  return mergeShapes([at(new THREE.BoxGeometry(0.84, 0.5, BLOCK_LENGTH), 0, 0.25, 0), ...studs]);
+  const block = coloured(at(roundedBox(BLOCK_WIDTH, BLOCK_HEIGHT, BLOCK_LENGTH, 0.13), 0, BLOCK_HEIGHT / 2, 0), 0xffffff);
+  return shaded(block, (x, y) => 0.68 + 0.32 * Math.min(1, y / (BLOCK_HEIGHT * 0.7)));
 }

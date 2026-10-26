@@ -1,19 +1,21 @@
 // Where Seaside Skyway's trackside dressing stands (M7d3): which barrier stands on each stretch of wall, the decks
 // beside the road and the props on them, the grandstand, the bunting, and where steel trusses hold the road up
 // instead of piers. The lap has two halves, themed on the course's name: the seaside (the last straight, the
-// start and the first corners, s 1075-1213 and 0-340: a harbour with a boardwalk, beaches, palms and fences of
-// wood and stone) and the sky (the climb to the hairpin and on round the anti-gravity wall, s 340-1075: steel
-// guardrails and trusses among floating islands). Distances along the lap (s) follow the pieces in
-// seaside-skyway.js. Plain data, unit tested in Node. Drawn by host/games/kart-3d/seaside-scenery.js.
+// start and the first corners, s 1075-1213 and 0-340: a harbour with a boardwalk and a promenade, beaches,
+// palms and fences of wood and stone) and the sky (the climb to the hairpin and on round the anti-gravity
+// wall, s 340-1075: steel guardrails and trusses among floating islands). Distances along the lap (s) follow
+// the pieces in seaside-skyway.js. Plain data, unit tested in Node. Drawn by host/games/kart-3d/seaside-scenery.js.
 
 import { BARRIER_STYLES } from './kit/layout-rules.js';
 
-const { SPONSOR_WALL, GUARDRAIL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS } = BARRIER_STYLES;
+const { SPONSOR_WALL, GUARDRAIL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS, PROMENADE_RAIL } = BARRIER_STYLES;
 
 export const BARRIER_RUNS = Object.freeze([
-  // The harbour: the start straight between sponsor walls, then striped harbour rails to the first corner.
+  // The harbour: the start straight between sponsor walls, then to the first corner a promenade railing beside
+  // the promenade and striped harbour rails opposite.
   { fromS: 0, toS: 100, side: 'both', style: SPONSOR_WALL },
-  { fromS: 100, toS: 150, side: 'both', style: STRIPED_RAIL },
+  { fromS: 100, toS: 150, side: 'left', style: PROMENADE_RAIL },
+  { fromS: 100, toS: 150, side: 'right', style: STRIPED_RAIL },
   // The beach: wooden rail fences round the first corner and along the straight, block curbs on its insides.
   { fromS: 150, toS: 236, side: 'left', style: RAIL_FENCE },
   { fromS: 150, toS: 236, side: 'right', style: BLOCK_CURBS },
@@ -29,7 +31,7 @@ export const BARRIER_RUNS = Object.freeze([
   { fromS: 960, toS: 1076, side: 'both', style: RAIL_FENCE },
   { fromS: 1076, toS: 1150, side: 'left', style: RAIL_FENCE },
   { fromS: 1076, toS: 1150, side: 'right', style: BLOCK_CURBS },
-  { fromS: 1150, toS: 1214, side: 'left', style: STRIPED_RAIL },
+  { fromS: 1150, toS: 1214, side: 'left', style: PROMENADE_RAIL },
   { fromS: 1150, toS: 1214, side: 'right', style: BLOCK_CURBS },
 ]);
 

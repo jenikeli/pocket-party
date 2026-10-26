@@ -3,9 +3,9 @@
 // browser (M7c). Pixels wrap round the edges, so a tile drawn with it repeats without a seam. Colours are
 // [r, g, b] in 0..255. Used by the kit's pieces that draw textures.
 
-import { createCanvas, canvasTexture, repeatingTexture } from '../canvas-texture.js';
+import { createCanvas, canvasTexture, repeatingTexture, reliefTexture } from '../canvas-texture.js';
 
-// Returns { width, height, fill, mix, dot, rect, toCanvas, toTexture }.
+// Returns { width, height, fill, mix, dot, rect, toCanvas, toTexture, toReliefTexture }.
 export function createPixelImage(width, height) {
   const pixels = new Float32Array(width * height * 3);
   const offsetOf = (x, y) => ((((Math.round(y) % height) + height) % height) * width + (((Math.round(x) % width) + width) % width)) * 3;
@@ -67,5 +67,31 @@ export function createPixelImage(width, height) {
     return repeat ? repeatingTexture(toCanvas()) : canvasTexture(toCanvas());
   }
 
-  return { width, height, fill, mix, dot, rect, toCanvas, toTexture };
+  // Read as a height field (its red channel: 0 low, 255 high), the normal map that makes a surface catch the
+  // light as if it had that relief (M7d4): seams and gaps dark on the side away from the sun, raised edges and
+  // bolt heads lit on the side toward it, which painted colour alone cannot do. `depth` is how many pixels
+  // high a full step from 0 to 255 stands: the bigger, the steeper every slope. The edges wrap, like the tile.
+  function toReliefTexture({ depth, repeat = true }) {
+    const heightAt = (x, y) => pixels[offsetOf(x, y)] / 255;
+    const { canvas, context } = createCanvas(width, height);
+    const image = context.createImageData(width, height);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        // The canvas's rows run down, its texture coordinate v up, so a slope down the picture tilts the
+        // normal the other way in v.
+        const slopeX = ((heightAt(x + 1, y) - heightAt(x - 1, y)) / 2) * depth;
+        const slopeY = ((heightAt(x, y + 1) - heightAt(x, y - 1)) / 2) * depth;
+        const length = Math.hypot(slopeX, slopeY, 1);
+        const offset = (y * width + x) * 4;
+        image.data[offset] = (-slopeX / length) * 127.5 + 127.5;
+        image.data[offset + 1] = (slopeY / length) * 127.5 + 127.5;
+        image.data[offset + 2] = (1 / length) * 127.5 + 127.5;
+        image.data[offset + 3] = 255;
+      }
+    }
+    context.putImageData(image, 0, 0);
+    return reliefTexture(canvas, repeat);
+  }
+
+  return { width, height, fill, mix, dot, rect, toCanvas, toTexture, toReliefTexture };
 }

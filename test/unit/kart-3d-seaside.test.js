@@ -69,7 +69,7 @@ test('Seaside Skyway\'s decks run outside walls on level road, and its props, gr
   assert.ok(Math.abs(GRANDSTAND.s - seaside.startLine) < GRANDSTAND.length / 2, 'the grandstand looks at the start line');
 });
 
-test('the seaside half has wooden fences, striped rails, block curbs and sponsor walls; the sky half steel guardrails', () => {
+test('the seaside half has wooden fences, striped rails, block curbs, sponsor walls and a promenade railing; the sky half steel guardrails', () => {
   const styles = (fromS, toS) => {
     const shown = new Set();
     for (const station of seaside.stations.filter((candidate) => candidate.s >= fromS && candidate.s < toS && !candidate.gap)) {
@@ -81,9 +81,11 @@ test('the seaside half has wooden fences, striped rails, block curbs and sponsor
     }
     return shown;
   };
-  const { SPONSOR_WALL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS, GUARDRAIL, WALL } = BARRIER_STYLES;
+  const { SPONSOR_WALL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS, PROMENADE_RAIL, GUARDRAIL, WALL } = BARRIER_STYLES;
   for (const [fromS, toS] of [[0, 340], [1076, seaside.length]]) {
-    assert.ok([...styles(fromS, toS)].every((style) => [SPONSOR_WALL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS].includes(style)), `the seaside from ${fromS}`);
+    const seasideStyles = [SPONSOR_WALL, STRIPED_RAIL, RAIL_FENCE, BLOCK_CURBS, PROMENADE_RAIL];
+    assert.ok([...styles(fromS, toS)].every((style) => seasideStyles.includes(style)), `the seaside from ${fromS}`);
+    assert.ok(styles(fromS, toS).has(PROMENADE_RAIL), `a promenade railing in the seaside from ${fromS}`);
   }
   assert.deepEqual([...styles(340, 700)], [GUARDRAIL], 'up the climb, round the sweeper and over the jump');
   assert.ok(![...styles(0, seaside.length)].includes(WALL), 'every wall outside the anti-gravity section has a style');
@@ -103,7 +105,8 @@ test('turn boards stand round the outside of corners, behind low barriers only, 
     assert.ok(spot.side > 0 ? station.wallRight : station.wallLeft, 'on a wall');
     assert.ok(!station.gap && !station.antiGravity && station.normal.y > 0.95, 'on level, normal road');
     const style = barrierStyleAt(BARRIER_RUNS, station, spot.side);
-    assert.ok([BARRIER_STYLES.GUARDRAIL, BARRIER_STYLES.STRIPED_RAIL, BARRIER_STYLES.RAIL_FENCE].includes(style), `not behind a ${style}`);
+    const lowBarriers = [BARRIER_STYLES.GUARDRAIL, BARRIER_STYLES.STRIPED_RAIL, BARRIER_STYLES.RAIL_FENCE, BARRIER_STYLES.PROMENADE_RAIL];
+    assert.ok(lowBarriers.includes(style), `not behind a ${style}`);
   }
   const near = (s) => spots.filter((spot) => Math.abs(seaside.stations[spot.index].s - s) < 30);
   assert.ok(near(190).length > 0 && near(190).every((spot) => spot.turnsRight), 'the first corner, right');

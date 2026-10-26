@@ -15,6 +15,8 @@ export const BARRIER_STYLES = Object.freeze({
   STRIPED_RAIL: 'striped-rail',
   RAIL_FENCE: 'rail-fence',
   BLOCK_CURBS: 'block-curbs',
+  // M7d4's, as on Daisy Circuit's seafront.
+  PROMENADE_RAIL: 'promenade-rail',
 });
 
 // Each prop's name, and how far it reaches from its spot seen from above, so a layout can be checked to keep
@@ -64,7 +66,7 @@ export function barrierStyleAt(runs, station, side) {
 // the board to clear (a padded wall's fence or the blocks would run into it).
 const BOARD_SPACING = 8;
 const BOARD_DEGREES = 8;
-const LOW_BARRIERS = [BARRIER_STYLES.GUARDRAIL, BARRIER_STYLES.STRIPED_RAIL, BARRIER_STYLES.RAIL_FENCE];
+const LOW_BARRIERS = [BARRIER_STYLES.GUARDRAIL, BARRIER_STYLES.STRIPED_RAIL, BARRIER_STYLES.RAIL_FENCE, BARRIER_STYLES.PROMENADE_RAIL];
 
 // Where turn boards stand on a course whose barriers are `runs`: [{ index, side, turnsRight }], side -1 (left)
 // or 1 (right), pointing the way the road turns.

@@ -1,6 +1,6 @@
 // Small helpers for building the 3D race's models out of Three.js's simple shapes: placing a shape, stretching
 // one between two points, colouring one per vertex, and merging many into one geometry (one draw call). Used by
-// kart-shapes.js and the kit's pieces (kit/).
+// kart-shapes.js and the kit's pieces (kit/). Since M7d4 also rounded cylinders and shading by position.
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -33,8 +33,10 @@ export function coloured(geometry, hex) {
 
 // A box `width` by `height` by `depth` round its middle with every edge rounded by about `radius`, for the
 // kit's chunky, toy-like pieces: a rounded rectangle pushed out along z with rounded (bevelled) front and back
-// edges. Indexed, like Three.js's own shapes, so it merges with them.
-export function roundedBox(width, height, depth, radius) {
+// edges. Indexed, like Three.js's own shapes, so it merges with them. About 190 triangles; `chamfered` (M7d4)
+// cuts each edge with one flat face instead, about 60, for small parts repeated hundreds of times round a
+// course (posts, clamps), where a curve would not show but the triangles would.
+export function roundedBox(width, height, depth, radius, { chamfered = false } = {}) {
   const halfWidth = width / 2 - radius;
   const halfHeight = height / 2 - radius;
   const corner = radius / 2;
@@ -53,8 +55,8 @@ export function roundedBox(width, height, depth, radius) {
     bevelEnabled: true,
     bevelSize: radius,
     bevelThickness: radius,
-    bevelSegments: 2,
-    curveSegments: 3,
+    bevelSegments: chamfered ? 1 : 2,
+    curveSegments: chamfered ? 1 : 3,
   });
   shape.translate(0, 0, -(depth - 2 * radius) / 2);
   // Extruded shapes come unindexed; merging their identical corners indexes them, and keeps their flat faces
@@ -62,6 +64,31 @@ export function roundedBox(width, height, depth, radius) {
   const indexed = mergeVertices(shape);
   shape.dispose();
   return indexed;
+}
+
+// A cylinder `height` tall round its middle (like Three.js's), `radiusTop` and `radiusBottom` wide, with both
+// rims rounded by `bevel` (M7d4): a post, a pole or a cap whose rims catch a line of light, as MK8DX's do,
+// instead of meeting its ends at a sharp crease. A lathe, so it is indexed and merges with Three.js's shapes.
+export function roundedCylinder(radiusTop, radiusBottom, height, bevel, radialSegments = 12) {
+  const half = height / 2;
+  const rim = (radius, y, towardMiddle) =>
+    [0, 1, 2].map((step) => {
+      const angle = (step / 2) * (Math.PI / 2);
+      return new THREE.Vector2(radius - bevel + Math.sin(angle) * bevel, y + towardMiddle * (bevel - Math.cos(angle) * bevel));
+    });
+  const points = [new THREE.Vector2(0, -half), ...rim(radiusBottom, -half, 1), ...rim(radiusTop, half, -1).reverse(), new THREE.Vector2(0, half)];
+  return new THREE.LatheGeometry(points, radialSegments);
+}
+
+// Multiplies `geometry`'s vertex colours (from coloured) by shadeAt(x, y, z) at each vertex, and returns it
+// (M7d4): darker where parts meet, as MK8DX's creases are, or lighter toward a block's top.
+export function shaded(geometry, shadeAt) {
+  const { position, color } = geometry.attributes;
+  for (let index = 0; index < position.count; index += 1) {
+    const shade = shadeAt(position.getX(index), position.getY(index), position.getZ(index));
+    color.setXYZ(index, color.getX(index) * shade, color.getY(index) * shade, color.getZ(index) * shade);
+  }
+  return geometry;
 }
 
 // One geometry from many, which are disposed. Three.js's shapes (and roundedBox) are all indexed with position,

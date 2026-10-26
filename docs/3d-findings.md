@@ -626,3 +626,52 @@ In headless Chromium on the dev box (llvmpipe, software), so these say how much 
 ### Device run
 
 On the iPad: the course looks good and both halves read as themed; with 4 players on High it averages 80 to 90 fps (so the extra triangles cost the iPad little); switching to the course takes about a second. One problem: where a piece's grass (shoulder) ended or began, the ground's edge and its barrier stepped sideways at once, leaving a notch to drive out of the track. Fixed in the same chat: a shoulder now eases over the first 16 units of the piece where it changes, in a smoothstep S curve, and the drawing (grass, the road's sides, barriers, decks) and the rules (the contact's shoulders are blended between stations like its width) both follow it. Afterwards the user circled blunt deck ends and asked for every other cut-off to be found: decks now taper to nothing at a free end in the same S curve and run on as one where they meet (Seaside's seaside half has one continuous deck on its left, from the last straight to the chicane), and every barrier ends itself cleanly where it starts, stops or changes style (a closed cross-section, its own post, or a whole block; a first try with a concrete end post at each junction looked wrong, with both barriers sticking through it). Turn boards were first turned to stand along the outside edge, but the user preferred them turned toward the karts coming (easier to see mid-turn): they went back to that angle, stand 1.5 out clear of the rails, on a ledge that widens to 2.7 under them in an S curve. A thin spike of sand at the start of the last straight's beach was a deck's first station (just before its start) wrapping to almost a lap in and getting full depth. The bridge before the jump got walls and guardrails like the rest of the course. General feedback for M7d4: up close, most composite objects still show the simple shapes they are made of and look far from MK8DX's; they need smaller parts covering them and more texture, with MK8DX's objects as the reference.
+
+## M7d4a: shared tools and the barriers
+
+### What was built
+
+All procedural, as before. M7d4 started with a study of how MK8DX builds its objects up ("The kit's objects up close (M7d4 study)" in `docs/mk8dx-reference.md`); M7d4a takes its "How to build it" and rebuilds everything that lines the road with it. No rule changes.
+
+- **Shared tools.** Normal maps drawn from a texture's height field (`toReliefTexture` in `kit/pixel-image.js`), so seams, pits, grain and nail heads catch the sun from the side it comes from: the concrete (pits and lumps) and the wood (sunk gaps, rounded plank edges, raised nails) now come with one, shared through `kit/kit.js` (`concreteRelief`, `woodRelief`) and used by the road's sides too. Profiles extruded along the road can have their corners rounded (`roundProfile`) and be shaded smooth where their faces turn gently (`smooth`), be pushed out of their shape for a band or a plate (`offsetProfile`), cover only part of a station segment (`span`, with `stationBetween`), and tubes have one ring (`tubeProfile`); all in `kit/extrude.js`, whose `extrudeSegment` now takes an options object. `shape-utils.js` gained `roundedCylinder` (a lathe with rounded rims), `shaded` (vertex colours darker in creases or lighter on top) and a `chamfered` form of `roundedBox` (about 60 triangles against 190) for small parts repeated hundreds of times.
+- **The ledge** under every barrier: a coping with a rounded nose over a darker, weathered face.
+- **Plain wall:** rounded painted top, a coping along it, a dark foot and seams between the panels. **Anti-gravity wall:** rounded, a rounded steel cap, a dark foot, seams every 3 units with rivets either side.
+- **Padded sponsor wall:** boards set back in a light frame with a bolt at each corner, a dark kick strip, a fat cushion of a pad with a darker seam between boards, fence posts with a collar and a ball, a rail along the fence's top. The boards' pictures are unchanged.
+- **Striped rail** (Toad Harbor's): fat oval rails (0.3 tall, 0.22 deep) on a rounded kerb, held every 4 units in chunky white post blocks with bolts; the rails' ends hide in a block.
+- **Guardrail:** a deeper rounded W, a splice plate with three bolts where beams meet (every 4 units), yellow posts darker at the foot on a foot plate, an amber reflector on every fourth post.
+- **Rail fence:** rounded rails and chamfered posts with the wood's relief, a low pyramid top in darker cut wood, posts leaning and standing a little uneven (seeded, the same every time).
+- **Block curbs:** rounded blocks without studs, as tall as deep, a gap between them, lighter on top.
+- **Promenade railing (new style, `kit/promenade-rail.js`, chosen at the split):** Daisy Circuit's blue iron posts (flared foot, collar, ball) with two round rails, a sandstone pillar every 12 units and at every end (plinth, cap slab, a brass plaque on both faces). On Seaside Skyway beside the promenade (left, s 100-150) and round the last corner (left, s 1150-1214), where the striped rails were; on the Test track s 344-384, where a guardrail was. Turn boards may stand behind it.
+- **Turn boards:** a thick board with rounded edges, its picture laid on from the front with a dark line inside the white border and corner bolts, on round posts with caps and foot plates, held by clamps.
+- **Start gate:** each post a dark plinth, three panels in the post's colour with seams between them and a bolt near each corner of every face, the band and a capital under the sign; the sign's letters, outline, stripe and checks raised by a normal map drawn from the sign itself (`kit/start-gate-sign.js`, which now draws the sign and the badge), inside a raised white rim with a row of bolts. **Start lights:** hoods 0.45 deep, a chrome ring round each lamp, bolts in the face's corners, a yoke (a bar over the box on brackets, rods up to plates under the sign).
+
+Not done from the study: the sponsor boards' pictures (Toad Harbor's have characters in them; ours keep their logo and emblem), the gate's arch or frame behind the sign (the rim and capital give the sign its second scale of parts), and the chevron guard (not chosen).
+
+### Measured without a device
+
+In headless Chromium on the dev box (llvmpipe, software), at the back of the grid with the 12 karts on it, one view, 960x540, shadows drawn each frame (scratch viewer), against the M7d3 code measured the same way in the same session:
+
+| | Seaside Skyway, M7d3 | Seaside Skyway, M7d4a | Test track, M7d3 | Test track, M7d4a |
+|---|---|---|---|---|
+| Draw calls (with the shadow pass) | 243 | 253 | 214 | 220 |
+| Triangles drawn (with the shadow pass) | 812,000 | 1,305,000 | 293,000 | 520,000 |
+| Triangles in the scene (karts included) | 550,000 | 831,000 | 203,000 | 353,000 |
+| One frame drawn | 0.42-0.49 s | 0.51-0.52 s | 0.29-0.30 s | 0.33 s |
+| Building the course (road, scenery, karts) | 2.3 s | 3.0 s | 1.5 s | 2.2 s |
+
+- The first rebuild had 1,253,000 triangles in Seaside's scene; a census found the guardrail's posts (four rounded boxes each, 430 posts: 311,000), the turn boards' fittings and the fence posts. Small, repeated parts were then chamfered or made plain boxes, the ledge rounded only at its nose, and the bolts given fewer segments, to 831,000. The block curbs keep their full rounding: chamfered, they looked faceted rather than toy-like.
+- The browser tests that draw the 3D race took a little longer: M7b 87 s, M7c 85 s, M7d2 50 s (about 74, 67 and 43 after M7d3).
+- M6a and the M7d3 device run found the iPad barely notices triangles (80-90 fps with 4 players after M7d3 tripled the software frame), so the device run decides whether anything must be thinned.
+
+### Device run procedure
+
+1. Host on the iPad, the 3D race, Seaside Skyway, Look on High. One phone, then four for the split screen.
+2. On the grid: the start gate (panelled posts with bolts, raised letters in a rimmed sign) and the start lights (rings, hoods, the yoke). Do the letters look raised when the sun catches them?
+3. Drive a lap slowly and look at every barrier up close: the padded sponsor walls (framed boards, the cushion pad, fence posts), the new promenade railing with its stone pillars (after the start straight on the left, and round the last corner), the striped rails (fat, in white blocks), the wooden rail fences, the block curbs, the guardrails (splice plates, reflectors), the anti-gravity wall, the ledge under them all, the turn boards. Which still read as plain shapes, and which look closest to MK8DX's?
+4. Where barriers meet another style or stop, does anything stick through or end oddly?
+5. Frame rate with 1 and with 4 views on High (the Tuning readout), especially on the start straight; and how long Seaside Skyway takes to appear on the setup screen (about a second after M7d3).
+6. Optional: the Test track for the plain wall (after the anti-gravity curve) and its promenade railing (the straight after the hairpin).
+
+### Device run
+
+Pending.

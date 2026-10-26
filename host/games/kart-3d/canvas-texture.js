@@ -28,3 +28,11 @@ export function repeatingTexture(canvas) {
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
 }
+
+// A normal map (M7d4) from `canvas`, whose colours are surface directions, not colours, so they are read as
+// they are (no colour space); repeating like its colour map, or not.
+export function reliefTexture(canvas, repeat) {
+  const texture = repeat ? repeatingTexture(canvas) : canvasTexture(canvas);
+  texture.colorSpace = THREE.NoColorSpace;
+  return texture;
+}

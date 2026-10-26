@@ -1,14 +1,17 @@
 // The kit's start gate (M7d2): two chunky posts behind the walls either side of the start line, a big sign across
-// the road between them reading MARIO KART (drawn on a canvas) on both faces, with a stripe along its foot and
-// checks at its ends, and a round mushroom badge on top, in the course's colours (M7d3): Mario Kart Stadium's
-// yellow sign on the Test track, a sea-blue one on Seaside Skyway. The start lights (kit/start-lights.js) hang
-// under the sign's middle. Used by the courses' dressings.
+// the road between them reading MARIO KART (kit/start-gate-sign.js) on both faces, with a stripe along its foot
+// and checks at its ends, and a round mushroom badge on top, in the course's colours (M7d3): Mario Kart
+// Stadium's yellow sign on the Test track, a sea-blue one on Seaside Skyway. Since M7d4 built up as MK8DX's
+// gates are (docs/mk8dx-reference.md, "The kit's objects up close"): each post a stone plinth, panels with
+// seams between them and a bolt at each corner, a band and a capital; the sign's letters raised (its relief)
+// inside a raised rim with a row of bolts along it. The start lights (kit/start-lights.js) hang under the sign's
+// middle. Used by the courses' dressings.
 
 import * as THREE from 'three';
 import { startLineIndex } from '../track.js';
 import { frameAt, facingBack, edgeLateral, withShadows } from './frames.js';
 import { roundedBox, at, coloured, mergeShapes } from '../shape-utils.js';
-import { createCanvas, canvasTexture } from '../canvas-texture.js';
+import { drawSign, drawBadge } from './start-gate-sign.js';
 
 const POST_WIDTH = 1.3;
 // The thickest barrier (the padded wall with its fence) reaches this far out from the edge of the ground.
@@ -17,7 +20,14 @@ const SIGN_BOTTOM = 6.6;
 const SIGN_HEIGHT = 2.6;
 const SIGN_DEPTH = 1;
 const BADGE_RADIUS = 1.3;
-const FONT = '"Arial Black", "Helvetica Neue", Arial, sans-serif';
+// Each post's panels, [bottom, top], with the band between the first two; and the plinth and capital.
+const PANELS = [[0.75, 2.45], [3.15, 4.7], [4.78, 6.28]];
+const BAND = { middle: 2.8, height: 0.6 };
+const PLINTH = { height: 0.7, color: 0x5a5e66 };
+const BOLT_COLOR = 0xc8ccd2;
+// The rim round each printed face: how thick its bars are and how far they stand out from the sign's body.
+const RIM = { width: 0.16, stand: 0.08, color: 0xf4f4f0 };
+const RIM_BOLT_SPACING = 1.2;
 
 // Adds the gate over the start line; `kit` is the course's { world, track, keep } (kit/kit.js), `theme` its
 // colours: { post, band, body } as hex numbers for the posts, the band round them and the sign's body, and
@@ -29,16 +39,18 @@ export function buildStartGate({ world, track, keep }, theme) {
   // The posts stand just behind the barriers on either side, clear of their boards and fences.
   const halfSpan = Math.max(-edgeLateral(station, -1), edgeLateral(station, 1)) + BARRIER_CLEARANCE + POST_WIDTH / 2;
   const painted = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4 }));
-  const signMaterial = keep(new THREE.MeshStandardMaterial({ map: keep(drawSign(theme)), roughness: 0.45 }));
+  const sign = drawSign(theme);
+  const signMaterial = keep(new THREE.MeshStandardMaterial({ map: keep(sign.map), normalMap: keep(sign.relief), roughness: 0.45 }));
   const badgeMaterial = keep(new THREE.MeshStandardMaterial({ map: keep(drawBadge()), roughness: 0.4 }));
   const signWidth = 2 * halfSpan + POST_WIDTH;
   const signMiddle = SIGN_BOTTOM + SIGN_HEIGHT / 2;
   const badgeMiddle = SIGN_BOTTOM + SIGN_HEIGHT + BADGE_RADIUS - 0.2;
+  const face = { width: signWidth - 0.5, height: SIGN_HEIGHT - 0.4, middle: signMiddle };
   // The printed faces, front (toward the grid) and back, a hair in front of the sign's body.
-  const faces = mergeFaces(signWidth - 0.5, SIGN_HEIGHT - 0.4, signMiddle, SIGN_DEPTH / 2 + 0.01);
+  const faces = mergeFaces(face.width, face.height, signMiddle, SIGN_DEPTH / 2 + 0.01);
   const badgeFaces = mergeFaces(2 * BADGE_RADIUS, 2 * BADGE_RADIUS, badgeMiddle, 0.13, new THREE.CircleGeometry(BADGE_RADIUS, 32));
   const parts = [
-    new THREE.Mesh(keep(buildFrame(theme, halfSpan, signWidth, signMiddle, badgeMiddle)), painted),
+    new THREE.Mesh(keep(buildFrame(theme, halfSpan, signWidth, face, badgeMiddle)), painted),
     new THREE.Mesh(keep(faces), signMaterial),
     new THREE.Mesh(keep(badgeFaces), badgeMaterial),
   ];
@@ -50,19 +62,72 @@ export function buildStartGate({ world, track, keep }, theme) {
   return frame.clone().multiply(new THREE.Matrix4().makeTranslation(0, SIGN_BOTTOM, 0));
 }
 
-// The posts with a band round them, the sign's body and the badge's red rim, as one shape.
-function buildFrame(theme, halfSpan, signWidth, signMiddle, badgeMiddle) {
-  const posts = [-1, 1].flatMap((side) => [
-    coloured(at(roundedBox(POST_WIDTH, SIGN_BOTTOM, POST_WIDTH, 0.15), side * halfSpan, SIGN_BOTTOM / 2, 0), theme.post),
-    coloured(at(roundedBox(POST_WIDTH + 0.1, 0.6, POST_WIDTH + 0.1, 0.1), side * halfSpan, 2.8, 0), theme.band),
-  ]);
+// The posts, the sign's body with its rims and the badge's red rim, as one shape.
+function buildFrame(theme, halfSpan, signWidth, face, badgeMiddle) {
   const rim = new THREE.TorusGeometry(BADGE_RADIUS, 0.16, 8, 32);
   return mergeShapes([
-    ...posts,
-    coloured(at(roundedBox(signWidth, SIGN_HEIGHT, SIGN_DEPTH, 0.25), 0, signMiddle, 0), theme.body),
+    ...[-1, 1].flatMap((side) => buildPost(theme, side * halfSpan)),
+    coloured(at(roundedBox(signWidth, SIGN_HEIGHT, SIGN_DEPTH, 0.25), 0, face.middle, 0), theme.body),
+    ...[-1, 1].flatMap((facing) => buildRim(face, facing)),
     coloured(at(new THREE.CylinderGeometry(BADGE_RADIUS, BADGE_RADIUS, 0.24, 32).rotateX(Math.PI / 2), 0, badgeMiddle, 0), 0xffffff),
     coloured(at(rim, 0, badgeMiddle, 0), 0xd8302a),
   ]);
+}
+
+// One post at x: a dark stone plinth, a darker core showing in the seams between three panels in the post's
+// colour, a bolt near each corner of every panel's four faces, the band round it and a capital under the sign.
+function buildPost(theme, x) {
+  const core = new THREE.Color(theme.post).multiplyScalar(0.55).getHex();
+  const panels = PANELS.flatMap(([bottom, top]) => [
+    coloured(at(roundedBox(POST_WIDTH, top - bottom, POST_WIDTH, 0.1), x, (bottom + top) / 2, 0), theme.post),
+    ...panelBolts(x, bottom, top),
+  ]);
+  return [
+    coloured(at(roundedBox(POST_WIDTH + 0.4, PLINTH.height, POST_WIDTH + 0.4, 0.08), x, PLINTH.height / 2, 0), PLINTH.color),
+    coloured(at(roundedBox(POST_WIDTH - 0.12, SIGN_BOTTOM - PLINTH.height, POST_WIDTH - 0.12, 0.04), x, (SIGN_BOTTOM + PLINTH.height) / 2, 0), core),
+    ...panels,
+    coloured(at(roundedBox(POST_WIDTH + 0.1, BAND.height, POST_WIDTH + 0.1, 0.1), x, BAND.middle, 0), theme.band),
+    coloured(at(roundedBox(POST_WIDTH + 0.3, 0.36, POST_WIDTH + 0.3, 0.08), x, SIGN_BOTTOM - 0.16, 0), theme.band),
+  ];
+}
+
+// A bolt head 0.2 in from each corner of a panel's four faces.
+function panelBolts(x, bottom, top) {
+  const half = POST_WIDTH / 2;
+  const reach = half - 0.2;
+  const bolts = [];
+  for (const y of [bottom + 0.2, top - 0.2]) {
+    for (const along of [-reach, reach]) {
+      for (const [faceX, faceZ] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+        const bolt = new THREE.SphereGeometry(0.055, 6, 4).scale(faceX ? 0.5 : 1, 1, faceZ ? 0.5 : 1);
+        bolts.push(coloured(at(bolt, x + faceX * half + (faceZ ? along : 0), y, faceZ * half + (faceX ? along : 0)), BOLT_COLOR));
+      }
+    }
+  }
+  return bolts;
+}
+
+// The raised rim round a printed face on the `facing` side of the sign (1 toward the grid, -1 behind), with a
+// row of bolt heads along its top and bottom bars.
+function buildRim(face, facing) {
+  const z = facing * (SIGN_DEPTH / 2 + RIM.stand / 2);
+  const [halfWidth, halfHeight] = [face.width / 2 + RIM.width / 2, face.height / 2 + RIM.width / 2];
+  const bar = (width, height, x, y) => coloured(at(roundedBox(width, height, RIM.stand, 0.03), x, face.middle + y, z), RIM.color);
+  const bolts = [];
+  const count = Math.floor(face.width / RIM_BOLT_SPACING);
+  for (let index = 0; index <= count; index += 1) {
+    const x = -face.width / 2 + (index * face.width) / count;
+    for (const y of [-halfHeight, halfHeight]) {
+      bolts.push(coloured(at(new THREE.SphereGeometry(0.04, 6, 4).scale(1, 1, 0.5), x, face.middle + y, z + (facing * RIM.stand) / 2), BOLT_COLOR));
+    }
+  }
+  return [
+    bar(face.width + 2 * RIM.width, RIM.width, 0, -halfHeight),
+    bar(face.width + 2 * RIM.width, RIM.width, 0, halfHeight),
+    bar(RIM.width, face.height, -halfWidth, 0),
+    bar(RIM.width, face.height, halfWidth, 0),
+    ...bolts,
+  ];
 }
 
 // A printed face toward +z and the same turned to face -z (so it reads the right way round from behind too),
@@ -72,53 +137,4 @@ function mergeFaces(width, height, middle, away, shape = new THREE.PlaneGeometry
   const back = shape.clone().rotateY(Math.PI).translate(0, middle, -away);
   shape.dispose();
   return mergeShapes([front, back]);
-}
-
-// MARIO KART in white with an outline on the theme's background, a stripe along the foot, checks at both ends.
-function drawSign(theme) {
-  const { canvas, context } = createCanvas(1024, 256);
-  context.fillStyle = theme.background;
-  context.fillRect(0, 0, 1024, 256);
-  context.fillStyle = theme.stripe;
-  context.fillRect(0, 206, 1024, 50);
-  for (const left of [0, 1024 - 64]) {
-    for (let row = 0; row < 6; row += 1) {
-      for (let column = 0; column < 2; column += 1) {
-        context.fillStyle = (row + column) % 2 === 0 ? '#ffffff' : '#1a1a1e';
-        context.fillRect(left + column * 32, row * 32 + 14, 32, 32);
-      }
-    }
-  }
-  context.font = `italic 900 150px ${FONT}`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.lineJoin = 'round';
-  context.lineWidth = 22;
-  context.strokeStyle = theme.outline;
-  context.strokeText('MARIO KART', 512, 108, 840);
-  context.fillStyle = '#ffffff';
-  context.fillText('MARIO KART', 512, 108, 840);
-  return canvasTexture(canvas);
-}
-
-// A red-capped mushroom with white spots and a smiling face, on white: the badge on top of the gate.
-function drawBadge() {
-  const { canvas, context } = createCanvas(256, 256);
-  const fill = (color, path) => {
-    context.beginPath();
-    path();
-    context.fillStyle = color;
-    context.fill();
-  };
-  fill('#ffffff', () => context.rect(0, 0, 256, 256));
-  fill('#f6dcb4', () => context.ellipse(128, 168, 52, 48, 0, 0, 2 * Math.PI));
-  fill('#e8302a', () => context.ellipse(128, 118, 96, 72, 0, Math.PI, 2 * Math.PI));
-  fill('#e8302a', () => context.rect(32, 117, 192, 20));
-  for (const [x, y, radius] of [[128, 76, 24], [70, 112, 18], [186, 112, 18]]) {
-    fill('#ffffff', () => context.arc(x, y, radius, 0, 2 * Math.PI));
-  }
-  for (const x of [110, 146]) {
-    fill('#1a1a1e', () => context.ellipse(x, 166, 7, 14, 0, 0, 2 * Math.PI));
-  }
-  return canvasTexture(canvas);
 }

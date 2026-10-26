@@ -14,7 +14,7 @@ export const BARRIER_RUNS = Object.freeze([
   { fromS: 183, toS: 245, side: 'both', style: BARRIER_STYLES.STRIPED_RAIL },
   { fromS: 245, toS: 281, side: 'both', style: BARRIER_STYLES.RAIL_FENCE },
   { fromS: 281, toS: 344, side: 'both', style: BARRIER_STYLES.BLOCK_CURBS },
-  { fromS: 344, toS: 384, side: 'both', style: BARRIER_STYLES.GUARDRAIL },
+  { fromS: 344, toS: 384, side: 'both', style: BARRIER_STYLES.PROMENADE_RAIL },
   { fromS: 384, toS: 431, side: 'both', style: BARRIER_STYLES.STRIPED_RAIL },
   { fromS: 431, toS: 521, side: 'left', style: BARRIER_STYLES.SPONSOR_WALL },
   { fromS: 431, toS: 521, side: 'right', style: BARRIER_STYLES.RAIL_FENCE },

@@ -29,12 +29,15 @@ const COLORS = { metal: 0xc4d8ff, grass: 0xffffff, grassMown: 0xd8ecc8, concrete
 // `theme` is the course's road colours: { asphalt, edgeLine, curb: [first, second], checks: [light, dark] }.
 // Returns { meshes, update(dt), dispose() }.
 export function buildKitRoad(track, theme) {
+  const concrete = createConcreteTexture();
   const textures = {
     asphalt: createAsphaltTexture(),
     metal: createMetalTexture(),
     grass: createGrassTexture(),
-    concrete: createConcreteTexture(),
+    concrete: concrete.map,
   };
+  // The surfaces with relief (M7d4): normal maps by surface name.
+  const reliefs = { concrete: concrete.relief };
   const builders = Object.fromEntries(Object.keys(textures).map((name) => [name, createStripBuilder()]));
   const shadeOf = createPatchShade(track);
   track.stations.forEach((station, index) => {
@@ -52,7 +55,13 @@ export function buildKitRoad(track, theme) {
   });
   const roughness = { asphalt: 0.85, metal: 0.4, grass: 0.95, concrete: 0.9 };
   const surfaces = Object.keys(textures).map((name) => {
-    const material = new THREE.MeshStandardMaterial({ vertexColors: true, map: textures[name], roughness: roughness[name], metalness: name === 'metal' ? 0.5 : 0 });
+    const material = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      map: textures[name],
+      normalMap: reliefs[name] ?? null,
+      roughness: roughness[name],
+      metalness: name === 'metal' ? 0.5 : 0,
+    });
     const mesh = new THREE.Mesh(builders[name].build(), material);
     mesh.receiveShadow = true;
     return mesh;
@@ -66,7 +75,7 @@ export function buildKitRoad(track, theme) {
       mesh.geometry.dispose();
       mesh.material.dispose();
     }
-    Object.values(textures).forEach((texture) => texture.dispose());
+    [...Object.values(textures), ...Object.values(reliefs)].forEach((texture) => texture.dispose());
     [paint, panels, plates].forEach((part) => part.dispose());
   }
 

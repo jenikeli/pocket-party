@@ -42,9 +42,9 @@ export function buildPlatforms({ world, track, keep, textures }, platforms, seaL
       const [depth, endDepth] = [depthAt(segment.station), depthAt(segment.next)];
       const { hex, tile } = GROUND[platform.ground];
       const uvOf = (around, s) => [around / tile, s / tile];
-      extrudeSegment(tops[platform.ground], segment, side, [[0, 0], [depth, 0]], hex, uvOf, [[0, 0], [endDepth, 0]]);
+      extrudeSegment(tops[platform.ground], segment, side, [[0, 0], [depth, 0]], hex, { uvOf, endProfile: [[0, 0], [endDepth, 0]] });
       const sideProfile = (deep) => [[deep, 0], [deep, -THICKNESS], [0, -THICKNESS]];
-      extrudeSegment(sides, segment, side, sideProfile(depth), SIDES, undefined, sideProfile(endDepth));
+      extrudeSegment(sides, segment, side, sideProfile(depth), SIDES, { endProfile: sideProfile(endDepth) });
       if (count % PILLAR_SPACING === PILLAR_SPACING / 2 && depth > MIN_PILLAR_DEPTH) {
         pillars.push(pillarAt(segment.station, side, depth, seaLevel));
       }

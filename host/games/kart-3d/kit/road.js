@@ -15,7 +15,8 @@ import { buildRoadPaint } from './road-paint.js';
 import { buildLedPanels } from './led-panels.js';
 import { buildRampPlates } from './ramp-plate.js';
 
-const THICKNESS = 0.6;
+// The road's thickness, under its surface: what holds it up (kit/supports.js) starts below this.
+export const ROAD_THICKNESS = 0.6;
 // The asphalt is drawn in this many lanes across, so its patches can vary across the road too.
 const ASPHALT_LANES = 8;
 // Patches about this many units across, big and small; laid over the lap so they repeat once a lap.
@@ -96,29 +97,28 @@ function addLanes(builder, segment, hex, lanes, shadeOf) {
   }
 }
 
-// Each side's grass is the segment's own (shoulders change from piece to piece), so it is drawn from the
-// segment's first station at both ends.
+// Each side's grass between its edges at both stations (shoulders ease in and out, see track-builder.js).
 function addShoulders(builder, segment) {
   const up = (station) => station.normal;
-  const { shoulderLeft, shoulderRight } = segment.station;
+  const { station, next } = segment;
   const hex = Math.floor(segment.index / MOWN_STATIONS) % 2 === 0 ? COLORS.grassMown : COLORS.grass;
-  if (shoulderLeft > 0) {
-    builder.strip(segment, (station) => -station.halfWidth - shoulderLeft, 0, (station) => -station.halfWidth, 0, up, hex);
+  if (station.shoulderLeft > 0 || next.shoulderLeft > 0) {
+    builder.strip(segment, (at) => -at.halfWidth - at.shoulderLeft, 0, (at) => -at.halfWidth, 0, up, hex);
   }
-  if (shoulderRight > 0) {
-    builder.strip(segment, (station) => station.halfWidth, 0, (station) => station.halfWidth + shoulderRight, 0, up, hex);
+  if (station.shoulderRight > 0 || next.shoulderRight > 0) {
+    builder.strip(segment, (at) => at.halfWidth, 0, (at) => at.halfWidth + at.shoulderRight, 0, up, hex);
   }
 }
 
 // The bottom of the road (facing down: drawn right to left so its front faces away from the top), and its side
 // faces at the outer edges of the ground, from the top down to the bottom.
 function addUnderside(builder, segment) {
-  const edge = (side) => (station) => side * (station.halfWidth + (side > 0 ? segment.station.shoulderRight : segment.station.shoulderLeft));
+  const edge = (side) => (station) => side * (station.halfWidth + (side > 0 ? station.shoulderRight : station.shoulderLeft));
   const down = (station) => ({ x: -station.normal.x, y: -station.normal.y, z: -station.normal.z });
-  builder.strip(segment, edge(1), -THICKNESS, edge(-1), -THICKNESS, down, COLORS.concrete);
+  builder.strip(segment, edge(1), -ROAD_THICKNESS, edge(-1), -ROAD_THICKNESS, down, COLORS.concrete);
   for (const side of [-1, 1]) {
     const outward = (station) => ({ x: station.right.x * side, y: station.right.y * side, z: station.right.z * side });
-    const [first, second] = side > 0 ? [0, -THICKNESS] : [-THICKNESS, 0];
+    const [first, second] = side > 0 ? [0, -ROAD_THICKNESS] : [-ROAD_THICKNESS, 0];
     builder.strip(segment, edge(side), first, edge(side), second, outward, COLORS.concrete);
   }
 }

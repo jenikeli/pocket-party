@@ -33,7 +33,7 @@ export const PLATFORMS = Object.freeze([
 
 // The grandstand on the start straight's left deck: its middle's s, its length along the road and how far its
 // front stands out from the edge of the ground (it is about 7 deep).
-export const GRANDSTAND = Object.freeze({ s: 30, side: 'left', length: 40, out: 2.5 });
+export const GRANDSTAND = Object.freeze({ s: 30, side: 'left', length: 36, out: 2.5 });
 
 // Strings of bunting across the road, at these distances along the lap. None between the grid and the gate:
 // seen from the back of the grid, a string there hangs across the gate's sign or the start lights.
@@ -43,14 +43,14 @@ const cones = (fromS, toS, side, out) => Array.from({ length: Math.floor((toS - 
 
 // Every prop on the decks: { piece (a name in PROP_REACH), s, side, out, turn (degrees from facing the road) }.
 export const PROPS = Object.freeze([
-  // The start straight's left deck, round the grandstand: floodlights at its ends.
-  { piece: 'floodlight', s: 6, side: 'left', out: 8 },
-  { piece: 'floodlight', s: 55, side: 'left', out: 8 },
-  // The start straight's right deck: the paddock.
-  { piece: 'tyre-stack', s: 5, side: 'right', out: 1.3 },
-  { piece: 'tyre-stack', s: 6.2, side: 'right', out: 2.3 },
-  { piece: 'tyre-stack', s: 7.4, side: 'right', out: 1.3 },
-  { piece: 'sponsor-stand', s: 12, side: 'right', out: 2.2 },
+  // The start straight's right deck: the paddock, with floodlights at the back (the left deck's ends, where it
+  // tapers, are too narrow for them beside the grandstand).
+  { piece: 'tyre-stack', s: 9, side: 'right', out: 1.3 },
+  { piece: 'tyre-stack', s: 10.2, side: 'right', out: 2.3 },
+  { piece: 'tyre-stack', s: 11.4, side: 'right', out: 1.3 },
+  { piece: 'sponsor-stand', s: 14, side: 'right', out: 2.2 },
+  { piece: 'floodlight', s: 17, side: 'right', out: 6.5 },
+  { piece: 'floodlight', s: 40, side: 'right', out: 6.5 },
   { piece: 'lantern-lamp', s: 17, side: 'right', out: 1.4 },
   { piece: 'sponsor-stand', s: 22, side: 'right', out: 2.2 },
   ...cones(26, 32, 'right', 1.2),
@@ -61,21 +61,31 @@ export const PROPS = Object.freeze([
   { piece: 'triple-lamp', s: 134, side: 'left', out: 2 },
   { piece: 'tyre-stack', s: 142, side: 'left', out: 1.3 },
   { piece: 'tyre-stack', s: 143.2, side: 'left', out: 2.3 },
+  { piece: 'palm', s: 139, side: 'left', out: 5.5 },
   { piece: 'sponsor-stand', s: 150, side: 'left', out: 3 },
   { piece: 'triple-lamp', s: 160, side: 'left', out: 2 },
   { piece: 'sponsor-stand', s: 168, side: 'left', out: 3 },
-  { piece: 'triple-lamp', s: 176, side: 'left', out: 2 },
+  { piece: 'triple-lamp', s: 172, side: 'left', out: 2 },
   // Inside the hairpin: a giant mushroom between two warp pipes.
   { piece: 'giant-mushroom', s: 312, side: 'right', out: 6 },
   { piece: 'warp-pipe', s: 293, side: 'right', out: 3.5 },
   { piece: 'warp-pipe', s: 331, side: 'right', out: 3.5 },
-  ...cones(286, 290, 'right', 1.2),
+  ...cones(288, 291, 'right', 1.2),
+  // The seaside's props (M7d3), on the same deck.
+  { piece: 'parasol', s: 300, side: 'right', out: 3.5 },
+  { piece: 'lounger', s: 303, side: 'right', out: 7 },
+  { piece: 'surfboards', s: 322, side: 'right', out: 3.5 },
   ...cones(334, 338, 'right', 1.2),
   // Beside the off-road straight.
   { piece: 'lantern-lamp', s: 446, side: 'right', out: 1.3 },
+  { piece: 'lifebuoy-post', s: 451, side: 'right', out: 1.3 },
+  { piece: 'barrels', s: 452, side: 'right', out: 4.6 },
   { piece: 'warp-pipe', s: 458, side: 'right', out: 3.5 },
   { piece: 'lantern-lamp', s: 466, side: 'right', out: 1.3 },
   { piece: 'tyre-stack', s: 476, side: 'right', out: 1.3 },
+  { piece: 'round-tree', s: 482, side: 'right', out: 4.5 },
+  { piece: 'hedge', s: 491, side: 'right', out: 5.2 },
+  { piece: 'planter', s: 501, side: 'right', out: 5.2 },
   { piece: 'lantern-lamp', s: 486, side: 'right', out: 1.3 },
   { piece: 'sponsor-stand', s: 496, side: 'right', out: 3 },
   { piece: 'lantern-lamp', s: 506, side: 'right', out: 1.3 },

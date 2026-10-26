@@ -1,5 +1,4 @@
 // A small seeded random number source (mulberry32), so the 3D race's scenery and textures come out the same on
-// every load and every host. Plain maths, unit tested in Node. Used by textures.js and seaside-scenery.js.
 
 // Returns a function that gives the next number in 0..1 each call, the same sequence for the same seed.
 export function createRandom(seed) {

@@ -1,10 +1,11 @@
 // The kit's padded wall with sponsor boards (M7d2), as at Mario Kart Stadium and Toad Circuit: a low padded wall
 // whose face toward the road is a row of printed boards (kit/sponsors.js), a rounded blue pad on top, and a
-// chain-link fence on posts above it. Returns { add(segment, side), meshes() } for kit/barriers.js.
+// chain-link fence on posts above it. Returns { add(segment, side), end(station, index, side, facing), meshes() }
+// for kit/barriers.js: end closes the pad's cross-section and puts a fence post at the wall's end.
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';
-import { extrudeSegment } from './extrude.js';
+import { extrudeSegment, capProfile } from './extrude.js';
 import { sponsorUv } from './sponsors.js';
 import { frameAt, facingAlong, edgeLateral, placeInstances, withShadows } from './frames.js';
 import { createCanvas, repeatingTexture } from '../canvas-texture.js';
@@ -35,8 +36,13 @@ export function createSponsorWall({ keep, sponsors }) {
       extrudeSegment(pad, segment, side, PAD, PAD_COLOR);
       extrudeSegment(fence, segment, side, FENCE, 0xffffff, (around, s) => [around / FENCE_TILE, s / FENCE_TILE]);
       if (segment.index % POST_STATIONS === 0) {
-        const { station } = segment;
-        posts.push(frameAt(station, edgeLateral(station, side) + side * FENCE_OUT, 0, facingAlong(station)));
+        posts.push(postAt(segment.station, side));
+      }
+    },
+    end(station, index, side, facing) {
+      capProfile(pad, station, side, [...FACE, ...PAD.slice(1)], PAD_COLOR, facing);
+      if (facing > 0 || index % POST_STATIONS !== 0) {
+        posts.push(postAt(station, side));
       }
     },
     meshes() {
@@ -53,6 +59,10 @@ export function createSponsorWall({ keep, sponsors }) {
       ];
     },
   };
+}
+
+function postAt(station, side) {
+  return frameAt(station, edgeLateral(station, side) + side * FENCE_OUT, 0, facingAlong(station));
 }
 
 // The boards' texture coordinates on this segment: each board its own brand, read left to right from the road

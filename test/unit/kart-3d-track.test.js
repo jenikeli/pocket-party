@@ -1,6 +1,6 @@
 // Unit tests for the 3D race's track maths (host/games/kart-3d/track-builder.js and track.js) and the M6b test
-// track: the loop closes, the surface, normal, edges and walls are where the pieces say, and finding a point
-// walks from where it was, so a bridge over the road cannot confuse it.
+// track: the loop closes, the surface, normal, edges and walls are where the pieces say, shoulders ease in and out
+// (M7d3), and finding a point walks from where it was, so a bridge over the road cannot confuse it.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -137,4 +137,22 @@ test('lap progress goes the short way round, across the start line too', () => {
   assert.equal(stationIndexAt(track, track.length - 0.01), track.stations.length - 1);
   const index = stationIndexAt(track, 300);
   assert.ok(track.stations[index].s <= 300 && track.stations[index + 1].s > 300);
+});
+
+test('a shoulder eases in and out in an S curve, so the ground\'s edge never steps sideways', () => {
+  const track = buildTrack({
+    halfWidth: 8,
+    startLine: 0,
+    pieces: [{ straight: 50 }, { turn: 180, radius: 20 }, { straight: 50, shoulderLeft: 6 }, { turn: 180, radius: 20 }],
+  });
+  const at = (s) => track.stations.find((station) => station.s >= s);
+  const straight = 50 + 20 * Math.PI;
+  assert.equal(at(straight - 1).shoulderLeft, 0);
+  assert.ok(at(straight + 8).shoulderLeft > 2 && at(straight + 8).shoulderLeft < 4, 'halfway through the ease');
+  assert.equal(at(straight + 20).shoulderLeft, 6);
+  assert.ok(at(straight + 50 + 8).shoulderLeft > 2 && at(straight + 50 + 8).shoulderLeft < 4, 'easing out on the next piece');
+  track.stations.forEach((station, index) => {
+    const next = track.stations[(index + 1) % track.stations.length];
+    assert.ok(Math.abs(next.shoulderLeft - station.shoulderLeft) < 0.6, `no step at ${station.s.toFixed(0)}`);
+  });
 });

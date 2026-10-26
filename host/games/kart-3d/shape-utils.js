@@ -1,6 +1,6 @@
 // Small helpers for building the 3D race's models out of Three.js's simple shapes: placing a shape, stretching
 // one between two points, colouring one per vertex, and merging many into one geometry (one draw call). Used by
-// kart-shapes.js, seaside-scenery.js, seaside-props.js, trackside.js and the kit's pieces (kit/).
+// kart-shapes.js and the kit's pieces (kit/).
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';

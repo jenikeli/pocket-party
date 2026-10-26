@@ -86,7 +86,7 @@ test('Seaside Skyway is a closed loop of about 1210 units with every feature M6 
   assert.ok(stations.some((station) => station.gap), 'a jump over a gap');
   assert.ok(stations.some((station) => station.antiGravity && Math.abs(station.normal.y) < 0.01), 'an anti-gravity wall');
   assert.ok(stations.some((station) => !station.antiGravity && Math.acos(station.normal.y) > (11 * Math.PI) / 180), 'a banked curve');
-  assert.ok(stations.some((station) => !station.wallLeft && !station.wallRight && !station.gap), 'road without walls');
+  assert.ok(stations.every((station) => station.gap || (station.wallLeft && station.wallRight)), 'walls everywhere but over the jump\'s gap');
   assert.ok(stations.some((station) => station.shoulderLeft > 0 && station.shoulderRight === 0), 'grass on one side only');
   const widths = stations.map((station) => station.halfWidth);
   assert.deepEqual([Math.min(...widths), Math.max(...widths)], [6.5, 10], 'the road narrows and widens');
@@ -241,8 +241,9 @@ test('engine classes: speeds are 150cc\'s times 0.8, 0.9, 1 and 1.5, as in MK8DX
 });
 
 test('the outer edge is the road plus that side\'s shoulder', () => {
-  // In the middle of the last corner, whose inside (right) has grass 10 wide.
-  const index = track.stations.findIndex((station) => station.shoulderRight === 10) + 30;
+  // In the middle of the last corner (s 1150-1213), whose inside (right) has grass 10 wide, past where it eases in.
+  const index = track.stations.findIndex((station) => station.s > 1185);
+  assert.equal(track.stations[index].shoulderRight, 10);
   const station = track.stations[index];
   const contactAt = (lateral) => locate(track, { x: station.point.x + station.right.x * lateral, y: station.point.y, z: station.point.z + station.right.z * lateral }, index);
   assert.ok(Math.abs(outerEdge(contactAt(1)) - (contactAt(1).halfWidth + 10)) < 1e-9);

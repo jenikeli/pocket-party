@@ -1,17 +1,16 @@
 // Unit tests for the 3D race's look (M7c) that run without a browser: the quality levels and where the choice is
 // kept (quality.js), the gaps between split-screen views (view-layout.js), the seeded random source (random.js),
-// where the trackside dressing stands (trackside-spots.js), where Seaside Skyway's scenery stands
-// (seaside-layout.js), the front wheels following the steering (kart-body.js), the course's scenery passed
-// through the track (track-builder.js), and the look's sliders (tuning.js), the dash panels' glow (M7d1)
-// included. The M7d kit has its own file (kart-3d-kit.test.js).
+// how much the road turns ahead and where its start line is (track.js), the front wheels following the steering
+// (kart-body.js), the course's scenery passed through the track (track-builder.js), and the look's sliders
+// (tuning.js), the dash panels' glow (M7d1) included. The M7d kit has its own file (kart-3d-kit.test.js), and so
+// has Seaside Skyway's dressing (kart-3d-seaside.test.js).
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { QUALITY_LEVELS, DEFAULT_QUALITY, QUALITY_STORAGE_KEY, loadQuality, saveQuality } from '../../host/games/kart-3d/quality.js';
 import { viewRects, gapRects } from '../../host/games/kart-3d/view-layout.js';
 import { createRandom } from '../../host/games/kart-3d/random.js';
-import { turnAhead, boardSpots, poleSpots, startGateIndex } from '../../host/games/kart-3d/trackside-spots.js';
-import { ISLANDS, LIGHTHOUSE, BOATS, islandHeightAt } from '../../host/games/kart-3d/seaside-layout.js';
+import { turnAhead, startLineIndex } from '../../host/games/kart-3d/track.js';
 import { freshBody, moveBody } from '../../host/games/kart-3d/kart-body.js';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
@@ -19,14 +18,6 @@ import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { TUNABLES } from '../../host/games/kart-3d/tuning.js';
 
 const seaside = buildTrack(SEASIDE_SKYWAY);
-// scenery.js's sea level: the road floats this far above the sea.
-const SEA_LEVEL = -30;
-// An island's shore wobbles out to about 1.19 times its radius (seaside-scenery.js).
-const SHORE_WOBBLE = 1.19;
-// The biggest palm (size 1.2) is under 12 tall.
-const TALLEST_PALM = 12;
-// The road's underside is this far below its surface (track-mesh.js).
-const ROAD_THICKNESS = 0.6;
 
 const savedStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 afterEach(() => {
@@ -40,18 +31,6 @@ afterEach(() => {
 // Puts a stand-in localStorage on globalThis for one test (afterEach puts Node's own back).
 function fakeStorage(storage) {
   Object.defineProperty(globalThis, 'localStorage', { value: storage, configurable: true, writable: true });
-}
-
-// How far the point (x, z) is from the road's centre line, seen from above, and the station nearest it.
-function nearestStation(track, x, z) {
-  let best = { distance: Infinity, station: null };
-  for (const station of track.stations) {
-    const distance = Math.hypot(station.point.x - x, station.point.z - z);
-    if (distance < best.distance) {
-      best = { distance, station };
-    }
-  }
-  return best;
 }
 
 test('quality levels drop bloom first, then resolution; High is the default', () => {
@@ -126,67 +105,9 @@ test('turnAhead is positive in a right turn, negative in a left one, and about z
   assert.ok(turnAhead(seaside, indexAt(seaside, 730)) < -0.3);
 });
 
-test('arrow boards stand on the wall round the outside of every corner, pointing the way it turns', () => {
-  const spots = boardSpots(seaside);
-  for (const spot of spots) {
-    const station = seaside.stations[spot.index];
-    assert.equal(spot.side, spot.turnsRight ? -1 : 1, 'on the outside');
-    assert.ok(spot.side > 0 ? station.wallRight : station.wallLeft, 'on a wall');
-    assert.ok(!station.gap && !station.antiGravity && station.normal.y > 0.95, 'on level, normal road');
-    assert.equal(spot.lateral, spot.side * (station.halfWidth + (spot.side > 0 ? station.shoulderRight : station.shoulderLeft)));
-  }
-  const near = (s) => spots.filter((spot) => Math.abs(seaside.stations[spot.index].s - s) < 30);
-  assert.ok(near(190).every((spot) => spot.turnsRight) && near(190).length > 0, 'the first corner, right');
-  assert.ok(near(730).every((spot) => !spot.turnsRight) && near(730).length > 0, 'the hairpin, left');
-  assert.ok(near(1180).length > 0, 'the last corner');
-  assert.equal(near(600).length, 0, 'none on the bridge, which has no walls');
-  assert.equal(near(905).length, 0, 'none on the anti-gravity wall');
-});
-
-test('flag poles stand on the walls along the straights, clear of the start gate', () => {
-  const spots = poleSpots(seaside);
-  const gate = seaside.stations[startGateIndex(seaside)];
-  assert.ok(Math.abs(gate.s - seaside.startLine) <= 1);
-  assert.ok(spots.length > 10);
-  for (const spot of spots) {
-    const station = seaside.stations[spot.index];
-    assert.ok(Math.abs(turnAhead(seaside, spot.index)) <= (8 * Math.PI) / 180, 'not in a corner');
-    assert.ok(Math.abs(station.s - seaside.startLine) >= 15, 'clear of the gate');
-    assert.ok(spot.side > 0 ? station.wallRight : station.wallLeft);
-  }
-  assert.ok(spots.some((spot) => seaside.stations[spot.index].s > 60 && seaside.stations[spot.index].s < 150), 'on the start straight');
-});
-
-test('Seaside Skyway\'s scenery never reaches the road: islands and palms pass under it, the tall things stand clear', () => {
-  for (const island of ISLANDS) {
-    const { distance, station } = nearestStation(seaside, island.x, island.z);
-    const reach = island.radius * SHORE_WOBBLE + station.halfWidth + 6;
-    if (island.height > 20) {
-      assert.ok(distance > reach + 30, `the hill at ${island.x}, ${island.z} is far from the road`);
-    } else if (distance < reach) {
-      // The road passes over this island: its top and tallest palm stay under the road's underside.
-      assert.ok(SEA_LEVEL + island.height + TALLEST_PALM < station.point.y - ROAD_THICKNESS, `the island at ${island.x}, ${island.z}`);
-    }
-  }
-  const lighthouseIsland = ISLANDS[LIGHTHOUSE.island];
-  assert.ok(SEA_LEVEL + lighthouseIsland.height + LIGHTHOUSE.height > 0, 'the lamp shows above the road');
-  assert.ok(nearestStation(seaside, lighthouseIsland.x, lighthouseIsland.z).distance > 40, 'the lighthouse stands clear of the road');
-  for (const boat of BOATS) {
-    for (const island of ISLANDS) {
-      assert.ok(Math.hypot(boat.x - island.x, boat.z - island.z) > island.radius * SHORE_WOBBLE + 3, `the boat at ${boat.x}, ${boat.z} is in open water`);
-    }
-  }
-});
-
-test('an island rises from its beach to its top, and is flat sea beyond its radius', () => {
-  const island = { radius: 20, height: 7 };
-  assert.equal(islandHeightAt(island, 0), 7);
-  assert.equal(islandHeightAt(island, 20), 0);
-  assert.equal(islandHeightAt(island, 25), 0);
-  assert.ok(Math.abs(islandHeightAt(island, 16) - 1) < 1e-9, 'the beach is 1 high where the hill starts');
-  for (let distance = 1; distance <= 20; distance += 1) {
-    assert.ok(islandHeightAt(island, distance) <= islandHeightAt(island, distance - 1), 'it only falls going out');
-  }
+test('startLineIndex is the station whose segment holds the start line', () => {
+  const station = seaside.stations[startLineIndex(seaside)];
+  assert.ok(station.s <= seaside.startLine && station.s + station.segmentLength > seaside.startLine);
 });
 
 test('the front wheels ease toward the steering and never turn past it', () => {
@@ -205,7 +126,7 @@ test('the front wheels ease toward the steering and never turn past it', () => {
   assert.ok(Math.abs(kart.wheelTurn + 0.5) < 0.01);
 });
 
-test('a course\'s scenery is passed through to its track, and a course without one is plain', () => {
+test('a course\'s scenery is passed through to its track, and a track built without one has none', () => {
   assert.equal(seaside.scenery, 'seaside');
   assert.equal(buildTrack(TEST_TRACK).scenery, 'test-track');
   assert.equal(buildTrack({ ...TEST_TRACK, scenery: undefined }).scenery, null);

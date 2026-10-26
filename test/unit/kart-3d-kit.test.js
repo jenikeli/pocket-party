@@ -1,8 +1,9 @@
 // Unit tests for the 3D race's kit of building blocks (M7d2) that run without a browser: the repeating noise its
 // textures are made from (noise.js), where the kit road's markings and panels go (kit/road-marks.js), the grid
 // places it paints (race.js's gridSpot), the start lights (kit/start-light-states.js), which barrier stands on
-// each wall (kit/layout-rules.js), and the Test track's layout (test-track-layout.js): every piece shows, and
-// every deck, prop and string of bunting stands where it can.
+// each wall (kit/layout-rules.js), how deep a deck is along it (its tapering ends, M7d3), and the Test track's
+// layout (test-track-layout.js): every piece shows, and every deck, prop and string of bunting stands where it
+// can.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,30 +20,19 @@ import {
   EDGE_LINE_INSET,
 } from '../../host/games/kart-3d/kit/road-marks.js';
 import { startLightStates, LAMP_STATES } from '../../host/games/kart-3d/kit/start-light-states.js';
-import { BARRIER_STYLES, PROP_REACH, barrierStyleAt, sideSign } from '../../host/games/kart-3d/kit/layout-rules.js';
+import { BARRIER_STYLES, PROP_REACH, barrierStyleAt, sideSign, deckDepthAt, DECK_TAPER, turnBoardSpots } from '../../host/games/kart-3d/kit/layout-rules.js';
 import { BARRIER_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from '../../host/games/kart-3d/test-track-layout.js';
 import { createRace, gridSpot, FIELD_SIZE, RACE_PHASES } from '../../host/games/kart-3d/race.js';
-import { stationIndexAt, wrapDistance } from '../../host/games/kart-3d/track.js';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
 import { DASH_PANEL_LENGTH, DASH_PANEL_WIDTH } from '../../host/games/kart-3d/kart-boosts.js';
-import { dot, subtract } from '../../host/games/kart-3d/vector.js';
+import { checkDecks, checkProps, checkBunting, checkTurnBoards, stationAt, stationsBetween } from '../helpers/kit-layout-checks.js';
 
 const testTrack = buildTrack(TEST_TRACK);
 const { OFF, RED, GREEN } = LAMP_STATES;
-// How far the thickest barrier (the padded wall and its fence) reaches out from the edge of the ground.
-const BARRIER_REACH = 0.7;
-// The grandstand's depth, from its front to its back wall.
-const GRANDSTAND_DEPTH = 7.2;
 
-const stationAt = (track, s) => track.stations[stationIndexAt(track, wrapDistance(track, s))];
 const near = (track, spots, s, range = 15) => spots.filter((spot) => Math.abs(track.stations[spot.index].s - s) < range);
-
-// The stations a stretch from fromS to toS covers.
-function stationsBetween(track, fromS, toS) {
-  return track.stations.filter((station) => station.s >= fromS && station.s < toS);
-}
 
 test('tile noise stays in 0..1, repeats every 1 in both directions and changes smoothly', () => {
   for (const noise of [createTileNoise(createRandom(1), 5, 3), createLayeredNoise(createRandom(2), 3, 3)]) {
@@ -167,52 +157,32 @@ test('the Test track shows every barrier style and every prop', () => {
   assert.deepEqual([...new Set(PROPS.map((spot) => spot.piece))].sort(), Object.keys(PROP_REACH).sort());
 });
 
-test('the Test track\'s decks run outside walls on level road, and never over the road', () => {
-  for (const platform of PLATFORMS) {
-    const side = sideSign(platform.side);
-    for (const station of stationsBetween(testTrack, platform.fromS, platform.toS)) {
-      assert.ok(side > 0 ? station.wallRight : station.wallLeft, `a wall beside the deck at ${station.s.toFixed(0)}`);
-      assert.ok(!station.gap && !station.antiGravity && station.normal.y > 0.95, 'on level, plain road');
-      for (const out of [BARRIER_REACH, platform.depth / 2, platform.depth]) {
-        const point = deckPoint(station, side, out);
-        assert.ok(!overRoad(point), `the deck at ${station.s.toFixed(0)}, ${out} out, is clear of the road`);
-      }
-    }
+test('a deck tapers to nothing at a free end in an S curve, and runs on at full depth where it joins another', () => {
+  const lap = 100;
+  const beach = { fromS: 80, toS: 105, side: 'left', depth: 8 };
+  const square = { fromS: 5, toS: 40, side: 'left', depth: 8 };
+  const decks = [beach, square, { fromS: 40, toS: 60, side: 'right', depth: 4 }];
+  assert.equal(deckDepthAt(beach, 80, decks, lap), 0, 'a free end comes to a point');
+  // A deck's first station can sit just before its start (the spike of sand the M7d3 device run saw).
+  assert.equal(deckDepthAt(beach, 79.6, decks, lap), 0, 'just before a free start');
+  assert.equal(deckDepthAt(square, 40.4, decks, lap), 0, 'just past a free end');
+  assert.equal(deckDepthAt(square, 4.6, decks, lap), 8, 'just before a joined start');
+  assert.ok(Math.abs(deckDepthAt(beach, 80 + DECK_TAPER / 2, decks, lap) - 4) < 1e-9, 'halfway up the S');
+  assert.equal(deckDepthAt(beach, 80 + DECK_TAPER, decks, lap), 8);
+  assert.equal(deckDepthAt(beach, 4.5, decks, lap), 8, 'across the lap\'s start, where the square goes on');
+  assert.equal(deckDepthAt(square, 5, decks, lap), 8, 'joined at its start');
+  assert.equal(deckDepthAt(square, 40, decks, lap), 0, 'free at its end: the deck on the other side does not count');
+  for (let s = 80; s < 105; s += 0.5) {
+    assert.ok(deckDepthAt(beach, s + 0.5, decks, lap) >= deckDepthAt(beach, s, decks, lap) - 1e-9, 'never narrows toward the join');
   }
+});
+
+test('the Test track\'s decks run outside walls on level road, and never over the road', () => {
+  checkDecks(testTrack, PLATFORMS);
 });
 
 test('every prop, the grandstand and the bunting stand where they can', () => {
-  for (const spot of [...PROPS, { ...GRANDSTAND, piece: 'grandstand' }]) {
-    const reach = spot.piece === 'grandstand' ? 0 : PROP_REACH[spot.piece];
-    const along = spot.piece === 'grandstand' ? spot.length / 2 : reach;
-    const deep = spot.piece === 'grandstand' ? GRANDSTAND_DEPTH : reach;
-    const deck = PLATFORMS.find((platform) => platform.side === spot.side && spot.s - along >= platform.fromS && spot.s + along <= platform.toS);
-    assert.ok(deck, `the ${spot.piece} at ${spot.s} is on a deck`);
-    assert.ok(spot.out - reach >= BARRIER_REACH, `the ${spot.piece} at ${spot.s} is clear of the barrier`);
-    assert.ok(spot.out + deep <= deck.depth, `the ${spot.piece} at ${spot.s} does not hang off the deck`);
-  }
-  for (const s of BUNTING) {
-    const station = stationAt(testTrack, s);
-    assert.ok(station.wallLeft && station.wallRight && !station.antiGravity, `the bunting at ${s} hangs between two walls`);
-  }
+  checkProps(testTrack, PROPS, PLATFORMS, GRANDSTAND);
+  checkTurnBoards(testTrack, turnBoardSpots(testTrack, BARRIER_RUNS), PROPS);
+  checkBunting(testTrack, BUNTING);
 });
-
-// A point on the deck `out` beyond the edge of the ground at `station`, on `side`.
-function deckPoint(station, side, out) {
-  const lateral = side * (station.halfWidth + (side > 0 ? station.shoulderRight : station.shoulderLeft) + out);
-  return { x: station.point.x + station.right.x * lateral, y: station.point.y + station.right.y * lateral, z: station.point.z + station.right.z * lateral };
-}
-
-// Whether `point` lies on (or within a barrier of) any part of the road, near its height.
-function overRoad(point) {
-  return testTrack.stations.some((station) => {
-    if (station.gap) {
-      return false;
-    }
-    const offset = subtract(point, station.point);
-    const along = dot(offset, station.tangent);
-    const lateral = dot(offset, station.right);
-    const edge = Math.max(station.halfWidth + station.shoulderLeft, station.halfWidth + station.shoulderRight);
-    return Math.abs(along) < station.segmentLength && Math.abs(lateral) < edge && Math.abs(dot(offset, station.normal)) < 3;
-  });
-}

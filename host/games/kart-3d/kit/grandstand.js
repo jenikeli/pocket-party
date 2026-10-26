@@ -72,8 +72,9 @@ function buildBoards(length) {
   );
 }
 
-// A spectator on every seat, here and there an empty one: each a body in a shirt colour, a face and a mushroom
-// cap in another colour (Toad-like). They hop in turn. Returns { meshes, update(dt) }.
+// A spectator on every seat, here and there an empty one: each a body in a shirt colour, a face with two dark
+// eyes and a mushroom cap in another colour with white spots (Toad-like; the eyes and spots since M7d3). They
+// hop in turn. Returns { meshes, update(dt) }.
 function buildCrowd(length, keep) {
   const random = createRandom(61);
   const people = [];
@@ -101,6 +102,10 @@ function buildCrowd(length, keep) {
     mesh.receiveShadow = true;
     return mesh;
   });
+  // The eyes and spots are the same on everyone, so they keep their own colours (no colour per spectator).
+  const details = new THREE.InstancedMesh(keep(buildFaceDetails()), keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 })), people.length);
+  details.receiveShadow = true;
+  meshes.push(details);
   const matrix = new THREE.Matrix4();
   let time = 0;
 
@@ -117,4 +122,17 @@ function buildCrowd(length, keep) {
 
   update(0);
   return { meshes, update };
+}
+
+// Two dark eyes on the face's front (+z, toward the road) and three white spots on the cap, in few faces each:
+// boxes for the eyes and flattened diamonds for the spots.
+function buildFaceDetails() {
+  const eyes = [-0.065, 0.065].map((x) => coloured(at(new THREE.BoxGeometry(0.045, 0.08, 0.03), x, 0.73, 0.205), 0x1a1a1e));
+  const spots = [[0, 1.045, 0], [0.195, 0.97, 0.125], [-0.195, 0.97, 0.125]].map(([x, y, z]) => {
+    // Lying flat on the cap: its thin axis turned out from the cap's middle.
+    const out = new THREE.Vector3(x, y - 0.8, z).normalize();
+    const spot = new THREE.OctahedronGeometry(0.085, 0).scale(1, 0.35, 1).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), out));
+    return coloured(spot.translate(x, y, z), 0xf6f6f2);
+  });
+  return mergeShapes([...eyes.map((eye) => eye.toNonIndexed()), ...spots]);
 }

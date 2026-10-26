@@ -1,6 +1,5 @@
 // Turning a canvas into a Three.js texture, the one way every 3D race texture is made: textures are drawn on
-// small canvases while the game starts, so there are no image files to load. Used by textures.js (M7c) and the
-// kit's pieces (kit/).
+// small canvases while the game starts, so there are no image files to load. Used by the kit's pieces (kit/).
 
 import * as THREE from 'three';
 

@@ -1,6 +1,7 @@
 // Questions about the 3D race's road, answered from the stations that track-builder.js made: where a point is
-// on the road, the road's surface and normal there, its edges, walls and gaps, and lap progress. Plain maths,
-// unit tested in Node. Used by the kart rules, the CPU driver and the renderer.
+// on the road, the road's surface and normal there, its edges, walls and gaps, lap progress, how much the road
+// turns ahead and where the start line is. Plain maths, unit tested in Node. Used by the kart rules, the CPU
+// driver, the renderer and the kit (kit/).
 //
 // Finding a kart walks from the station it was at last step, never searching the whole track: a bridge over
 // another part of the road, or the far side of a hairpin, may be closer in a straight line, but it is not
@@ -11,6 +12,8 @@ import { lerp, subtract, normalize, flatten, cross, dot, addScaled } from './vec
 // A kart moves well under a unit per step, so a walk of more than a few stations only happens after it was
 // moved (respawned) without its station; this just keeps a lost kart from walking forever.
 const MAX_WALK = 64;
+// turnAhead looks this many stations ahead.
+const TURN_LOOK = 10;
 
 export const SURFACES = Object.freeze({ ROAD: 'road', OFF_ROAD: 'offRoad' });
 
@@ -19,8 +22,8 @@ export const SURFACES = Object.freeze({ ROAD: 'road', OFF_ROAD: 'offRoad' });
 // point is between the cross-sections of stations index and index + 1; s is the distance along the centre line,
 // lateral how far right of it (negative is left) across the road, height how far above the road's surface along
 // its normal (negative is below). forward, right and normal are the road's frame there (unit vectors), halfWidth
-// the road's half width there, and station the station whose segment it is (its shoulders, walls, gap and
-// anti-gravity).
+// the road's half width there, shoulderLeft and shoulderRight its grass there, and station the station whose
+// segment it is (its walls, gap and anti-gravity).
 export function locate(track, position, fromIndex) {
   const { stations } = track;
   let index = wrapIndex(track, fromIndex);
@@ -50,7 +53,7 @@ function along(station, position) {
 
 // The road's frame a `fraction` of the way from station `index` to the next. Forward is the straight segment
 // between the two stations, so the surface is flat along each segment and a ramp's lip keeps its full slope. The
-// width is blended between the two stations, as the road's mesh draws it.
+// width and the shoulders are blended between the two stations, as the road's mesh draws them.
 function contactAt(track, index, fraction, position) {
   const station = track.stations[index];
   const nextStation = track.stations[wrapIndex(track, index + 1)];
@@ -69,6 +72,8 @@ function contactAt(track, index, fraction, position) {
     right,
     normal,
     halfWidth: station.halfWidth + (nextStation.halfWidth - station.halfWidth) * fraction,
+    shoulderLeft: station.shoulderLeft + (nextStation.shoulderLeft - station.shoulderLeft) * fraction,
+    shoulderRight: station.shoulderRight + (nextStation.shoulderRight - station.shoulderRight) * fraction,
     station,
   };
 }
@@ -85,7 +90,7 @@ export function surfaceAt(contact) {
 // How far from the centre line the ground ends on the contact's side (right if lateral > 0): the road's edge plus
 // that side's shoulder, where a wall stands, if there is one.
 export function outerEdge(contact) {
-  const shoulder = contact.lateral > 0 ? contact.station.shoulderRight : contact.station.shoulderLeft;
+  const shoulder = contact.lateral > 0 ? contact.shoulderRight : contact.shoulderLeft;
   return contact.halfWidth + shoulder;
 }
 
@@ -140,4 +145,18 @@ export function progressBetween(track, fromS, toS) {
 export function wrapIndex(track, index) {
   const count = track.stations.length;
   return ((index % count) + count) % count;
+}
+
+// How far the road turns over the next TURN_LOOK stations from station `index`, in radians: positive to the
+// right, negative to the left.
+export function turnAhead(track, index) {
+  const here = track.stations[index];
+  const ahead = track.stations[(index + TURN_LOOK) % track.stations.length];
+  // Turning right is clockwise seen from above the road: the tangents' cross product points down the normal.
+  return -Math.atan2(dot(cross(here.tangent, ahead.tangent), here.normal), dot(here.tangent, ahead.tangent));
+}
+
+// The station whose segment holds the start line.
+export function startLineIndex(track) {
+  return track.stations.findIndex((station) => station.s + station.segmentLength > track.startLine);
 }

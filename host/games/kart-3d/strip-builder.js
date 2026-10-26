@@ -1,6 +1,5 @@
 // Collects the 3D race's road triangles between stations, with their normals, colours and texture coordinates,
-// into one geometry. Used by host/games/kart-3d/track-mesh.js (road, walls, glowing panels) and the kit's road,
-// panels and barriers (kit/).
+// into one geometry. Used by the kit's road, panels, barriers and decks (kit/).
 
 import * as THREE from 'three';
 import { addScaled } from './vector.js';

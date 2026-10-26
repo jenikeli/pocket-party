@@ -1,39 +1,36 @@
 // The 3D race's world: a gradient sky with the sun in it, the sea far below (the road floats, so leaving it
-// means falling), pillars holding the road up, the sun with one shadow map over the whole track, and the road.
-// A course that names a scenery (track.scenery) gets that scenery's road and dressing round it; without one it
-// has M7c's plain road (track-mesh.js) and nothing more. Built once from the track's stations, all in one
-// group, so a different course can replace it. Used by host/games/kart-3d/renderer.js.
+// means falling), the sun with one shadow map over the whole track, and the course's scenery: every course
+// names one (track.scenery), which draws its road and dresses it from the kit (kit/), the supports that hold
+// the road up included. Built once from the track's stations, all in one group, so a different course can
+// replace it. Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
-import { buildTrackMesh } from './track-mesh.js';
-import { buildSeasideScenery } from './seaside-scenery.js';
+import { buildSeasideRoad, buildSeasideScenery } from './seaside-scenery.js';
 import { buildTestTrackRoad, buildTestTrackScenery } from './test-track-scenery.js';
 
-const SEA_LEVEL = -30;
 const SKY_TOP = 0x3d8bff;
 const HORIZON = 0xcfe8ff;
 const SEA = 0x2b7bb9;
-// A pillar every this many stations, where the road is flat enough to stand on one.
-const PILLAR_SPACING = 24;
-const ROAD_THICKNESS = 0.6;
 // Where the sun is, seen from the course's middle: low enough (about 34 degrees up) to show in the sky on the
 // legs that head toward it and to cast long shadows, as on MK8DX's sunny courses.
 const SUN_OFFSET = new THREE.Vector3(-90, 120, -150);
 const SUN_DIRECTION = SUN_OFFSET.clone().normalize();
-// What each scenery draws, by the name a course gives in its `scenery`: buildRoad(track) returns { meshes,
-// update(dt, race), dispose() }; buildDressing gets { world, track, sea, keep } and returns { update(dt, race) }
-// for whatever it moves. Seaside Skyway keeps M7c's road until M7d3 rebuilds it from the kit; the Test track
-// shows the kit's pieces (M7d2).
+// Each scenery by the name a course gives in its `scenery`: how far below the start line the sea lies;
+// buildRoad(track), which returns { meshes, update(dt, race), dispose() }; and buildDressing({ world, track,
+// sea, keep }), which returns { update(dt, race) } for whatever it moves.
 const SCENERIES = {
-  seaside: { buildRoad: buildTrackMesh, buildDressing: buildSeasideScenery },
-  'test-track': { buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
+  seaside: { seaLevel: -14, buildRoad: buildSeasideRoad, buildDressing: buildSeasideScenery },
+  'test-track': { seaLevel: -30, buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
 };
-const PLAIN = { buildRoad: buildTrackMesh, buildDressing: null };
 
 // Adds everything to `scene`. Returns { update(dt, race), dispose() }: update moves the scenery on by the real
 // time since the last drawn frame (waves, boats, panels) and shows the race's state on it (the start lights;
 // race is null on the setup screen); dispose takes it out of the scene again and frees what it created.
 export function buildScenery(scene, track) {
+  const scenery = SCENERIES[track.scenery];
+  if (!scenery) {
+    throw new Error(`No scenery called "${track.scenery}" in scenery.js: every course must name one`);
+  }
   const disposables = [];
   const keep = (thing) => {
     disposables.push(thing);
@@ -50,17 +47,16 @@ export function buildScenery(scene, track) {
     keep(new THREE.MeshStandardMaterial({ color: SEA, roughness: 0.35 })),
   );
   sea.rotation.x = -Math.PI / 2;
-  sea.position.y = SEA_LEVEL;
-  world.add(sea, createPillars(track, keep));
+  sea.position.y = scenery.seaLevel;
+  world.add(sea);
   addLights(world, track, keep);
-  const { buildRoad, buildDressing } = track.scenery === null ? PLAIN : SCENERIES[track.scenery];
-  const road = buildRoad(track);
+  const road = scenery.buildRoad(track);
   world.add(...road.meshes);
-  const dressing = buildDressing?.({ world, track, sea, keep });
+  const dressing = scenery.buildDressing({ world, track, sea, keep });
   scene.add(world);
   function update(dt, race) {
     road.update(dt, race);
-    dressing?.update(dt, race);
+    dressing.update(dt, race);
   }
   function dispose() {
     scene.remove(world);
@@ -68,25 +64,6 @@ export function buildScenery(scene, track) {
     disposables.forEach((thing) => thing.dispose());
   }
   return { update, dispose };
-}
-
-// One instanced mesh for every pillar: one draw call per view.
-function createPillars(track, keep) {
-  const spots = track.stations.filter((station, index) => index % PILLAR_SPACING === 0 && !station.gap && station.normal.y > 0.95);
-  const pillars = new THREE.InstancedMesh(
-    keep(new THREE.CylinderGeometry(1.2, 1.6, 1, 10)),
-    keep(new THREE.MeshStandardMaterial({ color: 0xd9d4c7, roughness: 0.7 })),
-    spots.length,
-  );
-  const matrix = new THREE.Matrix4();
-  spots.forEach((station, index) => {
-    const top = station.point.y - ROAD_THICKNESS;
-    matrix.makeScale(1, top - SEA_LEVEL, 1).setPosition(station.point.x, (top + SEA_LEVEL) / 2, station.point.z);
-    pillars.setMatrixAt(index, matrix);
-  });
-  pillars.castShadow = true;
-  pillars.receiveShadow = true;
-  return pillars;
 }
 
 // The sun's shadow map covers the whole track, so it is drawn once per frame and shared by every view.

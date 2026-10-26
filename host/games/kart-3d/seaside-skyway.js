@@ -15,7 +15,8 @@
 //   s 340-430   climb to height 10
 //   s 430-570   the big sweeper: 180 degrees right, radius 45, wide (20) and banked 12 degrees, the corner
 //               where a held drift reaches purple
-//   s 570-630   a narrow bridge (13 wide) without walls, falling to height 4, with a dash panel
+//   s 570-630   a narrow bridge (13 wide), falling to height 4, with a dash panel (walled since the M7d3 device run:
+//               the only road without them is over the jump's gap)
 //   s 630-690   the jump: a ramp up to 8 and a 14-long gap that lands 5 lower (press Drift at the lip for a trick)
 //   s 690-775   a left hairpin, radius 26, with grass on its inside to clip with a boost
 //   s 775-855   a quiet, wide straight (20): where item boxes will go
@@ -29,7 +30,7 @@ export const SEASIDE_SKYWAY = Object.freeze({
   name: 'Seaside Skyway',
   halfWidth: 9,
   startLine: 45,
-  // Islands, boats and clouds round it, and its trackside dressing (seaside-scenery.js, trackside.js).
+  // Its look: the kit's road and trackside pieces, a seaside half and a sky half (seaside-scenery.js).
   scenery: 'seaside',
   dashPanels: [
     // On the bridge before the jump: a boosted kart flies far.
@@ -46,7 +47,7 @@ export const SEASIDE_SKYWAY = Object.freeze({
     { straight: 90, height: 10 },
     { turn: 90, radius: 45, roll: 12, halfWidth: 10 },
     { turn: 90, radius: 45, roll: 0 },
-    { straight: 60, height: 4, halfWidth: 6.5, walls: 'none' },
+    { straight: 60, height: 4, halfWidth: 6.5 },
     { straight: 16, height: 8, linear: true },
     { straight: 14, height: 3, linear: true, gap: true },
     { straight: 30, height: 0, halfWidth: 8 },

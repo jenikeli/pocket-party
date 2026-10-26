@@ -1,6 +1,6 @@
 // Placing the kit's pieces on and beside the road: a frame (a position and three axes) at a station, from which
 // a piece's matrix is made. A piece is modelled standing on y = 0 and facing +z; its frame stands it on the road
-// (y along the road's normal) facing the way it is told. Used by the kit's pieces and trackside.js.
+// (y along the road's normal) facing the way it is told. Used by the kit's pieces.
 
 import * as THREE from 'three';
 

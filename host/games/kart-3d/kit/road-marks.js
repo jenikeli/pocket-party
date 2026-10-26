@@ -9,7 +9,7 @@
 // distance along the centre line (fromS may be below 0 or toS past the lap's length: they wrap), and from and
 // to units right of it.
 
-import { turnAhead } from '../trackside-spots.js';
+import { turnAhead } from '../track.js';
 import { gridSpot, FIELD_SIZE } from '../race.js';
 import { DASH_PANEL_LENGTH, DASH_PANEL_WIDTH } from '../kart-boosts.js';
 
@@ -18,7 +18,7 @@ export const EDGE_LINE_INSET = 1;
 export const EDGE_LINE_WIDTH = 0.3;
 export const CURB_WIDTH = EDGE_LINE_INSET;
 // A corner gets curbs where the road turns more than this over the 10 stations around it (a radius under about
-// 70 units), the same test as the M7c arrow boards.
+// 70 units).
 const CURB_DEGREES = 8;
 const LOOK_BACK = 5;
 const MIN_CURB_STATIONS = 8;

@@ -674,4 +674,4 @@ In headless Chromium on the dev box (llvmpipe, software), at the back of the gri
 
 ### Device run
 
-Pending.
+On the iPad: the user found it looks fine, with nothing to change. No frame rates or load times were reported, so M7d4b's first measurement gives the iPad's numbers.

@@ -23,7 +23,7 @@ const GLASS = { color: 0xfff4dc, roughness: 0.15, metalness: 0.1 };
 
 // Each prop's parts: [{ geometry, material }], by its name in PROP_REACH (kit/layout-rules.js).
 function propParts(materials) {
-  const { plastic, painted, iron, glass, sponsors, fronds } = materials;
+  const { plastic, painted, iron, glass, sponsors, palm: palmMaterials } = materials;
   const van = buildMktvVan();
   const lantern = buildLanternLamp();
   const triple = buildTripleLamp();
@@ -38,7 +38,7 @@ function propParts(materials) {
     'lantern-lamp': [{ geometry: lantern.iron, material: iron }, { geometry: lantern.glass, material: glass }],
     'triple-lamp': [{ geometry: triple.iron, material: iron }, { geometry: triple.glass, material: glass }],
     floodlight: [{ geometry: floodlight.steel, material: iron }, { geometry: floodlight.glass, material: glass }],
-    palm: [{ geometry: palm.trunk, material: painted }, { geometry: palm.fronds, material: fronds }],
+    palm: [{ geometry: palm.trunk, material: palmMaterials.trunk }, { geometry: palm.fronds, material: palmMaterials.fronds }],
     parasol: [{ geometry: buildParasol(), material: painted }],
     lounger: [{ geometry: buildLounger(), material: painted }],
     surfboards: [{ geometry: buildSurfboards(), material: plastic }],
@@ -50,7 +50,7 @@ function propParts(materials) {
   };
 }
 
-// Adds the props; `kit` is the course's { world, track, keep, sponsors, fronds } (kit/kit.js). `spots` lists
+// Adds the props; `kit` is the course's { world, track, keep, sponsors, palm } (kit/kit.js). `spots` lists
 // [{ piece, s, side: 'left' or 'right', out, turn }]: the prop's name, where along the lap and on which side, how
 // far out from the edge of the ground (on the deck there), and how far it is turned (degrees, about up) from
 // facing the road.
@@ -62,7 +62,7 @@ export function buildProps(kit, spots) {
     iron: keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.4 })),
     glass: keep(new THREE.MeshStandardMaterial(GLASS)),
     sponsors: kit.sponsors,
-    fronds: kit.fronds,
+    palm: kit.palm,
   };
   const parts = propParts(materials);
   for (const [piece, pieceParts] of Object.entries(parts)) {

@@ -81,8 +81,7 @@ function addInstances({ world, keep }, geometry, material, spots) {
 
 function addPalms(kit, spots) {
   const palm = buildPalm();
-  const trunk = kit.keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 }));
-  for (const mesh of [addInstances(kit, palm.trunk, trunk, spots), addInstances(kit, palm.fronds, kit.fronds, spots)]) {
+  for (const mesh of [addInstances(kit, palm.trunk, kit.palm.trunk, spots), addInstances(kit, palm.fronds, kit.palm.fronds, spots)]) {
     mesh.castShadow = true;
   }
 }

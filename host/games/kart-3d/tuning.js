@@ -115,32 +115,11 @@ export const TUNABLES = Object.freeze([
   // the softer bloom above).
   { key: 'dashPanelGlow', group: 'Look', label: 'Dash panel glow', unit: '', min: 0.5, max: 3, step: 0.05, value: 1.6 },
 
-  // How strong the light from the course is (M7d4b2), when the Drawing switch "Light from the course" is on: the
-  // environment map's share of the lighting, which then stands in for most of the flat sky light. Software
-  // screenshots suggested 1.5; the M7d4b2 device run on the iPad chose 0.7.
+  // How strong the light from the course is (M7d4b2): the environment map's share of the lighting, which stands
+  // in for most of the flat sky light. Software screenshots suggested 1.5; the M7d4b2 device run on the iPad
+  // chose 0.7. The plain course (plain-course.js) lights itself from the sky's environment map at this strength.
   { key: 'courseLightStrength', group: 'Look', label: 'Light from the course, strength', unit: '', min: 0, max: 3, step: 0.05, value: 0.7 },
-
-  // How the course is drawn: M7d4b2's trials of detail in textures and light, each a switch (1 on, 0 drawn as
-  // M7d4a did), so the Measure tool (measure-run.js) and the device run can see and time each both ways on the
-  // iPad. Once the device run decides, the defaults are set and the switches go (spike only, as M7d4b1's were). A
-  // change rebuilds the course, about a second on the iPad.
-  // The start gate's posts, the striped rail and the padded sponsor wall drawn with their bolts, seams and panel
-  // edges in normal, shade (ambient occlusion) and roughness maps on simpler shapes, instead of as geometry.
-  { key: 'textureDetail', group: 'Drawing', label: 'Detail in textures (gate, striped rail, sponsor wall)', unit: '', min: 0, max: 1, step: 1, value: 1 },
-  // Shade baked into the colours of the stretch round the start line: darker where parts meet and in corners.
-  { key: 'bakedShade', group: 'Drawing', label: 'Baked shade (start stretch)', unit: '', min: 0, max: 1, step: 1, value: 1 },
-  // The course lit by an environment map taken from the course itself round the start line (image-based light),
-  // instead of mostly by a flat sky light.
-  { key: 'courseLight', group: 'Drawing', label: 'Light from the course', unit: '', min: 0, max: 1, step: 1, value: 1 },
-  // The road's asphalt from a photo-scanned CC0 set (ambientCG's Asphalt 023 S, in assets/) instead of our drawn
-  // one.
-  { key: 'photoAsphalt', group: 'Drawing', label: 'Photo-scanned asphalt (CC0)', unit: '', min: 0, max: 1, step: 1, value: 1 },
 ]);
-
-// The Drawing switches, as { key: value }: what a course is built with (renderer.js rebuilds it when they change).
-export function drawingSwitches() {
-  return Object.fromEntries(TUNABLES.filter((tunable) => tunable.group === 'Drawing').map(({ key }) => [key, tuning[key]]));
-}
 
 // The live values, by key. The rules read from here every step, so a slider changes the race at once.
 export const tuning = {};

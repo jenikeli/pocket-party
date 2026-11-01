@@ -1,6 +1,6 @@
 // Unit tests for M7d4b, the Measure tool and drawing the 3D race, that run without a browser: sorting things into
 // cells of the ground and their bounds (cells.js), where a view's shadow map is centred and how it snaps to whole
-// texels (shadow-fit.js), how far a course reaches (track.js), the drawing switches (tuning.js: M7d4b2's trials),
+// texels (shadow-fit.js), how far a course reaches (track.js),
 // the Measure tool's plan, report and run (measure-plan.js, measure-run.js, the run with a stand-in renderer), and
 // the maths of baking shade (occlusion.js).
 
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { groupByCell, boundsOf } from '../../host/games/kart-3d/cells.js';
 import { viewShadowCentre, snapToTexels, VIEW_SHADOW_AHEAD } from '../../host/games/kart-3d/shadow-fit.js';
 import { courseExtent } from '../../host/games/kart-3d/track.js';
-import { TUNABLES, tuning, setTuning, resetTuning, drawingSwitches } from '../../host/games/kart-3d/tuning.js';
+import { TUNABLES, resetTuning } from '../../host/games/kart-3d/tuning.js';
 import {
   createMeasureRaces,
   measureSetups,
@@ -31,8 +31,6 @@ import { dot, cross, normalize, length, subtract } from '../../host/games/kart-3
 import { sphereDirections, unpackDepth, shadeFor } from '../../host/games/kart-3d/occlusion.js';
 
 const seaside = buildTrack(SEASIDE_SKYWAY);
-const DRAWING = { textureDetail: 1, bakedShade: 1, courseLight: 1, photoAsphalt: 1 };
-const ALL_OFF = { textureDetail: 0, bakedShade: 0, courseLight: 0, photoAsphalt: 0 };
 
 afterEach(() => resetTuning());
 
@@ -87,19 +85,13 @@ test('courseExtent is the middle of the course\'s box seen from above and half i
   assert.equal(reach, Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) / 2);
 });
 
-test('the drawing switches are M7d4b2\'s trials in the tuning panel\'s Drawing group, each on or off, on to start', () => {
-  const drawing = TUNABLES.filter((tunable) => tunable.group === 'Drawing');
-  assert.deepEqual(drawing.map((tunable) => tunable.key), Object.keys(DRAWING));
-  for (const toggle of drawing) {
-    assert.deepEqual([toggle.min, toggle.max, toggle.step, toggle.value], [0, 1, 1, 1], `${toggle.key} is on (1) or off (0)`);
-  }
-  assert.deepEqual(drawingSwitches(), DRAWING);
-  setTuning('bakedShade', 0);
-  assert.deepEqual(drawingSwitches(), { ...DRAWING, bakedShade: 0 }, 'the switches as they are now');
+test('the Drawing switches of M7d4b2\'s trials are gone: the detail, shade, light and photo asphalt are always on', () => {
   const keys = TUNABLES.map((tunable) => tunable.key);
-  for (const gone of ['cullCellSize', 'smallPartShadows', 'shadowPerView']) {
-    assert.ok(!keys.includes(gone), `M7d4b1's ${gone} was decided and is no longer a switch`);
+  assert.ok(!TUNABLES.some((tunable) => tunable.group === 'Drawing'));
+  for (const gone of ['cullCellSize', 'smallPartShadows', 'shadowPerView', 'textureDetail', 'bakedShade', 'courseLight', 'photoAsphalt']) {
+    assert.ok(!keys.includes(gone), `${gone} was decided and is no longer a switch`);
   }
+  assert.ok(keys.includes('courseLightStrength'));
 });
 
 test('the Measure races are copies at each moment: on the grid, then later and later in the race', () => {
@@ -122,8 +114,8 @@ test('the Measure races are copies at each moment: on the grid, then later and l
   }
 });
 
-test('the Measure setups: the quality levels, Medium without each part, each drawing switch the other way, then all off', () => {
-  const setups = measureSetups(DRAWING);
+test('the Measure setups: the quality levels, Medium without each part', () => {
+  const setups = measureSetups();
   const labels = setups.map((setup) => setup.label);
   assert.deepEqual(labels.slice(0, 4), ['High', 'Medium', 'Low', 'Medium, no shadows']);
   assert.ok(setups[0].look.bloom && !setups[1].look.bloom);
@@ -134,18 +126,8 @@ test('the Measure setups: the quality levels, Medium without each part, each dra
     assert.deepEqual(setup.look.hidden, [part]);
   }
   assert.ok(Object.values(KIT_PARTS).every((part) => MEASURED_PARTS.includes(part)), 'every part of the dressing is measured');
-  const byLabel = (label) => setups.find((setup) => setup.label === label);
-  for (const key of Object.keys(DRAWING)) {
-    assert.deepEqual(byLabel(`Medium, ${key} off`).drawing, { ...DRAWING, [key]: 0 }, `${key} alone switched off`);
-  }
-  // Every other setup keeps the switches as set, and the ones that rebuild the course come last, M7d4a's drawing
-  // (the baseline) at the very end.
-  assert.deepEqual(setups[1].drawing, DRAWING);
-  assert.equal(labels.at(-1), 'Medium, as M7d4a (every trial off)');
-  assert.deepEqual(setups.at(-1).drawing, ALL_OFF);
-  const fromOff = measureSetups(ALL_OFF).map((setup) => setup.label);
-  assert.ok(Object.keys(DRAWING).every((key) => fromOff.includes(`Medium, ${key} on`)));
-  assert.ok(!fromOff.some((label) => label.includes('as M7d4a')), 'M7d4a\'s drawing is not measured twice');
+  assert.equal(setups.length, 4 + MEASURED_PARTS.length, 'no other looks');
+  assert.ok(setups.every((setup) => setup.drawing === undefined), 'a setup is a label and a look only');
 });
 
 test('the Measure cases cover every setup, view count and moment, one setup at a time', () => {
@@ -164,14 +146,14 @@ test('median is the middle value, or the mean of the two middle ones', () => {
   assert.equal(median([4, 1, 3, 2]), 2.5);
 });
 
-test('the Measure report has the host, the switches set and one row per setup with both view counts', () => {
-  const setups = measureSetups(DRAWING).slice(0, 2);
+test('the Measure report has the host and one row per setup with both view counts', () => {
+  const setups = measureSetups().slice(0, 2);
   const frame = (totalMs) => ({ totalMs, cpuMs: totalMs / 4, drawCalls: 200, triangles: 512000 });
   const results = measureCases(2).map((each) => ({ ...each, frames: [frame(10 + each.momentIndex), frame(12 + each.momentIndex), frame(30)] }));
-  const context = { course: 'Seaside Skyway', canvas: '1180x820', devicePixelRatio: 2, gpu: 'Apple GPU', userAgent: 'Safari', drawing: DRAWING };
+  const context = { course: 'Seaside Skyway', canvas: '1180x820', devicePixelRatio: 2, gpu: 'Apple GPU', userAgent: 'Safari' };
   const lines = describeMeasurement(setups, results, context).split('\n');
   assert.ok(lines.some((line) => line.includes('Seaside Skyway') && line.includes('1180x820') && line.includes('Apple GPU')));
-  assert.ok(lines.some((line) => line.includes('Drawing set: textureDetail = 1, bakedShade = 1, courseLight = 1, photoAsphalt = 1')));
+  assert.ok(!lines.some((line) => line.includes('Drawing set')));
   const high = lines.find((line) => line.startsWith('High'));
   // Medians 12, 13, 14 and 15 at the four moments: 13.5 on average, 15 at worst, CPU a quarter.
   assert.match(high, /^High\s+13\.5\s+15\.0\s+3\.4\s+200\s+512\s+13\.5\s+15\.0\s+3\.4\s+200\s+512$/);
@@ -184,25 +166,21 @@ test('the Measure report has the host, the switches set and one row per setup wi
 
 // A renderer that records what the run asks of it, with a draw that takes no time.
 function createStandInRenderer() {
-  const calls = { looks: [], draws: [], waits: 0, drawingAtDraw: [] };
+  const calls = { looks: [], draws: [], waits: 0 };
   return {
     calls,
     setLook: (look) => calls.looks.push(look),
-    draw: (race, players, alpha, dt) => {
-      calls.draws.push({ race, viewCount: players.size, alpha, dt });
-      calls.drawingAtDraw.push(tuning.bakedShade);
-    },
+    draw: (race, players, alpha, dt) => calls.draws.push({ race, viewCount: players.size, alpha, dt }),
     waitForGpu: () => (calls.waits += 1),
     frameStats: () => ({ drawCalls: 100, triangles: 300000 }),
   };
 }
 
-test('a Measure run draws every case, warm-up frames first, sets each look once and puts the switches back', () => {
+test('a Measure run draws every case, warm-up frames first, and sets each look once', () => {
   const testTrack = buildTrack(TEST_TRACK);
-  setTuning('bakedShade', 0);
   const renderer = createStandInRenderer();
   const run = createMeasureRun(renderer, testTrack, { course: 'Test track', canvas: '960x540', devicePixelRatio: 1, gpu: 'test', userAgent: 'node' });
-  const setups = measureSetups({ ...DRAWING, bakedShade: 0 });
+  const setups = measureSetups();
   const caseCount = setups.length * VIEW_COUNTS.length * 4;
   let progress = run.frame();
   assert.match(progress, /^Measuring 1 of \d+: High, 1 view\(s\)$/);
@@ -217,29 +195,21 @@ test('a Measure run draws every case, warm-up frames first, sets each look once 
   assert.equal(renderer.calls.looks.length, caseCount, 'the look is set at the start of each case');
   assert.ok(renderer.calls.draws.every((draw) => draw.alpha === 1 && draw.dt === 0), 'frozen moments: nothing moves on');
   assert.deepEqual([...new Set(renderer.calls.draws.map((draw) => draw.viewCount))].sort(), [1, 4]);
-  // The baked shade was drawn on (its own look) and off (as set); afterwards it is off again, as set.
-  assert.ok(renderer.calls.drawingAtDraw.includes(0) && renderer.calls.drawingAtDraw.includes(1));
-  assert.equal(tuning.bakedShade, 0);
   assert.equal(run.frame(), null, 'a finished run draws nothing more');
   const report = run.report();
   assert.ok(report.includes('Course: Test track'));
-  assert.ok(report.includes('bakedShade = 0'));
   assert.equal(report.split('\n').filter((line) => line.startsWith('Medium')).length, setups.length - 2);
-  assert.equal(setups.at(-1).label, 'Medium, as M7d4a (every trial off)', 'M7d4a\'s drawing was measured');
 });
 
-test('a Measure run stopped early puts the switches back and reports what it drew', () => {
+test('a Measure run stopped early reports what it drew', () => {
   const renderer = createStandInRenderer();
   const run = createMeasureRun(renderer, seaside, { course: 'Seaside Skyway', canvas: '960x540', devicePixelRatio: 1, gpu: 'test', userAgent: 'node' });
-  const setupCount = measureSetups(DRAWING).length;
-  // Into the case that switches every trial off (the last): the switches are off while it draws.
+  const setupCount = measureSetups().length;
   const framesPerSetup = VIEW_COUNTS.length * 4 * (WARM_UP_FRAMES + TIMED_FRAMES);
   for (let frame = 0; frame < framesPerSetup * (setupCount - 1) + 1; frame += 1) {
     run.frame();
   }
-  assert.deepEqual(drawingSwitches(), ALL_OFF);
   run.stop();
-  assert.deepEqual(drawingSwitches(), DRAWING);
   assert.equal(run.frame(), null);
   assert.match(run.report(), new RegExp(`Stopped early: ${(setupCount - 1) * VIEW_COUNTS.length * 4} of`));
 });

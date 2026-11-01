@@ -20,6 +20,7 @@ import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
 import { createMeasurePanel } from './measure-panel.js';
 import { QUALITY_LEVELS, loadQuality, saveQuality } from './quality.js';
+import { loadPlainCourse } from './plain-course.js';
 
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
 const PING_INTERVAL_MS = 2000;
@@ -30,7 +31,7 @@ const MAX_FRAME_SECONDS = 0.25;
 // Returns a fresh 3D race game that follows the game module interface in plan.md.
 export function createGame() {
   let rendererModule = null;
-  // The photo-scanned asphalt's textures (photo-asphalt.js), for its trial; the renderer frees them.
+  // The photo-scanned asphalt's textures (photo-asphalt.js), the road's asphalt; the renderer frees them.
   let photoAsphalt = null;
   let renderer = null;
   let panels = null;
@@ -50,6 +51,8 @@ export function createGame() {
   let engineClass = DEFAULT_ENGINE_CLASS;
   // The host device's drawing quality, remembered between games (quality.js).
   let quality = loadQuality();
+  // Whether the course is drawn plain, for the rules' browser tests (plain-course.js); nothing in the UI sets it.
+  const plainCourse = loadPlainCourse();
   // null while the setup screen shows.
   let race = null;
   let controls = createControlsTable();
@@ -72,7 +75,7 @@ export function createGame() {
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
-    renderer = rendererModule.createRenderer(shell.container, track, quality, photoAsphalt);
+    renderer = rendererModule.createRenderer(shell.container, track, quality, photoAsphalt, plainCourse);
     tuningPanel = createTuningPanel(shell.container);
     measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(quality));
     panels = createPanels(shell.container, {

@@ -24,16 +24,15 @@ const ROAD_THEME = Object.freeze({ asphalt: 0xfff6ec, edgeLine: 0xf6f6f2, curb: 
 // A sea-blue sign with a coral stripe on white posts banded in blue.
 const GATE_THEME = Object.freeze({ post: 0xf6f6f2, band: 0x1f7fd8, body: 0x1f8fe0, background: '#2aa8f0', stripe: '#ff6a4f', outline: '#0a3f8a' });
 
-// `photoAsphalt` is the photo-scanned asphalt's textures, or null for our own drawn asphalt (kit/road.js).
+// `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js).
 export function buildSeasideRoad(track, photoAsphalt) {
   return buildKitRoad(track, ROAD_THEME, photoAsphalt);
 }
 
 // `world` is the group to add to, `sea` the sea's mesh (its height is the sea level), `keep(thing)` registers
-// what must be disposed with the world, `drawing` the Drawing switches it is built with (kit/kit.js). Returns {
-// update(dt, race) }.
-export function buildSeasideScenery({ world, track, sea, keep, drawing }) {
-  const kit = createKit({ world, track, keep, drawing });
+// what must be disposed with the world. Returns { update(dt, race) }.
+export function buildSeasideScenery({ world, track, sea, keep }) {
+  const kit = createKit({ world, track, keep });
   const seaLevel = sea.position.y;
   buildSupports(kitPart(kit, KIT_PARTS.SUPPORTS), seaLevel, TRUSS_RUNS);
   const barriers = kitPart(kit, KIT_PARTS.BARRIERS);

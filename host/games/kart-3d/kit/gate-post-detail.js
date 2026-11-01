@@ -1,5 +1,4 @@
-// The start gate's posts with their detail in textures (M7d4b2's trial, while the tuning panel's "Detail in
-// textures" is on; kit/start-gate.js builds M7d4a's otherwise): where M7d4a built each post's three panels, the
+// The start gate's posts with their detail in textures (M7d4b2): where M7d4a built each post's three panels, the
 // core showing in the seams between them and 48 bolt heads as shapes, here one rounded shaft carries them all as
 // maps wrapped round it (kit/surface-maps.js): the panels raised with rounded edges, the seams sunk and shaded, a
 // fine line cut round each panel, the bolts domed and shiny, and a little grime toward each panel's foot. The

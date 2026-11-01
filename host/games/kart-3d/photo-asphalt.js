@@ -1,8 +1,7 @@
-// The photo-scanned asphalt for M7d4b2's trial of one CC0 texture set against our own drawn ones: ambientCG's
+// The photo-scanned asphalt (M7d4b2, which chose it over our own drawn one): ambientCG's
 // Asphalt 023 S (CC0, listed in assets/manifest.json), a fine grey asphalt with light and dark stones, as four 1K
 // JPG maps: colour, normal (OpenGL's convention, which Three.js uses), roughness and ambient occlusion. Loaded by
-// the game's load(), before the race starts, and laid on the road's asphalt by kit/road.js when the tuning
-// panel's "Photo-scanned asphalt" switch is on. Used by host/games/kart-3d/index.js.
+// the game's load(), before the race starts, and laid on the road's asphalt by kit/road.js. Used by host/games/kart-3d/index.js.
 
 import * as THREE from 'three';
 

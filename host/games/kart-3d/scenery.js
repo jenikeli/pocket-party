@@ -4,22 +4,22 @@
 // included. Built once from the track's stations, all in one group, so a different course can replace it. Since
 // M7d4b the road and each part of the dressing are named groups, which the Measure tool (measure-run.js) hides
 // one at a time, and their big meshes are cut into cells so views skip what they do not see (split-meshes.js).
-// Built with the tuning panel's Drawing switches (M7d4b2's trials). Used by host/games/kart-3d/renderer.js.
+// In the plain course (plain-course.js) the dressing is only the barriers (plain-scenery.js). Used by host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
 import { buildSeasideRoad, buildSeasideScenery } from './seaside-scenery.js';
 import { buildTestTrackRoad, buildTestTrackScenery } from './test-track-scenery.js';
+import { buildPlainDressing } from './plain-scenery.js';
 import { addSun, SUN_OFFSET } from './sun.js';
 import { splitIntoCells } from './split-meshes.js';
 
 const SKY_TOP = 0x3d8bff;
 const HORIZON = 0xcfe8ff;
 const SEA = 0x2b7bb9;
-// The flat sky light (a hemisphere light: pale blue from above, sea blue from below), and the share of it kept
-// while the course is lit by its own environment map (course-light.js, M7d4b2's trial), which then does most of
-// its work.
-const SKY_LIGHT = 1.3;
-const SKY_LIGHT_SHARE_WITH_COURSE_LIGHT = 0.3;
+// The flat sky light (a hemisphere light: pale blue from above, sea blue from below), turned down to this share:
+// the course's own light (course-light.js, or in the plain course the sky's environment map) does most of the
+// lighting.
+const SKY_LIGHT = 1.3 * 0.3;
 const SUN_DIRECTION = SUN_OFFSET.clone().normalize();
 // The course's big meshes are cut into square cells this many units across. Chosen from M7d4b1's device runs:
 // cells cost the iPad nothing, and cells of 200 were the laptop's fastest with a shadow map per view (2 ms
@@ -27,21 +27,21 @@ const SUN_DIRECTION = SUN_OFFSET.clone().normalize();
 const CELL_SIZE = 200;
 // Each scenery by the name a course gives in its `scenery`: how far below the start line the sea lies;
 // buildRoad(track, photoAsphalt), which returns { meshes, update(dt, race), dispose() }; and buildDressing({
-// world, track, sea, keep, drawing }), which returns { update(dt, race) } for whatever it moves.
+// world, track, sea, keep }), which returns { update(dt, race) } for whatever it moves.
 const SCENERIES = {
   seaside: { seaLevel: -14, buildRoad: buildSeasideRoad, buildDressing: buildSeasideScenery },
   'test-track': { seaLevel: -30, buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
 };
 
-// Adds everything to `scene`. `drawing` is the Drawing switches to build with (tuning.js's drawingSwitches());
-// `photoAsphalt` the photo-scanned asphalt's textures (photo-asphalt.js), used when its switch is on. Returns {
-// group, drawing, sun, sea, update(dt, race), showParts(hidden), dispose() }: group holds it all; sun is sun.js's;
+// Adds everything to `scene`. `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js);
+// `plainCourse` true dresses the course with only its barriers (plain-scenery.js). Returns {
+// group, sun, sea, update(dt, race), showParts(hidden), dispose() }: group holds it all; sun is sun.js's;
 // sea the sea's mesh;
 // update moves the scenery on by the real time since the last drawn frame (waves, boats, panels) and shows the
 // race's state on it (the start lights; race is null on the setup screen); showParts hides the parts named in
 // `hidden` ('road', 'sea' or a kit part, kit/kit.js) and shows the rest; dispose takes it all out of the scene
 // again and frees what it created.
-export function buildScenery(scene, track, { drawing, photoAsphalt }) {
+export function buildScenery(scene, track, { photoAsphalt, plainCourse }) {
   const scenery = SCENERIES[track.scenery];
   if (!scenery) {
     throw new Error(`No scenery called "${track.scenery}" in scenery.js: every course must name one`);
@@ -65,15 +65,14 @@ export function buildScenery(scene, track, { drawing, photoAsphalt }) {
   sea.rotation.x = -Math.PI / 2;
   sea.position.y = scenery.seaLevel;
   world.add(sea);
-  const skyLight = drawing.courseLight === 1 ? SKY_LIGHT * SKY_LIGHT_SHARE_WITH_COURSE_LIGHT : SKY_LIGHT;
-  world.add(new THREE.HemisphereLight(0xdcefff, 0x3a5a7a, skyLight));
+  addSkyLight(world);
   const sun = addSun(world, track, keep);
-  const road = scenery.buildRoad(track, drawing.photoAsphalt === 1 ? photoAsphalt : null);
+  const road = scenery.buildRoad(track, photoAsphalt);
   const roadGroup = new THREE.Group();
   roadGroup.name = 'road';
   roadGroup.add(...road.meshes);
   world.add(roadGroup);
-  const dressing = scenery.buildDressing({ world, track, sea, keep, drawing });
+  const dressing = (plainCourse ? buildPlainDressing : scenery.buildDressing)({ world, track, sea, keep });
   // The road and the dressing's parts are the world's groups; the sky, sea and lights are not.
   const parts = world.children.filter((child) => child.isGroup);
   parts.forEach((part) => splitIntoCells(part, CELL_SIZE, keep));
@@ -91,7 +90,13 @@ export function buildScenery(scene, track, { drawing, photoAsphalt }) {
     road.dispose();
     disposables.forEach((thing) => thing.dispose());
   }
-  return { group: world, drawing, sun, sea, update, showParts, dispose };
+  return { group: world, sun, sea, update, showParts, dispose };
+}
+
+// The sky light the race has: a hemisphere light added to `world`. Exported so the kit-shots page lights a single
+// piece exactly as the race does.
+export function addSkyLight(world) {
+  world.add(new THREE.HemisphereLight(0xdcefff, 0x3a5a7a, SKY_LIGHT));
 }
 
 // What glossy surfaces (the karts' paint and chrome) reflect, the same for every course: the sky dome below,

@@ -1,9 +1,9 @@
-// A surface's small detail drawn as maps instead of built as shapes (M7d4b2's trial of detail in textures, after
+// A surface's small detail drawn as maps instead of built as shapes (M7d4b2's detail in textures, after
 // "How games look detailed and still run smoothly" in docs/mk8dx-reference.md): its colour, its height (from
 // which its relief, a normal map, and its shade, an ambient occlusion map, are worked out, kit/pixel-image.js)
 // and its roughness, drawn together, so a panel, a seam or a bolt drawn once is in every map at the same place.
 // Features are placed in units of the surface, x across and y up from its bottom left corner. Used by the kit's
-// pieces in that trial (kit/gate-post-detail.js, kit/striped-rail-detail.js, kit/sponsor-wall-detail.js).
+// pieces that use it (kit/gate-post-detail.js, kit/striped-rail-detail.js, kit/sponsor-wall-detail.js).
 
 import { createPixelImage } from './pixel-image.js';
 

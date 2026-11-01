@@ -1,5 +1,4 @@
-// The padded sponsor wall with its detail in textures (M7d4b2's trial, while the tuning panel's "Detail in
-// textures" is on; kit/sponsor-wall.js uses it in place of M7d4a's frame strips, bolts and pad seams): every board
+// The padded sponsor wall with its detail in textures (M7d4b2): every board
 // framed, a raised light rim round it with a bolt in each corner, drawn over a copy of the sponsor atlas twice as
 // sharp (kit/sponsors.js); and the pad's own maps, one board long: a seam where boards meet, the cushion
 // bulging softly between seams, two rows of stitching along it and MARIO KART printed on its front slope tone on

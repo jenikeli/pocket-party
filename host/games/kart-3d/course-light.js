@@ -1,10 +1,10 @@
-// M7d4b2's trial of a stronger image-based light: the course lit by an environment map taken from the course
+// M7d4b2's stronger image-based light: the course lit by an environment map taken from the course
 // itself, as games light a scene from a light probe. Once the course is built, the scene is drawn in all six
 // directions from a point above the start line (sky, sea, road and scenery, the karts hidden by the caller) and
 // blurred by Three.js's PMREM into the map every material reads its ambient light and reflections from. So a
 // surface facing the sea is lit blue from below, one facing the sand or a white wall a little warmer, and every
 // material shines with its own roughness, not only the karts' paint. The flat sky light is then turned down
-// (scenery.js). Used by host/games/kart-3d/renderer.js while the tuning panel's "Light from the course" is on.
+// (scenery.js). Used by host/games/kart-3d/renderer.js, except in the plain course (plain-course.js).
 
 import * as THREE from 'three';
 import { startLineIndex } from './track.js';

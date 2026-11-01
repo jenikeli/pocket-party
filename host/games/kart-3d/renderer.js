@@ -4,8 +4,8 @@
 // player with its HUD, or, on the setup screen, a slow flight round the course; with bloom on the High quality
 // setting (quality.js). Since M7d4b each view in a race gets its own shadow map fitted round it (sun.js), and the
 // Measure tool (measure-run.js) can set any look, wait for the GPU to finish a frame and read how much was drawn;
-// since M7d4b2 the course is built with the tuning panel's Drawing switches (the trials of detail in textures
-// and light), and rebuilt when one changes.
+// since M7d4b2 the course bakes shade on its start stretch and is lit by a light taken from itself (course-light.js),
+// except in the plain course (plain-course.js), which the rules' browser tests use.
 // Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the game starts. Used by
 // host/games/kart-3d/index.js.
 
@@ -17,7 +17,7 @@ import { createViews } from './views.js';
 import { createEffects, describeEffects } from './effects.js';
 import { createBloom } from './bloom.js';
 import { QUALITY_LEVELS } from './quality.js';
-import { tuning, drawingSwitches } from './tuning.js';
+import { tuning } from './tuning.js';
 import { kartPose, viewTargets, viewHud } from './race-views.js';
 import { FIELD_SIZE } from './race.js';
 import { createOverviewCamera } from './overview-camera.js';
@@ -27,14 +27,15 @@ import { bakeShade } from './baked-shade.js';
 
 // CPU karts are drawn in greys so the players' colours stand out.
 const CPU_COLORS = [0xd0d4dc, 0x9aa1ad, 0x6c7380];
-// Without the course's light, the sky's reflections mostly add shine to the karts, as up to M7d4a: the sun and
-// the sky light light the scene already.
+// How much the sea mirrors the sky: at the course light's strength it would reflect so much pale horizon that it
+// turns whitish.
 const SKY_REFLECTIONS = 0.4;
 
 // `track` is the course to draw first, `qualityLevel` a key of QUALITY_LEVELS, `photoAsphalt` the photo-scanned
-// asphalt's textures (photo-asphalt.js; freed here at the end). Returns { draw(race, players, alpha, dt),
+// asphalt's textures (photo-asphalt.js; freed here at the end), `plainCourse` true for the plain course
+// (plain-course.js: no dressing, baked shade or course light). Returns { draw(race, players, alpha, dt),
 // showTrack(track), setQuality(level), setLook(look), waitForGpu(), frameStats(), describeGpu(), destroy() }.
-export function createRenderer(container, track, qualityLevel, photoAsphalt) {
+export function createRenderer(container, track, qualityLevel, photoAsphalt, plainCourse) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   // Counted over a whole frame (every view and the shadow passes) for frameStats(), not per render() call.
   renderer.info.autoReset = false;
@@ -56,8 +57,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt) {
   kartGroup.add(...kartModels.karts);
   scene.add(kartGroup);
   const effects = createEffects(scene);
-  // The course's road and scenery (scenery.js's world), and, with the Drawing switch on, the light taken from it.
-  let shownTrack = track;
+  // The course's road and scenery (scenery.js's world), and the light taken from it (none in the plain course).
   let world = null;
   let courseLight = null;
   buildWorld(track);
@@ -88,18 +88,12 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt) {
     if (contextLost) {
       throw new Error('The WebGL context was lost (the browser took the graphics memory back)');
     }
-    const drawing = drawingSwitches();
-    if (Object.keys(drawing).some((key) => drawing[key] !== world.drawing[key])) {
-      showTrack(shownTrack);
-    }
     renderer.info.reset();
     // In a race each view's shadow pass is asked for in fitShadow; the overview takes the whole course's.
     world.sun.usePerView(race !== null);
     renderer.shadowMap.needsUpdate = true;
     renderer.toneMappingExposure = tuning.exposure;
-    if (courseLight) {
-      scene.environmentIntensity = tuning.courseLightStrength;
-    }
+    scene.environmentIntensity = tuning.courseLightStrength;
     world.update(dt, race);
     if (!race) {
       for (let index = 0; index < FIELD_SIZE; index += 1) {
@@ -182,27 +176,25 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt) {
     kartGroup.visible = !look.hidden.includes('karts');
   }
 
-  // Builds the course's road and scenery into the scene with the Drawing switches as they are now; with their
-  // trials on, bakes the shade on its start stretch and takes its light, the karts hidden meanwhile (they are not
-  // part of the course; the caller shows them again with the look). The course's light is taken with the course
-  // lit by the sky's reflections in full, as the sky would light it. The sea keeps the sky's reflections as up to
-  // M7d4a: at the course light's strength it mirrors so much pale horizon that it turns whitish.
+  // Builds the course's road and scenery into the scene, bakes the shade on its start stretch and takes its light,
+  // the karts hidden meanwhile (they are not part of the course; the caller shows them again with the look). The
+  // course's light is taken with the course lit by the sky's reflections in full, as the sky would light it. The
+  // plain course skips the bake and the course light and is lit by the sky's environment map at the same
+  // strength, so there is one lighting rule. The sea keeps the sky's reflections either way.
   function buildWorld(newTrack) {
-    shownTrack = newTrack;
-    world = buildScenery(scene, newTrack, { drawing: drawingSwitches(), photoAsphalt });
+    world = buildScenery(scene, newTrack, { photoAsphalt, plainCourse });
     kartGroup.visible = false;
     scene.environment = environment.texture;
     scene.environmentIntensity = 1;
-    if (world.drawing.bakedShade === 1) {
+    courseLight = null;
+    if (!plainCourse) {
       bakeShade(renderer, world.group, newTrack);
+      courseLight = createCourseLight(renderer, scene, newTrack, world.sun);
     }
-    courseLight = world.drawing.courseLight === 1 ? createCourseLight(renderer, scene, newTrack, world.sun) : null;
-    if (courseLight) {
-      world.sea.material.envMap = environment.texture;
-      world.sea.material.envMapIntensity = SKY_REFLECTIONS;
-    }
+    world.sea.material.envMap = environment.texture;
+    world.sea.material.envMapIntensity = SKY_REFLECTIONS;
     scene.environment = courseLight ? courseLight.texture : environment.texture;
-    scene.environmentIntensity = courseLight ? tuning.courseLightStrength : SKY_REFLECTIONS;
+    scene.environmentIntensity = tuning.courseLightStrength;
   }
 
   // Another course chosen on the setup screen: its road and scenery replace the old ones in the same scene and

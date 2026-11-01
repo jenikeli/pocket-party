@@ -1,16 +1,16 @@
 // The kit's road (M7d2), built from the same stations the kart rules drive on, so what is drawn is exactly where
-// karts drive: textured asphalt with large lighter and darker patches (so its tile does not show), riveted metal
+// karts drive: photo-scanned asphalt with large lighter and darker patches (so its tile does not show), riveted metal
 // in anti-gravity sections, grass shoulders mown in stripes, concrete underneath and down the sides, and on top
 // the paint (kit/road-paint.js), the LED panels (kit/led-panels.js) and the ramp plates (kit/ramp-plate.js).
-// Walls are not drawn here: a course's barriers stand on them (kit/barriers.js). Gaps are left empty. Since
-// M7d4b2 the asphalt can be the photo-scanned CC0 set instead (photo-asphalt.js, the tuning panel's trial).
+// Walls are not drawn here: a course's barriers stand on them (kit/barriers.js). Gaps are left empty. The
+// asphalt is the photo-scanned CC0 set (photo-asphalt.js, M7d4b2, chosen on the iPad).
 // Used by a kit-dressed course's scenery (see scenery.js).
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';
 import { createTileNoise } from '../noise.js';
 import { createRandom } from '../random.js';
-import { createAsphaltTexture, createMetalTexture, createGrassTexture } from './road-textures.js';
+import { createMetalTexture, createGrassTexture } from './road-textures.js';
 import { createConcreteTexture } from './concrete.js';
 import { buildRoadPaint } from './road-paint.js';
 import { buildLedPanels } from './led-panels.js';
@@ -31,8 +31,8 @@ const MOWN_STATIONS = 4;
 const COLORS = { metal: 0xc4d8ff, grass: 0xffffff, grassMown: 0xd8ecc8, concrete: 0xc8c2b8 };
 
 // `theme` is the course's road colours: { asphalt, edgeLine, curb: [first, second], checks: [light, dark] };
-// `photoAsphalt` the photo-scanned asphalt's maps ({ map, normalMap, roughnessMap, aoMap }, not freed here), or
-// null for our own drawn asphalt. Returns { meshes, update(dt), dispose() }.
+// `photoAsphalt` the photo-scanned asphalt's maps ({ map, normalMap, roughnessMap, aoMap }, not freed here).
+// Returns { meshes, update(dt), dispose() }.
 export function buildKitRoad(track, theme, photoAsphalt) {
   const concrete = createConcreteTexture();
   // Each surface's maps, by surface name; the concrete has its relief (M7d4).
@@ -41,9 +41,6 @@ export function buildKitRoad(track, theme, photoAsphalt) {
     grass: { map: createGrassTexture() },
     concrete: { map: concrete.map, normalMap: concrete.relief },
   };
-  if (!photoAsphalt) {
-    ownMaps.asphalt = { map: createAsphaltTexture() };
-  }
   const maps = { asphalt: photoAsphalt, ...ownMaps };
   const builders = Object.fromEntries(Object.keys(maps).map((name) => [name, createStripBuilder()]));
   const shadeOf = createPatchShade(track);
@@ -61,7 +58,7 @@ export function buildKitRoad(track, theme, photoAsphalt) {
     addUnderside(builders.concrete, segment);
   });
   // The photo-scanned asphalt's roughness map gives its roughness in full.
-  const roughness = { asphalt: photoAsphalt ? 1 : 0.85, metal: 0.4, grass: 0.95, concrete: 0.9 };
+  const roughness = { asphalt: 1, metal: 0.4, grass: 0.95, concrete: 0.9 };
   const surfaces = Object.keys(maps).map((name) => {
     const material = new THREE.MeshStandardMaterial({
       vertexColors: true,

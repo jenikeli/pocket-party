@@ -21,16 +21,15 @@ import { BARRIER_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from './test-trac
 const ROAD_THEME = Object.freeze({ asphalt: 0xffffff, edgeLine: 0xffc82a, curb: [0xd8302a, 0xf4f4f0], checks: [0xf4f4f0, 0x1a1a1e] });
 const GATE_THEME = Object.freeze({ post: 0xf4f4f0, band: 0xd8302a, body: 0xffc61e, background: '#ffd21e', stripe: '#d8302a', outline: '#a3141a' });
 
-// `photoAsphalt` is the photo-scanned asphalt's textures, or null for our own drawn asphalt (kit/road.js).
+// `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js).
 export function buildTestTrackRoad(track, photoAsphalt) {
   return buildKitRoad(track, ROAD_THEME, photoAsphalt);
 }
 
 // `world` is the group to add to, `sea` the sea's mesh (its height is where pillars reach down to), `keep(thing)`
-// registers what must be disposed with the world, `drawing` the Drawing switches it is built with (kit/kit.js).
-// Returns { update(dt, race) }.
-export function buildTestTrackScenery({ world, track, sea, keep, drawing }) {
-  const kit = createKit({ world, track, keep, drawing });
+// registers what must be disposed with the world. Returns { update(dt, race) }.
+export function buildTestTrackScenery({ world, track, sea, keep }) {
+  const kit = createKit({ world, track, keep });
   buildSupports(kitPart(kit, KIT_PARTS.SUPPORTS), sea.position.y, []);
   const barriers = kitPart(kit, KIT_PARTS.BARRIERS);
   buildBarriers(barriers, BARRIER_RUNS);

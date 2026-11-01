@@ -1,8 +1,7 @@
 // The Measure tool's plan and report (M7d4b): what it draws and how it writes up the times. It needs no phones:
 // a race of 12 karts driving themselves (four of them stand in for players, so there are 1 and 4 views to
 // draw), stopped at a few fixed moments, drawn in a list of looks: the quality levels, then Medium with the
-// shadows or one part of the course switched off at a time, then each drawing switch (tuning.js's "Drawing"
-// group, M7d4b2's trials) the other way, and all of them off, as M7d4a drew. Plain data and functions, unit tested
+// shadows or one part of the course switched off at a time. Plain data and functions, unit tested
 // in Node. Used by host/games/kart-3d/measure-run.js.
 
 import { createRace, stepRace, DEFAULT_ENGINE_CLASS } from './race.js';
@@ -42,24 +41,15 @@ export function createMeasureRaces(track) {
   return { races, players };
 }
 
-// The looks to draw, in order, each { label, look, drawing }: look is what renderer.js's setLook takes, drawing
-// the drawing switches ({ key: 0 or 1 }, tuning.js's drawingSwitches()), which are `drawing` (the ones set) unless
-// the look tries one the other way. Those come last, since each rebuilds the course, ending with every switch
-// off, M7d4a's drawing (unless that is the one set, or there is only one switch).
-export function measureSetups(drawing) {
-  const keys = Object.keys(drawing);
-  const allOff = Object.fromEntries(keys.map((key) => [key, 0]));
-  const asM7d4a = keys.length > 1 && keys.some((key) => drawing[key] !== 0);
-  const setups = [
+// The looks to draw, in order, each { label, look }: look is what renderer.js's setLook takes.
+export function measureSetups() {
+  return [
     { label: 'High', look: { ...MEDIUM, bloom: true } },
     { label: 'Medium', look: MEDIUM },
     { label: 'Low', look: { ...MEDIUM, pixelRatio: 0.7 } },
     { label: 'Medium, no shadows', look: { ...MEDIUM, shadows: false } },
     ...MEASURED_PARTS.map((part) => ({ label: `Medium, no ${part}`, look: { ...MEDIUM, hidden: [part] } })),
-    ...keys.map((key) => ({ label: `Medium, ${key} ${drawing[key] === 1 ? 'off' : 'on'}`, look: MEDIUM, drawing: { [key]: 1 - drawing[key] } })),
-    ...(asM7d4a ? [{ label: 'Medium, as M7d4a (every trial off)', look: MEDIUM, drawing: allOff }] : []),
   ];
-  return setups.map((setup) => ({ ...setup, drawing: { ...drawing, ...setup.drawing } }));
 }
 
 // Every case to draw, in order: [{ setupIndex, viewCount, momentIndex }], the looks outermost, so a look is set
@@ -76,16 +66,14 @@ export function measureCases(setupCount) {
 
 // The report as text to paste back to Claude. `results` are the cases drawn, each a case with `frames`, the timed
 // frames' { cpuMs, totalMs, drawCalls, triangles }; `context` is { course, canvas, devicePixelRatio, gpu,
-// userAgent, drawing } (canvas as 'width x height' in CSS pixels, drawing the switches set). For each look and
+// userAgent } (canvas as 'width x height' in CSS pixels). For each look and
 // view count: the average over the moments of each moment's median frame time, the worst moment's, the CPU's
 // share of it, and the draw calls and triangles drawn (shadow passes included).
 export function describeMeasurement(setups, results, context) {
-  const drawingText = Object.entries(context.drawing).map(([key, value]) => `${key} = ${value}`).join(', ');
   const lines = [
     'Measure, 3D race (host/games/kart-3d/measure-plan.js)',
     `Course: ${context.course}; canvas ${context.canvas} CSS px at device pixel ratio ${context.devicePixelRatio}; GPU: ${context.gpu}`,
     `Browser: ${context.userAgent}`,
-    `Drawing set: ${drawingText}`,
     `Frame times in ms with the GPU made to finish each frame: the median of ${TIMED_FRAMES} frames at each of ${MOMENTS.length} moments, averaged (and the worst moment); CPU is the part before waiting for the GPU. Calls and triangles include the shadow passes.`,
     `${''.padEnd(LABEL_WIDTH)}${VIEW_COUNTS.map((count) => `${count} view${count > 1 ? 's' : ''}`.padEnd(38)).join('')}`,
     `${''.padEnd(LABEL_WIDTH)}${VIEW_COUNTS.map(() => `${'ms'.padStart(7)}${'worst'.padStart(7)}${'CPU'.padStart(6)}${'calls'.padStart(7)}${'k tris'.padStart(8)}   `).join('')}`,

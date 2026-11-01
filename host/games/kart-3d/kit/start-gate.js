@@ -2,11 +2,11 @@
 // the road between them reading MARIO KART (kit/start-gate-sign.js) on both faces, with a stripe along its foot
 // and checks at its ends, and a round mushroom badge on top, in the course's colours (M7d3): Mario Kart
 // Stadium's yellow sign on the Test track, a sea-blue one on Seaside Skyway. Since M7d4 built up as MK8DX's
-// gates are (docs/mk8dx-reference.md, "The kit's objects up close"): each post a stone plinth, panels with
+// gates are (docs/mk8dx-reference.md, "The kit's objects up close"): each post a stone plinth, a shaft of panels with
 // seams between them and a bolt at each corner, a band and a capital; the sign's letters raised (its relief)
 // inside a raised rim with a row of bolts along it. The start lights (kit/start-lights.js) hang under the sign's
-// middle. In M7d4b2's trial of detail in textures the posts' panels, seams and bolts are maps on one shaft
-// instead (kit/gate-post-detail.js). Used by the courses' dressings.
+// middle. Since M7d4b2 the posts' panels, seams and bolts are maps on one shaft
+// (kit/gate-post-detail.js) rather than geometry. Used by the courses' dressings.
 
 import * as THREE from 'three';
 import { startLineIndex } from '../track.js';
@@ -31,11 +31,11 @@ const BOLT_COLOR = 0xc8ccd2;
 const RIM = { width: 0.16, stand: 0.08, color: 0xf4f4f0 };
 const RIM_BOLT_SPACING = 1.2;
 
-// Adds the gate over the start line; `kit` is the course's { world, track, keep, drawing } (kit/kit.js), `theme` its
+// Adds the gate over the start line; `kit` is the course's { world, track, keep } (kit/kit.js), `theme` its
 // colours: { post, band, body } as hex numbers for the posts, the band round them and the sign's body, and
 // { background, stripe, outline } as CSS colours for the sign's face. Returns the frame (a Matrix4) the start
 // lights hang from: y up, z toward the karts on the grid.
-export function buildStartGate({ world, track, keep, drawing }, theme) {
+export function buildStartGate({ world, track, keep }, theme) {
   const station = track.stations[startLineIndex(track)];
   const frame = frameAt(station, 0, 0, facingBack(station));
   // The posts stand just behind the barriers on either side, clear of their boards and fences.
@@ -51,16 +51,13 @@ export function buildStartGate({ world, track, keep, drawing }, theme) {
   // The printed faces, front (toward the grid) and back, a hair in front of the sign's body.
   const faces = mergeFaces(face.width, face.height, signMiddle, SIGN_DEPTH / 2 + 0.01);
   const badgeFaces = mergeFaces(2 * BADGE_RADIUS, 2 * BADGE_RADIUS, badgeMiddle, 0.13, new THREE.CircleGeometry(BADGE_RADIUS, 32));
-  const detailed = drawing.textureDetail === 1;
+  const shaft = { xs: [-halfSpan, halfSpan], width: POST_WIDTH, bottom: PLINTH.height, top: SIGN_BOTTOM - 0.3, panels: PANELS, boltColor: BOLT_COLOR };
   const parts = [
-    new THREE.Mesh(keep(buildFrame(theme, halfSpan, signWidth, face, badgeMiddle, detailed)), painted),
+    new THREE.Mesh(keep(buildFrame(theme, halfSpan, signWidth, face, badgeMiddle)), painted),
     new THREE.Mesh(keep(faces), signMaterial),
     new THREE.Mesh(keep(badgeFaces), badgeMaterial),
+    buildDetailedShafts(keep, shaft, theme.post),
   ];
-  if (detailed) {
-    const shaft = { xs: [-halfSpan, halfSpan], width: POST_WIDTH, bottom: PLINTH.height, top: SIGN_BOTTOM - 0.3, panels: PANELS, boltColor: BOLT_COLOR };
-    parts.push(buildDetailedShafts(keep, shaft, theme.post));
-  }
   for (const part of parts) {
     part.matrixAutoUpdate = false;
     part.matrix.copy(frame);
@@ -69,12 +66,12 @@ export function buildStartGate({ world, track, keep, drawing }, theme) {
   return frame.clone().multiply(new THREE.Matrix4().makeTranslation(0, SIGN_BOTTOM, 0));
 }
 
-// The posts, the sign's body with its rims and the badge's red rim, as one shape; `detailed`, the posts without
-// the parts drawn as maps on their shafts.
-function buildFrame(theme, halfSpan, signWidth, face, badgeMiddle, detailed) {
+// The posts, the sign's body with its rims and the badge's red rim, as one shape (the posts' shafts are
+// separate, drawn as maps).
+function buildFrame(theme, halfSpan, signWidth, face, badgeMiddle) {
   const rim = new THREE.TorusGeometry(BADGE_RADIUS, 0.16, 8, 32);
   return mergeShapes([
-    ...[-1, 1].flatMap((side) => buildPost(theme, side * halfSpan, detailed)),
+    ...[-1, 1].flatMap((side) => buildPost(theme, side * halfSpan)),
     coloured(at(roundedBox(signWidth, SIGN_HEIGHT, SIGN_DEPTH, 0.25), 0, face.middle, 0), theme.body),
     ...[-1, 1].flatMap((facing) => buildRim(face, facing)),
     coloured(at(new THREE.CylinderGeometry(BADGE_RADIUS, BADGE_RADIUS, 0.24, 32).rotateX(Math.PI / 2), 0, badgeMiddle, 0), 0xffffff),
@@ -82,41 +79,13 @@ function buildFrame(theme, halfSpan, signWidth, face, badgeMiddle, detailed) {
   ]);
 }
 
-// One post at x: a dark stone plinth, a darker core showing in the seams between three panels in the post's
-// colour, a bolt near each corner of every panel's four faces, the band round it and a capital under the sign;
-// `detailed`, only the plinth, band and capital.
-function buildPost(theme, x, detailed) {
-  const core = new THREE.Color(theme.post).multiplyScalar(0.55).getHex();
-  const panels = PANELS.flatMap(([bottom, top]) => [
-    coloured(at(roundedBox(POST_WIDTH, top - bottom, POST_WIDTH, 0.1), x, (bottom + top) / 2, 0), theme.post),
-    ...panelBolts(x, bottom, top),
-  ]);
-  const shaft = [
-    coloured(at(roundedBox(POST_WIDTH - 0.12, SIGN_BOTTOM - PLINTH.height, POST_WIDTH - 0.12, 0.04), x, (SIGN_BOTTOM + PLINTH.height) / 2, 0), core),
-    ...panels,
-  ];
+// One post at x without its shaft: a dark stone plinth, the band round it and a capital under the sign.
+function buildPost(theme, x) {
   return [
     coloured(at(roundedBox(POST_WIDTH + 0.4, PLINTH.height, POST_WIDTH + 0.4, 0.08), x, PLINTH.height / 2, 0), PLINTH.color),
-    ...(detailed ? [] : shaft),
     coloured(at(roundedBox(POST_WIDTH + 0.1, BAND.height, POST_WIDTH + 0.1, 0.1), x, BAND.middle, 0), theme.band),
     coloured(at(roundedBox(POST_WIDTH + 0.3, 0.36, POST_WIDTH + 0.3, 0.08), x, SIGN_BOTTOM - 0.16, 0), theme.band),
   ];
-}
-
-// A bolt head 0.2 in from each corner of a panel's four faces.
-function panelBolts(x, bottom, top) {
-  const half = POST_WIDTH / 2;
-  const reach = half - 0.2;
-  const bolts = [];
-  for (const y of [bottom + 0.2, top - 0.2]) {
-    for (const along of [-reach, reach]) {
-      for (const [faceX, faceZ] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-        const bolt = new THREE.SphereGeometry(0.055, 6, 4).scale(faceX ? 0.5 : 1, 1, faceZ ? 0.5 : 1);
-        bolts.push(coloured(at(bolt, x + faceX * half + (faceZ ? along : 0), y, faceZ * half + (faceX ? along : 0)), BOLT_COLOR));
-      }
-    }
-  }
-  return bolts;
 }
 
 // The raised rim round a printed face on the `facing` side of the sign (1 toward the grid, -1 behind), with a

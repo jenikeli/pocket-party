@@ -1,6 +1,5 @@
-// The kit road's textures (M7d2), from the look study in docs/mk8dx-reference.md: coarse asphalt in three tones
-// (a mid-grey base, light stones, dark gaps between them), worn paint that shows the stones through it, riveted
-// metal plates for anti-gravity road, and grass with blades in it. Each is a tile that repeats without a seam,
+// The kit road's textures (M7d2), from the look study in docs/mk8dx-reference.md: worn paint that shows the
+// asphalt's stones through it, riveted metal plates for anti-gravity road, and grass with blades in it (the asphalt is photo-scanned, photo-asphalt.js). Each is a tile that repeats without a seam,
 // laid over the world by the strip builder (one tile per 8 units). Used by kit/road.js, kit/road-paint.js and
 // kit/kit.js (the decks' grass).
 
@@ -10,31 +9,6 @@ import { createRandom, between } from '../random.js';
 
 const SIZE = 512;
 const SMALL = 256;
-// The asphalt's tile is laid twice over the strip builder's 8 units, so its stones come out small enough.
-const ASPHALT_REPEAT = 2;
-
-// A stone near the camera is about 0.04 units across (a tenth of a rear tyre's width): about 2.5 pixels here.
-// The base's own mottling is soft; the large patches that hide the tile's repeat are the road's vertex colours.
-export function createAsphaltTexture() {
-  const random = createRandom(31);
-  const image = createPixelImage(SIZE, SIZE);
-  const mottle = createLayeredNoise(random, 4, 3);
-  image.fill((x, y) => {
-    const value = 104 + (mottle(x / SIZE, y / SIZE) - 0.5) * 30 + (random() - 0.5) * 18;
-    return [value, value, value + 2];
-  });
-  for (let index = 0; index < 14000; index += 1) {
-    image.dot(random() * SIZE, random() * SIZE, between(random, 0.4, 1.2), [56, 56, 58]);
-  }
-  for (let index = 0; index < 18000; index += 1) {
-    const value = between(random, 130, 200);
-    const tint = (random() - 0.5) * 12;
-    image.dot(random() * SIZE, random() * SIZE, between(random, 0.4, 1.2), [value + tint, value, value - tint]);
-  }
-  const texture = image.toTexture();
-  texture.repeat.set(ASPHALT_REPEAT, ASPHALT_REPEAT);
-  return texture;
-}
 
 // Nearly white, multiplied by each mark's own colour: dark specks where the asphalt's gaps show through, and
 // worn patches where the paint is thin.

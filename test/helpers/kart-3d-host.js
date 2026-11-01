@@ -3,17 +3,26 @@
 // frame for the dressed course with two views, and the race's clock slows when frames are slow (the runner steps
 // at most 15 times a frame). So the tests about the race's behaviour start the host at Medium (no bloom, but the
 // full resolution, so pixel checks such as the black gap between views still hold), and the M7c test covers
-// High and Low. These margins were set when frames took over a second (SwiftShader) and are kept on purpose.
+// High and Low. The rules tests (M6b, M6c, M7a, M7b) also start on the plain course (presetPlainCourse): only
+// the road, the sea and the barriers, with no dressing, baked shade or course light, as these cost about 10 s
+// more to start in software and slow every frame; the look tests keep the full drawing.
+// These margins were set when frames took over a second (SwiftShader) and are kept on purpose.
 
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
+import { PLAIN_COURSE_STORAGE_KEY } from '../../host/games/kart-3d/plain-course.js';
 
 // The 3D race builds its world and draws a first frame while it starts. Since M7d4b2 that takes about 10 s more
-// in software: with its trials on (the defaults), the course's shade is baked from about a hundred depth maps,
-// its light taken from six views of it, and the detailed pieces' maps drawn pixel by pixel.
+// in software: the course's shade is baked from about a hundred depth maps, its light taken from six views of it,
+// and the detailed pieces' maps drawn pixel by pixel (none of which the plain course does).
 export const GAME_START_TIMEOUT = 60000;
 
 // Makes the host page load with `level` (a key of QUALITY_LEVELS) saved, as if chosen on an earlier visit.
 // Call before the page's goto; it applies to every later load of that page too.
 export function presetQuality(page, level) {
   return page.addInitScript(([key, value]) => localStorage.setItem(key, value), [QUALITY_STORAGE_KEY, level]);
+}
+
+// Makes the host page load with the plain course saved (see presetQuality for when to call it).
+export function presetPlainCourse(page) {
+  return page.addInitScript((key) => localStorage.setItem(key, '1'), PLAIN_COURSE_STORAGE_KEY);
 }

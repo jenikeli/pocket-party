@@ -894,3 +894,47 @@ On the iPad, Seaside Skyway and the Test track, High.
 - **The course still appears in about 2 s or less** with the whole lap baked (not timed exactly; the load time is fine). So the bake stays as built, with no cheaper version needed: the iPad draws the 416 depth maps far faster than software's 21 s.
 - **The shade looks right round both laps:** no blotches, steps or shaded open road reported.
 - **Watch 4 on High: a steady 60 fps**, as M7d4b2 with four players (the same probable Safari cap; the bake costs nothing per frame). Watch works as intended for these checks.
+
+## M7d4c2: Blender spike
+
+### What was built
+
+A spike, like M6: one prop, the palm, built two ways to the same spec (the study's Palms note: rings as overlapping flared scales with bark relief and a dark crease under each lip, fronds with a lighter midrib and two greens; 8.5 tall, leaning 1.6 toward +x, foot within 0.5), compared on picture sheets and on the iPad. Nothing in the race comes from Blender yet.
+
+- **The Blender way** (`npm run blender -- palm [--preview]`, `tools/blender.js` running `tools/blender/palm.py` with `common.py` in Blender 5.2.3 headless): a detailed palm (958,000-triangle trunk of scale shells thickened, rounded by subdivision and roughened by a displacement; fronds of real blades) is baked with Cycles onto a game palm (a 32-sided ringed tube, folded cards), the trunk's normal, shade (AO) and colour maps at 1024², the fronds' colour with its cut-out and normal at 512x1024 from one template frond, and exported as `assets/models/palm.glb` (two meshes, `trunk` and `fronds`, tangents included). Loaded by the kit-shots page only (`host/kit-shots/blender-palm.js`, Three.js's `GLTFLoader` vendored).
+- **Our way, rebuilt to the study** (`kit/palm.js`, `kit/palm-trunk.js`, `kit/palm-textures.js`): 12 rings whose lips flare over the ring below with 5 scallops, a bark texture with relief, roughness and shade drawn with `kit/surface-maps.js`, a crease in vertex colour under each lip; fronds with two greens, a pale midrib, relief and a cut-out. This is the palm the race draws now (Seaside's beaches, harbour square and islands).
+- **Blender Lab's MCP server** (`blender-mcp` 1.0.3 and its add-on, installed on the dev box with the user's approval, registered with Claude Code at local scope; nothing in the repo): a Blender left running headless (`blender --background --online-mode --command blender_mcp`) that Claude sends Python to.
+
+### Measured without a device
+
+| | Our palm (JS) | Blender's palm |
+|---|---|---|
+| Triangles (trunk + fronds) | about 1,370 + 800 | 3,328 + 800 |
+| Textures | bark 200x80, frond 128x256 (drawn at load) | trunk 3 x 1024² JPEG, fronds 512x1024 PNG + JPEG |
+| Download | none | `palm.glb`, 929 KB |
+| Build | at load, in the page | 47 s in Blender (107 s with three preview renders), done once and committed |
+| Time for an implementer to build it | 25 min (Sonnet) | 23 min (Opus) |
+
+- **On the sheets** (`test-results/review/before.png`, `after.png`; `after` holds both palms alone, side by side, and close to the trunk): both are clearly richer than M7d3's. From a kart's distance the Blender palm's crown is fuller and its scales read as Daisy Circuit's; close up the difference is plain: Blender's trunk is a stack of scalloped scales with a dark crease under each, ours reads as a bark-textured log with bumps. Ours was judged by its implementer only on a scratch page (its worktree started too old for kit-shots), so it had less tuning by eye than Blender's.
+- **The MCP trial** (one change, rounding the scale teeth into scallops, made both ways):
+
+  | Step | MCP (live Blender) | Script (`npm run blender -- palm --preview`) |
+  |---|---|---|
+  | Once per session | 36 s: load palm.py's functions, build and bake the whole palm | none |
+  | One try (rebuild and re-bake the trunk only, one preview) | 47 s; the second try (32 columns) 57 s | 107 s (everything rebuilt, three previews) |
+  | Keeping the result | port the change into palm.py by hand, then a script run anyway | done |
+
+  The live session about halves each try, and found the real cause fast: the game trunk's 16 columns (two per tooth) could not hold a rounded scallop, so the second try doubled them (3,328 triangles; the 3,000 budget was ours, and M7d4b1 found triangles barely cost). Against it: the add-on refuses some operators (`read_factory_settings`; `common.py` now uses `read_homefile`, allowed by both), the live state drifts from the script and must be ported back, and it needs a running Blender and a restart of Claude Code to register. Its bundled API docs are plain files (`~/opt/blender_mcp/mcp/blmcp/data/api/`) that can be searched without it.
+
+### Device run procedure
+
+On the iPad, with the server on the laptop (`npm run dev` or `npm start`, HTTPS as usual).
+
+1. Open `https://<server IP>:3000/host/kit-shots/index.html?piece=palms-side-by-side&view=near` in Safari. Both palms stand on one straight, lit as in the race; **Blender's is the left one** (fuller crown, scalloped trunk), ours the right. Also open `view=above` instead of `view=near`. Note how long the page takes to show (it bakes a little shade and loads the 0.9 MB model).
+2. Close up: `?piece=palm-close&view=near` (ours) and `?piece=palm-blender-close&view=near` (Blender's).
+3. Which palm looks closer to MK8DX (Daisy Circuit's, Toad Harbor's), from a kart's distance (step 1) and close up (step 2)? Is the difference worth a second language (Python, run by Blender) and Blender on the dev box?
+4. The race now draws our rebuilt palm: the 3D race on Seaside Skyway, High, **Watch, no phones: 1**, and look at the palms in the harbour square by the grandstand (left, s 13 and 66), on the beaches of the seaside half, and on the islands round it. Anything wrong: fronds without their cut-out (green squares), black trunks, palms in the barriers.
+5. **Watch, no phones: 4** on High: note the fps in the Tuning readout (M7d4c1: a steady 60).
+6. Anything that looks broken anywhere.
+
+No **Tune:** steps in this part.

@@ -25,8 +25,9 @@ def script_arguments():
 
 
 def clear_scene():
-    """An empty scene drawn by Cycles on the CPU (the dev box has no GPU Blender can use)."""
-    bpy.ops.wm.read_factory_settings(use_empty=True)
+    """An empty scene drawn by Cycles on the CPU (the dev box has no GPU Blender can use). read_homefile, not
+    read_factory_settings, which would reset Blender's preferences too (the MCP add-on refuses it)."""
+    bpy.ops.wm.read_homefile(use_empty=True, use_factory_startup=True)
     scene = bpy.context.scene
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'CPU'

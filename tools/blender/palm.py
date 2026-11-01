@@ -59,17 +59,18 @@ def trunk_section(share, angle, radius):
     return trunk_point(share) + radius * (math.cos(angle) * out + math.sin(angle) * Vector((0, 1, 0)))
 
 
-def zigzag(angle, ring):
-    """0 at a notch of a scale's lower edge, 1 at a tooth's tip; every other ring half a tooth round, like scales."""
+def scallop(angle, ring):
+    """0 at a notch of a scale's lower edge, 1 at a tooth's lowest point: each tooth a rounded scallop (half a
+    sine), sharp only at the notches, as Daisy Circuit's palms; every other ring half a tooth round, like scales."""
     x = angle * TEETH / (2 * math.pi) + 0.5 * (ring % 2)
-    return 1 - abs(2 * (x - math.floor(x)) - 1)
+    return math.sin(math.pi * (x - math.floor(x)))
 
 
 def scale_point(ring, angle, t):
     """A point on scale `ring`, from its lip (t = 0: flared out, its teeth hanging over the scale below) to its top
     (t = 1: tucked in under the next lip). The radius curves in like a bell, so each scale looks plump. Rows go
     up and angles round toward +y, so faces built row on row point out of the trunk."""
-    lip = max(0.0, (ring - 0.15 - 0.25 * zigzag(angle, ring)) / RINGS)
+    lip = max(0.0, (ring - 0.15 - 0.25 * scallop(angle, ring)) / RINGS)
     share = lip + t * ((ring + 1.05) / RINGS - lip)
     core = FOOT_RADIUS + (TOP_RADIUS - FOOT_RADIUS) * share
     return trunk_section(share, angle, core * (TUCK + (FLARE - TUCK) * (1 - t) ** 2))
@@ -249,7 +250,8 @@ def build_high_frond():
 
 # ---- The game palm ----
 
-LOW_COLUMNS = 16  # two per tooth, so the lips' lower edges zigzag like the detailed scales'
+# Four per tooth, so the lips' lower edges round like the detailed scales' (with two, every tooth was a sharp V).
+LOW_COLUMNS = 32
 LOW_ROWS = (0.0, 0.3, 0.65, 1.0)
 RINGS_PER_ISLAND = 3
 CARD_STEPS = 10

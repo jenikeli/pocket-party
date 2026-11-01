@@ -20,7 +20,8 @@ import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
 const PROP_CLEARANCE = 0.5;
 
 // Every entry is { road, build(kit), focus }:
-//   road   'walled' (a wall on both sides, no ground beside the road) or 'shouldered' (ground beside the right side)
+//   road   'walled' (a wall on both sides, no ground beside the road) or 'decked' (a grass deck beside the right side, no wall
+//          between, as the courses' decks: props stand on it)
 //   build  adds the piece to the kit (kit/kit.js's createKit); may return a promise (a piece loaded from a file).
 //          Pieces with `sea: true` (landmark-pieces.js) are also given the sea's level: build(kit, seaLevel)
 //   focus  what the camera looks at: { s, side, out, height, size, eye }: where along the road, on which side (1
@@ -38,13 +39,11 @@ function barrierPiece(style) {
   };
 }
 
-// One prop on the right-hand ground beside the straight, facing the road. The seaside's layout puts props on
-// decks over the sea; here the road has a wide shoulder instead (viewer.js), ground at the road's height, the
-// same as a deck's top.
+// One prop on the deck beside the straight, facing the road, as the courses' layouts place props.
 function propPiece(name, size) {
   const out = PROP_REACH[name] + PROP_CLEARANCE;
   return {
-    road: 'shouldered',
+    road: 'decked',
     build: (kit) => buildProps(kitPart(kit, KIT_PARTS.PROPS), [{ piece: name, s: PIECE_S, side: 'right', out }]),
     focus: { s: PIECE_S, side: 1, out, height: size / 2, size },
   };
@@ -68,7 +67,7 @@ const START_GATE = {
 // theirs. The crowd stands still: nothing moves it on.
 const GRANDSTAND_LENGTH = 44;
 const GRANDSTAND = {
-  road: 'shouldered',
+  road: 'decked',
   build(kit) {
     const props = kitPart(kit, KIT_PARTS.PROPS);
     const grandstand = buildGrandstand(GRANDSTAND_LENGTH, props);
@@ -88,7 +87,7 @@ const BUNTING = {
 
 // The palm made in Blender (blender-palm.js), where propPiece would stand ours.
 const BLENDER_PALM = {
-  road: 'shouldered',
+  road: 'decked',
   build: async (kit) => addBlenderPalms(kitPart(kit, KIT_PARTS.PROPS), await loadBlenderPalm(), [palmSpot(PIECE_S)]),
   focus: propPiece('palm', PROP_SIZES.palm).focus,
 };
@@ -96,7 +95,7 @@ const BLENDER_PALM = {
 // Ours and Blender's side by side, the same way round: ours nearer the camera, Blender's farther along the road.
 const PALM_GAP = 10;
 const PALMS_SIDE_BY_SIDE = {
-  road: 'shouldered',
+  road: 'decked',
   async build(kit) {
     buildProps(kitPart(kit, KIT_PARTS.PROPS), [palmSpot(PIECE_S - PALM_GAP / 2)]);
     addBlenderPalms(kitPart(kit, KIT_PARTS.PROPS), await loadBlenderPalm(), [palmSpot(PIECE_S + PALM_GAP / 2)]);

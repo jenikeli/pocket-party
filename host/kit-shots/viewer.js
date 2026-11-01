@@ -11,7 +11,9 @@ import { bakeShade } from '../games/kart-3d/baked-shade.js';
 import { createCourseLight } from '../games/kart-3d/course-light.js';
 import { loadPhotoAsphalt } from '../games/kart-3d/photo-asphalt.js';
 import { buildSeasideRoad } from '../games/kart-3d/seaside-scenery.js';
-import { createKit } from '../games/kart-3d/kit/kit.js';
+import { createKit, kitPart } from '../games/kart-3d/kit/kit.js';
+import { buildPlatforms } from '../games/kart-3d/kit/platform.js';
+import { KIT_PARTS } from '../games/kart-3d/kit/layout-rules.js';
 import { stationIndexAt } from '../games/kart-3d/track.js';
 import { edgeLateral } from '../games/kart-3d/kit/frames.js';
 import { tuning } from '../games/kart-3d/tuning.js';
@@ -24,18 +26,18 @@ const HEIGHT = 720;
 const SKY_BLUE = 0xa9d4ff;
 // A kart driver's eye is about this far above the road.
 const KART_EYE_HEIGHT = 1.2;
-// The ground beside the right side of a 'shouldered' road, wide enough for the biggest prop.
-const SHOULDER_WIDTH = 14;
+// The grass deck beside the right side of a 'decked' road, as deep as the courses' deepest, along the straight.
+const SHOW_DECK = { fromS: 2, toS: 58, side: 'right', depth: 12, ground: 'grass' };
 
 // A short loop (a 60-unit straight, then three plain corners and a second straight), so the course's bake and
 // light work as in a race. Only the first straight is shown. `road` is the piece's kind of road (pieces.js).
 function buildShowTrack(road) {
-  const shouldered = road === 'shouldered';
-  const walls = shouldered ? 'none' : 'both';
+  // A deck stands outside the road's edge with no wall between, so the kart-height camera sees a prop's foot.
+  const walls = road === 'decked' ? 'left' : 'both';
   return buildTrack({
     halfWidth: 8, startLine: 30, scenery: 'seaside', dashPanels: [],
     pieces: [
-      { straight: 60, walls, shoulderRight: shouldered ? SHOULDER_WIDTH : 0 },
+      { straight: 60, walls },
       { turn: 90, radius: 30, walls: 'none' }, { straight: 20, walls: 'none' },
       { turn: 90, radius: 30, walls: 'none' }, { straight: 60, walls: 'none' },
       { turn: 90, radius: 30, walls: 'none' }, { straight: 20, walls: 'none' },
@@ -67,10 +69,15 @@ async function buildLitScene(renderer, track, piece) {
   const sun = addSun(world, track, keep);
   world.add(...buildSeasideRoad(track, await loadPhotoAsphalt()).meshes);
   const seaLevel = track.stations[0].point.y - SEA_DROP;
-  if (piece.sea) {
+  const kit = createKit({ world, track, keep });
+  if (piece.sea || piece.road === 'decked') {
     addSea(world, keep, seaLevel);
   }
-  await piece.build(createKit({ world, track, keep }), seaLevel);
+  // Props stand on a deck, as on the courses (kit/platform.js), its pillars down to the sea.
+  if (piece.road === 'decked') {
+    buildPlatforms(kitPart(kit, KIT_PARTS.DECKS), [SHOW_DECK], seaLevel);
+  }
+  await piece.build(kit, seaLevel);
   scene.add(world);
   scene.environment = createSkyEnvironment(renderer).texture;
   scene.environmentIntensity = 1;

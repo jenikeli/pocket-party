@@ -6,6 +6,9 @@
 import { buildBarriers } from '../games/kart-3d/kit/barriers.js';
 import { buildProps } from '../games/kart-3d/kit/props.js';
 import { buildStartGate } from '../games/kart-3d/kit/start-gate.js';
+import { buildGrandstand } from '../games/kart-3d/kit/grandstand.js';
+import { buildBunting } from '../games/kart-3d/kit/bunting.js';
+import { spotFrame } from '../games/kart-3d/kit/props.js';
 import { kitPart } from '../games/kart-3d/kit/kit.js';
 import { GATE_THEME } from '../games/kart-3d/seaside-scenery.js';
 import { BARRIER_STYLES, KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layout-rules.js';
@@ -58,6 +61,28 @@ const START_GATE = {
   focus: { s: 30, side: 0, out: 0, height: 4.5, size: 10 },
 };
 
+// A grandstand as long as Seaside's (seaside-layout.js) on the right-hand ground, placed as the dressings place
+// theirs. The crowd stands still: nothing moves it on.
+const GRANDSTAND_LENGTH = 44;
+const GRANDSTAND = {
+  road: 'shouldered',
+  build(kit) {
+    const props = kitPart(kit, KIT_PARTS.PROPS);
+    const grandstand = buildGrandstand(GRANDSTAND_LENGTH, props);
+    grandstand.object.matrixAutoUpdate = false;
+    grandstand.object.matrix.copy(spotFrame(kit.track, { s: PIECE_S, side: 'right', out: PROP_CLEARANCE }));
+    props.world.add(grandstand.object);
+  },
+  focus: { s: PIECE_S, side: 1, out: 4, height: 3.5, size: 12 },
+};
+
+// A string of bunting across the walled straight, seen from the road's middle as the karts drive under it.
+const BUNTING = {
+  road: 'walled',
+  build: (kit) => buildBunting(kitPart(kit, KIT_PARTS.PROPS), [PIECE_S]),
+  focus: { s: PIECE_S, side: 0, out: 0, height: 5, size: 8 },
+};
+
 // The palm made in Blender (blender-palm.js), where propPiece would stand ours.
 const BLENDER_PALM = {
   road: 'shouldered',
@@ -87,6 +112,8 @@ export const PIECES = {
   ...Object.fromEntries(Object.values(BARRIER_STYLES).map((style) => [style, barrierPiece(style)])),
   ...Object.fromEntries(Object.entries(PROP_SIZES).map(([name, size]) => [name, propPiece(name, size)])),
   'start-gate': START_GATE,
+  grandstand: GRANDSTAND,
+  bunting: BUNTING,
   'palm-blender': BLENDER_PALM,
   'palms-side-by-side': PALMS_SIDE_BY_SIDE,
   'palm-close': { ...propPiece('palm', PROP_SIZES.palm), focus: PALM_CLOSE_FOCUS },

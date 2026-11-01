@@ -41,6 +41,15 @@ Then run the browser tests the change calls for, picked by `CLAUDE.md`'s Testing
 - For changes to the 3D look: picture sheets of the changed pieces for the user to review before the device run, made with `npm run kit-shots` (`--name before` at the start of the part, before anything changes, and `--name after` at the end; new pieces go in `host/kit-shots/pieces.js`).
 - Then the `handoff` skill.
 
+## Queue (several milestones in one chat)
+
+When the user asks for several similar milestones in one chat (CLAUDE.md), plan them all at once as a queue:
+- Write every task's spec, with the rules shared by all, into `docs/queue.md`, with a status table (queued, building, merged, dropped). Spawn each implementer with only its task letter and the file's path, so the spawn costs little of the main session's context; the file also keeps the queue's state if the conversation is summarized.
+- First a prep task where needed, so later tasks each own their own files (for the M7d4 look: each piece makes its own materials). Tasks that share a file never run at the same time.
+- At most 3 implementers at once; when one finishes, review and merge it, then spawn the next queued task whose dependencies are merged.
+- Implementers judge their own work (kit-shots before and after) and report briefly; the main session reads the report, the diff's size and the after sheet, spot-checks the code, merges, and sends the user the after sheet (SendUserFile) for feedback.
+- Browser tests after each part's last merge; the census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
+
 ## Commits
 
 - Commit; never push (the user pushes). Before every commit: `npm test` passes, and `git status` shows nothing secret (certs, keys, `.env`) and nothing that is not the task's.

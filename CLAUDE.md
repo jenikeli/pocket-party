@@ -85,7 +85,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 - I'm building this partly to learn. When you make a non-obvious design decision (networking, state sync, reconnection, sensors), explain the mechanism briefly: what actually happens and why, not just what to type.
 - Work in small steps. Finish one milestone from `plan.md`, make sure it runs, then stop and tell me exactly how to test it on real devices.
-- **One milestone per chat.** Each milestone is built in its own fresh chat session. Do not start the next milestone in the same chat, even if there is time left. If a milestone is too big for one chat, say so and propose how to split it.
+- **One milestone per chat,** unless I ask for a queue. Each milestone is built in its own fresh chat session. Do not start the next milestone in the same chat, even if there is time left. If a milestone is too big for one chat, say so and propose how to split it. When I ask for several similar milestones in one chat (for example the M7d4 look parts), they are planned together as a queue of tasks in `docs/queue.md` (the `milestone-plan` skill's "Queue") and handed off once at the end.
 - **Hand off at the end of each milestone** with the `handoff` skill (`.claude/skills/handoff/SKILL.md`), because the next chat starts with no memory of this one: `plan.md` and `docs/history.md` updated, the device-run procedure, the commits, and a walkthrough of what was built.
 - **Make anything to tune easy to find.** Every step of a device run where I should tune something starts with a bold **Tune:** (the `device-run` skill).
 - Before adding a dependency, say what it is and why the built-ins can't do it.

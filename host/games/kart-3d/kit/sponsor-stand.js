@@ -4,12 +4,26 @@
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes } from '../shape-utils.js';
+import { withShadows } from './frames.js';
 import { sponsorUv } from './sponsors.js';
 
 const WIDTH = 2.6;
 const BOARD_HEIGHT = 0.82;
 // How far each board leans back from upright.
 const LEAN = 0.32;
+
+// Every stand merged into two meshes (legs and boards), each stand showing its own brand. `frames` are the stands'
+// placing matrices (props.js's spotFrame). Returns the meshes to add to the world.
+export function buildSponsorStands(kit, frames) {
+  const built = frames.map((frame, index) => {
+    const stand = buildSponsorStand(index * 5 + 1);
+    return { frame: stand.frame.applyMatrix4(frame), boards: stand.boards.applyMatrix4(frame) };
+  });
+  return [
+    withShadows(new THREE.Mesh(kit.keep(mergeShapes(built.map((stand) => stand.frame))), kit.materials.painted)),
+    withShadows(new THREE.Mesh(kit.keep(mergeShapes(built.map((stand) => stand.boards))), kit.sponsors)),
+  ];
+}
 
 // Returns { frame, boards }: the legs (coloured per vertex) and the two boards showing brand `brand`, facing +z
 // and -z, standing on y = 0.

@@ -11,9 +11,9 @@ const MKTV = 3;
 const LENGTH = 4.6;
 const WIDTH = 2;
 
-// Returns { body, boards }: the van's shape (coloured per vertex) and its two printed boards (in the sponsor
-// atlas's texture coordinates).
-export function buildMktvVan() {
+// Returns the van's parts: its shape (coloured per vertex, painted) and its two printed boards (in the sponsor
+// atlas's texture coordinates, the sponsors' material).
+export function buildMktvVan(kit) {
   const wheels = [-1, 1].flatMap((side) => [-1.45, 1.45].map((z) => coloured(at(new THREE.CylinderGeometry(0.42, 0.42, 0.3, 16).rotateZ(Math.PI / 2), side * 0.92, 0.42, z), 0x1d1d20)));
   const dish = new THREE.SphereGeometry(0.6, 16, 6, 0, 2 * Math.PI, 0, Math.PI / 3).rotateX(-0.9);
   const body = mergeShapes([
@@ -24,7 +24,10 @@ export function buildMktvVan() {
     coloured(at(new THREE.CylinderGeometry(0.05, 0.05, 0.5, 6), 0, 2.55, -1), 0x9aa0a8),
     coloured(at(dish, 0, 2.8, -1), 0xe8eaee),
   ]);
-  return { body, boards: buildBoards() };
+  return [
+    { geometry: kit.keep(body), material: kit.materials.painted },
+    { geometry: kit.keep(buildBoards()), material: kit.sponsors },
+  ];
 }
 
 // A board on each side of the van, facing out, reading left to right from beside it.

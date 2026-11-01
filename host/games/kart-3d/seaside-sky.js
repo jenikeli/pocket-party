@@ -7,7 +7,7 @@
 
 import * as THREE from 'three';
 import { FLOATING_ISLANDS, BACKDROP_CLIFFS, NEAR_CLOUDS, BALLOONS, AIRSHIP_PATH } from './seaside-landmarks.js';
-import { buildFloatingIslands, buildBackdropCliffs, createRockTexture } from './kit/floating-island.js';
+import { buildFloatingIslands, buildBackdropCliffs } from './kit/floating-island.js';
 import { buildRoundTree } from './kit/garden-props.js';
 import { buildCloud } from './kit/clouds.js';
 import { buildAirship } from './kit/airship.js';
@@ -22,12 +22,10 @@ const BALLOON_SECONDS = 20;
 // `kit` is the course's (kit/kit.js), `seaLevel` the sea's height, `middle` the course's middle seen from above
 // ({ x, z }). Returns { update(dt) }.
 export function buildSeasideSky(kit, seaLevel, middle) {
-  const { world, keep, textures } = kit;
+  const { world } = kit;
   const random = createRandom(2027);
-  const grass = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.grass, roughness: 0.95 }));
-  const rock = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: keep(createRockTexture()), roughness: 0.9 }));
-  for (const built of [buildFloatingIslands(FLOATING_ISLANDS), buildBackdropCliffs(BACKDROP_CLIFFS, seaLevel)]) {
-    world.add(new THREE.Mesh(keep(built.grass), grass), new THREE.Mesh(keep(built.rock), rock));
+  for (const { geometry, material } of [...buildFloatingIslands(kit, FLOATING_ISLANDS), ...buildBackdropCliffs(kit, BACKDROP_CLIFFS, seaLevel)]) {
+    world.add(new THREE.Mesh(geometry, material));
   }
   addTrees(kit, random);
   addClouds(kit, middle, random);
@@ -47,18 +45,18 @@ export function buildSeasideSky(kit, seaLevel, middle) {
 }
 
 // One mesh per balloon, so each drifts on its own.
-function addBalloons({ world, keep }) {
-  const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }));
+function addBalloons(kit) {
   return BALLOONS.map((spot) => {
-    const balloon = new THREE.Mesh(keep(buildBalloon(spot.colors)), material);
+    const [{ geometry, material }] = buildBalloon(kit, spot.colors);
+    const balloon = new THREE.Mesh(geometry, material);
     balloon.position.set(spot.x, spot.y, spot.z);
-    world.add(balloon);
+    kit.world.add(balloon);
     return balloon;
   });
 }
 
 // Round trees on each floating island's top, clear of its edge.
-function addTrees({ world, keep }, random) {
+function addTrees(kit, random) {
   const object = new THREE.Object3D();
   const matrices = FLOATING_ISLANDS.flatMap((island) =>
     Array.from({ length: island.trees }, () => {
@@ -71,15 +69,15 @@ function addTrees({ world, keep }, random) {
       return object.matrix.clone();
     }),
   );
-  const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }));
-  const trees = new THREE.InstancedMesh(keep(buildRoundTree()), material, matrices.length);
-  matrices.forEach((matrix, index) => trees.setMatrixAt(index, matrix));
-  world.add(trees);
+  for (const { geometry, material } of buildRoundTree(kit)) {
+    const trees = new THREE.InstancedMesh(geometry, material, matrices.length);
+    matrices.forEach((matrix, index) => trees.setMatrixAt(index, matrix));
+    kit.world.add(trees);
+  }
 }
 
-// Big clouds in a ring far out, and the smaller ones round the high road. A little light of their own keeps their
-// tops bright white; their undersides stay blue-grey from their colours.
-function addClouds({ world, keep }, middle, random) {
+// Big clouds in a ring far out, and the smaller ones round the high road.
+function addClouds(kit, middle, random) {
   const high = Array.from({ length: HIGH_CLOUDS }, () => {
     const angle = random() * 2 * Math.PI;
     const distance = between(random, 280, 650);
@@ -87,8 +85,8 @@ function addClouds({ world, keep }, middle, random) {
   });
   const object = new THREE.Object3D();
   const spots = [...high, ...NEAR_CLOUDS];
-  const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, emissive: 0x9aa8c0, emissiveIntensity: 0.45 }));
-  const clouds = new THREE.InstancedMesh(keep(buildCloud()), material, spots.length);
+  const [{ geometry, material }] = buildCloud(kit);
+  const clouds = new THREE.InstancedMesh(geometry, material, spots.length);
   spots.forEach((spot, index) => {
     object.position.set(spot.x, spot.y, spot.z);
     object.rotation.set(0, index * 2.4, 0);
@@ -96,5 +94,5 @@ function addClouds({ world, keep }, middle, random) {
     object.updateMatrix();
     clouds.setMatrixAt(index, object.matrix);
   });
-  world.add(clouds);
+  kit.world.add(clouds);
 }

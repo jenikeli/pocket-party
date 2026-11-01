@@ -7,9 +7,9 @@ needs is here. The main session keeps the Status column up to date. At the hando
 
 | Task | Part | What | Model | Waits for | Status |
 |---|---|---|---|---|---|
-| 0 | prep | Materials into each piece's own file, thatch and stone textures split out, kit-shots pieces for c4 to d | sonnet | none | queued |
-| A | c3 | Promenade railing and padded sponsor wall | sonnet | none | queued |
-| B | c3 | Grandstand | opus | none | queued |
+| 0 | prep | Materials into each piece's own file, thatch and stone textures split out, kit-shots pieces for c4 to d | sonnet | none | merged |
+| A | c3 | Promenade railing and padded sponsor wall | sonnet | none | merged |
+| B | c3 | Grandstand | opus | none | building |
 | C | c3 | Floodlight, bunting, sponsor stand, MKTV van | sonnet | 0 | queued |
 | D | c4 | Palm, taking the Blender palm's look into JS | opus | 0 | queued |
 | E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | queued |
@@ -22,9 +22,14 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | L | d | Koopa shell | sonnet | 0 | queued |
 | M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | queued |
 | N | d | A motor yacht among the sailboats, sailboats detailed | sonnet | 0 | queued |
-| O | d | Clouds, balloons, airship, trusses: specced after their before shots, or dropped | sonnet | 0 | not specced |
+| O | d | Clouds, balloons, airship, trusses | sonnet | 0 | dropped |
 
 ## Rules for every task
+
+- **Since Task 0:** every prop and landmark builder takes the kit and returns its parts as
+  `[{ geometry, material }]` (`kit.materials` holds plastic, painted, iron and glass); the placing code only
+  places. kit-shots has a piece for every object (`host/kit-shots/pieces.js`, `landmark-pieces.js`); a piece's
+  `focus.eye` sets the near view's height.
 
 - **Read first:** `CLAUDE.md`; in `docs/mk8dx-reference.md`, "The kit's objects up close (M7d4 study, to be
   reviewed)" (the six points under "What every MK8DX object has that ours lack", and your objects' notes) and
@@ -191,7 +196,7 @@ crease under each, and a fuller crown. Seaside Skyway stays all Three.js (the us
 close to Blender's as JS allows: read `palm.py` for how its trunk and fronds are shaped (32 columns round, so a
 scallop can be round; scale shells overlapping; fronds of real blades), and match its proportions, silhouette,
 scale shape, crease and crown. Up to about 4,000 triangles is fine (Blender's has 4,128). Keep `buildPalm(kit)`
-and `createPalmMaterials(keep)` (used by `kit/kit.js`); the palm's height, lean and foot stay as the study's spec
+(Task 0 named it `buildPalmParts(kit)`; `buildPalm()` returns the bare `{ trunk, fronds }` the palm test uses) and `createPalmMaterials(keep)` (used by `kit/kit.js`); the palm's height, lean and foot stay as the study's spec
 in "M7d4c2" of `docs/3d-findings.md`. The `palms-side-by-side` shot is your main check.
 
 **Files:** `kit/palm.js`, `kit/palm-trunk.js`, `kit/palm-textures.js`, new files for the palm if needed, new
@@ -240,7 +245,7 @@ Pieces: `round-tree`, `hedge`, `planter`. Study "Trees" and "Hedges and flowers"
 or four tiers of overlapping leaf scales (each a curved plate with a rounded tip, lighter on top, darker
 underneath) on a short thick trunk flaring at the root; the hedge a loaf with a furry leaf texture in relief and
 big five-petal pink flowers with yellow middles; the planter a terracotta pot with a rim, flowers in it. The round
-tree also stands on every floating island (`seaside-sky.js`, scores of them): keep it under about 1,500 triangles.
+tree also stands on every floating island (`seaside-sky.js`, scores of them): keep it under about 1,500 triangles. Since Task 0 both uses share `kit.materials.painted` (roughness 0.6), where the sky's trees had their own at 0.85: give the tree its own material, whichever looks right.
 
 **Files:** `kit/garden-props.js`, new files for these pieces, new `test/unit/kart-3d-garden-props.test.js`.
 
@@ -286,7 +291,7 @@ fat rounded white lobes (each scute's edge a separate puffy pad), a dark undersi
 Pieces: `floating-island`, `backdrop-cliff`, `beach-island`. Study "Cliffs and floating islands" (Mario Circuit's,
 Toad Circuit's): rock as big rounded slabs with dark seams between them, warm tan to orange (in shape and in
 maps); the grass on top a thick slab with a rounded lip hanging over the rock. The beach islands' rocks to match.
-Seen from far away: put the detail in maps rather than triangles. Same sizes and places
+Seen from far away: put the detail in maps rather than triangles. Since Task 0 the floating islands and the backdrop cliffs each draw their own rock texture: draw it once per kit and share it. Same sizes and places
 (`seaside-landmarks.js`); the seaside layout tests check that nothing reaches the road.
 
 **Files:** `kit/floating-island.js`, `kit/beach-island.js` (its rocks; the land, shallows and foam may stay), new
@@ -306,5 +311,5 @@ rails, portholes and a fender line. They bob as now (`keepWhole`).
 
 ## Task O (d): clouds, balloons, the airship and the trusses
 
-Not specced yet. The study says they look close enough already and come last, "if anything shows". The main
-session looks at their before shots (Task 0's pieces) and either writes this task here or drops it.
+Dropped by the main session after Task 0's shots of them: as the study says, they look close enough already, and
+they are seen only from afar.

@@ -1,17 +1,25 @@
 // The kit's hut on stilts (M7d3), as at MK8DX's Cheep Cheep Beach: a plank hut on a deck held over the water by
 // stilts, with a door, a window, a ladder down to the water, a short walkway toward the beach, and a steep roof
-// of straw thatch. Two geometries: the wood (planks textured, coloured per vertex) and the thatch. Stands with its
-// stilts' feet at y = 0 (the sea), its door facing +z. Used by the seaside surroundings.
+// of straw thatch. Two parts: the wood (planks textured, coloured per vertex) and the thatch. Stands with its
+// stilts' feet at y = 0 (the sea), its door facing +z. Takes the kit and returns the parts,
+// [{ geometry, material }]. Used by the seaside surroundings.
 
 import * as THREE from 'three';
 import { at, between, coloured, mergeShapes, roundedBox } from '../shape-utils.js';
+import { createThatchTexture } from './thatch-texture.js';
 
 const DECK = 2.6;
 const WALLS = { width: 3.4, depth: 3, height: 2.3 };
 const COLORS = { stilt: 0x8a6a48, deck: 0xc8a878, wall: 0xe0c49a, trim: 0x7a5232, door: 0x5a3a22, window: 0x2a4050, frame: 0xf4f0e6 };
 
-export function buildStiltHut() {
-  return { wood: buildWood(), thatch: buildThatch() };
+export function buildStiltHut(kit) {
+  const { keep } = kit;
+  const thatchTexture = keep(createThatchTexture());
+  thatchTexture.repeat.set(3, 1.5);
+  return [
+    { geometry: keep(buildWood()), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: kit.textures.wood, roughness: 0.85 })) },
+    { geometry: keep(buildThatch()), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: thatchTexture, roughness: 0.95 })) },
+  ];
 }
 
 function buildWood() {

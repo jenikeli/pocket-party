@@ -1,12 +1,17 @@
 // The kit's small trackside props (M7d2), our own toy versions of MK8DX's: a traffic cone, a stack of tyres, a
 // green warp pipe and a giant red mushroom with white spots. Each is one shape coloured per vertex, standing on
-// y = 0 round its middle, so a whole set of one prop draws as one instanced mesh. Used by kit/props.js.
+// y = 0 round its middle, so a whole set of one prop draws as one instanced mesh. Each builder takes the kit and
+// returns the prop's parts, [{ geometry, material }]. Used by kit/props.js.
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes } from '../shape-utils.js';
 
 // An orange cone about 0.75 tall with a white band, on a black square foot.
-export function buildCone() {
+export function buildCone(kit) {
+  return [{ geometry: kit.keep(coneShape()), material: kit.materials.plastic }];
+}
+
+function coneShape() {
   return mergeShapes([
     coloured(at(new THREE.BoxGeometry(0.52, 0.06, 0.52), 0, 0.03, 0), 0x1d1d1f),
     coloured(at(new THREE.ConeGeometry(0.22, 0.7, 16), 0, 0.41, 0), 0xff6a14),
@@ -15,7 +20,11 @@ export function buildCone() {
 }
 
 // Four tyres stacked flat, about 1 tall, each with a dark disc filling its middle.
-export function buildTyreStack() {
+export function buildTyreStack(kit) {
+  return [{ geometry: kit.keep(tyreStackShape()), material: kit.materials.painted }];
+}
+
+function tyreStackShape() {
   return mergeShapes(
     [0, 1, 2, 3].flatMap((level) => {
       const y = 0.13 + level * 0.25;
@@ -28,7 +37,11 @@ export function buildTyreStack() {
 }
 
 // A green warp pipe about 2.7 tall: the pipe, a wider rim round its top, and the dark inside.
-export function buildWarpPipe() {
+export function buildWarpPipe(kit) {
+  return [{ geometry: kit.keep(warpPipeShape()), material: kit.materials.plastic }];
+}
+
+function warpPipeShape() {
   return mergeShapes([
     coloured(at(new THREE.CylinderGeometry(0.9, 0.9, 2.2, 24), 0, 1.1, 0), 0x2fbf3a),
     coloured(at(new THREE.CylinderGeometry(1.12, 1.12, 0.55, 24), 0, 2.45, 0), 0x3fd84a),
@@ -37,7 +50,11 @@ export function buildWarpPipe() {
 }
 
 // A giant mushroom about 5 tall: a pale stem and a wide red cap with white spots.
-export function buildGiantMushroom() {
+export function buildGiantMushroom(kit) {
+  return [{ geometry: kit.keep(giantMushroomShape()), material: kit.materials.plastic }];
+}
+
+function giantMushroomShape() {
   const capRadius = 3;
   const capHeight = 0.7;
   const capBottom = 2.7;

@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import { buildTrack } from '../games/kart-3d/track-builder.js';
-import { addSkyLight, createSkyEnvironment } from '../games/kart-3d/scenery.js';
+import { addSkyLight, createSkyEnvironment, SEA } from '../games/kart-3d/scenery.js';
 import { addSun } from '../games/kart-3d/sun.js';
 import { bakeShade } from '../games/kart-3d/baked-shade.js';
 import { createCourseLight } from '../games/kart-3d/course-light.js';
@@ -15,7 +15,9 @@ import { createKit } from '../games/kart-3d/kit/kit.js';
 import { stationIndexAt } from '../games/kart-3d/track.js';
 import { edgeLateral } from '../games/kart-3d/kit/frames.js';
 import { tuning } from '../games/kart-3d/tuning.js';
+import { dressSea } from '../games/kart-3d/kit/sea.js';
 import { PIECES } from './pieces.js';
+import { SEA_DROP } from './landmark-pieces.js';
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -64,7 +66,11 @@ async function buildLitScene(renderer, track, piece) {
   addSkyLight(world);
   const sun = addSun(world, track, keep);
   world.add(...buildSeasideRoad(track, await loadPhotoAsphalt()).meshes);
-  await piece.build(createKit({ world, track, keep }));
+  const seaLevel = track.stations[0].point.y - SEA_DROP;
+  if (piece.sea) {
+    addSea(world, keep, seaLevel);
+  }
+  await piece.build(createKit({ world, track, keep }), seaLevel);
   scene.add(world);
   scene.environment = createSkyEnvironment(renderer).texture;
   scene.environmentIntensity = 1;
@@ -72,6 +78,19 @@ async function buildLitScene(renderer, track, piece) {
   scene.environment = createCourseLight(renderer, scene, track, sun).texture;
   scene.environmentIntensity = tuning.courseLightStrength;
   return { scene, sun };
+}
+
+// The race's sea (scenery.js's plane, kit/sea.js's ripples) at `y`, for the pieces that stand in it.
+function addSea(world, keep, y) {
+  const sea = new THREE.Mesh(
+    keep(new THREE.PlaneGeometry(3000, 3000)),
+    keep(new THREE.MeshStandardMaterial({ color: SEA, roughness: 0.35 })),
+  );
+  sea.name = 'sea';
+  sea.rotation.x = -Math.PI / 2;
+  sea.position.y = y;
+  world.add(sea);
+  dressSea(sea, keep);
 }
 
 const toVector = ({ x, y, z }) => new THREE.Vector3(x, y, z);
@@ -91,7 +110,7 @@ function buildCamera(track, focus, view) {
   const position = target.clone()
     .addScaledVector(tangent, -0.7 * distance)
     .addScaledVector(right, -sideOfPiece * (near ? 0.8 : 0.6) * distance);
-  position.y = station.point.y + (near ? KART_EYE_HEIGHT : focus.size * 0.8 + 3.5);
+  position.y = station.point.y + (near ? focus.eye ?? KART_EYE_HEIGHT : focus.size * 0.8 + 3.5);
   const camera = new THREE.PerspectiveCamera(near ? 40 : 35, WIDTH / HEIGHT, 0.1, 500);
   camera.position.copy(position);
   camera.lookAt(target);

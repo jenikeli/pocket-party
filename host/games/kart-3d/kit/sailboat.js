@@ -1,14 +1,14 @@
 // The kit's sailboat (M7d3; M7c's boat with more parts): a white hull with a blue band, a wooden deck, a small
 // cabin with windows, a mast with a boom, and a mainsail and a jib. One geometry coloured per vertex (the sails
-// are flat, so its material is seen from both sides), about 6 long, facing +z, its waterline at y = 0. Used by the
-// seaside surroundings.
+// are flat, so its material is seen from both sides), about 6 long, facing +z, its waterline at y = 0. Takes the
+// kit and returns the parts, [{ geometry, material }]. Used by the seaside surroundings.
 
 import * as THREE from 'three';
 import { at, between, coloured, mergeShapes, roundedBox } from '../shape-utils.js';
 
-export function buildSailboat() {
+export function buildSailboat({ keep }) {
   const hull = new THREE.SphereGeometry(1, 16, 6, 0, 2 * Math.PI, Math.PI / 2, Math.PI / 2).scale(1.1, 0.8, 3);
-  return mergeShapes([
+  const boat = mergeShapes([
     coloured(hull, 0xf6f6f2),
     coloured(at(new THREE.CylinderGeometry(1.12, 1.12, 0.22, 16).scale(1, 1, 3), 0, -0.08, 0), 0x2a62c9),
     coloured(at(new THREE.CylinderGeometry(1.02, 1.02, 0.08, 16).scale(1, 1, 3), 0, 0.06, 0), 0xc89c68),
@@ -19,6 +19,8 @@ export function buildSailboat() {
     coloured(sail([0, 1.25, 0.55], [0, 6.8, 0.55], [0, 1.25, -2.1]), 0xfdfbf2),
     coloured(sail([0, 6.3, 0.75], [0, 0.6, 2.7], [0, 0.6, 0.75]), 0xffd6a0),
   ]);
+  const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide }));
+  return [{ geometry: keep(boat), material }];
 }
 
 // A flat three-cornered sail, indexed with a normal and texture coordinates like Three.js's shapes, so it merges

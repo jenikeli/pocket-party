@@ -1,7 +1,8 @@
 // The kit's beach islands (M7d3), as off MK8DX's Cheep Cheep Beach and Koopa Cape: sand round a grassy hill, a
 // shelf of pale sand under the water round it, turquoise shallows over that shelf fading into the deep blue, and
 // white foam where the water meets the beach. Every island's land, shallows, foam and rocks are merged into one
-// geometry each; their outline and height come from seaside-landmarks.js. Used by the seaside surroundings.
+// geometry each; their outline and height come from seaside-landmarks.js. Since M7d4c3 it also makes their
+// materials. Used by the seaside surroundings.
 
 import * as THREE from 'three';
 import { shoreRadius, islandHeightAt } from '../seaside-landmarks.js';
@@ -16,16 +17,27 @@ const COLORS = { grass: 0x67b844, grassHigh: 0x4f9e38, sand: 0xf4e2ae, wetSand: 
 const SHALLOWS = [[0.96, 0x46dccb, 0.78], [1.15, 0x3bc8c6, 0.55], [1.35, 0x2fb0c4, 0.28], [1.6, 0x2b8fc0, 0]];
 const FOAM = [[0.975, 0], [1, 0.95], [1.035, 0.6], [1.07, 0]];
 
-// `islands` from seaside-landmarks.js, `seaLevel` the sea's height. Returns { land, shallows, foam, rocks }
-// (geometries; land and rocks coloured per vertex, shallows and foam with an alpha too) and { palms, huts }:
-// spots { x, y, z, turn, size } for the palms on the islands and the huts in their shallows.
-export function buildBeachIslands(islands, seaLevel) {
+// `kit` is the course's (kit/kit.js), `islands` from seaside-landmarks.js, `seaLevel` the sea's height. Returns
+// { parts, foam, palms, huts }: the parts to add, [{ geometry, material }] (the land also has receiveShadow: true),
+// the foam's material (whose opacity the course animates), and spots { x, y, z, turn, size } for the palms on the
+// islands and the huts in their shallows.
+export function buildBeachIslands({ keep, textures }, islands, seaLevel) {
   const random = createRandom(2026);
+  const land = mergeShapes(islands.map((island) => buildLand(island, seaLevel)));
+  const shallows = mergeShapes(islands.map((island) => buildRings(island, seaLevel + 0.05, SHALLOWS)));
+  const foam = mergeShapes(islands.map((island) => buildRings(island, seaLevel + 0.08, FOAM.map(([share, alpha]) => [share, 0xffffff, alpha]), true)));
+  const rocks = mergeShapes(islands.flatMap((island) => buildRocks(island, seaLevel, random)));
+  // The shallows and foam are drawn after the land and seen through: they must not hide what is under them in the
+  // depth buffer.
+  const foamMaterial = keep(new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, depthWrite: false, roughness: 0.6 }));
   return {
-    land: mergeShapes(islands.map((island) => buildLand(island, seaLevel))),
-    shallows: mergeShapes(islands.map((island) => buildRings(island, seaLevel + 0.05, SHALLOWS))),
-    foam: mergeShapes(islands.map((island) => buildRings(island, seaLevel + 0.08, FOAM.map(([share, alpha]) => [share, 0xffffff, alpha]), true))),
-    rocks: mergeShapes(islands.flatMap((island) => buildRocks(island, seaLevel, random))),
+    parts: [
+      { geometry: keep(land), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.sand, roughness: 0.9 })), receiveShadow: true },
+      { geometry: keep(rocks), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 })) },
+      { geometry: keep(shallows), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, depthWrite: false, roughness: 0.15 })) },
+      { geometry: keep(foam), material: foamMaterial },
+    ],
+    foam: foamMaterial,
     palms: islands.flatMap((island) => palmSpots(island, seaLevel, random)),
     huts: islands.flatMap((island) => hutSpots(island, seaLevel, random)),
   };

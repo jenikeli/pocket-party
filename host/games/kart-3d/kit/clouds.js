@@ -1,6 +1,7 @@
 // The kit's cumulus cloud (M7d3; M7c's with more puffs and shading): puffs heaped in two layers on a flat base,
 // white on top and blue-grey underneath, as MK8DX's big clouds are. One geometry coloured per vertex, about 30
-// across and 7.5 tall above y = 0, its base flat. Used by the seaside surroundings.
+// across and 7.5 tall above y = 0, its base flat. Takes the kit and returns the parts, [{ geometry, material }].
+// Used by the seaside sky.
 
 import * as THREE from 'three';
 import { at, mergeShapes } from '../shape-utils.js';
@@ -14,7 +15,8 @@ const PUFFS = [
   [-2, 4.2, 0.5, 4.2], [3.5, 3.6, -0.5, 3.8], [-6.5, 3, 0, 3], [0.5, 6, 0, 2.6],
 ];
 
-export function buildCloud() {
+// A little light of its own keeps the clouds' tops bright white; their undersides stay blue-grey from their colours.
+export function buildCloud({ keep }) {
   const cloud = mergeShapes(PUFFS.map(([x, y, z, radius]) => at(new THREE.SphereGeometry(radius, 9, 6).scale(1, 0.72, 0.85), x, y, z)));
   const { position, normal } = cloud.attributes;
   const colors = [];
@@ -29,5 +31,6 @@ export function buildCloud() {
     colors.push(color.r, color.g, color.b);
   }
   cloud.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  return cloud;
+  const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, emissive: 0x9aa8c0, emissiveIntensity: 0.45 }));
+  return [{ geometry: keep(cloud), material }];
 }

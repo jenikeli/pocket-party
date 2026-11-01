@@ -18,6 +18,15 @@ const FROND_STEPS = 10;
 // Points across a frond, from one edge over the midrib to the other (-1 to 1).
 const ACROSS = [-1, -0.5, 0, 0.5, 1];
 
+// The palm's parts for the props (kit/props.js): its two geometries with the kit's palm materials.
+export function buildPalmParts(kit) {
+  const { trunk, fronds } = buildPalm();
+  return [
+    { geometry: kit.keep(trunk), material: kit.palm.trunk },
+    { geometry: kit.keep(fronds), material: kit.palm.fronds },
+  ];
+}
+
 // Returns { trunk, fronds }: two geometries to share between every palm.
 export function buildPalm() {
   return { trunk: buildTrunk(), fronds: buildFronds() };

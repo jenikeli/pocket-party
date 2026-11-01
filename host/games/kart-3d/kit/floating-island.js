@@ -3,7 +3,8 @@
 // below (round trees on top come from kit/garden-props.js); and the same banded cliffs rising from the sea as the
 // backdrop on the horizon.
 // Every island of a kind is merged into two geometries (the grass and the rock), each island's outline wobbled
-// its own way. Used by the seaside surroundings.
+// its own way. Since M7d4c3 they also make their materials (a grass one and a rock one each). Used by the seaside
+// sky.
 
 import * as THREE from 'three';
 import { mergeShapes } from '../shape-utils.js';
@@ -25,21 +26,33 @@ const FLOATING_CLIFF = [[1, 0], [1.03, -0.04], [0.98, -0.12], [0.9, -0.22], [0.9
 const BACKDROP_CLIFF = [[1.08, -0.05], [1, 0], [0.97, 0.24], [0.9, 0.3], [0.88, 0.55], [0.8, 0.6], [0.78, 0.86], [0.72, 0.92]];
 const BACKDROP_TOP = [[0.72, 0.92], [0.5, 1], [0, 1.04]];
 
-// `islands` lists { x, z, y (the top's height), radius }. Returns { grass, rock } geometries.
-export function buildFloatingIslands(islands) {
-  return {
-    grass: mergeShapes(islands.map((island) => lathe(island, FLOATING_TOP, (out, up) => [out * island.radius, island.y + up * island.radius], () => GRASS))),
-    rock: mergeShapes(islands.map((island) => lathe(island, FLOATING_CLIFF, (out, up) => [out * island.radius, island.y + up * island.radius], bandColor))),
-  };
+// `kit` is the course's (kit/kit.js), `islands` lists { x, z, y (the top's height), radius }. Returns the parts,
+// [{ geometry, material }]: the grass and the rock.
+export function buildFloatingIslands(kit, islands) {
+  return islandParts(
+    kit,
+    mergeShapes(islands.map((island) => lathe(island, FLOATING_TOP, (out, up) => [out * island.radius, island.y + up * island.radius], () => GRASS))),
+    mergeShapes(islands.map((island) => lathe(island, FLOATING_CLIFF, (out, up) => [out * island.radius, island.y + up * island.radius], bandColor))),
+  );
 }
 
-// `cliffs` lists { x, z, radius, height }, standing on the sea at `seaLevel`. Returns { grass, rock }.
-export function buildBackdropCliffs(cliffs, seaLevel) {
+// `cliffs` lists { x, z, radius, height }, standing on the sea at `seaLevel`. Returns the parts, as above.
+export function buildBackdropCliffs(kit, cliffs, seaLevel) {
   const place = (cliff) => (out, up) => [out * cliff.radius, seaLevel + up * cliff.height];
-  return {
-    grass: mergeShapes(cliffs.map((cliff) => lathe(cliff, BACKDROP_TOP, place(cliff), () => GRASS))),
-    rock: mergeShapes(cliffs.map((cliff) => lathe(cliff, BACKDROP_CLIFF, place(cliff), (point) => BACKDROP_BANDS[point % BACKDROP_BANDS.length]))),
-  };
+  return islandParts(
+    kit,
+    mergeShapes(cliffs.map((cliff) => lathe(cliff, BACKDROP_TOP, place(cliff), () => GRASS))),
+    mergeShapes(cliffs.map((cliff) => lathe(cliff, BACKDROP_CLIFF, place(cliff), (point) => BACKDROP_BANDS[point % BACKDROP_BANDS.length]))),
+  );
+}
+
+// The grass and rock shapes with their materials. Each call draws its own rock texture (256 by 256): two calls cost
+// less than sharing it through a cache that would have to find the kit again.
+function islandParts({ keep, textures }, grass, rock) {
+  return [
+    { geometry: keep(grass), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.grass, roughness: 0.95 })) },
+    { geometry: keep(rock), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: keep(createRockTexture()), roughness: 0.9 })) },
+  ];
 }
 
 function bandColor(point) {

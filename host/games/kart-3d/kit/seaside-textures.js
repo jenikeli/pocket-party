@@ -1,7 +1,7 @@
-// The kit's seaside textures (M7d3): weathered wooden planks, beach sand, straw thatch and stone blocks, for the
-// boardwalks, fences, huts and lighthouse of a seaside course (MK8DX's Cheep Cheep Beach, Koopa Cape and Daisy
-// Circuit). Each is a tile that repeats without a seam; wood and stone are pale, so a part's own colour tints
-// them. Wood and sand are shared through kit/kit.js; the others are drawn by the pieces that use them.
+// The kit's seaside textures (M7d3): weathered wooden planks and beach sand, for the boardwalks, fences and huts
+// of a seaside course (MK8DX's Cheep Cheep Beach, Koopa Cape and Daisy Circuit). Each is a tile that repeats
+// without a seam; wood is pale, so a part's own colour tints it. Shared through kit/kit.js. (The thatch and the
+// stone moved to kit/thatch-texture.js and kit/stone-texture.js in M7d4c3.)
 
 import { createPixelImage } from './pixel-image.js';
 import { createLayeredNoise, createTileNoise } from '../noise.js';
@@ -71,52 +71,5 @@ export function createSandTexture() {
   for (let index = 0; index < 120; index += 1) {
     image.dot(random() * SIZE, random() * SIZE, between(random, 0.5, 1.1), [252, 248, 240]);
   }
-  return image.toTexture();
-}
-
-// Straw thatch in overlapping rows down the tile: strands running down each row, darker toward the row's top
-// where the row above overlaps it, with a shadowed lip at its bottom edge.
-export function createThatchTexture() {
-  const random = createRandom(71);
-  const image = createPixelImage(SIZE, SIZE);
-  const rows = 4;
-  const rowHeight = SIZE / rows;
-  const strands = createTileNoise(random, 96, 6);
-  image.fill((x, y) => {
-    const inRow = (y % rowHeight) / rowHeight;
-    const strand = (strands(x / SIZE, y / SIZE) - 0.5) * 70;
-    const value = 150 + strand + inRow * 70 + (random() - 0.5) * 16;
-    return [value * 1.05, value * 0.86, value * 0.5];
-  });
-  for (let row = 0; row < rows; row += 1) {
-    image.rect(0, (row + 1) * rowHeight - 3, SIZE, 3, [70, 52, 26], 0.6);
-  }
-  return image.toTexture();
-}
-
-// Stone blocks in courses, each block its own shade with rounded, darker edges and a pale mortar line between,
-// as on a seaside lighthouse. Eight courses down the tile and four blocks across, offset every other course.
-export function createStoneTexture() {
-  const random = createRandom(73);
-  const image = createPixelImage(SIZE, SIZE);
-  const courses = 8;
-  const across = 4;
-  const courseHeight = SIZE / courses;
-  const blockWidth = SIZE / across;
-  const shades = Array.from({ length: courses * across }, () => between(random, -22, 18));
-  const grit = createLayeredNoise(random, 6, 3);
-  image.fill((x, y) => {
-    const course = Math.floor(y / courseHeight);
-    const shifted = (x + (course % 2) * (blockWidth / 2)) % SIZE;
-    const block = Math.floor(shifted / blockWidth);
-    // How near the block's edge the pixel is (0 at the edge, 1 in the middle), for the rounded edge.
-    const edge = Math.min(shifted % blockWidth, blockWidth - (shifted % blockWidth), y % courseHeight, courseHeight - (y % courseHeight));
-    if (edge < 1.5) {
-      return [228, 222, 208];
-    }
-    const rounding = Math.min(1, edge / 5);
-    const value = 170 + shades[course * across + block] + (grit(x / SIZE, y / SIZE) - 0.5) * 40 - (1 - rounding) * 40;
-    return [value, value * 0.96, value * 0.88];
-  });
   return image.toTexture();
 }

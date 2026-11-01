@@ -16,7 +16,7 @@ import { splitIntoCells } from './split-meshes.js';
 
 const SKY_TOP = 0x3d8bff;
 const HORIZON = 0xcfe8ff;
-const SEA = 0x2b7bb9;
+export const SEA = 0x2b7bb9;
 // The flat sky light (a hemisphere light: pale blue from above, sea blue from below), turned down to this share:
 // the course's own light (course-light.js, or in the plain course the sky's environment map) does most of the
 // lighting.

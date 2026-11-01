@@ -1,20 +1,29 @@
 // The kit's stone lighthouse (M7d3), as at MK8DX's Daisy Circuit: a tapering tower of stone blocks on a wider
 // plinth, a door with an awning and small windows climbing it, corbels under a green balcony with a railing, a
-// glass lamp room between green mullions, and an orange dome with a finial. Three geometries by material: stone
+// glass lamp room between green mullions, and an orange dome with a finial. Three parts by material: stone
 // (textured with blocks), painted parts and glass. `height` is the tower's to the balcony; it stands on y = 0,
-// its door facing +z. Used by the seaside surroundings.
+// its door facing +z. Takes the kit and returns the parts, [{ geometry, material }]. Used by the seaside
+// surroundings.
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes, roundedBox } from '../shape-utils.js';
+import { createStoneTexture } from './stone-texture.js';
 
+// The lamp is off by day: warm glass lit by the sun (a lit lamp looked odd in daylight on the M7c device run).
+const GLASS = { color: 0xfff1cc, roughness: 0.1, metalness: 0.1 };
 const GREEN = 0x2f9a4a;
 const ORANGE = 0xf08a2a;
 const WHITE = 0xf4f0e6;
 const BOTTOM_RADIUS = 3.2;
 const TOP_RADIUS = 2.3;
 
-export function buildLighthouse(height) {
-  return { stone: buildStone(height), painted: buildPainted(height), glass: buildGlass(height) };
+export function buildLighthouse(kit, height) {
+  const { keep } = kit;
+  return [
+    { geometry: keep(buildStone(height)), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: keep(createStoneTexture()), roughness: 0.85 })) },
+    { geometry: keep(buildPainted(height)), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4 })) },
+    { geometry: keep(buildGlass(height)), material: keep(new THREE.MeshStandardMaterial(GLASS)) },
+  ];
 }
 
 const radiusAt = (height, y) => BOTTOM_RADIUS + ((TOP_RADIUS - BOTTOM_RADIUS) * y) / height;

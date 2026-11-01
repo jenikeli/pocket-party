@@ -1,7 +1,8 @@
 // The kit pieces the kit-shots page can show, by name: every barrier style, every prop and the start gate. Each
 // entry says how to build the piece into a kit, which road to stand it on, and where the camera looks (its
 // `focus`). Later parts of M7d4c add the pieces they rebuild here, so they get before-and-after picture sheets.
-// M7d4c2's spike adds the palm made in Blender, alone and beside ours. Used by viewer.js.
+// M7d4c2's spike adds the palm made in Blender, alone and beside ours; M7d4c3 adds the decks, supports and the sea and
+// sky objects (landmark-pieces.js). Used by viewer.js.
 
 import { buildBarriers } from '../games/kart-3d/kit/barriers.js';
 import { buildProps } from '../games/kart-3d/kit/props.js';
@@ -13,18 +14,20 @@ import { kitPart } from '../games/kart-3d/kit/kit.js';
 import { GATE_THEME } from '../games/kart-3d/seaside-scenery.js';
 import { BARRIER_STYLES, KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layout-rules.js';
 import { addBlenderPalms, loadBlenderPalm } from './blender-palm.js';
+import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
 
-// Where the piece stands along the straight (its s); the start line is at 30 (viewer.js's track).
-const PIECE_S = 40;
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
 
 // Every entry is { road, build(kit), focus }:
 //   road   'walled' (a wall on both sides, no ground beside the road) or 'shouldered' (ground beside the right side)
-//   build  adds the piece to the kit (kit/kit.js's createKit); may return a promise (a piece loaded from a file)
-//   focus  what the camera looks at: { s, side, out, height, size }: where along the road, on which side (1 right,
-//          0 the road's middle), how far out from the edge of the ground, how high, and how big the piece is
-//          (its biggest side in units), which sets how far the camera stands back.
+//   build  adds the piece to the kit (kit/kit.js's createKit); may return a promise (a piece loaded from a file).
+//          Pieces with `sea: true` (landmark-pieces.js) are also given the sea's level: build(kit, seaLevel)
+//   focus  what the camera looks at: { s, side, out, height, size, eye }: where along the road, on which side (1
+//          right, 0 the road's middle), how far out from the edge of the ground, how high, and how big the piece is
+//          (its biggest side in units), which sets how far the camera stands back; `eye`, if given, is the near
+//          view's height above the road (a kart's eye, 1.2, if not), so a piece low in the sea is seen from near
+//          the water.
 
 // A barrier style along the whole straight on both sides; the camera looks at the right-hand one.
 function barrierPiece(style) {
@@ -118,4 +121,5 @@ export const PIECES = {
   'palms-side-by-side': PALMS_SIDE_BY_SIDE,
   'palm-close': { ...propPiece('palm', PROP_SIZES.palm), focus: PALM_CLOSE_FOCUS },
   'palm-blender-close': { ...BLENDER_PALM, focus: PALM_CLOSE_FOCUS },
+  ...LANDMARK_PIECES,
 };

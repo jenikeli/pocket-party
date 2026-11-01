@@ -1,7 +1,7 @@
 // The kit's giant Koopa shell (M7d3), as half sunk off MK8DX's Koopa Cape: a green dome of scutes (a middle one,
 // a ring of six and a ring of twelve at the rim, each lighter in its middle with a dark seam between) over a
 // cream rim. One geometry, its texture laid over it from above. Stands round y = 0 at its rim, radius 1 (scaled
-// per course). Used by the seaside surroundings.
+// per course). Takes the kit and returns the parts, [{ geometry, material }]. Used by the seaside surroundings.
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes } from '../shape-utils.js';
@@ -15,8 +15,7 @@ const SCUTES = [
   ...Array.from({ length: 12 }, (_, index) => [0.92 * Math.cos(((index + 0.5) * Math.PI) / 6), 0.92 * Math.sin(((index + 0.5) * Math.PI) / 6)]),
 ];
 
-// Returns { geometry, material } for the caller to keep and place.
-export function buildKoopaShell(keep) {
+export function buildKoopaShell({ keep }) {
   const dome = new THREE.SphereGeometry(1, 40, 16, 0, 2 * Math.PI, 0, Math.PI * 0.5).scale(1, 0.72, 1);
   // Laid over it from above: the dome's x and z across 0..1.
   const { position, uv } = dome.attributes;
@@ -28,7 +27,7 @@ export function buildKoopaShell(keep) {
   rim.attributes.uv.array.fill(0.01);
   const geometry = mergeShapes([coloured(dome, 0xffffff), coloured(at(rim, 0, 0.02, 0), 0xf2e6c0)]);
   const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: keep(drawScutes()), roughness: 0.3 }));
-  return { geometry: keep(geometry), material };
+  return [{ geometry: keep(geometry), material }];
 }
 
 // Each pixel takes the colour of its nearest scute's middle: the cells of hexagon-like shapes. Near the seam

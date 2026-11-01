@@ -9,7 +9,7 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 ## Before you start
 
 1. Read `CLAUDE.md` (project rules: readability, conventions, hard constraints) and the task you were given. Read `plan.md` only for the milestone the task belongs to.
-2. Bring your worktree up to the main checkout's `main`: worktrees are made from `origin/main`, the last commit the user pushed, which is often behind the local `main` the task was planned on. While your worktree is still clean, run `git merge --ff-only main` (the branch is shared by every worktree) and check `git log -1 --oneline` matches `git log -1 --oneline main`. If the merge refuses, stop and report it.
+2. Check that your worktree starts at the local `main` the task was planned on: `git log -1 --oneline` must match `git log -1 --oneline main`. The project's `.claude/settings.json` sets `worktree.baseRef` to `"head"` for this (by default worktrees start from `origin/main`, the last commit the user pushed, which is often behind). If they differ, stop and report it.
 3. If `node_modules` is missing in your worktree, link the main checkout's: `ln -s "$(git worktree list | head -1 | awk '{print $1}')/node_modules" node_modules`. Never run `npm install`: it would change `package-lock.json`.
 
 ## While you build

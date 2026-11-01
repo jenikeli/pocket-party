@@ -325,7 +325,7 @@ Split at its start (2026-11-01), with these decisions: of M7d4a's other pieces o
 
 ###### M7d4c1: Cleanup and tools
 - [ ] From M7d4b2's device run (all four trials stay, the course light at 0.7): remove M7d4a's ways for the three pieces, our drawn asphalt, the sky-only light and the unbaked road, the Drawing switches and the Measure looks that tried them (keep the tool itself)
-- [ ] `npm run kit-shots <pieces>`: renders single kit pieces on a short straight, lit as in the race, from kart height and from above, into picture sheets in `test-results/review/` (dev only, Playwright). Every later part ends with before-and-after sheets for the user to review
+- [ ] `npm run kit-shots <pieces>`: renders single kit pieces on a short straight, lit as in the race, from kart height and from above, into picture sheets in `test-results/review/` (dev only, Playwright). Every later part ends with before-and-after sheets for the user to review. A working scratch draft from the planning chat is in `test-results/kit-shots-draft/` (not in git: a static server for the repo, a page that builds barriers on a small rectangle loop with the course light, and the Playwright scripts for shots and sheets); the barrier sheets it made are in `test-results/review/`
 - [ ] The baked shade over the whole lap (the device run measures how long the course takes to appear; if too long, bake each course once per session and keep it)
 - [ ] A plain course for the 3D rules tests (`m6b`, `m6c`, `m7a`, `m7b`): the road, the walls and the sea only, no dressing, bake or course light, preset before the page loads as the quality is; the look tests (`m7c`, `m7d2`, `m7d4b`) keep the full drawing
 

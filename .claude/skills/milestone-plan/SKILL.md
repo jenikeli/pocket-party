@@ -23,7 +23,7 @@ The main session (Opus) plans, integrates and hands off; `implementer` subagents
 
 ## 2. Build in parallel
 
-- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 10 at a time. The agents think in the cloud, but their commands run on the dev box (4 threads, 7 GB): `npm test` is light, and kit-shots, the heavy one, lets only 2 runs draw at once across all worktrees (`tools/machine-slots.js`); the rest wait their turn.
+- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 3 at a time: the dev box has 4 threads and 7 GB, and every agent's commands run on it (kit-shots also lets only 2 runs draw at once across all worktrees, `tools/machine-slots.js`). Ten at once (tried in M7d4c3) used up the user's 5-hour usage limit within minutes and stopped every agent mid-task.
 - Give each the whole task as written in the plan (goal, files, interfaces, tests) plus the milestone id for the commit message. It starts with no context: say what it needs to know.
 - While they build, do the main session's own share (shared files, small edits) in the main checkout, without touching the files a task owns.
 
@@ -46,7 +46,7 @@ Then run the browser tests the change calls for, picked by `CLAUDE.md`'s Testing
 When the user asks for several similar milestones in one chat (CLAUDE.md), plan them all at once as a queue:
 - Write every task's spec, with the rules shared by all, into `docs/queue.md`, with a status table (queued, building, merged, dropped). Spawn each implementer with only its task letter and the file's path, so the spawn costs little of the main session's context; the file also keeps the queue's state if the conversation is summarized.
 - First a prep task where needed, so later tasks each own their own files (for the M7d4 look: each piece makes its own materials). Tasks that share a file never run at the same time.
-- At most 10 implementers at once; when one finishes, review and merge it, then spawn the next queued task whose dependencies are merged.
+- At most 3 implementers at once; when one finishes, review and merge it, then spawn the next queued task whose dependencies are merged.
 - Implementers judge their own work (kit-shots before and after) and report briefly; the main session reads the report, the diff's size and the after sheet, spot-checks the code, merges, and sends the user the after sheet (SendUserFile) for feedback.
 - Browser tests after each part's last merge; the census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
 

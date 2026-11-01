@@ -1,7 +1,7 @@
 # Task queue: M7d4c3 to M7d4d (the kit's objects, close to MK8DX)
 
 The four remaining look parts of M7d4 (plan.md), planned together in one chat on 2026-11-01 and built as a queue
-of tasks by `implementer` subagents, at most 10 at a time (kit-shots lets 2 runs draw at once; the rest wait). Each implementer is told one task letter; everything it
+of tasks by `implementer` subagents, at most 3 at a time (kit-shots lets 2 runs draw at once; the rest wait). Each implementer is told one task letter; everything it
 needs is here. The main session keeps the Status column up to date. At the handoff this file is folded into
 `docs/history.md` and deleted.
 
@@ -10,15 +10,15 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | 0 | prep | Materials into each piece's own file, thatch and stone textures split out, kit-shots pieces for c4 to d | sonnet | none | merged |
 | A | c3 | Promenade railing and padded sponsor wall | sonnet | none | merged |
 | B | c3 | Grandstand | opus | none | building |
-| C | c3 | Floodlight, bunting, sponsor stand, MKTV van | sonnet | 0 | queued |
-| D | c4 | Palm, taking the Blender palm's look into JS | opus | 0 | queued |
-| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | queued |
-| F | c4 | Street lamps | sonnet | 0 | queued |
-| G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | queued |
-| H | c5 | Round trees, hedges, planters | sonnet | 0 | queued |
-| I | c5 | Relief on the decks' wood and paving | sonnet | 0 | queued |
-| J | d | Lighthouse | sonnet | 0 | queued |
-| K | d | Stilt huts | sonnet | 0 | queued |
+| C | c3 | Floodlight, bunting, sponsor stand, MKTV van | sonnet | 0 | building |
+| D | c4 | Palm, taking the Blender palm's look into JS | opus | 0 | building |
+| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | paused |
+| F | c4 | Street lamps | sonnet | 0 | paused |
+| G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | paused |
+| H | c5 | Round trees, hedges, planters | sonnet | 0 | paused |
+| I | c5 | Relief on the decks' wood and paving | sonnet | 0 | paused |
+| J | d | Lighthouse | sonnet | 0 | paused |
+| K | d | Stilt huts | sonnet | 0 | paused |
 | L | d | Koopa shell | sonnet | 0 | queued |
 | M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | queued |
 | N | d | A motor yacht among the sailboats, sailboats detailed | sonnet | 0 | queued |

@@ -64,7 +64,7 @@ async function buildLitScene(renderer, track, piece) {
   addSkyLight(world);
   const sun = addSun(world, track, keep);
   world.add(...buildSeasideRoad(track, await loadPhotoAsphalt()).meshes);
-  piece.build(createKit({ world, track, keep }));
+  await piece.build(createKit({ world, track, keep }));
   scene.add(world);
   scene.environment = createSkyEnvironment(renderer).texture;
   scene.environmentIntensity = 1;

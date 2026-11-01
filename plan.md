@@ -320,9 +320,29 @@ Asked for after M7d4a. Research in "How games look detailed and still run smooth
 - **Device run (iPad, in "M7d4b2" in `docs/3d-findings.md`):** with every trial on the look is closer to MK8DX, so all four stay; the course light tuned to 0.7. They cost little (0.6-0.9 ms all together; Medium with 4 views 11.9 ms, High 13.3). The course appears in under 2 s. Nothing broke. The readout showed a steady 60 fps where the frame times allow about 75: probably a cap in Safari, not checked.
 - **So for M7d4c:** the techniques are detail in textures (maps drawn with `kit/surface-maps.js`), baked shade, the course's light and photo-scanned CC0 sets where they beat ours. Its first item removes M7d4a's ways and the switches.
 
-###### M7d4c: The props on the decks
-- [ ] First, from M7d4b2's device run (all four trials stay, the course light at 0.7): remove M7d4a's ways for the three pieces, our drawn asphalt, the sky-only light and the unbaked road, the Drawing switches and the Measure looks that tried them (keep the tool itself). Decide which of M7d4a's other pieces are redone with the textures-and-light techniques (and the guardrail as Daisy Circuit's taller three-ridge beam), whether the baked shade grows from the start stretch to the whole lap (its build time on the iPad was under 2 s for the stretch), and whether hand-made glTF models (Blender, baked maps) are worth asking about, as M7d5 already notes for the karts
-- [ ] Lamps, palms, trees, hedges and planters, cones, tyre stacks and barrels, warp pipes and mushrooms, the MKTV van, sponsor stands, beach props, bunting, floodlights and the grandstand, rebuilt to the study with M7d4a's tools and M7d4b's techniques; the decks' wood and paving could take relief too
+###### M7d4c: The props on the decks (in five parts)
+Split at its start (2026-11-01), with these decisions: of M7d4a's other pieces only the promenade railing and the padded sponsor wall are improved (the guardrail stays as it is); the baked shade covers the whole lap, and the 3D rules tests draw a plain course so it does not slow them; every part is reviewed on picture sheets of single pieces before its device run; and models may come from Blender, driven by Python scripts in headless mode (Claude writes and runs them; the user installs Blender and reviews the sheets), tried first on one prop against ours. Each part in its own chat with its own device run.
+
+###### M7d4c1: Cleanup and tools
+- [ ] From M7d4b2's device run (all four trials stay, the course light at 0.7): remove M7d4a's ways for the three pieces, our drawn asphalt, the sky-only light and the unbaked road, the Drawing switches and the Measure looks that tried them (keep the tool itself)
+- [ ] `npm run kit-shots <pieces>`: renders single kit pieces on a short straight, lit as in the race, from kart height and from above, into picture sheets in `test-results/review/` (dev only, Playwright). Every later part ends with before-and-after sheets for the user to review
+- [ ] The baked shade over the whole lap (the device run measures how long the course takes to appear; if too long, bake each course once per session and keep it)
+- [ ] A plain course for the 3D rules tests (`m6b`, `m6c`, `m7a`, `m7b`): the road, the walls and the sea only, no dressing, bake or course light, preset before the page loads as the quality is; the look tests (`m7c`, `m7d2`, `m7d4b`) keep the full drawing
+
+###### M7d4c2: Blender spike
+- [ ] Blender on the dev box (5.2.3 LTS, installed by Claude on 2026-11-01 in `~/opt/blender-5.2.3-linux-x64/`, run headless with `blender --background`; dev only, never needed by `npm start`), Python scripts that build a model with Blender's tools, bake its normal and shade (AO) maps from a detailed version with Cycles, and export a `.glb` into `assets/` (listed in the manifest); `GLTFLoader` vendored from Three.js 0.186.1
+- [ ] Try Blender Lab's official MCP server (needs Blender 5.1 or newer and a running Blender session with its add-on; on the headless server under a virtual display, not yet checked) against plain `blender --background --python` runs; keep it only if it makes trying changes faster
+- [ ] One prop built both ways (the palm, or the promenade railing's stone pillar), side by side on a picture sheet and on the iPad; then decide which pieces come from Blender. Ask before Python becomes a second language in the repo for good (CLAUDE.md says JavaScript)
+
+###### M7d4c3: The two barriers and the start area
+- [ ] The promenade railing and the padded sponsor wall improved to the study
+- [ ] The grandstand, floodlights, bunting, sponsor stands and the MKTV van, rebuilt to the study the way M7d4c2 chose
+
+###### M7d4c4: The seaside props
+- [ ] Palms, parasols (ribs, scalloped edge), loungers, surfboards, lifebuoys, barrels and the street lamps
+
+###### M7d4c5: The circuit props and the decks
+- [ ] Cones, tyre stacks, warp pipes, giant mushrooms, round trees, hedges and planters; relief on the decks' wood and paving
 
 ###### M7d4d: The surroundings
 - [ ] The lighthouse (the stone texture's relief), stilt huts, Koopa shell, cliffs and floating islands, boats; clouds, balloons, the airship and the trusses last, if anything shows

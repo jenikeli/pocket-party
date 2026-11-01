@@ -886,3 +886,11 @@ In headless Chromium (llvmpipe, software), in a scratch page kept out of the rep
 7. Anything that looks broken: black or missing pieces, a pale sea, stretched textures.
 
 No **Tune:** steps in this part.
+
+### Device run
+
+On the iPad, Seaside Skyway and the Test track, High.
+
+- **The course still appears in about 2 s or less** with the whole lap baked (not timed exactly; the load time is fine). So the bake stays as built, with no cheaper version needed: the iPad draws the 416 depth maps far faster than software's 21 s.
+- **The shade looks right round both laps:** no blotches, steps or shaded open road reported.
+- **Watch 4 on High: a steady 60 fps**, as M7d4b2 with four players (the same probable Safari cap; the bake costs nothing per frame). Watch works as intended for these checks.

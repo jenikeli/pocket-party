@@ -26,7 +26,8 @@ registerHooks({
 const { buildPalm } = await import('../../host/games/kart-3d/kit/palm.js');
 const { PROP_REACH } = await import('../../host/games/kart-3d/kit/layout-rules.js');
 
-const TRIANGLE_BUDGET = 3000;
+// About the Blender palm's 4,128 (M7d4c4 matched its trunk of 32 columns round and its crown).
+const TRIANGLE_BUDGET = 4200;
 
 function triangles(geometry) {
   return geometry.index.count / 3;

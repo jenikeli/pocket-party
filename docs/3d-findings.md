@@ -946,3 +946,45 @@ On the iPad: kit-shots' palm pages, then Seaside Skyway on High.
 - **The Blender palm looks better** than our rebuilt one, as on the sheets.
 - **The rebuilt JS palms show on the course**, nothing broken; **Watch 4 on High holds 60 fps**.
 - **Decided (the user):** this course and the Test track stay all Three.js; Blender is kept for another course in the future. Python stays for Blender's scripts, and the MCP server stays installed as an optional tool (the scripts remain the source of truth).
+
+## M7d4c3 to M7d4d: every kit object rebuilt to the study
+
+### What was built
+
+The four remaining look parts of M7d4, built as one queue in one chat (plan.md; the task specs are in `docs/history.md`). Every prop and landmark now builds its own parts from the kit; each was rebuilt to "The kit's objects up close" in `docs/mk8dx-reference.md` with M7d4b2's techniques (detail drawn in maps with `kit/surface-maps.js`, bevelled shapes, creases), and reviewed on kit-shots sheets (`test-results/review/c3-after.png`, `c4-after.png`, `c5-after.png`, `d-after.png`, and each task's `<letter>-after.png`).
+
+- **c3, the barriers and the start area:** the promenade railing, the padded sponsor wall, the grandstand, floodlight, bunting, sponsor stand and MKTV van.
+- **c4, the seaside props:** the palm (now close to M7d4c2's Blender palm), parasol, lounger, surfboards, lifebuoy post, barrels, both street lamps.
+- **c5, the circuit props and the decks:** cone, tyre stack, warp pipe, giant mushroom, round tree, hedge, planter; the decks' boards, paving and sand drawn with relief.
+- **d, the surroundings:** the lighthouse, stilt huts, Koopa shell, sailboats and a new motor yacht, and the rock of the floating islands, backdrop cliffs and beach rocks. Clouds, balloons, the airship and the trusses unchanged.
+
+### Measured without a device
+
+A census of each course's scene as built (`buildScenery`, in headless Chromium on the dev box; triangles of every mesh with instances counted, texture pixels of every material's maps at 4 bytes, uncompressed, no mipmaps; the build's time before the bake):
+
+| | Before (morning) | After Task 0 and A | After the queue |
+|---|---|---|---|
+| Seaside Skyway: triangles | 913,000 | 963,000 | 1,516,000 |
+| Seaside: textures | 61, 49.7 MB | 52.1 MB | 106, 81.2 MB |
+| Seaside: scenery build (software) | | 6.0 s | 14.0 s |
+| Test track: triangles | 310,000 | 347,000 | 466,000 |
+| Test track: textures | 55, 48.1 MB | 50.3 MB | 78, 59.7 MB |
+| Test track: scenery build (software) | | 4.6 s | 6.7 s |
+
+- Seaside's growth by part: barriers 424,000 → 475,000, props 183,000 → 450,000 (the grandstand alone 50,000 → 110,000; the palms 4,128 each), surroundings 143,000 → 359,000, sky 75,000 → 140,000. M7d4b1 measured that triangles barely cost on the iPad (4.7 million took as long as 2.5 million); nothing new glows, and the grandstand's steel and the bunting cast no shadows.
+- **The build time is the new risk:** the maps (stone, rock, decks, palm bark, leaves, thatch, shell, chain-link) are drawn in JS pixel loops at every build of the course, about 8 s more on the dev box. The iPad's CPU is faster, but the course may now take visibly longer to appear (M7d4c1: about 2 s). If it does, draw each map once per game and keep it, as the baked shade is kept.
+- **Browser tests:** with agents' kit-shots runs beside them, the look files timed out; on a quiet machine all 18 tests of `m7c`, `m7b`, `m7d2` and `m7d4b` passed (M7d4b's file about 220 s, M7d2's 140 s).
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`, HTTPS as usual). No phones are needed.
+
+1. The 3D race, Look on High. On the setup screen, time how long Seaside Skyway takes to appear the first time (M7d4c1: about 2 s; the build is now about twice as long in software). Then switch to the Test track and back, and note both times too.
+2. **Watch, no phones: 1** on Seaside Skyway. At the start, look at the start area: the padded sponsor walls on both sides (s 0-100), the grandstand on the left (two decks, the crowd on the seats, the roof's pale underside: say if it should be darker), the MKTV van with its Toad and camera and the sponsor stands past it (left, s 71-91), the bunting overhead (s 92 and 132: it should read pastel), the street lamps, the palms (s 13 and 66), and opposite on the right the boardwalk deck with its beach props (parasols, loungers, surfboards, lifebuoys, barrels).
+3. Let it drive a lap and watch: the promenade railing on the left (s 100-150 and 1150-1214: fat blue posts, stone pillars with a flower plaque, lanterns); the lighthouse ahead of the start straight; the beach islands with their rocks, palms and stilt huts; the Koopa shell off the first corner; the boats (some are now motor yachts); in the sky half, the floating islands and cliffs (stacked rock slabs under a grass lip), the garden deck up the climb (s 346-428: round trees, hedges, planters) and the paving deck by the quiet straight (s 782-852).
+4. The Test track, **Watch, no phones: 1**: the floodlight towers (right, s 17 and 40), cones, tyre stacks, warp pipes, giant mushrooms, sponsor stands, the grandstand, the decks.
+5. **Watch, no phones: 4** on High, Seaside Skyway: note the fps in the Tuning readout (M7d4c2: a steady 60).
+6. **Measure** on the setup screen (Seaside Skyway), then Copy and paste the report back: it shows whether the extra triangles and textures cost the iPad anything (M7d4b2: Medium with 4 views 11.9 ms, High 13.3 ms).
+7. Which pieces still look far from MK8DX, up close or from a kart? And anything that looks broken: black or missing pieces, untextured surfaces, flickering where two surfaces meet, props floating or sunk, the page reloading (Safari running out of memory).
+
+No **Tune:** steps in this part.

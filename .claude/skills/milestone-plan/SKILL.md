@@ -48,7 +48,7 @@ When the user asks for several similar milestones in one chat (CLAUDE.md), plan 
 - First a prep task where needed, so later tasks each own their own files (for the M7d4 look: each piece makes its own materials). Tasks that share a file never run at the same time.
 - At most 3 implementers at once; when one finishes, review and merge it, then spawn the next queued task whose dependencies are merged.
 - Implementers judge their own work (kit-shots before and after) and report briefly; the main session reads the report, the diff's size and the after sheet, spot-checks the code, merges, and sends the user the after sheet (SendUserFile) for feedback.
-- Browser tests after each part's last merge; the census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
+- Browser tests when no implementer is drawing (they time out beside kit-shots runs); the census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
 
 ## Commits
 

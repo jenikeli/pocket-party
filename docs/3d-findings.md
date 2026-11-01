@@ -938,3 +938,11 @@ On the iPad, with the server on the laptop (`npm run dev` or `npm start`, HTTPS 
 6. Anything that looks broken anywhere.
 
 No **Tune:** steps in this part.
+
+### Device run
+
+On the iPad: kit-shots' palm pages, then Seaside Skyway on High.
+
+- **The Blender palm looks better** than our rebuilt one, as on the sheets.
+- **The rebuilt JS palms show on the course**, nothing broken; **Watch 4 on High holds 60 fps**.
+- **Decided (the user):** this course and the Test track stay all Three.js; Blender is kept for another course in the future. Python stays for Blender's scripts, and the MCP server stays installed as an optional tool (the scripts remain the source of truth).

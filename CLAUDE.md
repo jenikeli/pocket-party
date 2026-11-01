@@ -64,7 +64,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 ## Conventions
 
-- Language: JavaScript (ES modules), no TypeScript for now.
+- Language: JavaScript (ES modules), no TypeScript for now. The one exception is Python for Blender's scripts in `tools/blender/` (dev only, run by Blender's own Python, nothing installed with pip), held to the same readability rules.
 - Keep files small and single-purpose. Prefer plain functions over class hierarchies.
 - Games (the 2D and 3D kart races) are self-contained modules in `host/games/<id>/` with a matching controller UI in `controller/games/<id>/`, implementing the "Game module interface" in `plan.md`. The shell never imports a game directly, only through the registry `host/games/index.js`.
 - Comment the *why* for anything non-obvious, especially networking, reconnection, and sensor logic.

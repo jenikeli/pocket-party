@@ -24,7 +24,7 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 
 - Run `npm test` (unit and server tests, under 10 s). It must pass before you commit.
 - **Never run browser tests** (`npm run test:browser` or anything in `test/browser/`). They are CPU-heavy, other implementers share the machine, and the main session runs them after merging.
-- `npm run kit-shots` on your own pieces is allowed, when your task asks for it: one run at a time, only your pieces.
+- `npm run kit-shots` on your own pieces is allowed, when your task asks for it: one run at a time, only your pieces. Run it in the foreground: it waits for a free slot by itself (other implementers' runs share 2 slots). Never wait for a process with a `while pgrep -f ...` loop: the pattern is in the loop's own command line, so it matches itself and never ends.
 
 ## Committing
 

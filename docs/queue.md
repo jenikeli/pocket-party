@@ -12,8 +12,8 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | B | c3 | Grandstand | opus | none | merged |
 | C | c3 | Floodlight, bunting, sponsor stand, MKTV van | sonnet | 0 | building |
 | D | c4 | Palm, taking the Blender palm's look into JS | opus | 0 | building |
-| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | building |
-| F | c4 | Street lamps | sonnet | 0 | paused |
+| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | merged |
+| F | c4 | Street lamps | sonnet | 0 | building |
 | G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | paused |
 | H | c5 | Round trees, hedges, planters | sonnet | 0 | paused |
 | I | c5 | Relief on the decks' wood and paving | sonnet | 0 | paused |

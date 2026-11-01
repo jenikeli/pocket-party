@@ -1,140 +1,126 @@
-// The kit's grandstand (M7d2): concrete tiers of blue and red seats under a white roof on posts, sponsor boards
-// (kit/sponsors.js) along its front, and a crowd of small Toad-like spectators in many colours who hop now and
-// then, as round MK8DX's stadium courses. Built straight, facing +z (toward the road), standing on y = 0 with its
-// front at z = 0. The crowd is three instanced meshes (bodies, faces, caps), moved every frame. Used by the
-// courses' dressings.
+// The kit's grandstand (M7d2, rebuilt to the M7d4 study in M7d4c3 after Toad Circuit's in MK8DX): two decks of
+// stepped seating on silver lattice columns (kit/grandstand-structure.js) under a cantilevered roof with a MARIO
+// KART fascia (kit/grandstand-roof.js), sponsor boards (kit/sponsors.js) along its front wall, and a crowd of
+// small Toad-like spectators who hop now and then (kit/grandstand-crowd.js). Built straight, facing +z (toward
+// the road), standing on y = 0 with its front at z = 0. Used by the courses' dressings.
 
 import * as THREE from 'three';
-import { roundedBox, at, coloured, mergeShapes } from '../shape-utils.js';
+import { mergeShapes } from '../shape-utils.js';
 import { sponsorUv } from './sponsors.js';
 import { withShadows } from './frames.js';
-import { createRandom, between } from '../random.js';
+import { createCanvas, repeatingTexture } from '../canvas-texture.js';
+import { standLayout, seatSpots, seatColor, buildSeat, buildDecksAndStairs } from './grandstand-structure.js';
+import { buildRoof } from './grandstand-roof.js';
+import { buildCrowd } from './grandstand-crowd.js';
 
-const TIERS = 5;
-const TIER_RISE = 0.6;
-const TIER_DEPTH = 1.3;
-const FRONT_WALL = 1.1;
-const ROOF_HEIGHT = 6.6;
-const SEAT_COLORS = [0x1d4fc4, 0xd8302a];
-const SHIRTS = [0xd8302a, 0x1d4fc4, 0x2fae3a, 0xffd21e, 0xff8fc8, 0xf4f4f0, 0x8a4fd8, 0xff8c1a];
-const SPECTATOR_SPACING = 0.75;
-const HOP_HEIGHT = 0.18;
+// The concrete's tile (kit/concrete.js) is stretched over this many units, so its stains do not repeat every unit.
+const CONCRETE_TILE = 4;
+const FONT = '"Arial Black", "Helvetica Neue", Arial, sans-serif';
 
-// `length` along the road. `kit` is the course's { keep, sponsors } (kit/kit.js). Returns { object,
-// update(dt) }: the stand as a group to place, and moving the crowd on.
-export function buildGrandstand(length, { keep, sponsors }) {
+// `length` along the road. `kit` is the course's (kit/kit.js): its keep, sponsors and textures are used.
+// Returns { object, update(dt) }: the stand as a group to place, and moving the crowd on.
+export function buildGrandstand(length, { keep, sponsors, textures }) {
   const group = new THREE.Group();
-  const painted = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }));
-  group.add(withShadows(new THREE.Mesh(keep(buildStructure(length)), painted)));
-  group.add(withShadows(new THREE.Mesh(keep(buildBoards(length)), sponsors)));
-  const crowd = buildCrowd(length, keep);
+  const layout = standLayout(length);
+  const below = buildDecksAndStairs(length);
+  const roof = buildRoof(length, layout.columnXs);
+  const concrete = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.concrete, normalMap: textures.concreteRelief, roughness: 0.85 }));
+  const painted = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45 }));
+  const steel = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.5 }));
+  const sign = keep(new THREE.MeshStandardMaterial({ map: keep(drawSignTexture()), roughness: 0.4 }));
+  group.add(
+    withShadows(new THREE.Mesh(keep(stretchUv(mergeShapes(below.concrete), 1 / CONCRETE_TILE)), concrete)),
+    withShadows(new THREE.Mesh(keep(mergeShapes(roof.painted)), painted)),
+    receivingShadows(new THREE.Mesh(keep(mergeShapes([...below.steel, ...roof.steel])), steel)),
+    receivingShadows(new THREE.Mesh(keep(roof.sign), sign)),
+    withShadows(new THREE.Mesh(keep(buildBoards(layout)), sponsors)),
+    buildSeats(length, keep),
+  );
+  const crowd = buildCrowd(seatSpots(length), keep);
   group.add(...crowd.meshes);
   return { object: group, update: crowd.update };
 }
 
-// The tiers (each a step of concrete with a long seat on it), the front wall, the end walls and the roof.
-function buildStructure(length) {
-  const parts = [coloured(at(new THREE.BoxGeometry(length, FRONT_WALL, 0.3), 0, FRONT_WALL / 2, -0.15), 0xe8e4dc)];
-  for (let tier = 0; tier < TIERS; tier += 1) {
-    const top = FRONT_WALL - 0.3 + tier * TIER_RISE;
-    const z = -0.3 - (tier + 0.5) * TIER_DEPTH;
-    parts.push(
-      coloured(at(new THREE.BoxGeometry(length, top, TIER_DEPTH), 0, top / 2, z), 0xc8c2b8),
-      coloured(at(roundedBox(length - 0.4, 0.35, 0.5, 0.08), 0, top + 0.17, z - 0.2), SEAT_COLORS[tier % 2]),
-    );
-  }
-  const back = -0.3 - TIERS * TIER_DEPTH;
-  for (const side of [-1, 1]) {
-    parts.push(coloured(at(new THREE.BoxGeometry(0.3, ROOF_HEIGHT, -back), side * (length / 2 + 0.15), ROOF_HEIGHT / 2, back / 2), 0xe8e4dc));
-    parts.push(coloured(at(new THREE.CylinderGeometry(0.12, 0.12, ROOF_HEIGHT, 8), side * (length / 2 - 0.4), ROOF_HEIGHT / 2, -0.4), 0xf4f4f0));
-  }
-  parts.push(
-    coloured(at(new THREE.BoxGeometry(length, ROOF_HEIGHT, 0.3), 0, ROOF_HEIGHT / 2, back - 0.15), 0xe8e4dc),
-    coloured(at(new THREE.BoxGeometry(length + 1, 0.25, -back + 1.4).rotateX(-0.12), 0, ROOF_HEIGHT + 0.25, back / 2 + 0.2), 0xf4f4f0),
-    coloured(at(new THREE.BoxGeometry(length + 1.04, 0.35, 0.2), 0, ROOF_HEIGHT + 0.02, 0.92), 0xd8302a),
-  );
-  return mergeShapes(parts);
+// For what casts no shadow of its own but takes others': the steelwork, all under the roof, whose shadow covers
+// its own (and its thin beams would be drawn again in the shadow map for nothing), and the sign on the fascia's
+// face.
+function receivingShadows(mesh) {
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
-// Boards along the front wall, each about 4 long, each a different brand.
-function buildBoards(length) {
-  const count = Math.max(1, Math.round(length / 4));
-  const width = length / count;
+// A seat shell on every seat, in its deck's colour: one instanced mesh. Too small for their shadows to show, so
+// they cast none.
+function buildSeats(length, keep) {
+  const spots = seatSpots(length);
+  const material = keep(new THREE.MeshStandardMaterial({ roughness: 0.35 }));
+  const mesh = new THREE.InstancedMesh(keep(mergeShapes(buildSeat())), material, spots.length);
+  const matrix = new THREE.Matrix4();
+  spots.forEach((spot, index) => {
+    mesh.setMatrixAt(index, matrix.makeTranslation(spot.x, spot.y, spot.z));
+    mesh.setColorAt(index, new THREE.Color(seatColor(spot.deck)));
+  });
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+// Boards along the front wall (kit/grandstand-structure.js lays them out), each a different brand.
+function buildBoards({ halfSeating, frontWall }) {
+  const width = (2 * halfSeating) / frontWall.boards;
+  const height = frontWall.top - frontWall.bottom;
+  const middle = (frontWall.top + frontWall.bottom) / 2;
   return mergeShapes(
-    Array.from({ length: count }, (_, index) => {
-      const board = new THREE.PlaneGeometry(width - 0.1, FRONT_WALL - 0.2);
+    Array.from({ length: frontWall.boards }, (_, index) => {
+      const board = new THREE.PlaneGeometry(width - 0.08, height);
       const uv = board.attributes.uv;
       for (let corner = 0; corner < uv.count; corner += 1) {
         uv.setXY(corner, ...sponsorUv(index * 7 + 2, uv.getX(corner), uv.getY(corner)));
       }
-      return board.translate(-length / 2 + (index + 0.5) * width, FRONT_WALL / 2, 0.01);
+      return board.translate(-halfSeating + (index + 0.5) * width, middle, frontWall.front + 0.01);
     }),
   );
 }
 
-// A spectator on every seat, here and there an empty one: each a body in a shirt colour, a face with two dark
-// eyes and a mushroom cap in another colour with white spots (Toad-like; the eyes and spots since M7d3). They
-// hop in turn. Returns { meshes, update(dt) }.
-function buildCrowd(length, keep) {
-  const random = createRandom(61);
-  const people = [];
-  for (let tier = 0; tier < TIERS; tier += 1) {
-    for (let x = -length / 2 + 0.6; x < length / 2 - 0.5; x += SPECTATOR_SPACING) {
-      if (random() < 0.82) {
-        const seat = FRONT_WALL - 0.3 + tier * TIER_RISE + 0.3;
-        people.push({ x: x + between(random, -0.12, 0.12), y: seat, z: -0.3 - (tier + 0.5) * TIER_DEPTH - 0.25, phase: random() * 10, speed: between(random, 3, 6) });
-      }
-    }
+// `geometry`'s texture coordinates multiplied by `scale`; returns it.
+function stretchUv(geometry, scale) {
+  const uv = geometry.attributes.uv;
+  for (let index = 0; index < uv.count; index += 1) {
+    uv.setXY(index, uv.getX(index) * scale, uv.getY(index) * scale);
   }
-  const material = keep(new THREE.MeshStandardMaterial({ roughness: 0.6 }));
-  // Few faces each: there are a few hundred of them in every view.
-  const shapes = [
-    keep(new THREE.CapsuleGeometry(0.2, 0.25, 2, 6).translate(0, 0.32, 0)),
-    keep(new THREE.SphereGeometry(0.19, 7, 5).translate(0, 0.72, 0.03)),
-    keep(new THREE.SphereGeometry(0.31, 8, 3, 0, 2 * Math.PI, 0, Math.PI / 2).scale(1, 0.8, 1).translate(0, 0.8, 0)),
-  ];
-  const colorOf = [(index) => SHIRTS[index % SHIRTS.length], () => 0xf6dcb4, (index) => SHIRTS[(index * 3 + 1) % SHIRTS.length]];
-  const meshes = shapes.map((shape, part) => {
-    const mesh = new THREE.InstancedMesh(shape, material, people.length);
-    people.forEach((person, index) => mesh.setColorAt(index, new THREE.Color(colorOf[part](index))));
-    // They sit under the roof's shadow, so their own would hardly show: they cast none, which keeps them out
-    // of the shadow map's drawing.
-    mesh.receiveShadow = true;
-    return mesh;
-  });
-  // The eyes and spots are the same on everyone, so they keep their own colours (no colour per spectator).
-  const details = new THREE.InstancedMesh(keep(buildFaceDetails()), keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5 })), people.length);
-  details.receiveShadow = true;
-  meshes.push(details);
-  // Moved spectator by spectator below, so never cut into cells (split-meshes.js).
-  meshes.forEach((mesh) => (mesh.userData.keepWhole = true));
-  const matrix = new THREE.Matrix4();
-  let time = 0;
-
-  // Each spectator hops now and then: the positive half of a slow wave, each with their own pace.
-  function update(dt) {
-    time += dt;
-    people.forEach((person, index) => {
-      const hop = Math.max(0, Math.sin(time * person.speed + person.phase) - 0.6) * HOP_HEIGHT * 2.5;
-      matrix.makeTranslation(person.x, person.y + hop, person.z);
-      meshes.forEach((mesh) => mesh.setMatrixAt(index, matrix));
-    });
-    meshes.forEach((mesh) => (mesh.instanceMatrix.needsUpdate = true));
-  }
-
-  update(0);
-  return { meshes, update };
+  return geometry;
 }
 
-// Two dark eyes on the face's front (+z, toward the road) and three white spots on the cap, in few faces each:
-// boxes for the eyes and flattened diamonds for the spots.
-function buildFaceDetails() {
-  const eyes = [-0.065, 0.065].map((x) => coloured(at(new THREE.BoxGeometry(0.045, 0.08, 0.03), x, 0.73, 0.205), 0x1a1a1e));
-  const spots = [[0, 1.045, 0], [0.195, 0.97, 0.125], [-0.195, 0.97, 0.125]].map(([x, y, z]) => {
-    // Lying flat on the cap: its thin axis turned out from the cap's middle.
-    const out = new THREE.Vector3(x, y - 0.8, z).normalize();
-    const spot = new THREE.OctahedronGeometry(0.085, 0).scale(1, 0.35, 1).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), out));
-    return coloured(spot.translate(x, y, z), 0xf6f6f2);
-  });
-  return mergeShapes([...eyes.map((eye) => eye.toNonIndexed()), ...spots]);
+// One tile of the fascia's sign: MARIO KART in white with a dark outline on red, a white star at each end. It
+// repeats along the fascia.
+function drawSignTexture() {
+  const { canvas, context } = createCanvas(1024, 80);
+  context.fillStyle = '#d8302a';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.font = `64px ${FONT}`;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.lineJoin = 'round';
+  context.lineWidth = 10;
+  context.strokeStyle = '#5a0c08';
+  context.strokeText('MARIO KART', 512, 44);
+  context.fillStyle = '#ffffff';
+  context.fillText('MARIO KART', 512, 44);
+  for (const x of [128, 896]) {
+    drawStar(context, x, 40, 26);
+  }
+  return repeatingTexture(canvas);
+}
+
+// A five-pointed white star with a dark outline, centred at (x, y), `radius` pixels to its points.
+function drawStar(context, x, y, radius) {
+  context.beginPath();
+  for (let point = 0; point < 10; point += 1) {
+    const angle = -Math.PI / 2 + (point * Math.PI) / 5;
+    const reach = point % 2 === 0 ? radius : radius * 0.45;
+    context.lineTo(x + Math.cos(angle) * reach, y + Math.sin(angle) * reach);
+  }
+  context.closePath();
+  context.lineWidth = 6;
+  context.stroke();
+  context.fill();
 }

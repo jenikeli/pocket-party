@@ -9,10 +9,10 @@ needs is here. The main session keeps the Status column up to date. At the hando
 |---|---|---|---|---|---|
 | 0 | prep | Materials into each piece's own file, thatch and stone textures split out, kit-shots pieces for c4 to d | sonnet | none | merged |
 | A | c3 | Promenade railing and padded sponsor wall | sonnet | none | merged |
-| B | c3 | Grandstand | opus | none | building |
+| B | c3 | Grandstand | opus | none | merged |
 | C | c3 | Floodlight, bunting, sponsor stand, MKTV van | sonnet | 0 | building |
 | D | c4 | Palm, taking the Blender palm's look into JS | opus | 0 | building |
-| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | paused |
+| E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | building |
 | F | c4 | Street lamps | sonnet | 0 | paused |
 | G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | paused |
 | H | c5 | Round trees, hedges, planters | sonnet | 0 | paused |

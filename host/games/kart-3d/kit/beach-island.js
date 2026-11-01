@@ -2,26 +2,31 @@
 // shelf of pale sand under the water round it, turquoise shallows over that shelf fading into the deep blue, and
 // white foam where the water meets the beach. Every island's land, shallows, foam and rocks are merged into one
 // geometry each; their outline and height come from seaside-landmarks.js. Since M7d4c3 it also makes their
-// materials. Used by the seaside surroundings.
+// materials; since M7d4d the rocks are rounded slabs of the cliffs' rock (kit/rock-maps.js). Used by the seaside
+// surroundings.
 
 import * as THREE from 'three';
 import { shoreRadius, islandHeightAt } from '../seaside-landmarks.js';
 import { createRandom, between } from '../random.js';
-import { coloured, mergeShapes } from '../shape-utils.js';
+import { coloured, shaded, mergeShapes } from '../shape-utils.js';
+import { rockMaterial } from './rock-maps.js';
 
 const SEGMENTS = 40;
 // Rings of the land from the middle out (shares of the shore's radius), the last ones under water.
 const LAND_RINGS = [0, 0.12, 0.25, 0.38, 0.5, 0.62, 0.72, 0.8, 0.86, 0.92, 0.97, 1, 1.06, 1.18, 1.32, 1.5];
-const COLORS = { grass: 0x67b844, grassHigh: 0x4f9e38, sand: 0xf4e2ae, wetSand: 0xd9c690, rock: 0x8d8a84 };
+const COLORS = { grass: 0x67b844, grassHigh: 0x4f9e38, sand: 0xf4e2ae, wetSand: 0xd9c690, rock: 0xdcaa74 };
 // The shallows reach this far out (share of the shore's radius), turquoise near the beach.
 const SHALLOWS = [[0.96, 0x46dccb, 0.78], [1.15, 0x3bc8c6, 0.55], [1.35, 0x2fb0c4, 0.28], [1.6, 0x2b8fc0, 0]];
 const FOAM = [[0.975, 0], [1, 0.95], [1.035, 0.6], [1.07, 0]];
+// The rock's maps are laid on the rocks in tiles this many units round (and half as many up).
+const ROCK_TILE = 6;
 
 // `kit` is the course's (kit/kit.js), `islands` from seaside-landmarks.js, `seaLevel` the sea's height. Returns
 // { parts, foam, palms, huts }: the parts to add, [{ geometry, material }] (the land also has receiveShadow: true),
 // the foam's material (whose opacity the course animates), and spots { x, y, z, turn, size } for the palms on the
 // islands and the huts in their shallows.
-export function buildBeachIslands({ keep, textures }, islands, seaLevel) {
+export function buildBeachIslands(kit, islands, seaLevel) {
+  const { keep, textures } = kit;
   const random = createRandom(2026);
   const land = mergeShapes(islands.map((island) => buildLand(island, seaLevel)));
   const shallows = mergeShapes(islands.map((island) => buildRings(island, seaLevel + 0.05, SHALLOWS)));
@@ -33,7 +38,7 @@ export function buildBeachIslands({ keep, textures }, islands, seaLevel) {
   return {
     parts: [
       { geometry: keep(land), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, map: textures.sand, roughness: 0.9 })), receiveShadow: true },
-      { geometry: keep(rocks), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 })) },
+      { geometry: keep(rocks), material: rockMaterial(kit) },
       { geometry: keep(shallows), material: keep(new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, depthWrite: false, roughness: 0.15 })) },
       { geometry: keep(foam), material: foamMaterial },
     ],
@@ -109,18 +114,48 @@ function buildRings(island, y, stops, patchy = false) {
   }, true);
 }
 
-// Grey rocks half sunk round the shore, flat-faceted.
+// Rocks half sunk round the shore, of the cliffs' rock (kit/floating-island.js): each a big rounded slab with a
+// smaller one lying on it, warm tan, darker and wet low down. Where each stands and how big it is come from
+// `random` (five draws a rock, as the palms and huts drawn after them expect); its lumps from a random of its own.
+// No wider or taller than the flat-faceted rocks it replaced (M7d3).
 function buildRocks(island, seaLevel, random) {
-  return Array.from({ length: Math.round(island.radius / 4) }, () => {
+  return Array.from({ length: Math.round(island.radius / 4) }, (_, index) => {
     const angle = random() * 2 * Math.PI;
     const radius = shoreRadius(island, angle) * between(random, 0.95, 1.12);
     const size = between(random, 0.8, 2.2);
-    const rock = new THREE.IcosahedronGeometry(size, 0).scale(1, 0.7, between(random, 0.8, 1.3)).rotateY(random() * 6);
+    const stretch = between(random, 0.8, 1.3);
+    const turn = random() * 6;
+    const lumps = createRandom(Math.round(island.x * 7 + island.z * 13) + index);
+    const base = rockSlab(size, stretch, 0.6, lumps);
+    const top = rockSlab(size * 0.6, 1, 0.55, lumps)
+      .rotateY(between(lumps, 0, 3))
+      .translate(size * between(lumps, -0.25, 0.25), size * 0.42, size * between(lumps, -0.2, 0.2));
+    const rock = mergeShapes([base, top]).rotateY(turn);
     rock.translate(island.x + Math.cos(angle) * radius, seaLevel + size * 0.15, island.z + Math.sin(angle) * radius);
-    // Polyhedra come unindexed, so their normals are worked out per face: flat facets, not a smooth ball.
-    rock.computeVertexNormals();
-    return coloured(rock, COLORS.rock);
+    // Darker toward the water, where the rock is wet.
+    return shaded(rock, (x, y) => 0.62 + 0.38 * Math.min(Math.max((y - seaLevel) / (size * 0.6), 0), 1));
   });
+}
+
+// A rounded slab reaching `size` out (`stretch` times that the other way) and `flat` times as tall: a ball with
+// lumps pushed in and out, its top pressed flatter than its sides, so it lies like a slab with a rounded edge
+// rather than a pebble. Lighter on top and darker underneath, where it sits in a crease. Its texture coordinates
+// lay the rock's tile on ROCK_TILE units wide and half as tall, as on the cliffs.
+function rockSlab(size, stretch, flat, lumps) {
+  const slab = new THREE.SphereGeometry(1, 10, 7);
+  const phases = [0, 1, 2].map(() => between(lumps, 0, 2 * Math.PI));
+  const { position, uv } = slab.attributes;
+  const around = Math.max(1, Math.round((2 * Math.PI * size) / ROCK_TILE));
+  for (let index = 0; index < position.count; index += 1) {
+    const [x, y, z] = [position.getX(index), position.getY(index), position.getZ(index)];
+    // At most 1: the lumps never reach past `size`.
+    const lump = (1 + 0.08 * Math.sin(3 * x + phases[0]) * Math.sin(2 * z + phases[1]) + 0.05 * Math.sin(4 * y + 2 * x + phases[2])) / 1.13;
+    const pressed = y > 0.4 ? 0.4 + (y - 0.4) * 0.4 : y;
+    position.setXYZ(index, x * lump * size, pressed * lump * size * flat, z * lump * size * stretch);
+    uv.setXY(index, uv.getX(index) * around, (uv.getY(index) * 2 * size * flat) / (ROCK_TILE / 2));
+  }
+  slab.computeVertexNormals();
+  return shaded(coloured(slab, COLORS.rock), (x, y) => 0.72 + 0.28 * Math.min(Math.max(y / (size * flat * 0.5) + 0.5, 0), 1));
 }
 
 function palmSpots(island, seaLevel, random) {

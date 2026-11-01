@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { FLOATING_ISLANDS, BACKDROP_CLIFFS, NEAR_CLOUDS, BALLOONS, AIRSHIP_PATH } from './seaside-landmarks.js';
 import { buildFloatingIslands, buildBackdropCliffs } from './kit/floating-island.js';
-import { buildRoundTree } from './kit/garden-props.js';
+import { buildRoundTree } from './kit/round-tree.js';
 import { buildCloud } from './kit/clouds.js';
 import { buildAirship } from './kit/airship.js';
 import { buildBalloon } from './kit/balloon.js';

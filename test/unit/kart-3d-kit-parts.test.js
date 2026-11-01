@@ -23,6 +23,11 @@ registerHooks({
   },
 });
 
+// The round tree and hedge draw their maps on a canvas; a stand-in document gives them one that holds nothing.
+globalThis.document = {
+  createElement: () => ({ getContext: () => ({ createImageData: (width, height) => ({ data: new Uint8ClampedArray(width * height * 4) }), putImageData() {} }) }),
+};
+
 const THREE = await import('three');
 const { PROP_BUILDERS, buildProps } = await import('../../host/games/kart-3d/kit/props.js');
 const { buildSailboat } = await import('../../host/games/kart-3d/kit/sailboat.js');
@@ -47,9 +52,9 @@ function fakeKit() {
   };
 }
 
-// How many parts each prop had when props.js made them all (M7d4c2): the MKTV van, the lamps, the floodlight and
-// the palm had two, the rest one.
-const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2 };
+// How many parts each prop has: the MKTV van, the lantern lamp, the floodlight, the palm, and since M7d4c5 the
+// round tree and hedge have two, the triple lamp three (its stone pedestal, M7d4c4), the rest one.
+const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2 };
 
 function assertParts(parts, label) {
   assert.ok(Array.isArray(parts) && parts.length > 0, `${label} returns parts`);

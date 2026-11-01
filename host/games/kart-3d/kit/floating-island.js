@@ -1,6 +1,6 @@
 // The kit's layered-rock islands (M7d3), as round MK8DX's sky courses (Mario Circuit, Cloudtop Cruise): islands
 // floating in the sky, a grassy top over cliffs in brown and orange bands that step in and taper to a point
-// below (round trees on top come from kit/garden-props.js); and the same banded cliffs rising from the sea as the
+// below (round trees on top come from kit/round-tree.js); and the same banded cliffs rising from the sea as the
 // backdrop on the horizon.
 // Every island of a kind is merged into two geometries (the grass and the rock), each island's outline wobbled
 // its own way. Since M7d4c3 they also make their materials (a grass one and a rock one each). Used by the seaside

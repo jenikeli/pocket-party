@@ -19,7 +19,9 @@ import { buildLanternLamp, buildTripleLamp } from './street-lamps.js';
 import { buildFloodlight } from './floodlight.js';
 import { buildPalmParts } from './palm.js';
 import { buildParasol, buildLounger, buildSurfboards, buildLifebuoyPost, buildBarrels } from './beach-props.js';
-import { buildRoundTree, buildHedge, buildPlanter } from './garden-props.js';
+import { buildRoundTree } from './round-tree.js';
+import { buildHedge } from './hedge.js';
+import { buildPlanter } from './planter.js';
 
 // Each instanced prop's builder, by its name in PROP_REACH (kit/layout-rules.js). Only the props a course uses are
 // built. The sponsor stand is not here: its stands are merged (kit/sponsor-stand.js).

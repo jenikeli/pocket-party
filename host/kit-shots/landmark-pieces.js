@@ -18,7 +18,7 @@ import { buildKoopaShell } from '../games/kart-3d/kit/koopa-shell.js';
 import { buildSailboat } from '../games/kart-3d/kit/sailboat.js';
 import { buildBeachIslands } from '../games/kart-3d/kit/beach-island.js';
 import { buildFloatingIslands, buildBackdropCliffs } from '../games/kart-3d/kit/floating-island.js';
-import { buildRoundTree } from '../games/kart-3d/kit/garden-props.js';
+import { buildRoundTree } from '../games/kart-3d/kit/round-tree.js';
 import { buildCloud } from '../games/kart-3d/kit/clouds.js';
 import { buildBalloon } from '../games/kart-3d/kit/balloon.js';
 import { buildAirship } from '../games/kart-3d/kit/airship.js';

@@ -15,7 +15,7 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | E | c4 | Parasols, loungers, surfboards, lifebuoys, barrels | sonnet | 0 | merged |
 | F | c4 | Street lamps | sonnet | 0 | merged |
 | G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | merged |
-| H | c5 | Round trees, hedges, planters | sonnet | 0 | building |
+| H | c5 | Round trees, hedges, planters | sonnet | 0 | merged |
 | I | c5 | Relief on the decks' wood and paving | sonnet | 0 | merged |
 | J | d | Lighthouse | sonnet | 0 | merged |
 | K | d | Stilt huts | sonnet | 0 | building |

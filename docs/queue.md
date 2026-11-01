@@ -16,10 +16,10 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | F | c4 | Street lamps | sonnet | 0 | merged |
 | G | c5 | Cones, tyre stacks, warp pipes, giant mushrooms | sonnet | 0 | merged |
 | H | c5 | Round trees, hedges, planters | sonnet | 0 | building |
-| I | c5 | Relief on the decks' wood and paving | sonnet | 0 | building |
+| I | c5 | Relief on the decks' wood and paving | sonnet | 0 | merged |
 | J | d | Lighthouse | sonnet | 0 | merged |
 | K | d | Stilt huts | sonnet | 0 | building |
-| L | d | Koopa shell | sonnet | 0 | queued |
+| L | d | Koopa shell | sonnet | 0 | building |
 | M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | queued |
 | N | d | A motor yacht among the sailboats, sailboats detailed | sonnet | 0 | queued |
 | O | d | Clouds, balloons, airship, trusses | sonnet | 0 | dropped |

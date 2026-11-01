@@ -1,9 +1,8 @@
-// Browser tests for M7d4b, the 3D race's Measure tool and drawing switches: from the setup screen, Measure hides
-// the setup panel and draws its cases with a progress line (no phone needs to do anything); Stop ends it early
-// with a report of what it drew (the host, the drawing switches, a row per look measured, "Stopped early"), which
-// Copy puts on the clipboard; Close hides it and the setup screen is back, at the host's own quality; changing a
-// drawing switch (M7d4b2's trials) rebuilds the course, all of them off as M7d4a drew and back on; and no WebGL
-// or shader error appears. Ana is an Android phone (Chromium). Headless Chromium draws WebGL in software, so the
+// Browser tests for M7d4b, the 3D race's Measure tool: from the setup screen, Measure hides the setup panel and
+// draws its cases with a progress line (no phone needs to do anything); Stop ends it early with a report of what
+// it drew (the host, a row per look measured, "Stopped early"), which Copy puts on the clipboard; Close hides it
+// and the setup screen is back, at the host's own quality; and no WebGL or shader error appears. (M7d4b2's drawing
+// switches were removed in M7d4c1, and with them the test that flipped them.) Ana is an Android phone (Chromium). Headless Chromium draws WebGL in software, so the
 // host page is half the usual size and starts at Medium (test/helpers/kart-3d-host.js); a whole run would take a
 // quarter of an hour here, so the test stops it after the first look. The numbers themselves are for the iPad's
 // device run.
@@ -21,7 +20,7 @@ const HOST_SIZE = { width: 960, height: 540 };
 // The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
 const HOST_SCALE = 0.5;
 
-describe('M7d4b 3D Measure tool and drawing switches', () => {
+describe('M7d4b 3D Measure tool', () => {
   let server;
   let chromium;
   let hostPage;
@@ -87,7 +86,7 @@ describe('M7d4b 3D Measure tool and drawing switches', () => {
     const report = await hostPage.textContent('#kart-3d-measure-report');
     assert.match(report, /^Measure, 3D race/);
     assert.match(report, /Course: Seaside Skyway; canvas 960x540 CSS px/);
-    assert.match(report, /Drawing set: textureDetail = 1, bakedShade = 1, courseLight = 1, photoAsphalt = 1/);
+    assert.doesNotMatch(report, /Drawing set/);
     assert.match(report, /\nHigh +\d+\.\d +\d+\.\d +\d+\.\d +\d+ +\d+ +\d+\.\d/, 'a row for High with both view counts');
     // Stop lands in the first Medium case, or just after it if that case finished first.
     assert.match(report, /Stopped early: (8|9) of \d+ cases drawn\./);
@@ -104,25 +103,6 @@ describe('M7d4b 3D Measure tool and drawing switches', () => {
     await hostPage.waitForSelector('#kart-3d-measure', { state: 'hidden' });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('[data-quality="medium"]', 'aria-pressed'), 'true');
-    assert.deepEqual(pageErrors, []);
-    assert.deepEqual(consoleErrors, []);
-  });
-
-  // The tuning panel's sliders set the same live values (the module is the page's own, imported again by its
-  // URL); the overview behind the setup screen goes on drawing whatever was built.
-  test('changing the drawing switches rebuilds the course: every trial off, as M7d4a drew, then back on', { timeout: 120000 }, async () => {
-    const setSwitches = (value) =>
-      hostPage.evaluate(async (on) => {
-        const { setTuning } = await import('/host/games/kart-3d/tuning.js');
-        ['textureDetail', 'bakedShade', 'courseLight', 'photoAsphalt'].forEach((key) => setTuning(key, on));
-      }, value);
-    const frames = () => hostPage.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    await setSwitches(0);
-    await frames();
-    await saveScreenshot(hostPage, 'm7d4b-3-host-trials-off');
-    await setSwitches(1);
-    await frames();
-    await saveScreenshot(hostPage, 'm7d4b-4-host-trials-on');
     assert.deepEqual(pageErrors, []);
     assert.deepEqual(consoleErrors, []);
   });

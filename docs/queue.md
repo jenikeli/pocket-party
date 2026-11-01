@@ -19,7 +19,7 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | I | c5 | Relief on the decks' wood and paving | sonnet | 0 | merged |
 | J | d | Lighthouse | sonnet | 0 | merged |
 | K | d | Stilt huts | sonnet | 0 | merged |
-| L | d | Koopa shell | sonnet | 0 | building |
+| L | d | Koopa shell | sonnet | 0 | merged |
 | M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | building |
 | N | d | A motor yacht among the sailboats, sailboats detailed | sonnet | 0 | building |
 | O | d | Clouds, balloons, airship, trusses | sonnet | 0 | dropped |

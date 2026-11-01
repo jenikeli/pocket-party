@@ -1,7 +1,7 @@
 # Task queue: M7d4c3 to M7d4d (the kit's objects, close to MK8DX)
 
 The four remaining look parts of M7d4 (plan.md), planned together in one chat on 2026-11-01 and built as a queue
-of tasks by `implementer` subagents, at most 3 at a time. Each implementer is told one task letter; everything it
+of tasks by `implementer` subagents, at most 10 at a time (kit-shots lets 2 runs draw at once; the rest wait). Each implementer is told one task letter; everything it
 needs is here. The main session keeps the Status column up to date. At the handoff this file is folded into
 `docs/history.md` and deleted.
 

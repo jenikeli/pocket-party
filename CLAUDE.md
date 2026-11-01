@@ -95,7 +95,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 ## Workflow (Opus plans, subagents build in parallel)
 
 - **Plan:** the main session (Opus) plans each milestone into tasks that own separate files, with fixed interfaces between them, and I approve the plan once (the `milestone-plan` skill).
-- **Build:** each task goes to an `implementer` subagent (`.claude/agents/implementer.md`) in its own git worktree, at most 3 at a time, on Sonnet (Haiku for mechanical work, Opus where building needs judgement; Fable is not available). Implementers run `npm test` only and commit on their own branch.
+- **Build:** each task goes to an `implementer` subagent (`.claude/agents/implementer.md`) in its own git worktree, at most 10 at a time (kit-shots lets only 2 runs draw at once on the dev box, `tools/machine-slots.js`), on Sonnet (Haiku for mechanical work, Opus where building needs judgement; Fable is not available). Implementers run `npm test` (and kit-shots on their own pieces) and commit on their own branch.
 - **Integrate:** the main session reviews each task's diff, squash-merges it into `main`, runs the browser tests one file at a time, fixes what breaks, then hands off.
 - The skills in `.claude/skills/` and the agent in `.claude/agents/` are the workflow's single source. When we change how we work, they are edited in the same chat, like any other file.
 - Be precise. If you are unsure about something (an iOS Safari quirk, a Termux limitation, an HTTPS-on-LAN trick), say so and tell me how to verify it rather than guessing.

@@ -2,12 +2,15 @@
 // on a short straight of road, lit as in the race, from kart height ("near") and from higher up ("above"), and
 // writes one picture sheet, test-results/review/<name>.png, with the single shots in test-results/review/shots/.
 // The pieces and their framing live in host/kit-shots/pieces.js; the page that draws them is host/kit-shots/.
+// Implementers run it in their worktrees at the same time, so at most SHOT_SLOTS runs draw at once on the
+// machine (tools/machine-slots.js) and the others wait.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ROOT_DIR, startServer } from '../test/helpers/start-server.js';
 import { launchBrowser } from '../test/helpers/browser.js';
+import { takeSlot } from './machine-slots.js';
 
 const REVIEW_DIR = path.join(ROOT_DIR, 'test-results', 'review');
 const SHOTS_DIR = path.join(REVIEW_DIR, 'shots');
@@ -15,6 +18,8 @@ const VIEWS = ['near', 'above'];
 // Building the course and drawing in software takes 20-60 s a shot on the dev box.
 const SHOT_TIMEOUT_MS = 120000;
 const SHEET_WIDTH = 1340;
+// Each run is a headless Chromium drawing on the CPU: the dev box (4 threads, 7 GB) takes two at once.
+const SHOT_SLOTS = 2;
 
 // Reads the command line (without node and the script): `--name <name>` and the piece names. The sheet's default
 // name is the pieces joined with '-'. Throws a message that says how to call it when no piece is given.
@@ -82,6 +87,7 @@ async function writeSheet(browser, name, shotFiles) {
 async function main() {
   const { pieces, name } = parseArguments(process.argv.slice(2));
   fs.mkdirSync(SHOTS_DIR, { recursive: true });
+  const releaseSlot = await takeSlot('pocket-party-kit-shots', SHOT_SLOTS);
   const server = await startServer();
   let browser = null;
   try {
@@ -99,6 +105,7 @@ async function main() {
   } finally {
     await browser?.close();
     await server.stop();
+    releaseSlot();
   }
 }
 

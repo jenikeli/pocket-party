@@ -859,6 +859,7 @@ The first part of M7d4c (plan.md). No rule changes and no new look, except that 
 - **The baked shade round the whole lap** (`baked-shade.js`), in pieces of 100 stations with depth maps of 1024, and kept per course for as long as the game runs: switching courses on the setup screen bakes each course once.
 - **`npm run kit-shots`**: picture sheets of single kit pieces, lit as in the race, for the review at the end of every later part (plan.md's summary has the usage).
 - **A plain course** for the rules browser tests (road, sea and plain walls), set in localStorage by the tests.
+- **Watch, no phones: 1 2 3 4 views** on the setup screen: a race of self-driving stand-ins with a view each, for checking the frame rate with several views without four phones.
 
 ### Measured without a device
 
@@ -881,7 +882,7 @@ In headless Chromium (llvmpipe, software), in a scratch page kept out of the rep
 3. With one phone, drive a whole lap of Seaside Skyway slowly. The soft darker band at the foot of the walls, on the ledges and under things should now run round the whole lap, not stop about 70 units past the start line: look at the sky half (s 340-1076: the guardrails, the garden deck up the climb, the high road) and the seaside half's decks and fences. Look for anything wrong: dark blotches, open road that looks shaded, or a visible step in the shade every 100 units (where the bake's pieces meet).
 4. The same on the Test track, one lap.
 5. The gate's posts, the striped rails, the sponsor walls and the asphalt should look as on M7d4b2's run with every trial on (they are now the only way).
-6. With four phones: the readout's fps on High (M7d4b2: a steady 60), to check nothing got slower (the bake costs nothing per frame).
+6. The frame rate with four views, no phones needed: on the setup screen press **Watch, no phones: 4**. Four karts drive themselves with a view each. Open **Tuning** and note the readout's fps on High (M7d4b2: a steady 60 with four players), to check nothing got slower (the bake costs nothing per frame). Back to setup ends it. Watch 1 to 3 give fewer views (3 shows a fourth view of a CPU kart, as a race with three players does).
 7. Anything that looks broken: black or missing pieces, a pale sea, stretched textures.
 
 No **Tune:** steps in this part.

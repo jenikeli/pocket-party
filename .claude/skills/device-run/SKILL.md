@@ -10,6 +10,7 @@ The user tests each milestone on real devices; automation cannot. The procedure 
 ## What goes in
 
 - Only what automation cannot check (`CLAUDE.md`, "Still needs a real device"): real touch, real Safari, HTTPS and certificates on the LAN, sensors, network drops, the iPad's frame rates and look, Wake Lock, Termux. Do not ask the user to repeat what the browser tests already prove.
+- Frame rates with several views (3D race): use the setup screen's **Watch, no phones: 1 2 3 4** (self-driving karts with a view each, fps in the Tuning readout), not four phones or connections. Phones only where the step is about the phones themselves.
 - Numbered steps, each one thing to do and what to look for. Name the device, the course, the quality level and the number of phones.
 - Where to find each thing: the panel and group of every slider or switch, the place on the course (by distance along the lap, `s`, and what is there to recognise it).
 - What to report back: numbers to note (the Measure report to Copy, fps from the readout, how long the course takes to appear) and questions to answer (which looks closer to MK8DX).

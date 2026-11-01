@@ -18,9 +18,9 @@ needs is here. The main session keeps the Status column up to date. At the hando
 | H | c5 | Round trees, hedges, planters | sonnet | 0 | merged |
 | I | c5 | Relief on the decks' wood and paving | sonnet | 0 | merged |
 | J | d | Lighthouse | sonnet | 0 | merged |
-| K | d | Stilt huts | sonnet | 0 | building |
+| K | d | Stilt huts | sonnet | 0 | merged |
 | L | d | Koopa shell | sonnet | 0 | building |
-| M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | queued |
+| M | d | Cliffs, floating islands and the beach islands' rocks | opus | 0 | building |
 | N | d | A motor yacht among the sailboats, sailboats detailed | sonnet | 0 | queued |
 | O | d | Clouds, balloons, airship, trusses | sonnet | 0 | dropped |
 

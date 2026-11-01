@@ -22,7 +22,7 @@ import { BARRIER_RUNS, TRUSS_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from 
 
 const ROAD_THEME = Object.freeze({ asphalt: 0xfff6ec, edgeLine: 0xf6f6f2, curb: [0xff6a4f, 0xf6f6f2], checks: [0xff7a68, 0xa6ebe4] });
 // A sea-blue sign with a coral stripe on white posts banded in blue.
-const GATE_THEME = Object.freeze({ post: 0xf6f6f2, band: 0x1f7fd8, body: 0x1f8fe0, background: '#2aa8f0', stripe: '#ff6a4f', outline: '#0a3f8a' });
+export const GATE_THEME = Object.freeze({ post: 0xf6f6f2, band: 0x1f7fd8, body: 0x1f8fe0, background: '#2aa8f0', stripe: '#ff6a4f', outline: '#0a3f8a' });
 
 // `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js).
 export function buildSeasideRoad(track, photoAsphalt) {

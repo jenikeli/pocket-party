@@ -86,11 +86,18 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - I'm building this partly to learn. When you make a non-obvious design decision (networking, state sync, reconnection, sensors), explain the mechanism briefly: what actually happens and why, not just what to type.
 - Work in small steps. Finish one milestone from `plan.md`, make sure it runs, then stop and tell me exactly how to test it on real devices.
 - **One milestone per chat.** Each milestone is built in its own fresh chat session. Do not start the next milestone in the same chat, even if there is time left. If a milestone is too big for one chat, say so and propose how to split it.
-- **Hand off at the end of each milestone,** because the next chat starts with no memory of this one. Tick the finished checkboxes, then move the milestone's whole section (checklist, "done when", and detailed notes on files, decisions, deviations and tests changed on purpose) to the end of `docs/history.md`. In `plan.md`, leave a summary of a few bullets under a heading ending in "(done)" (or "(built, device run pending)" until I have tested on devices): what exists now and only what later milestones must know. Update the design sections of `plan.md` if a decision changed them, and update the Commands section below. Then give me a short walkthrough of what was built: the files added, what each does, and how one message flows through the system end to end.
-- **Make anything to tune easy to find.** In a device-run procedure (and its summary in the chat), mark every step where I should tune something with a bold **Tune:** at its start, naming the slider or setting, where it is (panel and group), its range and what to look for, so I can find what to tune at a glance.
+- **Hand off at the end of each milestone** with the `handoff` skill (`.claude/skills/handoff/SKILL.md`), because the next chat starts with no memory of this one: `plan.md` and `docs/history.md` updated, the device-run procedure, the commits, and a walkthrough of what was built.
+- **Make anything to tune easy to find.** Every step of a device run where I should tune something starts with a bold **Tune:** (the `device-run` skill).
 - Before adding a dependency, say what it is and why the built-ins can't do it.
 - If a request conflicts with the hard constraints above, flag it instead of working around it.
-- Never commit or push. Leave all changes uncommitted; I review and commit them myself. Don't offer to commit either.
+- **Commit, never push.** Commit each task as it is merged, each fix, and the handoff (messages in the repo's style: the milestone id, then what it does). Check `git status` first so nothing secret goes in. I review the commits and push them myself.
+
+## Workflow (Opus plans, subagents build in parallel)
+
+- **Plan:** the main session (Opus) plans each milestone into tasks that own separate files, with fixed interfaces between them, and I approve the plan once (the `milestone-plan` skill).
+- **Build:** each task goes to an `implementer` subagent (`.claude/agents/implementer.md`) in its own git worktree, at most 3 at a time, on Sonnet (Haiku for mechanical work, Opus where building needs judgement; Fable is not available). Implementers run `npm test` only and commit on their own branch.
+- **Integrate:** the main session reviews each task's diff, squash-merges it into `main`, runs the browser tests one file at a time, fixes what breaks, then hands off.
+- The skills in `.claude/skills/` and the agent in `.claude/agents/` are the workflow's single source. When we change how we work, they are edited in the same chat, like any other file.
 - Be precise. If you are unsure about something (an iOS Safari quirk, a Termux limitation, an HTTPS-on-LAN trick), say so and tell me how to verify it rather than guessing.
 
 ## Commands
@@ -103,6 +110,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - `npm run check`: check Node version, env vars, cert files (valid, matching key, covers the current IPs) and port, then print the reachable URLs
 - `npm test`: unit tests (`test/unit/`) and integration tests that start the real server on a free port (`test/server/`). No browsers, under 10 s
 - `npm run test:browser`: drives the real host page (desktop Chromium) and controller page (emulated Pixel 7 in Chromium, iPhone 13 in WebKit) with Playwright; screenshots land in `test-results/screenshots/` (gitignored). About 18 minutes (one M4 test waits out the 30 s grace period, the M5b test drives a 3-lap and a 1-lap race, the M5c test a 1-lap race, each 3D file takes 35-90 s and the M7d4b test about 160 s, as it runs the Measure tool through its first look and rebuilds the course twice; since M7d4b2 every 3D start bakes shade and takes the course's light, about 10 s more: Chromium draws WebGL on the CPU with Mesa's llvmpipe, set in `test/helpers/browser.js`, about 0.3-0.55 s a frame on the kit-dressed Seaside Skyway and 0.35 s on the Test track; M6b to M7b, M7d2 and M7d4b start the host at Medium quality, M7c runs High). Run chosen files with `node --test --test-timeout=60000 --test-concurrency=1 test/browser/m7c-kart-3d-look.test.js test/browser/m7b-kart-3d-race.test.js test/browser/m7d2-kart-3d-kit.test.js test/browser/m7d4b-kart-3d-measure.test.js` (which files: see Testing below). Dev box only. One-time setup: `npx playwright install chromium webkit`, then `sudo env "PATH=$PATH" npx playwright install-deps chromium webkit` (the `env` keeps nvm's `npx` on the PATH under sudo)
+- Playwright MCP (`.mcp.json`, for Claude): two browsers driven by Playwright's own MCP server (`npx playwright mcp`, from the repo's Playwright, so no extra install): `playwright` is a desktop Chromium for the host page, with the browser tests' WebGL flags (`.claude/playwright-mcp.json`), and `playwright-phone` an emulated Pixel 7 for a controller. Two browsers because tabs of one share `localStorage`, where a phone keeps its player id and token. Start the server (`npm run dev`) first; screenshots land in `test-results/playwright-mcp/`
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing
@@ -124,7 +132,7 @@ Every behaviour that has been built must stay working as the code changes. Autom
 
   - The full browser suite only when shared code changed: `server/`, `shared/`, the host shell (`host/*.js`, `host/index.html`), the controller shell (`controller/*.js`, `controller/index.html`), `host/games/index.js`, or `test/helpers/`. Say in the handoff which browser files ran and why.
   - If unsure which area a file belongs to, run the wider set. Correctness comes before speed.
-- Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel.
+- Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel, and only the main session runs them (implementers run `npm test` only).
 - If a change breaks an existing test, fix the code, not the test. Change a test only when the intended behaviour changed on purpose, and say so in the handoff.
 - Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.
 - Tests use Node's built-in runner (`node --test`) and live in `test/`. Test dependencies are dev-only and must never be needed by `npm start`.

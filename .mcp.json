@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["playwright", "mcp", "--config", ".claude/playwright-mcp.json"]
+    },
+    "playwright-phone": {
+      "command": "npx",
+      "args": ["playwright", "mcp", "--config", ".claude/playwright-mcp-phone.json", "--device", "Pixel 7"]
+    }
+  }
+}

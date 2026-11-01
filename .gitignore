@@ -1,5 +1,8 @@
-# Dependencies
-node_modules/
+# Dependencies (no trailing slash: an implementer's worktree links node_modules, and a link is not a directory)
+node_modules
+
+# Git worktrees the implementer subagents build in
+.claude/worktrees/
 
 # Secrets: never commit certs, keys, tokens or env files
 *.pem

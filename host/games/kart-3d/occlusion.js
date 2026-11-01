@@ -1,4 +1,4 @@
-// The maths of baking shade (ambient occlusion, M7d4b2's trial) into the course's vertex colours: the directions
+// The maths of baking shade (ambient occlusion, the bake) into the course's vertex colours: the directions
 // the sky is looked for in, reading back a depth map drawn by Three.js's depth material, and how much of the sky a
 // point sees. Plain functions, unit tested in Node. Used by host/games/kart-3d/baked-shade.js.
 

@@ -4,8 +4,9 @@
 // player with its HUD, or, on the setup screen, a slow flight round the course; with bloom on the High quality
 // setting (quality.js). Since M7d4b each view in a race gets its own shadow map fitted round it (sun.js), and the
 // Measure tool (measure-run.js) can set any look, wait for the GPU to finish a frame and read how much was drawn;
-// since M7d4b2 the course bakes shade on its start stretch and is lit by a light taken from itself (course-light.js),
-// except in the plain course (plain-course.js), which the rules' browser tests use.
+// since M7d4b2 the course has shade baked into it (since M7d4c1 round the whole lap, baked-shade.js) and is lit by
+// a light taken from itself (course-light.js), except in the plain course (plain-course.js), which the rules'
+// browser tests use.
 // Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the game starts. Used by
 // host/games/kart-3d/index.js.
 
@@ -60,6 +61,9 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
   // The course's road and scenery (scenery.js's world), and the light taken from it (none in the plain course).
   let world = null;
   let courseLight = null;
+  // Each course's baked shade, by track, once baked: baking the whole lap takes seconds, so a course shown again
+  // (the setup screen's course buttons) takes its shade from here.
+  const bakedShades = new Map();
   buildWorld(track);
   const views = createViews(container);
   const bloom = createBloom(renderer);
@@ -176,9 +180,9 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
     kartGroup.visible = !look.hidden.includes('karts');
   }
 
-  // Builds the course's road and scenery into the scene, bakes the shade on its start stretch and takes its light,
-  // the karts hidden meanwhile (they are not part of the course; the caller shows them again with the look). The
-  // course's light is taken with the course lit by the sky's reflections in full, as the sky would light it. The
+  // Builds the course's road and scenery into the scene, bakes its shade (or takes the shade baked before) and
+  // takes its light, the karts hidden meanwhile (they are not part of the course; the caller shows them again with
+  // the look). The course's light is taken with the course lit by the sky's reflections in full, as the sky would light it. The
   // plain course skips the bake and the course light and is lit by the sky's environment map at the same
   // strength, so there is one lighting rule. The sea keeps the sky's reflections either way.
   function buildWorld(newTrack) {
@@ -188,7 +192,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
     scene.environmentIntensity = 1;
     courseLight = null;
     if (!plainCourse) {
-      bakeShade(renderer, world.group, newTrack);
+      bakedShades.set(newTrack, bakeShade(renderer, world.group, newTrack, bakedShades.get(newTrack)));
       courseLight = createCourseLight(renderer, scene, newTrack, world.sun);
     }
     world.sea.material.envMap = environment.texture;

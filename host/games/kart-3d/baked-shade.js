@@ -1,28 +1,25 @@
-// M7d4b2's trial of baked light: shade (ambient occlusion) baked into the vertex colours of the stretch round the
-// start line once the course is built, as MK8DX's "pre-baked shadows that take occluded edges into account" are:
-// the road darker along the foot of its barriers, a ledge's face under its coping, a deck where a wall stands on
-// it, the ground under the gate. How: the course is drawn into a depth map from each of many directions spread
-// over the sphere, as a shadow map is drawn from the sun; a vertex that something stands in front of, seen from a
-// direction, gets no sky from there. Done a stretch of the road at a time, so the depth maps stay fine. Only
-// meshes coloured per vertex take it (the road, the barriers' and ledges' long runs, the decks, the gate);
-// instanced parts (posts, props) share one shape, so they cannot. Used by host/games/kart-3d/renderer.js while
-// the tuning panel's "Baked shade" is on.
-
+// Shade (ambient occlusion) baked into the vertex colours of the whole lap once the course is built (M7d4b2
+// tried it round the start line, M7d4c1 spread it round the lap), as MK8DX's "pre-baked shadows that take
+// occluded edges into account" are: the road darker along the foot of its barriers, a ledge's face under its
+// coping, a deck where a wall stands on it, the ground under the gate. How: the course is drawn into a depth map
+// from each of many directions spread over the sphere, as a shadow map is drawn from the sun; a vertex that
+// something stands in front of, seen from a direction, gets no sky from there. Done a piece of the road at a
+// time, so the depth maps stay fine. Only meshes coloured per vertex take it (the road, the barriers' and ledges'
+// long runs, the decks, the gate); instanced parts (posts, props) share one shape, so they cannot. Used by
+// host/games/kart-3d/renderer.js.
 import * as THREE from 'three';
-import { startLineIndex } from './track.js';
 import { sphereDirections, unpackDepth, shadeFor } from './occlusion.js';
 
-// The stretch: this many stations (1 unit apart) behind the start line (the grid) and ahead of it, in pieces of
-// this many stations each.
-const STRETCH_BEHIND = 50;
-const STRETCH_AHEAD = 70;
-const PIECE_STATIONS = 40;
+// The lap is baked in pieces of this many stations (1 unit apart) each. The course is cut into cells of 200 units
+// (scenery.js), so a depth map draws whole cells however small its piece is: in software, pieces of 40 stations
+// with maps of 512 took 30 s for Seaside Skyway's lap, pieces of 100 with maps of 1024 (texels as fine) 21 s.
+const PIECE_STATIONS = 100;
 // A piece's box reaches this far round its stations' points, enough for the decks and the grandstand, and what
 // can shade it this much farther.
 const PIECE_REACH = 14;
 const SHADE_REACH = 6;
 const DIRECTION_COUNT = 32;
-const MAP_SIZE = 512;
+const MAP_SIZE = 1024;
 // So a surface does not shade itself (as a shadow map's bias does): a vertex looks from this many of the depth
 // map's texels off its surface, and something must stand nearer the sky than it by this many texels, more the
 // more slanting the direction is to the surface (a slanting surface's depth changes fast across a texel).
@@ -33,16 +30,26 @@ const LEAST_FACING = 0.15;
 // The colour where a vertex sees no sky at all keeps this share: full shade would read as a hole.
 const DARKEST = 0.45;
 
-// Bakes the shade into `world` (scenery.js's group, in the scene and built) for `track`.
-export function bakeShade(renderer, world, track) {
+// Bakes the shade into `world` (scenery.js's group, in the scene and built) for `track`. Returns each shaded
+// vertex's shade (a Float32Array), which the renderer keeps and hands back as `saved` when the same course is
+// built again: the build makes the same vertices in the same order, so the shade is only applied, with no depth
+// maps drawn (switching courses on the setup screen would bake again otherwise).
+export function bakeShade(renderer, world, track, saved) {
+  world.updateMatrixWorld(true);
+  const pieces = lapPieces(track);
+  const vertices = collectVertices(world, pieces);
+  const shades = saved?.length === vertices.count ? saved : measureShades(renderer, world, pieces, vertices);
+  applyShade(vertices, shades);
+  return shades;
+}
+
+// Draws the depth maps of every piece and returns each vertex's shade.
+function measureShades(renderer, world, pieces, vertices) {
   const scene = world.parent;
   const bakeScene = new THREE.Scene();
   bakeScene.overrideMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
   bakeScene.add(world);
-  world.updateMatrixWorld(true);
   const seeThrough = hideSeeThrough(world);
-  const pieces = stretchPieces(track);
-  const vertices = collectVertices(world, pieces);
   const target = new THREE.WebGLRenderTarget(MAP_SIZE, MAP_SIZE);
   const pixels = new Uint8Array(MAP_SIZE * MAP_SIZE * 4);
   const directions = sphereDirections(DIRECTION_COUNT).map(({ x, y, z }) => new THREE.Vector3(x, y, z));
@@ -57,27 +64,24 @@ export function bakeShade(renderer, world, track) {
       renderer.setRenderTarget(target);
       renderer.render(bakeScene, camera);
       renderer.readRenderTargetPixels(target, 0, 0, MAP_SIZE, MAP_SIZE, pixels);
-      look(vertices, pieceIndex, direction, camera, pixels);
+      look(vertices, vertices.byPiece[pieceIndex], direction, camera, pixels);
     }
   });
   renderer.setRenderTarget(null);
   renderer.setClearColor(clearColor, clearAlpha);
-  applyShade(vertices);
   seeThrough.forEach((mesh) => (mesh.visible = true));
   scene.add(world);
   target.dispose();
   bakeScene.overrideMaterial.dispose();
+  return vertices.open.map((open, vertex) => shadeFor(open, vertices.total[vertex], DARKEST));
 }
 
-// The stretch as boxes round its stations' points, one per piece of the road.
-function stretchPieces(track) {
-  const start = startLineIndex(track);
-  const count = track.stations.length;
+// The lap as boxes round its stations' points, one per piece of the road.
+function lapPieces(track) {
   const pieces = [];
-  for (let first = -STRETCH_BEHIND; first < STRETCH_AHEAD; first += PIECE_STATIONS) {
+  for (let first = 0; first < track.stations.length; first += PIECE_STATIONS) {
     const box = new THREE.Box3();
-    for (let offset = first; offset < Math.min(first + PIECE_STATIONS, STRETCH_AHEAD); offset += 1) {
-      const { point } = track.stations[(((start + offset) % count) + count) % count];
+    for (const { point } of track.stations.slice(first, first + PIECE_STATIONS)) {
       box.expandByPoint(new THREE.Vector3(point.x, point.y, point.z));
     }
     pieces.push(box.expandByScalar(PIECE_REACH));
@@ -99,17 +103,14 @@ function depthCamera(sphere, direction) {
   return camera;
 }
 
-// What the vertices of piece `pieceIndex` see from `direction`: nothing in the depth map nearer the camera than
-// a vertex (beyond the slack) means sky.
-function look(vertices, pieceIndex, direction, camera, pixels) {
+// What the vertices numbered in `pieceVertices` (one piece's) see from `direction`: nothing in the depth map
+// nearer the camera than a vertex (beyond the slack) means sky.
+function look(vertices, pieceVertices, direction, camera, pixels) {
   const { right, top, near, far } = camera;
   const texel = (2 * right) / MAP_SIZE;
   const seen = new THREE.Vector3();
   const normal = new THREE.Vector3();
-  for (let vertex = 0; vertex < vertices.count; vertex += 1) {
-    if (vertices.piece[vertex] !== pieceIndex) {
-      continue;
-    }
+  for (const vertex of pieceVertices) {
     const facing = normal.fromArray(vertices.normals, vertex * 3).dot(direction);
     if (facing < LEAST_FACING) {
       continue;
@@ -128,12 +129,14 @@ function look(vertices, pieceIndex, direction, camera, pixels) {
   }
 }
 
-// The vertices inside the stretch's pieces, of every mesh coloured per vertex, in the world, as flat arrays: {
-// count, points, normals (x, y, z each), piece (the index of the piece each is in), open, total (what it saw,
-// see occlusion.js's shadeFor), colors and indices (where its colour is) }. The pieces split-meshes.js cut from
+// The vertices inside the lap's pieces, of every mesh coloured per vertex, in the world, as flat arrays: {
+// count, points, normals (x, y, z each), byPiece (each piece's vertices, by number), open, total (what it saw,
+// see occlusion.js's shadeFor), colors and indices (where its colour is) }. A vertex in two pieces' boxes
+// belongs to the first. The pieces split-meshes.js cut from
 // one mesh share its vertices, so each colour buffer is taken once.
 function collectVertices(world, pieces) {
-  const found = { points: [], normals: [], piece: [], colors: [], indices: [] };
+  const found = { points: [], normals: [], colors: [], indices: [] };
+  const byPiece = pieces.map(() => []);
   const taken = new Set();
   const point = new THREE.Vector3();
   const normal = new THREE.Vector3();
@@ -155,16 +158,17 @@ function collectVertices(world, pieces) {
         normal.fromBufferAttribute(normals, index).applyMatrix3(normalMatrix).normalize();
         found.points.push(point.x, point.y, point.z);
         found.normals.push(normal.x, normal.y, normal.z);
-        found.piece.push(pieceIndex);
+        byPiece[pieceIndex].push(found.indices.length);
         found.colors.push(color);
         found.indices.push(index);
       }
     }
   });
-  const count = found.piece.length;
+  const count = found.indices.length;
   return {
     ...found,
     count,
+    byPiece,
     points: new Float32Array(found.points),
     normals: new Float32Array(found.normals),
     open: new Float32Array(count),
@@ -173,9 +177,9 @@ function collectVertices(world, pieces) {
 }
 
 // Multiplies each vertex's colour by its shade.
-function applyShade(vertices) {
+function applyShade(vertices, shades) {
   for (let vertex = 0; vertex < vertices.count; vertex += 1) {
-    const shade = shadeFor(vertices.open[vertex], vertices.total[vertex], DARKEST);
+    const shade = shades[vertex];
     const color = vertices.colors[vertex];
     const index = vertices.indices[vertex];
     color.setXYZ(index, color.getX(index) * shade, color.getY(index) * shade, color.getZ(index) * shade);

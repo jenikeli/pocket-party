@@ -4,7 +4,8 @@
 // included. Built once from the track's stations, all in one group, so a different course can replace it. Since
 // M7d4b the road and each part of the dressing are named groups, which the Measure tool (measure-run.js) hides
 // one at a time, and their big meshes are cut into cells so views skip what they do not see (split-meshes.js).
-// In the plain course (plain-course.js) the dressing is only the barriers (plain-scenery.js). Used by host/games/kart-3d/renderer.js.
+// In the plain course (plain-course.js) the dressing is only the barriers (plain-scenery.js). Used by
+// host/games/kart-3d/renderer.js.
 
 import * as THREE from 'three';
 import { buildSeasideRoad, buildSeasideScenery } from './seaside-scenery.js';

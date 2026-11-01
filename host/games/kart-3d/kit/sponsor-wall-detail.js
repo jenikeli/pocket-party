@@ -15,8 +15,8 @@ const FRAME_COLOR = 0xdcdcd6;
 const BOLT_COLOR = 0x7c828c;
 // The rim's width at the boards' ends and along their top and bottom, and the bolts' heights, as shares of a
 // board's length and height (a board is about 4 units long and 1 high).
-const RIM_ACROSS = 0.012;
-const RIM_UP = 0.035;
+const RIM_ACROSS = 0.02;
+const RIM_UP = 0.05;
 const BOLT_UP = [0.14, 0.85];
 const PAD_PIXELS_PER_UNIT = 128;
 // The pad's paint is this share of white, so its print can be lighter: the pad's colour comes from its vertices,
@@ -60,7 +60,7 @@ function drawBoardMaps() {
       { left: cell.left, bottom, width: cell.width, height: up },
       { left: cell.left, bottom: bottom + cell.height - up, width: cell.width, height: up },
     ];
-    rims.forEach((rect) => surface.panel(rect, { lift: 70, bevel: 1.5, paint: rimPaint }));
+    rims.forEach((rect) => surface.panel(rect, { lift: 70, bevel: 2, paint: rimPaint }));
     for (const share of BOLT_UP) {
       for (const x of [cell.left + across / 2, cell.left + cell.width - across / 2]) {
         surface.bolt(x, bottom + cell.height * share, { radius: across * 0.55, lift: 60, color: hexToRgb(BOLT_COLOR), roughness: 0.3 });

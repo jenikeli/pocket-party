@@ -12,18 +12,22 @@ import { createStripBuilder } from '../strip-builder.js';
 import { extrudeSegment, capProfile, roundProfile, tubeProfile, profileLength } from './extrude.js';
 import { sponsorUv } from './sponsors.js';
 import { frameAt, facingAlong, edgeLateral, placeInstances, withShadows } from './frames.js';
-import { createCanvas, repeatingTexture } from '../canvas-texture.js';
-import { at, coloured, mergeShapes, roundedCylinder } from '../shape-utils.js';
 import { createSponsorWallDetail } from './sponsor-wall-detail.js';
+import { createChainLinkMaterial } from './chain-link.js';
+import { buildFencePost } from './sponsor-wall-post.js';
 
 const HEIGHT = 1.2;
 // The boards are set back this far behind the frame round them, between these heights.
 const BOARD_BACK = 0.03;
-const BOARD_BOTTOM = 0.1;
+const BOARD_BOTTOM = 0.22;
+// The barrier's concrete ledge (kit/barriers.js) tops out this high: the kick strip stands on it, starting a
+// little below its top, as a strip that began exactly on it, flush with its inner face, z-fought with it (the
+// hatching along the wall's foot before M7d4c3).
+const LEDGE_TOP = 0.1;
 const BOARD_TOP = 1.14;
 // [outward, lift] (see kit/extrude.js): the kick strip along the foot, the boards' face, the pad (a cushion
 // that overhangs the boards' top) and the wall's back.
-const KICK = roundProfile([[0, 0], [0, BOARD_BOTTOM], [BOARD_BACK, BOARD_BOTTOM]], 0.015);
+const KICK = roundProfile([[-0.02, LEDGE_TOP - 0.01], [-0.02, BOARD_BOTTOM], [BOARD_BACK, BOARD_BOTTOM]], 0.03);
 const FACE = [[BOARD_BACK, BOARD_BOTTOM], [BOARD_BACK, BOARD_TOP]];
 const PAD = roundProfile(
   [[BOARD_BACK, HEIGHT - 0.06], [-0.03, HEIGHT - 0.06], [-0.03, HEIGHT + 0.08], [0.3, HEIGHT + 0.22], [0.63, HEIGHT + 0.08], [0.63, HEIGHT - 0.06], [0.6, HEIGHT - 0.06]],
@@ -42,6 +46,8 @@ const FENCE_TOP = 3.4;
 const FENCE = [[FENCE_OUT, FENCE_BOTTOM], [FENCE_OUT, FENCE_TOP]];
 const FENCE_TILE = 0.5;
 const TOP_RAIL = tubeProfile(FENCE_OUT, FENCE_TOP, 0.035);
+// A rail along the fence's foot, resting on the pad's ridge, finishes where the wire meets the pad.
+const BOTTOM_RAIL = tubeProfile(FENCE_OUT, HEIGHT + 0.25, 0.04);
 const POST_STATIONS = 4;
 
 export function createSponsorWall({ keep }) {
@@ -62,6 +68,7 @@ export function createSponsorWall({ keep }) {
       extrudeSegment(padding, segment, side, BACK, PAD_COLOR);
       extrudeSegment(fence, segment, side, FENCE, 0xffffff, { uvOf: (around, s) => [around / FENCE_TILE, s / FENCE_TILE] });
       extrudeSegment(steel, segment, side, TOP_RAIL, 0xffffff, { smooth: true });
+      extrudeSegment(steel, segment, side, BOTTOM_RAIL, 0xffffff, { smooth: true });
       if (segment.index % POST_STATIONS === 0) {
         posts.push(postAt(segment.station, side));
       }
@@ -74,8 +81,7 @@ export function createSponsorWall({ keep }) {
     },
     meshes() {
       const padded = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }));
-      // The wire is cut out of the fence's texture (alphaTest), seen from both sides.
-      const wire = keep(new THREE.MeshStandardMaterial({ map: keep(drawChainLink()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.4, metalness: 0.6 }));
+      const wire = createChainLinkMaterial(keep);
       const metal = keep(new THREE.MeshStandardMaterial({ vertexColors: true, color: 0x9aa0a8, roughness: 0.4, metalness: 0.7 }));
       return [
         withShadows(new THREE.Mesh(keep(boards.build()), detail.boardMaterial)),
@@ -83,7 +89,7 @@ export function createSponsorWall({ keep }) {
         withShadows(new THREE.Mesh(keep(padding.build()), padded)),
         withShadows(new THREE.Mesh(keep(fence.build()), wire)),
         withShadows(new THREE.Mesh(keep(steel.build()), metal)),
-        placeInstances(keep(buildPost()), metal, posts),
+        placeInstances(keep(buildFencePost(HEIGHT + 0.22, FENCE_TOP)), metal, posts),
       ];
     },
   };
@@ -91,17 +97,6 @@ export function createSponsorWall({ keep }) {
 
 function postAt(station, side) {
   return frameAt(station, edgeLateral(station, side) + side * FENCE_OUT, 0, facingAlong(station));
-}
-
-// A steel post up the fence, white so the material's grey shows: a collar where it leaves the pad and a round
-// cap above the top rail.
-function buildPost() {
-  const height = FENCE_TOP + 0.05 - (HEIGHT + 0.1);
-  return mergeShapes([
-    coloured(at(roundedCylinder(0.05, 0.05, height, 0.015, 8), 0, HEIGHT + 0.1 + height / 2, 0), 0xffffff),
-    coloured(at(roundedCylinder(0.075, 0.075, 0.08, 0.02, 8), 0, HEIGHT + 0.24, 0), 0xd0d4da),
-    coloured(at(new THREE.SphereGeometry(0.065, 8, 6), 0, FENCE_TOP + 0.07, 0), 0xd0d4da),
-  ]);
 }
 
 // The boards' texture coordinates on this segment: each board its own brand, read left to right from the road
@@ -122,21 +117,4 @@ function padUv({ station, index }, side, padLength) {
     const along = ((index % BOARD_STATIONS) + (s - station.s) / station.segmentLength) / BOARD_STATIONS;
     return [side > 0 ? 1 - along : along, around / padLength];
   };
-}
-
-// A diamond mesh of grey wire on nothing: two diamonds across and two down per tile.
-function drawChainLink() {
-  const size = 64;
-  const { canvas, context } = createCanvas(size, size);
-  context.strokeStyle = '#c8ccd2';
-  context.lineWidth = 3;
-  for (let offset = -size; offset <= size; offset += size / 2) {
-    context.beginPath();
-    context.moveTo(offset, 0);
-    context.lineTo(offset + size, size);
-    context.moveTo(offset + size, 0);
-    context.lineTo(offset, size);
-    context.stroke();
-  }
-  return repeatingTexture(canvas);
 }

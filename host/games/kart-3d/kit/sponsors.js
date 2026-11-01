@@ -15,14 +15,15 @@ const COLUMNS = 4;
 // (sponsorCell).
 const CELL_INSET = 3;
 // Each design: background, outline colour, and up to two lines of text (big, then small) with their colours;
-// `emblem` names a small picture drawn at the left (EMBLEMS).
+// `emblem` names a small picture drawn at the left (EMBLEMS); `textEdge` (optional) is the colour round the big
+// text where `edge` would be black on black (the text is black outlined in black, a blob).
 const DESIGNS = [
   { background: '#121212', edge: '#ffd21e', big: ['BOWSER', '#ffd21e'], small: ['OIL', '#ff3b1f'], emblem: 'drop' },
   { background: '#1d4fc4', edge: '#ffffff', big: ["LEMMY'S", '#ffe23a'], small: ['TIRE SERVICE', '#ffffff'], emblem: 'tyre' },
   { background: '#8c1414', edge: '#ffcf3a', big: ['GOLDEN', '#ffcf3a'], small: ['WHEEL', '#ffffff'], emblem: 'wheel' },
   { background: '#0e2f8a', edge: '#ffffff', big: ['MKTV', '#ffffff'], small: null, emblem: 'screen' },
   { background: '#ff5a12', edge: '#2a0a00', big: ['BURNING', '#fff3c0'], small: ['DK', '#ffe23a'], emblem: 'flame' },
-  { background: '#f4f4f0', edge: '#1a1a1a', big: ['BULLET BILL', '#1a1a1a'], small: ['SPEED TRIAL', '#d8302a'], emblem: 'bullet' },
+  { background: '#f4f4f0', edge: '#1a1a1a', big: ['BULLET BILL', '#1a1a1a'], small: ['SPEED TRIAL', '#d8302a'], emblem: 'bullet', textEdge: '#f4f4f0' },
   { background: '#d8302a', edge: '#ffffff', big: ['MARIO', '#ffffff'], small: ['MOTORS', '#ffe23a'], emblem: 'letter' },
   { background: '#21a3e0', edge: '#ffffff', big: ['SUPER MARINE', '#ffffff'], small: ['WORLD', '#ffe23a'], emblem: 'waves' },
   { background: '#bfe9ff', edge: '#1d4fc4', big: ["TOAD'S", '#d8302a'], small: ['POLAR EXPEDITION', '#1d4fc4'], emblem: 'spots' },
@@ -97,7 +98,7 @@ function drawBoard(context, design) {
   const textLeft = 74;
   const textWidth = CELL_WIDTH - textLeft - 12;
   const bigY = design.small ? 36 : CELL_HEIGHT / 2;
-  drawText(context, design.big[0], design.big[1], design.edge, textLeft, bigY, design.small ? 32 : 40, textWidth);
+  drawText(context, design.big[0], design.big[1], design.textEdge ?? design.edge, textLeft, bigY, design.small ? 32 : 40, textWidth);
   if (design.small) {
     drawText(context, design.small[0], design.small[1], design.edge, textLeft, 62, 17, textWidth);
   }

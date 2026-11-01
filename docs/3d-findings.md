@@ -988,3 +988,13 @@ On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`,
 7. Which pieces still look far from MK8DX, up close or from a kart? And anything that looks broken: black or missing pieces, untextured surfaces, flickering where two surfaces meet, props floating or sunk, the page reloading (Safari running out of memory).
 
 No **Tune:** steps in this part.
+
+### Device run
+
+On the iPad, Seaside Skyway.
+
+- **The course takes about 4 s to appear** (M7d4c1: about 2 s), as the census predicted: the maps are drawn in JS at every build. Accepted for now; drawing each map once per game and keeping it, as the baked shade is kept, would win most of it back.
+- **All the props look a lot better in general.**
+- **The floating islands and backdrop cliffs look bad:** layers of round shapes, which real rock formations are not, and floating islands make no sense on this course. Mountains are fine.
+- **The course sits too high over open sea,** so many of the props round it cannot be seen. Asked for: the road close to the sea level, running across several islands. Planned as M7f, after the CPU drivers (M7e), with a study of real rock formations first.
+- Not reported: Watch 4's fps and the Measure report.

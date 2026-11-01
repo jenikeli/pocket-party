@@ -338,13 +338,14 @@ Split at its start (2026-11-01), with these decisions: of M7d4a's other pieces o
 - **Device run (iPad):** the Blender palm looks better; the rebuilt JS palms show on the course; Watch 4 on High holds 60 fps.
 - **Decided after it (the user):** Seaside Skyway and the Test track stay all Three.js: nothing on them is replaced by Blender, so M7d4c3 to M7d4d build in JS as before. Blender is for another course in the future, built with this pipeline (then load `.glb` models in the race's `load()`, as the photo asphalt, and split `palm.py` (405 lines) and `common.py` (291) by responsibility before adding to them). Python stays in the repo for Blender's scripts (`tools/blender/`, dev only). The MCP server stays installed as an optional tool for trying changes on a live Blender; the scripts stay the source of truth. The `.glb` and the kit-shots palm pieces stay as the pipeline's example.
 
-###### M7d4c3 to M7d4d: Every kit object rebuilt to the study (built, device run pending)
+###### M7d4c3 to M7d4d: Every kit object rebuilt to the study (done)
 Built as one queue in one chat (2026-11-01, at the user's request), 14 tasks by implementer subagents, 3 at a time; the specs and how it went are in "M7d4c3 to M7d4d" in `docs/history.md`, the numbers and the device-run procedure in `docs/3d-findings.md`.
 - **Every prop and landmark builds its own parts:** a builder takes the kit and returns `[{ geometry, material }]`, making its own materials with `kit.keep` or using `kit.materials` (plastic, painted, iron, glass, made in `createKit`); `props.js`, `seaside-surroundings.js` and `seaside-sky.js` only place. Each piece is in its own file (no files of re-exports).
 - **Rebuilt (c3):** the promenade railing (fat posts, stone-block pillars with Daisy's flower plaque, lanterns) and the padded sponsor wall (its z-fighting kick strip fixed, chain-link with relief); the grandstand (`grandstand*.js`: two decks of seat shells on lattice columns, a cantilevered roof, stairs, the crowd on the seats); the floodlight, bunting (pastel now: normals leaned up), sponsor stand (one framed board) and MKTV van (with a Toad and a camera). **(c4):** the palm, now close to the Blender palm in JS (4,128 triangles); parasols, loungers, surfboards, lifebuoys, barrels; the street lamps. **(c5):** cone, tyre stack, warp pipe, giant mushroom; the round tree (a ball of leaf scales), hedge, planter; relief on the decks' boards, paving and sand (`kit/deck-maps.js`). **(d):** the lighthouse, stilt huts, Koopa shell, a motor yacht among the sailboats, and the rock of the floating islands, backdrop cliffs (no longer inside-out) and beach rocks (`kit/rock-maps.js`, shared with the lighthouse stone through `kit/cell-noise.js`). Clouds, balloons, the airship and the trusses were left as they were.
 - **Cost (measured in software):** Seaside Skyway's scene from 913,000 to 1,516,000 triangles, its textures from 50 to 81 MB (uncompressed), and the scenery's build from 6 s to 14 s before the bake (the maps are drawn in JS at every build). The device run times how long the course takes to appear on the iPad; if it is too slow, draw the maps once per game rather than per build.
 - **kit-shots:** a piece for every kit object (`host/kit-shots/pieces.js`, `landmark-pieces.js`); props stand on a deck beside the road (`road: 'decked'`), sea pieces stand in a sea, `focus.eye` sets the near view's height. Runs share 2 machine-wide slots (`tools/machine-slots.js`).
 - Carried on: the shared nearest-point code is the only helper two textures share; any later texture of stones or slabs uses `kit/cell-noise.js`.
+- **Device run (iPad):** Seaside Skyway takes about 4 s to appear (was about 2 s: the maps drawn at every build; drawing them once per game would win most of it back, if wanted). All the props look a lot better, except the floating islands and backdrop cliffs, which look bad (stacked rings of round shapes, unlike real rock) and make no sense: they go in M7f, with the course brought down near the sea.
 
 ##### M7d5: Karts and drivers
 - [ ] 12 kart-and-driver designs, one for each of the 12 racers, so every kart in a race looks different: karts like the Standard Kart in each character's three colours, and drivers like Mario Kart's characters, still procedural: clean toy versions, not Nintendo-quality models. If that falls short, hand-made glTF models are a bigger decision to ask about then
@@ -354,6 +355,13 @@ Built as one queue in one chat (2026-11-01, at the user's request), 14 tasks by 
 
 #### M7e: CPU drivers
 - [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
+
+#### M7f: Seaside Skyway down by the sea, across islands
+Asked for after the M7d4c3-d device run: most of the props round the course cannot be seen from a road high over open sea.
+- [ ] The road brought down close to the sea and run across several islands, so the decks, props and surroundings are seen from the karts; the jump, climb and anti-gravity sections kept, redesigned where the new ground needs it (designed in that chat, with a top-down sketch, before building)
+- [ ] The floating islands and the backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
+- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built: the islands' rock was rings of round shapes, which rock is not
+- Probably more than one chat: the chat proposes a split
 
 ### M8: Items and coins
 The part of Mario Kart I want most after the race itself. Probably several chats; the first proposes how to split it.

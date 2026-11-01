@@ -351,7 +351,7 @@ Built as one queue in one chat (2026-11-01, at the user's request), 14 tasks by 
 - [ ] 12 kart-and-driver designs, one for each of the 12 racers, so every kart in a race looks different: karts like the Standard Kart in each character's three colours, and drivers like Mario Kart's characters, still procedural: clean toy versions, not Nintendo-quality models. If that falls short, hand-made glTF models are a bigger decision to ask about then
 - [ ] In anti-gravity sections the wheels turn flat and their rims glow cyan, as in MK8DX
 - Decide in M7d5 how a player's design is chosen (for example by roster slot, CPU karts taking the rest); picking a character on the phone is "character and kart selection" in "Later ideas"
-- Probably too big for one chat with 12 designs: the chat proposes a split (for example the kart and 6 drivers, then the other 6)
+- **How to build it (the user, 2026-11-01):** first one kart and its driver, reviewed by the user on picture sheets, improved round by round until the user is happy with it; then the other designs as a queue in the same chat (the `milestone-plan` skill's "Queue"), each built to the approved one's standard. If the chat runs out of room, it hands off and the next chat carries on the queue
 
 #### M7e: CPU drivers
 - [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls

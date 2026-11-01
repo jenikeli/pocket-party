@@ -27,15 +27,16 @@ export const LIGHTHOUSE = Object.freeze({ x: 290, z: -35, radius: 20, height: 4,
 // is tipped over (radians).
 export const KOOPA_SHELL = Object.freeze({ x: 262, z: 92, radius: 10, tilt: 0.35, heading: 0.8 });
 
-// Sailboats rocking in open water.
+// Boats rocking in open water: sailboats and motor yachts (kit/sailboat.js, kit/motor-yacht.js), `kind` being the
+// name of the kit's builder for each.
 export const BOATS = Object.freeze([
-  { x: 165, z: -45, heading: 0.4 },
-  { x: -10, z: -40, heading: 2.1 },
-  { x: 250, z: 20, heading: -0.3 },
-  { x: -60, z: 140, heading: 1.2 },
-  { x: -150, z: 20, heading: 2.8 },
-  { x: 40, z: 140, heading: -1.9 },
-  { x: 300, z: 140, heading: 0.9 },
+  { kind: 'sailboat', x: 165, z: -45, heading: 0.4 },
+  { kind: 'motor-yacht', x: -10, z: -40, heading: 2.1 },
+  { kind: 'sailboat', x: 250, z: 20, heading: -0.3 },
+  { kind: 'motor-yacht', x: -60, z: 140, heading: 1.2 },
+  { kind: 'sailboat', x: -150, z: 20, heading: 2.8 },
+  { kind: 'motor-yacht', x: 40, z: 140, heading: -1.9 },
+  { kind: 'sailboat', x: 300, z: 140, heading: 0.9 },
 ]);
 
 // Islands floating in the sky round the high road: middle (x, z), the height of their grassy top (y), radius

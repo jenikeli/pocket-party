@@ -1,6 +1,6 @@
 // The kit-shots pieces for the seaside course's decks, supports and what stands in its sea and sky (M7d4c3):
 // the four decks, trusses and piers, the lighthouse, stilt hut, Koopa shell, beach island, floating island,
-// backdrop cliff, sailboat, cloud, balloon and airship. Same shape as pieces.js's entries, plus `sea: true` for the
+// backdrop cliff, sailboat, motor yacht (M7d4d), cloud, balloon and airship. Same shape as pieces.js's entries, plus `sea: true` for the
 // pieces that need the race's sea under them (viewer.js adds it, SEA_DROP below the road) and build(kit,
 // seaLevel). Sea and sky pieces stand beside the road, `out` past its edge (the road is 'walled', so no ground
 // beside it), facing the road. Used by pieces.js.
@@ -16,6 +16,7 @@ import { buildLighthouse } from '../games/kart-3d/kit/lighthouse.js';
 import { buildStiltHut } from '../games/kart-3d/kit/stilt-hut.js';
 import { buildKoopaShell } from '../games/kart-3d/kit/koopa-shell.js';
 import { buildSailboat } from '../games/kart-3d/kit/sailboat.js';
+import { buildMotorYacht } from '../games/kart-3d/kit/motor-yacht.js';
 import { buildBeachIslands } from '../games/kart-3d/kit/beach-island.js';
 import { buildFloatingIslands, buildBackdropCliffs } from '../games/kart-3d/kit/floating-island.js';
 import { buildRoundTree } from '../games/kart-3d/kit/round-tree.js';
@@ -142,6 +143,7 @@ export const LANDMARK_PIECES = {
   'floating-island': landmark(buildFloatingIslandPiece, 20, -6, 28, { sea: false }),
   'backdrop-cliff': landmark(buildBackdropCliffPiece, 60, -SEA_DROP + 18, 100),
   sailboat: landmark((kit, seaLevel) => addParts(kit, buildSailboat(kit), standAt(kit, 12, seaLevel, 70)), 12, -SEA_DROP + 3, 5, { eye: NEAR_WATER }),
+  'motor-yacht': landmark((kit, seaLevel) => addParts(kit, buildMotorYacht(kit), standAt(kit, 12, seaLevel, 70)), 12, -SEA_DROP + 3, 8, { eye: NEAR_WATER }),
   cloud: landmark((kit) => addParts(kit, buildCloud(kit), standAt(kit, 24, 3)), 24, 6, 30, { sea: false }),
   balloon: landmark((kit) => addParts(kit, buildBalloon(kit, BALLOONS[0].colors), standAt(kit, 14, 0.5)), 14, 6, 12, { sea: false }),
   airship: landmark(buildAirshipPiece, 24, 8, 30, { sea: false }),

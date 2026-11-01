@@ -125,8 +125,9 @@ test('nothing round Seaside Skyway reaches the road or the room above it', () =>
   assert.ok(clearOfRoad({ x: LIGHTHOUSE.x, z: LIGHTHOUSE.z, reach: LIGHTHOUSE.radius * WOBBLE, bottom: SEA_LEVEL, top: lighthouseTop }), 'the lighthouse');
   assert.ok(lighthouseTop > 6, 'the lighthouse\'s dome shows above the road');
   assert.ok(clearOfRoad({ x: KOOPA_SHELL.x, z: KOOPA_SHELL.z, reach: KOOPA_SHELL.radius * 1.1, bottom: SEA_LEVEL, top: SEA_LEVEL + KOOPA_SHELL.radius }), 'the Koopa shell');
+  // A boat reaches 4.3 from its middle: the motor yacht (M7d4d) is 8.1 long with its swim platform.
   for (const boat of BOATS) {
-    assert.ok(clearOfRoad({ x: boat.x, z: boat.z, reach: 3.5, bottom: SEA_LEVEL, top: SEA_LEVEL + 7.5 }), `the boat at ${boat.x}, ${boat.z}`);
+    assert.ok(clearOfRoad({ x: boat.x, z: boat.z, reach: 4.3, bottom: SEA_LEVEL, top: SEA_LEVEL + 7.5 }), `the boat at ${boat.x}, ${boat.z}`);
   }
   for (const island of FLOATING_ISLANDS) {
     const spot = { x: island.x, z: island.z, reach: island.radius * WOBBLE * 1.03, bottom: island.y - 1.2 * island.radius, top: island.y + TREE_HEIGHT };

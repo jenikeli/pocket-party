@@ -13,6 +13,7 @@ import { buildStiltHut } from './kit/stilt-hut.js';
 import { buildLighthouse } from './kit/lighthouse.js';
 import { buildKoopaShell } from './kit/koopa-shell.js';
 import { buildSailboat } from './kit/sailboat.js';
+import { buildMotorYacht } from './kit/motor-yacht.js';
 import { dressSea } from './kit/sea.js';
 
 // The foam comes and goes once every this many seconds.
@@ -106,25 +107,39 @@ function addKoopaShell(kit, seaLevel) {
   kit.world.add(shell);
 }
 
-// Returns { bob(time) }: the boats rocking gently on the waves at `time` seconds.
+// How to build each kind of boat in BOATS.
+const BOAT_BUILDERS = { sailboat: buildSailboat, 'motor-yacht': buildMotorYacht };
+
+// Returns { bob(time) }: the boats rocking gently on the waves at `time` seconds. Each kind of boat is one
+// instanced mesh per part.
 function addBoats(kit, seaLevel) {
-  const [{ geometry, material }] = buildSailboat(kit);
-  const mesh = new THREE.InstancedMesh(geometry, material, BOATS.length);
-  // Moved boat by boat in bob(), so never cut into cells (split-meshes.js).
-  mesh.userData.keepWhole = true;
-  kit.world.add(mesh);
   const matrix = new THREE.Matrix4();
   const turn = new THREE.Quaternion();
   const tilt = new THREE.Euler(0, 0, 0, 'YXZ');
   const position = new THREE.Vector3();
   const scale = new THREE.Vector3(1, 1, 1);
-  function bob(time) {
-    BOATS.forEach((boat, index) => {
-      tilt.set(0.04 * Math.sin(time * 0.9 + index), boat.heading, 0.07 * Math.sin(time * 1.1 + index * 2));
-      position.set(boat.x, seaLevel + 0.2 * Math.sin(time * 1.3 + index), boat.z);
-      mesh.setMatrixAt(index, matrix.compose(position, turn.setFromEuler(tilt), scale));
+  const fleets = Object.entries(BOAT_BUILDERS).map(([kind, build]) => {
+    // Each boat keeps its index in BOATS, so its rocking is out of step with its neighbours'.
+    const boats = BOATS.map((boat, index) => ({ boat, index })).filter(({ boat }) => boat.kind === kind);
+    const meshes = build(kit).map(({ geometry, material }) => {
+      const mesh = new THREE.InstancedMesh(geometry, material, boats.length);
+      // Moved boat by boat in bob(), so never cut into cells (split-meshes.js).
+      mesh.userData.keepWhole = true;
+      kit.world.add(mesh);
+      return mesh;
     });
-    mesh.instanceMatrix.needsUpdate = true;
+    return { boats, meshes };
+  });
+  function bob(time) {
+    for (const { boats, meshes } of fleets) {
+      boats.forEach(({ boat, index }, slot) => {
+        tilt.set(0.04 * Math.sin(time * 0.9 + index), boat.heading, 0.07 * Math.sin(time * 1.1 + index * 2));
+        position.set(boat.x, seaLevel + 0.2 * Math.sin(time * 1.3 + index), boat.z);
+        matrix.compose(position, turn.setFromEuler(tilt), scale);
+        meshes.forEach((mesh) => mesh.setMatrixAt(slot, matrix));
+      });
+      meshes.forEach((mesh) => { mesh.instanceMatrix.needsUpdate = true; });
+    }
   }
   bob(0);
   return { bob };

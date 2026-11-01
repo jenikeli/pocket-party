@@ -14,7 +14,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
-import { GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -91,7 +91,7 @@ describe('M7c 3D look', () => {
       await hostPage.waitForTimeout(300);
     }
     await startTheGame();
-  });
+  }, { timeout: STARTING_TIMEOUT });
 
   after(async () => {
     await chromium?.close();
@@ -133,7 +133,7 @@ describe('M7c 3D look', () => {
     await saveScreenshot(hostPage, 'm7c-2-host-race-high');
   });
 
-  test('the saved choice comes back the next time the game starts', async () => {
+  test('the saved choice comes back the next time the game starts', { timeout: STARTING_TIMEOUT }, async () => {
     await clickNow(hostPage, '#kart-3d-setup-button');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await chooseQuality('low');

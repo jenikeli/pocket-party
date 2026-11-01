@@ -1,8 +1,8 @@
 // The 3D race's HTML panels over the canvas: the setup screen (course, laps and engine class for everyone, the
-// host's drawing quality with the Measure tool's button (M7d4b), each player's control style and ready, and Start
-// race), and during the race a small bar at the top (Back to setup, Restart
-// and Tuning, which opens tuning-panel.js and the readout), the race clock top right, and the countdown in big
-// letters in the middle. The results are results-panel.js's. Used by host/games/kart-3d/index.js, which owns
+// host's drawing quality with the Measure tool's button (M7d4b) and the Watch buttons (a race of 1 to 4
+// self-driving karts with a view each, M7d4c1), each player's control style and ready, and Start race), and
+// during the race a small bar at the top (Back to setup, Restart and Tuning, which opens tuning-panel.js and the
+// readout), the race clock top right, and the countdown in big letters in the middle. The results are results-panel.js's. Used by host/games/kart-3d/index.js, which owns
 // the state; the panels only show it and report clicks. The bottom right stays clear for the shell's game bar.
 
 import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
@@ -11,6 +11,7 @@ import { playerSetup, playersHoldingUpStart, canStartRace } from '/host/kart/set
 import { ENGINE_CLASSES } from './race.js';
 import { COURSES } from './courses.js';
 import { QUALITY_LEVELS } from './quality.js';
+import { MAX_STAND_INS } from './stand-ins.js';
 
 const STYLE = `
   #kart-3d-setup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(720px, 90vw);
@@ -45,12 +46,12 @@ const STYLE = `
 `;
 
 // `onCourse(courseId)` gets an id from COURSES, `onLapsStep(step)` -1 or 1, `onEngineClass(engineClass)` a key of
-// ENGINE_CLASSES, `onQuality(level)` a key of QUALITY_LEVELS; `onMeasure()`, `onStartRace()`, `onBackToSetup()`,
-// `onRestart()` and `onTuning()` run on a click of those buttons (`handlers` holds them). Returns
+// ENGINE_CLASSES, `onQuality(level)` a key of QUALITY_LEVELS; `onWatch(viewCount)` 1 to MAX_STAND_INS;
+// `onMeasure()`, `onStartRace()`, `onBackToSetup()`, `onRestart()` and `onTuning()` run on a click of those buttons (`handlers` holds them). Returns
 // { showSetup(setup, choices, players), showRace(...), hideAll() }: one of the first two shows at a time, or none
 // (hideAll, while the Measure tool runs).
 export function createPanels(container, handlers) {
-  const { onCourse, onLapsStep, onEngineClass, onQuality, onMeasure, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
+  const { onCourse, onLapsStep, onEngineClass, onQuality, onMeasure, onWatch, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
   const style = document.createElement('style');
   style.textContent = STYLE;
   const setupPanel = createSetupPanel();
@@ -80,6 +81,7 @@ export function createPanels(container, handlers) {
   engineButtons.forEach((button) => button.addEventListener('click', () => onEngineClass(Number(button.dataset.engineClass))));
   qualityButtons.forEach((button) => button.addEventListener('click', () => onQuality(button.dataset.quality)));
   byId('kart-3d-measure-button').addEventListener('click', onMeasure);
+  setupPanel.querySelectorAll('[data-watch-views]').forEach((button) => button.addEventListener('click', () => onWatch(Number(button.dataset.watchViews))));
   startButton.addEventListener('click', onStartRace);
   byId('kart-3d-setup-button').addEventListener('click', onBackToSetup);
   byId('kart-3d-restart-button').addEventListener('click', onRestart);
@@ -148,6 +150,8 @@ function createSetupPanel() {
   const qualityButtons = Object.entries(QUALITY_LEVELS)
     .map(([level, { label }]) => `<button type="button" data-quality="${level}" aria-pressed="false">${label}</button>`)
     .join('');
+  const watchButtons = Array.from({ length: MAX_STAND_INS }, (unused, index) => `<button type="button" data-watch-views="${index + 1}">${index + 1}</button>`)
+    .join('');
   panel.innerHTML = `
     <h1>Kart race 3D</h1>
     <div class="settings">${courseButtons}</div>
@@ -160,6 +164,7 @@ function createSetupPanel() {
     <div class="settings">${engineButtons}</div>
     <div class="settings quality">Look ${qualityButtons}
       <button type="button" id="kart-3d-measure-button">Measure</button></div>
+    <div class="settings quality">Watch, no phones: ${watchButtons} views</div>
     <p>Pick your steering and accelerate on your phone, then tap Ready.</p>
     <ul id="kart-3d-rows"></ul>
     <p id="kart-3d-status"></p>

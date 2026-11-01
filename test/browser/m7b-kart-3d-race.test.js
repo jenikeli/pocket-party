@@ -4,7 +4,8 @@
 // race clock runs; the readout shows only with the tuning panel; when every player has left mid-race the
 // results list the CPU karts and Back to lobby ends the game; the results panel lists players in their colours
 // with their times and its Race again button works; a race on the Test track; and a lost WebGL context ends
-// the game through the shell's error path. Ana is an
+// the game through the shell's error path. Since M7d4c1, Watch on the setup screen races four self-driving
+// stand-ins with a view each while the phones wait. Ana is an
 // Android phone (Chromium), Bo an iPhone (WebKit). A whole race is not driven here: software-drawn WebGL runs
 // at a few frames a second and nothing can steer blind round the course, so the unit tests drive whole races.
 // Headless Chromium draws WebGL in software, so the host page is
@@ -123,6 +124,26 @@ describe('M7b 3D race', () => {
       await waitUntil(async () => (await player.page.textContent('#kart-setup-laps')) === '4 laps, 200cc', { message: `${player.name}'s laps line` });
     }
     await saveScreenshot(hostPage, 'm7b-1-host-setup');
+  });
+
+  // M7d4c1: Watch races stand-ins that drive themselves, a view each, with no phone needed.
+  test('Watch with 4 views races four self-driving stand-ins while the phones wait; Back to setup ends it', async () => {
+    await clickNow(hostPage, '[data-watch-views="4"]');
+    await waitUntil(async () => (await hudTexts('label')).length === 4, { ...RACE_TIMEOUT, message: 'four views' });
+    assert.deepEqual(await hudTexts('label'), ['View 1', 'View 2', 'View 3', 'View 4']);
+    assert.deepEqual(await hudTexts('lap'), Array(4).fill('Lap 1/4'));
+    for (const player of [ana, bo]) {
+      await waitUntil(async () => (await player.page.textContent('#kart-line')) === 'Waiting for the next race', { message: `${player.name} waits` });
+    }
+    await clickNow(hostPage, '#kart-3d-tuning-button');
+    await waitUntil(async () => /View 4: [\d.]+ units\/s/.test(await hostPage.textContent('#kart-3d-readout')), { ...RACE_TIMEOUT, message: 'the readout lists the stand-ins' });
+    await saveScreenshot(hostPage, 'm7b-1b-host-watch-4');
+    await clickNow(hostPage, '#kart-3d-tuning-button');
+    await clickNow(hostPage, '#kart-3d-setup-button');
+    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
+    for (const player of [ana, bo]) {
+      await player.page.waitForSelector('#kart-setup:not([hidden])');
+    }
   });
 
   test('Start race counts down on both screens; each view shows its player\'s name, lap and place', async () => {

@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -61,7 +61,7 @@ describe('M7d4b 3D Measure tool', () => {
     }
     await startGame(hostPage, ana, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-  });
+  }, { timeout: STARTING_TIMEOUT });
 
   after(async () => {
     await chromium?.close();

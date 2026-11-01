@@ -14,8 +14,10 @@ import { PLAIN_COURSE_STORAGE_KEY } from '../../host/games/kart-3d/plain-course.
 // The 3D race builds its world and draws a first frame while it starts. In software that takes about 10 s more
 // since M7d4b2 (the course light, and the detailed pieces' maps drawn pixel by pixel) and since M7d4c1 the shade
 // baked round the whole lap, about 400 depth maps: 21 s for Seaside Skyway, 10 s for the Test track. The plain
-// course does none of these.
-export const GAME_START_TIMEOUT = 60000;
+// course does none of these. A hook or test that starts the game needs its own timeout past node's default 60 s:
+// STARTING_TIMEOUT leaves room for the joins and clicks around the start.
+export const GAME_START_TIMEOUT = 90000;
+export const STARTING_TIMEOUT = GAME_START_TIMEOUT + 30000;
 
 // Makes the host page load with `level` (a key of QUALITY_LEVELS) saved, as if chosen on an earlier visit.
 // Call before the page's goto; it applies to every later load of that page too.

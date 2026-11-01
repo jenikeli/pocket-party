@@ -1,10 +1,11 @@
 // The Measure tool's plan and report (M7d4b): what it draws and how it writes up the times. It needs no phones:
-// a race of 12 karts driving themselves (four of them stand in for players, so there are 1 and 4 views to
-// draw), stopped at a few fixed moments, drawn in a list of looks: the quality levels, then Medium with the
-// shadows or one part of the course switched off at a time. Plain data and functions, unit tested
-// in Node. Used by host/games/kart-3d/measure-run.js.
+// a race of 12 karts driving themselves (four of them stand in for players, stand-ins.js, so there are 1 and 4
+// views to draw), stopped at a few fixed moments, drawn in a list of looks: the quality levels, then Medium with
+// the shadows or one part of the course switched off at a time. Plain data and functions, unit tested in Node.
+// Used by host/games/kart-3d/measure-run.js.
 
-import { createRace, stepRace, DEFAULT_ENGINE_CLASS } from './race.js';
+import { stepRace, DEFAULT_ENGINE_CLASS } from './race.js';
+import { createStandInRace, MAX_STAND_INS } from './stand-ins.js';
 import { GO_AT } from './rocket-start.js';
 import { KIT_PARTS } from './kit/layout-rules.js';
 import { NEUTRAL_CONTROLS } from '../../kart/kart-controls.js';
@@ -17,8 +18,6 @@ export const TIMED_FRAMES = 8;
 // The moments drawn, as race times: on the grid before the countdown (the gate, the grandstand and its crowd in
 // view), then every 10 s into the race, round most of a lap of Seaside Skyway (39 s for these karts).
 const MOMENTS = Object.freeze([0, GO_AT + 10, GO_AT + 20, GO_AT + 30]);
-// The four karts that stand in for players drive themselves in these lanes, like the CPU karts.
-const STAND_IN_LANES = [-2, 2, -1, 1];
 const STEP_SECONDS = 1 / 60;
 // Everything a look can hide: the road and the sea (scenery.js), each part of the dressing, and the karts.
 export const MEASURED_PARTS = Object.freeze(['road', 'sea', ...Object.values(KIT_PARTS), 'karts']);
@@ -29,16 +28,14 @@ const MEDIUM = Object.freeze({ bloom: false, pixelRatio: 1, shadows: true, hidde
 // The race at each moment, as separate copies (the race is plain data), and the stand-in players, in slot
 // order, whose karts the views follow: { races, players }.
 export function createMeasureRaces(track) {
-  const players = STAND_IN_LANES.map((lane, index) => ({ playerId: `measure-${index + 1}`, colorIndex: index, name: `View ${index + 1}`, connected: true }));
-  const race = createRace(track, players.map((player) => player.playerId), 3, DEFAULT_ENGINE_CLASS);
-  race.karts.filter((kart) => kart.playerId !== null).forEach((kart, index) => (kart.lane = STAND_IN_LANES[index]));
+  const { race, players } = createStandInRace(track, MAX_STAND_INS, 3, DEFAULT_ENGINE_CLASS);
   const races = MOMENTS.map((moment) => {
     while (race.time < moment - 1e-9) {
       stepRace(race, track, () => NEUTRAL_CONTROLS, STEP_SECONDS);
     }
     return structuredClone(race);
   });
-  return { races, players };
+  return { races, players: [...players.values()] };
 }
 
 // The looks to draw, in order, each { label, look }: look is what renderer.js's setLook takes.

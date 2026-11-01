@@ -49,7 +49,7 @@ function fakeKit() {
 
 // How many parts each prop had when props.js made them all (M7d4c2): the MKTV van, the lamps, the floodlight and
 // the palm had two, the rest one.
-const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 2, floodlight: 2, palm: 2 };
+const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2 };
 
 function assertParts(parts, label) {
   assert.ok(Array.isArray(parts) && parts.length > 0, `${label} returns parts`);

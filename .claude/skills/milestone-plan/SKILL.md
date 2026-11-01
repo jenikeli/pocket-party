@@ -38,7 +38,7 @@ Then run the browser tests the change calls for, picked by `CLAUDE.md`'s Testing
 
 ## 4. Review and hand off
 
-- For changes to the 3D look: picture sheets of the changed pieces for the user to review before the device run (the `kit-review` skill, once it exists).
+- For changes to the 3D look: picture sheets of the changed pieces for the user to review before the device run, made with `npm run kit-shots` (`--name before` at the start of the part, before anything changes, and `--name after` at the end; new pieces go in `host/kit-shots/pieces.js`).
 - Then the `handoff` skill.
 
 ## Commits

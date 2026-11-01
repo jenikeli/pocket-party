@@ -848,3 +848,40 @@ The other parts (road, sea, supports, decks, props, gate, surroundings, sky) eac
 - **The course appears in under 2 s** on the setup screen (about 1 s after M7d3), with the shade baked, the light taken and the maps drawn.
 - **Seen while driving:** with every switch on, the look is closer to MK8DX than with any of them off, so all four trials stay. "Light from the course, strength" tuned to **0.7** (now the default; software suggested 1.5). Nothing looked broken.
 - **The readout showed a steady 60 fps with 4 players** on High, where the M7d3 run showed 80-90. The Measure times allow about 75 fps, and a rate pinned at exactly 60 looks like a cap rather than the GPU running out. Not checked: whether Safari's "Prefer Page Rendering Updates near 60fps" feature flag (Settings, Apps, Safari, Advanced, Feature Flags) was on for this run and not for M7d3's.
+
+## M7d4c1: cleanup and tools
+
+### What was built
+
+The first part of M7d4c (plan.md). No rule changes and no new look, except that the baked shade now covers the whole lap.
+
+- **M7d4b2's trials are fixed on** (its device run kept all four): detail in textures on the gate, the striped rail and the padded sponsor wall, the baked shade, the light from the course (strength 0.7) and the photo-scanned asphalt. The "Drawing" group, M7d4a's ways for the three pieces, our drawn asphalt and the old sky-only light are gone. Measure keeps its quality and part looks, without the per-switch looks.
+- **The baked shade round the whole lap** (`baked-shade.js`), in pieces of 100 stations with depth maps of 1024, and kept per course for as long as the game runs: switching courses on the setup screen bakes each course once.
+- **`npm run kit-shots`**: picture sheets of single kit pieces, lit as in the race, for the review at the end of every later part (plan.md's summary has the usage).
+- **A plain course** for the rules browser tests (road, sea and plain walls), set in localStorage by the tests.
+
+### Measured without a device
+
+In headless Chromium (llvmpipe, software), in a scratch page kept out of the repo:
+
+| Bake | Seaside Skyway (1211 stations) | Test track (629) |
+|---|---|---|
+| M7d4b2, the start stretch (96 maps of 512) | 4.3 s | |
+| Whole lap, pieces of 40, maps of 512 (992 maps) | 30.5 s | |
+| Whole lap, pieces of 100, maps of 1024 (416 maps), as built | 21.5 s | 10 s |
+| The same course shown again (saved shade) | 0.2 s | 0.1 s |
+
+- In software the time is the drawing of the depth maps: the vertex loop took 0.9 s, maps of 256 took as long as maps of 512, and drawing 16 maps as tiles of one sheet read back once saved nothing. Each map draws whole 200-unit cells, so bigger pieces cost little more per map. On the iPad the maps are GPU work and readbacks, so the device run's time to appear is the number that matters (M7d4b2's 96 maps fitted in "under 2 s" with the rest of the build).
+- **The browser suite:** 112 tests in 14 min 29 s (17 min 55 s after M7d4b2). The rules files on the plain course take 40-54 s each; the look files, which keep the full drawing and now bake the whole lap, 103-149 s.
+
+### Device run procedure
+
+1. Host on the iPad, the 3D race, Look on High. On the setup screen, time how long Seaside Skyway takes to appear the first time (M7d4b2: under 2 s; it now bakes the whole lap). Then switch to the Test track (first time: it bakes too) and back to Seaside Skyway (should be about as quick as M7d3's second: the shade is kept). Note the three times.
+2. Open **Tuning**: the "Drawing" group is gone; Look still has "Light from the course, strength" at 0.7.
+3. With one phone, drive a whole lap of Seaside Skyway slowly. The soft darker band at the foot of the walls, on the ledges and under things should now run round the whole lap, not stop about 70 units past the start line: look at the sky half (s 340-1076: the guardrails, the garden deck up the climb, the high road) and the seaside half's decks and fences. Look for anything wrong: dark blotches, open road that looks shaded, or a visible step in the shade every 100 units (where the bake's pieces meet).
+4. The same on the Test track, one lap.
+5. The gate's posts, the striped rails, the sponsor walls and the asphalt should look as on M7d4b2's run with every trial on (they are now the only way).
+6. With four phones: the readout's fps on High (M7d4b2: a steady 60), to check nothing got slower (the bake costs nothing per frame).
+7. Anything that looks broken: black or missing pieces, a pale sea, stretched textures.
+
+No **Tune:** steps in this part.

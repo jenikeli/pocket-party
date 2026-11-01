@@ -76,6 +76,9 @@ const PALMS_SIDE_BY_SIDE = {
   focus: { ...propPiece('palm', PROP_SIZES.palm).focus, size: PROP_SIZES.palm + PALM_GAP / 2 },
 };
 
+// Close up, the camera on the trunk's middle, to judge the detail a passing kart sees at a few metres.
+const PALM_CLOSE_FOCUS = { ...propPiece('palm', PROP_SIZES.palm).focus, height: 3, size: 3 };
+
 function palmSpot(s) {
   return { piece: 'palm', s, side: 'right', out: PROP_REACH.palm + PROP_CLEARANCE };
 }
@@ -86,4 +89,6 @@ export const PIECES = {
   'start-gate': START_GATE,
   'palm-blender': BLENDER_PALM,
   'palms-side-by-side': PALMS_SIDE_BY_SIDE,
+  'palm-close': { ...propPiece('palm', PROP_SIZES.palm), focus: PALM_CLOSE_FOCUS },
+  'palm-blender-close': { ...BLENDER_PALM, focus: PALM_CLOSE_FOCUS },
 };

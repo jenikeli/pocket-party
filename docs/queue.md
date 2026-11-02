@@ -9,10 +9,10 @@ and deleted.
 
 | Task | Driver | Slot | Status |
 |---|---|---|---|
-| A | Pip | 1 | queued |
-| B | Fern | 2 | queued |
-| C | Bolt | 3 | queued |
-| D | Grimble | 4 | queued |
+| A | Pip | 1 | building |
+| B | Fern | 2 | merged |
+| C | Bolt | 3 | building |
+| D | Grimble | 4 | building |
 | E | Rusty | 5 | queued |
 | F | Inky | 6 | queued |
 | G | Mochi | 7 | queued |
@@ -42,6 +42,7 @@ and deleted.
   - The head is about as wide as the shoulders and sits down on them, like Blaze's. The driver sits in the seat with both hands on the wheel and both feet in the nose, using `seat`: an animal's arms and legs still reach the seat's hands and feet.
   - Smooth big shapes over many small ones. Every part must read from the chase camera (the `above` views) as well as up close: something seen from behind should say who it is.
   - The character should look different from the others at a glance, by its silhouette as well as its colour.
+- **A kind you do not use** (a robot or a frog with nothing in skin) is built empty and draws nothing (fixed on main after Fern; it used to fail).
 - **Budgets:** the driver at most about 10,000 triangles (Blaze's is 9,900; the kart and wheels take 15,000 of the 25,000), in the existing material kinds only (no new draw calls). `test/unit/kart-3d-kart-designs.test.js` checks the budget, the colours, the decal and the height for every design in `KART_DESIGNS`. It must pass with yours in the list. It needs no new test unless your driver has its own logic.
 - **Check your work:** `npm test`, then kit-shots. The pieces are made for every design in `KART_DESIGNS`, so yours exist once your entry is in the list.
   - Run `npm run kit-shots -- --name <id> kart-<id> kart-<id>-side kart-<id>-close kart-blaze`.

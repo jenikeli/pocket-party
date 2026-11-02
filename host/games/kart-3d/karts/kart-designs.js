@@ -23,5 +23,6 @@
 // Adding a design: one file karts/drivers/<id>.js exporting it, and one entry below, in slot order.
 
 import { BLAZE } from './drivers/blaze.js';
+import { FERN } from './drivers/fern.js';
 
-export const KART_DESIGNS = Object.freeze([BLAZE]);
+export const KART_DESIGNS = Object.freeze([BLAZE, FERN]);

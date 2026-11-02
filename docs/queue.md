@@ -17,9 +17,9 @@ and deleted.
 | F | Inky | 6 | building |
 | G | Mochi | 7 | merged |
 | H | Sprout | 8 | merged |
-| I | Bruno | 9 | building |
+| I | Bruno | 9 | merged |
 | J | Rhino | 10 | building |
-| K | Wisp | 11 | queued |
+| K | Wisp | 11 | building |
 
 ## Rules for every task
 
@@ -54,8 +54,8 @@ and deleted.
 
 ## Notes for the end of the queue
 
-- Repeated in the drivers' own files, to fold into the shared files once the queue is done: painting one part in two tones by direction (fern-parts.js and pip-parts.js, both `twoTone`; rusty imports fern's); webbed feet (fern, pip); `cheeks()` has no option to skip its freckles (pip and sprout throw them away).
-- Pale faces that are not peach skin (Pip's white mask, Sprout's turnip, Bolt's dome) go grey in the kart's shade: the skin kind's warm glow tints them, the other kinds have none. A cool-glow kind would fix it at one more draw call; the user's call.
+- Repeated in the drivers' own files, to fold into the shared files once the queue is done: painting one part in two tones by direction (fern-parts.js and pip-parts.js, both `twoTone`; rusty imports fern's); webbed feet (fern, pip); `cheeks()` has no option to skip its freckles (pip, sprout, mochi and bruno throw them away); `arm()` does not return its elbow and wrist, so bruno-parts.js repeats its bend maths for checked sleeves.
+- Pale faces that are not peach skin (Pip's white mask, Sprout's turnip, Bolt's dome) go grey in the kart's shade: the skin kind's warm glow tints them, the other kinds have none. Mochi's fur works round it in the skin kind with a cool blue-white base (`0xe6edfb`). A cool-glow kind would fix it at one more draw call; the user's call.
 
 ## Tasks
 

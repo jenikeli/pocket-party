@@ -18,12 +18,13 @@ The main session (Opus) plans, integrates and hands off; `implementer` subagents
    - **Tests:** the unit tests it adds or changes. Browser tests are the main session's.
    - **Model:** `sonnet` for well-specified code (the usual), `haiku` for mechanical work (renames, moving text, updating lists), `opus` only where building needs judgement the plan cannot give. Fable is not available.
    - **Depends on:** a task that must be merged first, if any. Prefer tasks that do not depend on each other.
-4. Keep work in the main session when it is small (a few lines), touches shared files, or needs a decision while building. Spawning an agent costs a cold start; it pays for work of about half an hour or more.
-5. Show the plan to the user (the tasks in a short table: goal, files, model) with any decisions that are theirs, and wait for one approval. After it, stop again only for decisions that are the user's.
+4. **Reference pictures for any task that builds a look** (a character, a kart, a prop, a course piece): before spawning, decide whether the spec's words are enough for the builder to match MK8DX's style. If not, find reference pictures online yourself (fan wikis' galleries), save them under `test-results/reference/<milestone>/` (ignored, not committed), and give the builder their paths; or ask the user for pictures when you cannot find good ones. M7d5's first kart, built without pictures, looked nothing like its target until the references were sent.
+5. Keep work in the main session when it is small (a few lines), touches shared files, or needs a decision while building. Spawning an agent costs a cold start; it pays for work of about half an hour or more.
+6. Show the plan to the user (the tasks in a short table: goal, files, model) with any decisions that are theirs, and wait for one approval. After it, stop again only for decisions that are the user's.
 
 ## 2. Build in parallel
 
-- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 3 at a time: the dev box has 4 threads and 7 GB, and every agent's commands run on it (kit-shots also lets only 2 runs draw at once across all worktrees, `tools/machine-slots.js`). Ten at once (tried in M7d4c3) used up the user's 5-hour usage limit within minutes and stopped every agent mid-task.
+- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 3 at a time: the dev box has 4 threads and 7 GB, and every agent's commands run on it (kit-shots also lets only 2 runs draw at once across all worktrees, `tools/machine-slots.js`). Ten at once (tried in M7d4c3) used up the user's 5-hour usage limit within minutes and stopped every agent mid-task; six at once (M7d5) queued every kit-shots run and timed several out. Keep to 3 even when asked for more for one batch: the user decided so after M7d5.
 - Give each the whole task as written in the plan (goal, files, interfaces, tests) plus the milestone id for the commit message. It starts with no context: say what it needs to know.
 - While they build, do the main session's own share (shared files, small edits) in the main checkout, without touching the files a task owns.
 

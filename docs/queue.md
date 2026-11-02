@@ -11,9 +11,9 @@ and deleted.
 |---|---|---|---|
 | A | Pip | 1 | building |
 | B | Fern | 2 | merged |
-| C | Bolt | 3 | building |
+| C | Bolt | 3 | merged |
 | D | Grimble | 4 | building |
-| E | Rusty | 5 | queued |
+| E | Rusty | 5 | building |
 | F | Inky | 6 | queued |
 | G | Mochi | 7 | queued |
 | H | Sprout | 8 | queued |

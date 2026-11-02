@@ -12,12 +12,12 @@ and deleted.
 | A | Pip | 1 | merged |
 | B | Fern | 2 | merged |
 | C | Bolt | 3 | merged |
-| D | Grimble | 4 | building |
+| D | Grimble | 4 | merged |
 | E | Rusty | 5 | building |
 | F | Inky | 6 | building |
-| G | Mochi | 7 | queued |
-| H | Sprout | 8 | queued |
-| I | Bruno | 9 | queued |
+| G | Mochi | 7 | building |
+| H | Sprout | 8 | building |
+| I | Bruno | 9 | building |
 | J | Rhino | 10 | queued |
 | K | Wisp | 11 | queued |
 

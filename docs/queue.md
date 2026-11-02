@@ -15,10 +15,10 @@ and deleted.
 | D | Grimble | 4 | merged |
 | E | Rusty | 5 | merged |
 | F | Inky | 6 | building |
-| G | Mochi | 7 | building |
+| G | Mochi | 7 | merged |
 | H | Sprout | 8 | merged |
 | I | Bruno | 9 | building |
-| J | Rhino | 10 | queued |
+| J | Rhino | 10 | building |
 | K | Wisp | 11 | queued |
 
 ## Rules for every task

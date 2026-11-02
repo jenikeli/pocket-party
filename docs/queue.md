@@ -18,9 +18,9 @@ and deleted.
 | G | Mochi | 7 | merged |
 | H | Sprout | 8 | merged |
 | I | Bruno | 9 | merged |
-| J | Rhino | 10 | building |
+| J | Rhino | 10 | merged |
 | K | Wisp | 11 | merged |
-| L | Skin glow in each part's own colour, drivers retuned | - | queued (after J) |
+| L | Skin glow in each part's own colour, drivers retuned | - | building |
 
 ## Rules for every task
 

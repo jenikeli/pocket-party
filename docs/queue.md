@@ -9,12 +9,12 @@ and deleted.
 
 | Task | Driver | Slot | Status |
 |---|---|---|---|
-| A | Pip | 1 | building |
+| A | Pip | 1 | merged |
 | B | Fern | 2 | merged |
 | C | Bolt | 3 | merged |
 | D | Grimble | 4 | building |
 | E | Rusty | 5 | building |
-| F | Inky | 6 | queued |
+| F | Inky | 6 | building |
 | G | Mochi | 7 | queued |
 | H | Sprout | 8 | queued |
 | I | Bruno | 9 | queued |
@@ -51,6 +51,10 @@ and deleted.
   - Draw only through kit-shots: it shares 2 machine-wide slots (`tools/machine-slots.js`). Do not run the browser tests.
 - **Commit** on your branch: `m7d5 <id>, the <slot colour> driver: <what they are>`, lower case, with the attribution lines your instructions give.
 - **Report briefly:** what you built, the triangle count, the sheet's path, anything you could not get right, and any shared part you made your own version of.
+
+## Notes for the end of the queue
+
+- Repeated in the drivers' own files, to fold into the shared files once the queue is done: painting one part in two tones by direction (fern-parts.js and pip-parts.js, both `twoTone`); webbed feet (fern, pip); `cheeks()` has no option to skip its freckles (pip throws them away).
 
 ## Tasks
 

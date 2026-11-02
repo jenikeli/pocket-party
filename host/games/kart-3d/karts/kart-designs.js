@@ -27,5 +27,6 @@ import { PIP } from './drivers/pip.js';
 import { FERN } from './drivers/fern.js';
 import { BOLT } from './drivers/bolt.js';
 import { GRIMBLE } from './drivers/grimble.js';
+import { SPROUT } from './drivers/sprout.js';
 
-export const KART_DESIGNS = Object.freeze([BLAZE, PIP, FERN, BOLT, GRIMBLE]);
+export const KART_DESIGNS = Object.freeze([BLAZE, PIP, FERN, BOLT, GRIMBLE, SPROUT]);

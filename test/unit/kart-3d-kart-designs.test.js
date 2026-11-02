@@ -95,11 +95,18 @@ test('a kart with its driver fits the triangle and draw-call budgets', () => {
 test('the painted kinds are coloured per vertex and the decal maps its emblem', () => {
   for (const shapes of designShapes) {
     for (const kind of ['glossy', 'matte', 'skin', 'cloth', 'metal']) {
-      assert.ok(shapes[kind].attributes.color, `${kind} has vertex colours`);
+      assert.ok(shapes[kind].index.count === 0 || shapes[kind].attributes.color, `${kind} has vertex colours`);
     }
     assert.equal(shapes.decal.attributes.color, undefined);
     assert.ok(shapes.decal.attributes.uv);
   }
+});
+
+test('a driver with no part in a kind (a robot with no skin) builds that kind empty', () => {
+  const noSkin = { ...KART_DESIGNS[0], buildDriver: (seat) => ({ ...KART_DESIGNS[0].buildDriver(seat), skin: [] }) };
+  const shapes = buildDesignShapes(noSkin, kartParts);
+  assert.equal(triangles(shapes.skin), 0);
+  assert.ok(triangles(shapes.glossy) > 0);
 });
 
 test('the kart stands on the road and its driver\'s head tops out near the kart\'s length', () => {

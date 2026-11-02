@@ -3,6 +3,7 @@
 // the same shapes in every design, so they are built once and only copied and painted per design. Geometry only
 // (no textures), so it is unit tested in Node. Used by kart-models.js.
 
+import * as THREE from 'three';
 import { mergeShapes } from '../shape-utils.js';
 import { addParts, paintKart, MATERIAL_KINDS } from './part-shapes.js';
 import { buildKartBody } from './kart-body.js';
@@ -21,8 +22,15 @@ export function disposeKartParts(kartParts) {
 }
 
 // Returns { glossy, matte, metal, decal }: one geometry for each material kind (part-shapes.js's MATERIAL_KINDS),
-// the kart's parts (buildKartParts) painted in `design`'s palette, with its driver.
+// the kart's parts (buildKartParts) painted in `design`'s palette, with its driver. A kind the design does not use
+// (a robot or a frog with no part in skin) is an empty geometry, which draws nothing.
 export function buildDesignShapes(design, kartParts) {
   const parts = addParts(paintKart(kartParts, design.palette), design.buildDriver(SEAT));
-  return Object.fromEntries(MATERIAL_KINDS.map((kind) => [kind, mergeShapes(parts[kind])]));
+  return Object.fromEntries(MATERIAL_KINDS.map((kind) => [kind, parts[kind].length > 0 ? mergeShapes(parts[kind]) : emptyShape()]));
+}
+
+function emptyShape() {
+  const shape = new THREE.BufferGeometry();
+  shape.setIndex([]);
+  return shape;
 }

@@ -6,7 +6,7 @@
 // (kart-layout.js); sizes are in units (a kart is about 2 long).
 
 import * as THREE from 'three';
-import { joinNormals } from './curved-shapes.js';
+import { joinNormals, creased } from './curved-shapes.js';
 import { painted, ball, limb, along } from './part-shapes.js';
 
 // A head is a ball a little shorter and shallower than wide, its lower front (the cheeks and chin) bulging forward,
@@ -167,6 +167,7 @@ function ribbon(curve, width, thickness, phase) {
   strip.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   strip.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   strip.setIndex(indices);
-  strip.computeVertexNormals();
-  return strip;
+  // Creased, not smoothed: smooth normals at its thin edges would average a face with the one behind it, to
+  // almost nothing, and the GPU's half precision turns a normal that short into NaN or infinity (M7d5).
+  return creased(strip, Math.PI / 3);
 }

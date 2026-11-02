@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import { roundedBox } from '../shape-utils.js';
+import { creased } from './curved-shapes.js';
 import { kartPart, painted, limb, ball, along } from './part-shapes.js';
 import { EXHAUST_TIPS, EXHAUST_POINTING, WHEELS } from './kart-layout.js';
 
@@ -78,9 +79,11 @@ function buildBell(tip) {
     const shade = index % outline.length >= 6 ? 0.3 : 1;
     color.setXYZ(index, color.getX(index) * shade, color.getY(index) * shade, color.getZ(index) * shade);
   }
-  // Centred on its length, as along() takes a shape.
+  // Centred on its length, as along() takes a shape. Creased at the lip: the lathe's smooth normals there averaged
+  // the outside with the inside, to almost nothing, which the iPad's half precision turned into NaN or infinity
+  // under bloom (M7d5's whole-frame flashes).
   bell.translate(0, -BELL_LENGTH / 2, 0);
-  return along(bell, bellBase(tip), new THREE.Vector3(...tip));
+  return along(creased(bell, Math.PI / 4), bellBase(tip), new THREE.Vector3(...tip));
 }
 
 // A chrome band round the pipe a little before its bell.

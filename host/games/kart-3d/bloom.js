@@ -24,6 +24,7 @@ export function createBloom(renderer) {
   viewsPass.needsSwap = false;
   viewsPass.render = (passRenderer, writeBuffer, readBuffer) => drawViews(readBuffer);
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), tuning.bloomStrength, tuning.bloomRadius, tuning.bloomThreshold);
+  guardBloomInput(bloomPass);
   const outputPass = new OutputPass();
   composer.addPass(viewsPass);
   composer.addPass(bloomPass);
@@ -50,3 +51,27 @@ export function createBloom(renderer) {
     },
   };
 }
+
+// The brightest a pixel may be as bloom reads it. Before M7d5's karts nothing in a frame went above about 10
+// (measured on the dev box, Watch 4 on High); a sharp highlight on a tiny glossy part (a kart's eye, a lens) can be
+// hundreds for one frame, a "firefly" that bloom would spread into a flash.
+const BLOOM_INPUT_MAX = 16;
+
+// Bloom halves the frame again and again down to a few pixels and blurs every level back over it, so one pixel
+// that is infinite or not a number (NaN), which the iPad's GPU made now and then in M7d5's karts (its half
+// precision overflowing on a highlight or a near-zero normal), filled the whole frame with cyan or green. Its
+// first step, the bright-pass filter, now clamps every pixel to 0 to BLOOM_INPUT_MAX: max() drops a NaN on GPUs
+// (they return the other number) and min() caps infinity. The picture itself keeps the pixel: one dot at most.
+function guardBloomInput(bloomPass) {
+  const material = bloomPass.materialHighPassFilter;
+  const read = 'vec4 texel = texture2D( tDiffuse, vUv );';
+  if (!material.fragmentShader.includes(read)) {
+    throw new Error('UnrealBloomPass changed: its bright-pass filter no longer reads tDiffuse as expected');
+  }
+  material.fragmentShader = material.fragmentShader.replace(
+    read,
+    `${read}\n\t\t\ttexel.rgb = min( max( texel.rgb, vec3( 0.0 ) ), vec3( ${BLOOM_INPUT_MAX.toFixed(1)} ) );`,
+  );
+  material.needsUpdate = true;
+}
+

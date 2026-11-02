@@ -1,6 +1,7 @@
 // Curved shapes for the karts and their drivers (M7d5): a side profile pushed out sideways with rounded edges
 // (the kart's body panels), a smooth shell lofted through cross-sections (its nose and cowl), and one normal at a
-// ball's seam (the drivers' heads). Used by kart-body.js, kart-shells.js and driver-parts.js.
+// ball's seam (the drivers' heads), and normals creased where faces meet at a sharp angle. Used by kart-body.js,
+// kart-shells.js, kart-rear.js and driver-parts.js.
 
 import * as THREE from 'three';
 import { mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -50,7 +51,7 @@ export function extrudedSide(points, width, { radius, bevel }) {
 // `geometry` shaded smooth across its rounded edges and flat across its faces: Three.js's extruded shapes
 // come shaded flat, triangle by triangle, so a bevel showed its steps; here two triangles meeting at less than
 // `angle` share their normals. Returns a new, indexed geometry; `geometry` is disposed.
-function creased(geometry, angle = Math.PI / 5) {
+export function creased(geometry, angle = Math.PI / 5) {
   // toCreasedNormals tells points apart only to a hundredth of a unit, too coarse for a kart's small bevels, so
   // the shape is scaled up meanwhile.
   geometry.scale(100, 100, 100);

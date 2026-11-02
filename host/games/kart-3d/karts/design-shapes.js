@@ -10,6 +10,7 @@ import { buildKartBody } from './kart-body.js';
 import { buildKartRear } from './kart-rear.js';
 import { buildCockpit } from './kart-cockpit.js';
 import { SEAT } from './kart-layout.js';
+import { withSafeNormals } from './safe-normals.js';
 
 // The kart's parts for every design (part-shapes.js's kartPart), to give buildDesignShapes. Its shapes are only
 // copied from, so the caller disposes them once every design is built (disposeKartParts).
@@ -23,10 +24,11 @@ export function disposeKartParts(kartParts) {
 
 // Returns { glossy, matte, metal, decal }: one geometry for each material kind (part-shapes.js's MATERIAL_KINDS),
 // the kart's parts (buildKartParts) painted in `design`'s palette, with its driver. A kind the design does not use
-// (a robot or a frog with no part in skin) is an empty geometry, which draws nothing.
+// (a robot or a frog with no part in skin) is an empty geometry, which draws nothing. Every kind's normals are made
+// safe for the GPU (safe-normals.js).
 export function buildDesignShapes(design, kartParts) {
   const parts = addParts(paintKart(kartParts, design.palette), design.buildDriver(SEAT));
-  return Object.fromEntries(MATERIAL_KINDS.map((kind) => [kind, parts[kind].length > 0 ? mergeShapes(parts[kind]) : emptyShape()]));
+  return Object.fromEntries(MATERIAL_KINDS.map((kind) => [kind, parts[kind].length > 0 ? withSafeNormals(mergeShapes(parts[kind])) : emptyShape()]));
 }
 
 function emptyShape() {

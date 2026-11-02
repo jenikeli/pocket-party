@@ -28,6 +28,7 @@ const { buildKartParts, buildDesignShapes } = await import('../../host/games/kar
 const { buildWheel } = await import('../../host/games/kart-3d/karts/wheels.js');
 const { WHEELS, EXHAUST_SPOTS, EXHAUST_TIPS } = await import('../../host/games/kart-3d/karts/kart-layout.js');
 const { MATERIAL_KINDS, ball, twoTone } = await import('../../host/games/kart-3d/karts/part-shapes.js');
+const { countBadTriangles } = await import('../../host/games/kart-3d/karts/safe-normals.js');
 const { head } = await import('../../host/games/kart-3d/karts/driver-parts.js');
 const { cheeks } = await import('../../host/games/kart-3d/karts/driver-face.js');
 const { nextAntiGravityShare, easedShare, ANTI_GRAVITY_SECONDS } = await import('../../host/games/kart-3d/karts/anti-gravity.js');
@@ -92,6 +93,15 @@ test('a kart with its driver fits the triangle and draw-call budgets', () => {
     assert.ok(bodyTriangles + wheelTriangles <= TRIANGLE_BUDGET, `${KART_DESIGNS[index].id}: ${bodyTriangles + wheelTriangles} triangles`);
     assert.ok(MATERIAL_KINDS.length + wheelShapes.length <= DRAW_CALL_BUDGET);
   });
+});
+
+// M7d5's device run: on the iPad, a triangle whose normals blended through almost nothing became NaN or infinity
+// in half precision, and bloom spread it over the whole frame (safe-normals.js).
+test('no kart or wheel has a triangle whose normals are near zero or point more than a right angle apart', () => {
+  designShapes.forEach((shapes, index) => {
+    MATERIAL_KINDS.forEach((kind) => assert.equal(countBadTriangles(shapes[kind]), 0, `${KART_DESIGNS[index].id}'s ${kind}`));
+  });
+  wheelShapes.forEach((wheel, index) => assert.equal(countBadTriangles(wheel), 0, `wheel ${index}`));
 });
 
 test('the painted kinds are coloured per vertex and the decal maps its emblem', () => {

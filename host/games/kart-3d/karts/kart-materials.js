@@ -1,7 +1,8 @@
 // The materials the karts are drawn with (M7d5), one per kind of surface rather than one per colour, since the
-// host pays for every draw call: glossy clear-coated paint, matte, skin (a faint warm glow), cloth (a weave and a
-// soft sheen) and metal (all five coloured per vertex, shared by every kart), one decal material per design (its emblem), and one wheel material per kart, whose rims
-// glow cyan as far as that kart's wheels have turned flat for anti-gravity. Used by kart-models.js.
+// host pays for every draw call: glossy clear-coated paint, matte, skin (a faint glow in its own colour), cloth (a
+// weave and a soft sheen) and metal (all five coloured per vertex, shared by every kart), one decal material per
+// design (its emblem), and one wheel material per kart, whose rims glow cyan as far as that kart's wheels have
+// turned flat for anti-gravity. Used by kart-models.js.
 
 import * as THREE from 'three';
 import { createCanvas, canvasTexture } from '../canvas-texture.js';
@@ -9,8 +10,8 @@ import { createWheelMaps } from './wheel-maps.js';
 import { createWeaveMap } from './cloth-weave.js';
 
 const EMBLEM_SIZE = 256;
-const SKIN_GLOW_HEX = 0xffa47a;
-const SKIN_GLOW = 0.22;
+// How bright the skin kind glows, as a share of each part's own colour.
+const SKIN_GLOW = 0.21;
 const GLOW_HEX = 0x2ee6ff;
 // How bright the rims glow when the wheels are flat: above 1, so bloom (High quality) spreads it.
 const GLOW_BRIGHTNESS = 2.2;
@@ -23,9 +24,7 @@ export function createKartMaterials(designs, kartCount) {
   const byKind = {
     glossy: new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.25 }),
     matte: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55 }),
-    // Faces sit in the shade of their own caps and of the kart; a faint warm glow keeps them peach, as the
-    // references' faces are, instead of greying.
-    skin: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, emissive: SKIN_GLOW_HEX, emissiveIntensity: SKIN_GLOW }),
+    skin: createSkinMaterial(),
     // Sheen is the soft bright rim fabric shows where it turns away from the eye.
     cloth: new THREE.MeshPhysicalMaterial({
       vertexColors: true, roughness: 0.85, sheen: 1, sheenRoughness: 0.45, sheenColor: 0xffffff,
@@ -61,6 +60,21 @@ export function createKartMaterials(designs, kartCount) {
   }
 
   return { byKind, decals, wheels, setGlow, dispose };
+}
+
+// Faces sit in the shade of their own caps and of the kart; a faint glow keeps them in their own colour, as the
+// references' faces are, instead of greying. three.js glows one colour for the whole material, so it is white here
+// and the shader multiplies it by each vertex's colour, right after the emissive map would have: peach glows peach,
+// white glows white, teal glows teal, all in the one draw call.
+function createSkinMaterial() {
+  const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, emissive: 0xffffff, emissiveIntensity: SKIN_GLOW });
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <emissivemap_fragment>',
+      '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;',
+    );
+  };
+  return material;
 }
 
 function drawEmblemTexture(design) {

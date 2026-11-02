@@ -72,7 +72,7 @@ function buildDriver(seat) {
   // Out from under the seat's back, back over the engine and curling up beside his head, a little to his left so
   // the chase camera still sees his ears.
   const tail = [[x + 0.04, y + 0.12, z - 0.3], [x + 0.12, y + 0.3, z - 0.62], [x + 0.2, y + 0.62, z - 0.86], [x + 0.24, y + 0.95, z - 0.82], [x + 0.22, y + 1.12, z - 0.6]];
-  parts.matte.push(bushyTail(tail, 0.17, FUR, WHITE_FUR));
+  parts.skin.push(bushyTail(tail, 0.17, FUR, WHITE_FUR));
   return parts;
 }
 
@@ -81,7 +81,7 @@ function buildDriver(seat) {
 function addBody(parts, hip) {
   const [x, y, z] = hip;
   const [belly, jacket] = body([x, y - 0.02, z], { width: 0.58, height: 0.66, depth: 0.46, lower: FUR, upper: JACKET });
-  parts.matte.push(belly, ball(0.16, [1, 1.3, 0.55], [x, y + 0.42, z + 0.15], WHITE_FUR, { detail: 16, crease: 0.1 }));
+  parts.skin.push(belly, ball(0.16, [1, 1.3, 0.55], [x, y + 0.42, z + 0.15], WHITE_FUR, { detail: 16, crease: 0.1 }));
   parts.cloth.push(jacket);
   [1, -1].forEach((side) => {
     parts.cloth.push(limb([x + side * 0.15, y + 0.24, z + 0.2], [x + side * 0.13, y + 0.56, z + 0.15], 0.025, JACKET_TRIM));
@@ -89,7 +89,7 @@ function addBody(parts, hip) {
   parts.cloth.push(painted(new THREE.TorusGeometry(0.27, 0.035, 6, 28).rotateX(Math.PI / 2).scale(1, 1, 0.8).translate(x, y + 0.24, z), JACKET_TRIM, { crease: 0 }));
   parts.decal.push(emblemDisc(0.06, [0.4, 0.2, 1], [x + 0.2, y + 0.42, z + 0.19]));
   parts.decal.push(emblemDisc(0.1, [0, 0.4, -1], [x, y + 0.42, z - 0.225]));
-  parts.matte.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, FUR));
+  parts.skin.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, FUR));
 }
 
 // A navy bandana: a roll round the neck and a soft triangle hanging down over the chest, dotted white.
@@ -124,13 +124,12 @@ function addLimbs(parts, seat) {
     const side = Math.sign(hand[0]);
     const { sleeves, gloves } = arm([x + side * 0.28, y + 0.5, z], hand, { radius: 0.08, bend: 0.1, sleeve: JACKET, cuff: JACKET_TRIM, glove: 0.095, gloveHex: DARK_FUR });
     parts.cloth.push(...sleeves);
-    parts.matte.push(...gloves);
+    parts.skin.push(...gloves);
   });
   seat.feet.forEach((foot) => {
     const side = Math.sign(foot[0]);
     const { leg: legParts, shoe } = leg([x + side * 0.14, y + 0.04, z + 0.1], foot, { radius: 0.09, lift: 0.18, cloth: FUR, shoe: 0.28, shoeHex: SNEAKER, soleHex: CREAM });
-    parts.matte.push(legParts[0]);
-    parts.matte.push(painted(legParts[1], DARK_FUR));
+    parts.skin.push(legParts[0], painted(legParts[1], DARK_FUR));
     parts.glossy.push(...shoe);
   });
 }

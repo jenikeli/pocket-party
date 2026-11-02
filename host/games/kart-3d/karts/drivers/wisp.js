@@ -11,12 +11,10 @@ import { sweep, bodyRadius, tailRadius, shadeGhost } from './wisp-parts.js';
 const LAVENDER_WHITE = 0xe8e4f4;
 const VIOLET = 0x5b4bb0;
 const SCARF = 0xf0532a;
-// The ghost is drawn in the skin kind: its faint glow keeps it soft and bright in the kart's shade, where the
-// matte kind turns white grey and the glossy kind's clear coat a chrome grey. The glow is peach, which turned a
-// blue-white ghost (as Mochi's fur, drivers/mochi.js) pink in the shade, so its own colours are bluer still: lit,
-// the two add up to lavender white, and in shade the glow's red and the blue make pale lavender.
-const GHOST_TOP = 0xbccfff;
-const GHOST_TAIL = 0xa29ff5;
+// The ghost is drawn in the skin kind: its faint glow, in the ghost's own colour, keeps it soft and bright in the
+// kart's shade, where the matte kind turns white grey and the glossy kind's clear coat a chrome grey.
+const GHOST_TOP = 0xece7fa;
+const GHOST_TAIL = 0xc8bdf0;
 
 const HEAD_RADIUS = 0.34;
 

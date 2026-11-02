@@ -13,10 +13,9 @@ import { floppyEar, bow, muzzle } from './mochi-parts.js';
 const PINK = 0xff79b0;
 const SNOW = 0xfdf5f8;
 const BERRY = 0xa8325f;
-// Her fur is drawn in the skin kind: its faint warm glow keeps the white soft in the shade of the kart and the
-// ears, where the matte kind turned it grey. The glow is peach, so the fur itself is a cool blue white, which the
-// two add up to a white with a blush of pink.
-const FUR = 0xe6edfb;
+// Her fur is drawn in the skin kind: its faint glow, in the fur's own colour, keeps the white soft in the shade of
+// the kart and the ears, where the matte kind turned it grey.
+const FUR = 0xfbf7f8;
 const INNER_EAR = 0xffa9c9;
 const JACKET = 0xffb3d1;
 

@@ -15,7 +15,7 @@ const SLATE = 0x4a5670;
 const HAT = 0x8e44ad;
 const HAT_BAND = 0x5e2d7a;
 const BEARD = 0xf7f5f0;
-const SKIN = 0xffd2ae;
+const SKIN = 0xffc399;
 const TUNIC = 0x4d6290;
 const TROUSERS = 0x3e465c;
 const LEATHER = 0x6e4524;
@@ -78,7 +78,7 @@ function buildDriver(seat) {
   addBody(parts, seat.hip);
   addLimbs(parts, seat);
   addFace(parts, face);
-  parts.cloth.push(...beard(face, BEARD, MOUTH_UP));
+  parts.skin.push(...beard(face, BEARD, MOUTH_UP));
   const hat = floppyHat(face, { radius: HEAD_RADIUS * 1.08, height: 0.72, tilt: 0.4, rise: 0.1, hex: HAT, bandHex: HAT_BAND });
   parts.cloth.push(...hat.felt, hat.band);
   return parts;
@@ -115,16 +115,16 @@ function addLimbs(parts, seat) {
 
 // Blue eyes peeking out under big bushy white brows, a big round rosy nose, rosy cheeks, a smile under the
 // moustache, and white hair at the nape under the hat. The brows and hair are white as the beard and, like it, in
-// the cloth kind.
+// the skin kind.
 function addFace(parts, face) {
   parts.skin.push(face.shape);
   parts.glossy.push(...eyes(face, { size: 0.14, across: 0.18, up: 0.06, iris: 0x3d7fd1 }));
-  parts.cloth.push(...eyebrows(face, { across: 0.21, up: 0.32, length: 0.1, thickness: 0.055, tilt: 0.1, hex: BEARD }));
-  parts.skin.push(nose(face, { radius: 0.08, up: -0.08, hex: 0xffb79e }));
+  parts.skin.push(...eyebrows(face, { across: 0.21, up: 0.32, length: 0.1, thickness: 0.055, tilt: 0.1, hex: BEARD }));
+  parts.skin.push(nose(face, { radius: 0.08, up: -0.08, hex: 0xffac8e }));
   const { blush } = cheeks(face, { across: 0.42, up: -0.14, radius: 0.065, blushHex: 0xff9f8a, freckleHex: SKIN });
   parts.skin.push(...blush);
   parts.matte.push(...smile(face, { width: 0.17, up: MOUTH_UP }));
   [-0.5, 0, 0.5].forEach((turn) => {
-    parts.cloth.push(onHead(ball(1, [0.12, 0.08, 0.05], [0, 0, 0], BEARD, { detail: 10, crease: 0.2 }), face, { across: Math.PI + turn, up: -0.3 }));
+    parts.skin.push(onHead(ball(1, [0.12, 0.08, 0.05], [0, 0, 0], BEARD, { detail: 10, crease: 0.2 }), face, { across: Math.PI + turn, up: -0.3 }));
   });
 }

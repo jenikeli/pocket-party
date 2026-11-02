@@ -41,7 +41,7 @@ export function floppyHat(face, { radius, height, tilt, rise, hex, bandHex }) {
   };
 }
 
-// The beard (cloth parts: their soft sheen reads as fluff and keeps the white bright in shade), `hex`: a
+// The beard (skin parts: their faint glow in the beard's own white keeps it bright in shade), `hex`: a
 // moustache under the nose drooping outward, a fringe of clumps framing the face from the sideburns down round
 // the jaw, leaving the smile (`mouthUp` radians down the face) clear, and a big fluffy bib hanging from the chin
 // over the chest, widest at the top and ending in a round point. Every clump is a squashed ball, its foot a little

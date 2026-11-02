@@ -45,7 +45,7 @@ export function vestStripes(chest, { width, height, depth }, hex) {
 
 // A long frog's leg from `hip` folded up, its knee high and out beside the steering wheel, and down to a webbed
 // foot at `foot`: three toes fanned forward with round pads, joined by a thin web. In `skin`, the toes and web in
-// `toes`. Returns the parts (glossy).
+// `toes`. Returns the parts (skin).
 export function frogLeg(hip, foot, { skin, toes }) {
   const side = Math.sign(hip[0]);
   const knee = [hip[0] + side * 0.2, 0.74, (hip[2] + foot[2]) / 2 - 0.02];

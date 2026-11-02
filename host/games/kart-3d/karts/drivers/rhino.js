@@ -12,7 +12,7 @@ import { addRhinoHead, addHelmet } from './rhino-parts.js';
 const STEEL = 0x7f8c8d;
 const WHITE = 0xf2f1ec;
 const ORANGE = 0xf07a1c;
-const HIDE = 0xbcc6ca;
+const HIDE = 0xa4afb5;
 const SNOUT = 0xdde2e4;
 const WRINKLE = 0x5f696d;
 const HORN = 0xeee4cc;
@@ -77,7 +77,7 @@ function addSuit(parts, hip) {
   [1, -1].forEach((side) => {
     parts.glossy.push(ball(0.12, [1.05, 0.72, 1.12], [x + side * 0.27, y + 0.56, z], ORANGE, { detail: 12, crease: 0.15 }));
   });
-  parts.matte.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, HIDE));
+  parts.skin.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, HIDE));
 }
 
 // Grey sleeves with orange cuffs to dark gloves on the wheel; grey legs bent up into the nose with orange knee pads,

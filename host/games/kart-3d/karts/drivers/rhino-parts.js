@@ -29,11 +29,11 @@ const GOGGLE_ACROSS = 0.62;
 const PEAK_UP = 1.3;
 
 // Rhino's head `radius` round at `at`, its parts sorted into `parts`; returns the head ({ at, radius }) for the
-// helmet. `colours` is { hide, snout, wrinkle, horn, iris }. His hide is in the matte kind, not the skin kind: that
-// one's warm glow (kept for peach faces in shade) tints grey. Only the blush and the insides of his ears are skin.
+// helmet. `colours` is { hide, snout, wrinkle, horn, iris }. His hide is in the skin kind, whose faint glow in its
+// own grey keeps it light in the shade of the helmet and the kart.
 export function addRhinoHead(parts, at, radius, colours) {
   const face = head(at, radius, colours.hide);
-  parts.matte.push(withoutHidden(face.shape, (point) => underHelmet(point.clone().sub(new THREE.Vector3(...at)).normalize())));
+  parts.skin.push(withoutHidden(face.shape, (point) => underHelmet(point.clone().sub(new THREE.Vector3(...at)).normalize())));
   parts.glossy.push(...eyes(face, { size: 0.15, across: 0.3, up: 0.25, iris: colours.iris }));
   parts.matte.push(...eyebrows(face, { across: 0.3, up: 0.52, length: 0.085, thickness: 0.036, tilt: 0.16, hex: colours.wrinkle }));
   parts.skin.push(...cheeks(face, { across: 0.55, up: -0.1, radius: 0.05, blushHex: 0xe9a4a0, freckleHex: colours.hide }).blush);
@@ -58,7 +58,8 @@ function addSnout(parts, face, colours) {
   const centre = new THREE.Vector3(...face.at).addScaledVector(headDirection(0, -0.5), face.radius * 0.9).toArray();
   const snout = head(centre, SNOUT_RADIUS, colours.snout);
   const nostrils = [1, -1].map((side) => onHead(ball(0.022, [1.3, 0.75, 0.45], [0, 0, 0], NOSTRIL_HEX, { detail: 10, crease: 0 }), snout, { across: side * 0.34, up: 0.12 }));
-  [snout.shape, ...nostrils, ...smile(snout, { width: 0.15, up: -0.42 })].forEach((shape) => parts.matte.push(squashed(shape, centre, SNOUT_STRETCH)));
+  parts.skin.push(squashed(snout.shape, centre, SNOUT_STRETCH));
+  [...nostrils, ...smile(snout, { width: 0.15, up: -0.42 })].forEach((shape) => parts.matte.push(squashed(shape, centre, SNOUT_STRETCH)));
   withoutHidden(snout.shape, (point) => point.distanceTo(new THREE.Vector3(...face.at)) < face.radius * 0.88);
   // The snout's top, squashed as the snout is: where the horns stand.
   const onTop = (up) => {
@@ -103,7 +104,7 @@ function horn(root, tip, rootRadius, hex) {
 function addEar(parts, { at, radius }, side, hide) {
   const base = new THREE.Vector3(...at).addScaledVector(headDirection(side * 1.2, 0.85), radius * HELMET_SCALE * 0.95);
   const place = (shape) => shape.rotateX(-0.2).rotateZ(-side * 0.85).translate(base.x, base.y, base.z);
-  parts.matte.push(place(ball(0.09, [0.62, 1.15, 0.42], [0, 0.08, 0], hide, { detail: 12, crease: 0.15 })));
+  parts.skin.push(place(ball(0.09, [0.62, 1.15, 0.42], [0, 0.08, 0], hide, { detail: 12, crease: 0.15 })));
   parts.skin.push(place(ball(0.06, [0.6, 1.05, 0.25], [0, 0.09, 0.02], INNER_EAR_HEX, { detail: 10, crease: 0 })));
 }
 

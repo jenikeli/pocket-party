@@ -53,13 +53,15 @@ function drawEmblem(context, size) {
 function buildDriver(seat) {
   const parts = partList();
   const [x, y, z] = seat.hip;
-  // One round egg of a body, black-blue with a white belly across its front, and the head sitting down on it.
+  // One round egg of a body, black-blue with a white belly across its front, and the head sitting down on it, in
+  // the skin kind, whose faint glow in each part's own colour keeps the white belly and mask white in the kart's
+  // shade, where the matte kind turned them grey.
   const bodyAt = [x, y + 0.33, z];
   const bodyStretch = [1, 1.1, 0.82];
   const egg = ball(0.33, bodyStretch, bodyAt, WHITE, { detail: 28, crease: 0.25 });
-  parts.matte.push(recolour(egg, twoTone(bodyAt, bodyStretch, SNOW, INK, frontOval(0.95, 1.2, 0.15))));
+  parts.skin.push(recolour(egg, twoTone(bodyAt, bodyStretch, SNOW, INK, frontOval(0.95, 1.2, 0.15))));
   const face = head([x, y + 0.86, z + 0.04], HEAD_RADIUS, INK);
-  parts.matte.push(face.shape);
+  parts.skin.push(face.shape);
   parts.cloth.push(...striped(scarf([x, y + 0.6, z + 0.02], { radius: 0.21, thickness: 0.06, length: 0.42, width: 0.1, hex: WHITE }), { hex: SCARF_RED, otherHex: SNOW, rollCount: 14, tailCount: 5 }));
   addLimbs(parts, seat);
   addFace(parts, face);
@@ -92,8 +94,7 @@ function addLimbs(parts, seat) {
 
 // The white mask, big blue eyes and dark brows on it, soft pink blush, and the smiling beak between them.
 function addFace(parts, face) {
-  // Matte like the belly, not skin: the skin's warm glow turned the white pink.
-  parts.matte.push(faceMask(face, { width: 0.6, height: 0.5, up: -0.12, hex: SNOW }));
+  parts.skin.push(faceMask(face, { width: 0.6, height: 0.5, up: -0.12, hex: SNOW }));
   parts.glossy.push(...eyes(face, { size: 0.17, across: 0.2, up: 0.1, iris: 0x2f6fd0 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.4, length: 0.08, thickness: 0.03, tilt: 0.12, hex: INK }));
   parts.skin.push(...cheeks(face, { across: 0.44, up: -0.2, radius: 0.05, blushHex: 0xffb2c0, freckleHex: 0xffb2c0 }).blush);

@@ -13,9 +13,8 @@ import { turnipHead, leafTuft, bibs, straps, bootTop } from './sprout-parts.js';
 const LIME = 0xa3e048;
 const CREAM = 0xf4ecd6;
 const SOIL = 0x553823;
-// The turnip is drawn in the matte kind, as Pip's white mask is: the skin kind's warm glow (kept for peach faces in
-// shade) turns its white and purple pink, and the glossy kind's sheen greys the white. Only the blush, a warm
-// colour, is in the skin kind.
+// The turnip is drawn in the skin kind: its faint glow, in the turnip's own white and purple, keeps it bright in
+// the kart's shade, where the matte kind turned the white grey.
 const TURNIP = 0xfaf6ee;
 const TURNIP_PURPLE = 0xb98ae0;
 const TURNIP_DEEP = 0x8a4cc4;
@@ -88,7 +87,7 @@ function buildDriver(seat) {
   addBody(parts, seat.hip);
   addLimbs(parts, seat);
   const { face, top } = turnipHead([x, y + 0.86, z + 0.05], HEAD_RADIUS, { white: TURNIP, purple: TURNIP_PURPLE, deepPurple: TURNIP_DEEP });
-  parts.matte.push(face.shape);
+  parts.skin.push(face.shape);
   addFace(parts, face);
   parts.matte.push(...leafTuft(top, LEAVES, { leafHex: LEAF, ribHex: LEAF_RIB }));
   return parts;
@@ -109,7 +108,7 @@ function addBody(parts, hip) {
   parts.metal.push(...buttons);
   parts.decal.push(emblemDisc(0.065, [0, 0.2, 1], [x, chest.at[1] - 0.02, z + chest.radii[2] * 1.03 + 0.005]));
   parts.decal.push(emblemDisc(0.09, [0, 0.3, -1], [x, chest.at[1], z - chest.radii[2] * 1.03 - 0.008]));
-  parts.matte.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, TURNIP));
+  parts.skin.push(limb([x, y + 0.5, z], [x, y + 0.62, z + 0.03], 0.1, TURNIP));
   const collar = new THREE.TorusGeometry(0.12, 0.035, 8, 24).rotateX(Math.PI / 2).translate(x, y + 0.57, z + 0.02);
   parts.cloth.push(painted(collar, CREAM, { crease: 0.1 }));
 }
@@ -140,7 +139,7 @@ function addLimbs(parts, seat) {
 function addFace(parts, face) {
   parts.glossy.push(...eyes(face, { size: 0.16, across: 0.19, up: 0.1, iris: 0x8a62d0 }));
   parts.matte.push(...eyebrows(face, { across: 0.21, up: 0.4, length: 0.085, thickness: 0.032, tilt: 0.12, hex: LEAF_GREEN_DARK }));
-  parts.matte.push(nose(face, { radius: 0.055, up: -0.08, hex: 0xfbeee8 }));
+  parts.skin.push(nose(face, { radius: 0.055, up: -0.08, hex: 0xfbeee8 }));
   // A turnip has no freckles: only the blush is kept.
   const { blush } = cheeks(face, { across: 0.42, up: -0.2, radius: 0.055, blushHex: 0xf7a3b4, freckleHex: TURNIP });
   parts.skin.push(...blush);

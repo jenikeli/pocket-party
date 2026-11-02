@@ -60,15 +60,14 @@ export function muzzle(face, { radius, hex }) {
 }
 
 // Two round ears high on the head `face`, `size` round, in `hex` with a light inner `innerHex`, turned a little
-// outward from facing forward, as a teddy bear's are. Returns { matte (the outer ears), skin (the inner ones) }.
+// outward from facing forward, as a teddy bear's are. Returns the parts, outer and inner (skin).
 export function ears(face, { size, hex, innerHex }) {
   const centre = new THREE.Vector3(...face.at);
-  const sides = [1, -1].map((side) => {
+  return [1, -1].flatMap((side) => {
     const at = centre.clone().addScaledVector(headDirection(side * 0.78, 0.72), face.radius * 0.96);
     const turn = (shape) => shape.rotateY(side * 0.35).rotateX(-0.2).translate(at.x, at.y, at.z);
     const outer = turn(ball(size, [1, 1, 0.6], [0, 0, 0], hex, { detail: 16, crease: 0.15 }));
     const inner = turn(ball(size * 0.62, [1, 1, 0.35], [0, -size * 0.06, size * 0.4], innerHex, { detail: 14, crease: 0 }));
-    return { outer, inner };
+    return [outer, inner];
   });
-  return { matte: sides.map(({ outer }) => outer), skin: sides.map(({ inner }) => inner) };
 }

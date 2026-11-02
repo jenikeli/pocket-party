@@ -9,7 +9,8 @@ import { coloured, shaded } from '../shape-utils.js';
 // The kinds of material a kart is drawn with, one draw call each (kart-materials.js):
 //   glossy  clear-coated paint and glass: the kart's body, eyes, lenses, shoes, shells
 //   matte   hair, leather, rubber and dark plastic
-//   skin    skin (and later fur): warm, and a little lit from within, so a face stays bright in a kart's shade
+//   skin    skin, fur and hide: a little lit from within in each part's own colour, so it stays bright in a
+//           kart's shade
 //   cloth   fabric (a weave in its surface and a soft sheen): clothes, scarves, gloves, caps of cloth
 //   metal   chrome and gold (the colour says which)
 //   decal   the design's emblem, a picture on a disc (no vertex colours; its texture coordinates span the picture)

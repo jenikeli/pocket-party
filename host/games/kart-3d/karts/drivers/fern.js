@@ -13,9 +13,8 @@ import { squashed, twoTone, vestStripes, frogLeg } from './fern-parts.js';
 const GREEN = 0x2ecc71;
 const BELLY = 0xf3e9a6;
 const DEEP_GREEN = 0x1f5c38;
-// Her skin is drawn in the glossy kind, not the skin kind: that one's warm glow (kept for peach faces in shade)
-// turns green olive, and a frog's skin is wet and shiny anyway. Only the throat under the head and the blush,
-// warm colours, are in the skin kind.
+// Her skin is drawn in the skin kind, whose faint glow in its own green and pale yellow keeps it bright in the
+// kart's shade (the glossy kind's clear coat turned her pale throat grey).
 const SKIN = 0x62cc52;
 const DARK_SKIN = 0x43a844;
 const VEST = 0xf4eedb;
@@ -85,7 +84,7 @@ function addBody(parts, hip) {
   const [x, y, z] = hip;
   const shape = { width: 0.6, height: 0.66, depth: 0.46 };
   const [belly, vest] = body([x, y - 0.02, z], { ...shape, lower: BELLY, upper: VEST });
-  parts.glossy.push(twoTone(belly, [x, y + 0.18, z], DARK_SKIN, (direction) => -direction.z * 2));
+  parts.skin.push(twoTone(belly, [x, y + 0.18, z], DARK_SKIN, (direction) => -direction.z * 2));
   parts.cloth.push(vest, ...vestStripes([x, y - 0.02 + shape.height * 0.68, z], shape, GREEN));
   const collar = new THREE.TorusGeometry(0.13, 0.04, 8, 24).rotateX(Math.PI / 2).translate(x, y + 0.58, z + 0.02);
   parts.cloth.push(painted(collar, GREEN, { crease: 0.1 }));
@@ -102,12 +101,12 @@ function addLimbs(parts, seat) {
     const side = Math.sign(hand[0]);
     const { sleeves, gloves } = arm([x + side * 0.27, y + 0.5, z], hand, { radius: 0.07, bend: 0.12, sleeve: DARK_SKIN, cuff: GREEN, glove: 0.1, gloveHex: GLOVE });
     // arm's sleeves are the upper arm, the forearm and the cuff: the first two are her bare skin.
-    parts.glossy.push(...sleeves.slice(0, 2));
+    parts.skin.push(...sleeves.slice(0, 2));
     parts.cloth.push(sleeves[2], ...gloves);
   });
   seat.feet.forEach((foot) => {
     const side = Math.sign(foot[0]);
-    parts.glossy.push(...frogLeg([x + side * 0.15, y + 0.05, z + 0.08], foot, { skin: DARK_SKIN, toes: SKIN }));
+    parts.skin.push(...frogLeg([x + side * 0.15, y + 0.05, z + 0.08], foot, { skin: DARK_SKIN, toes: SKIN }));
   });
 }
 
@@ -119,13 +118,13 @@ function addHead(parts, at) {
   twoTone(face.shape, at, BELLY, (direction) => (-direction.y - 0.17) * 7);
   const mouth = smile(face, { width: 0.32, up: -0.2 });
   const { blush } = cheeks(face, { across: 0.62, up: -0.08, radius: 0.06, blushHex: 0xf59a8a, freckleHex: SKIN });
-  parts.glossy.push(squashed(face.shape, at, HEAD_STRETCH));
+  parts.skin.push(squashed(face.shape, at, HEAD_STRETCH));
   parts.skin.push(...blush.map((shape) => squashed(shape, at, HEAD_STRETCH)));
   mouth.forEach((shape) => parts.matte.push(squashed(shape, at, HEAD_STRETCH)));
   const bumpRadius = 0.145;
   [1, -1].forEach((side, index) => {
     const bump = head([at[0] + side * 0.16, at[1] + 0.2, at[2] + 0.07], bumpRadius, SKIN);
-    parts.glossy.push(bump.shape);
+    parts.skin.push(bump.shape);
     // The shared eyes and brows come in pairs, the head's left (+x) first: each bump takes the one on its own side,
     // turned a little outward, as a frog's eyes look.
     const half = (pair) => (index === 0 ? pair.slice(0, pair.length / 2) : pair.slice(pair.length / 2));

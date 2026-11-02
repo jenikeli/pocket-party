@@ -74,26 +74,30 @@ function addAntenna(parts, at, radius) {
   parts.glossy.push(ball(0.055, [1, 1, 1], tip, RED, { detail: 12, crease: 0.1 }));
 }
 
-// Round glowing eyes set close, glowing brows over them and a glowing open smile, glossy, so they shine on the
-// plate; pink cheek lights in the skin kind, whose faint glow lights them from within. (The skin's warm glow
-// would turn the eyes' cyan peach, so they stay glossy.)
+// Round glowing eyes set close, glowing brows over them and a glowing open smile, and pink cheek lights, all in the
+// skin kind, whose faint glow in each part's own colour lights them from within; the eyes' dark pupils and white
+// highlights are glossy, so they shine on the plate.
 export function addFace(parts, head) {
   [1, -1].forEach((side) => {
     const size = 0.09;
-    // A deeper cyan rim round the lit disc, a small dark pupil looking a little inward and down, two highlights.
-    const layers = [
+    const onEye = (layer) => onHead(layer, head, { across: side * 0.21, up: 0.1 });
+    // The lit disc in a deeper cyan rim; on it a small dark pupil looking a little inward and down, two highlights.
+    const lit = [
       oval(size * 1.1, size * 1.14, 0.01, [0, 0, 0], GLOW_DEEP, 10),
       oval(size, size * 1.05, 0.012, [0, 0, 0.006], GLOW),
+    ];
+    const marks = [
       oval(size * 0.36, size * 0.46, 0.012, [-side * size * 0.06, -size * 0.12, 0.02], PLATE, 10),
       oval(size * 0.2, size * 0.24, 0.008, [side * size * 0.3, size * 0.32, 0.028], 0xffffff, 8),
       oval(size * 0.09, size * 0.09, 0.006, [-side * size * 0.28, -size * 0.38, 0.026], 0xffffff, 6),
     ];
-    parts.glossy.push(...layers.map((layer) => onHead(layer, head, { across: side * 0.21, up: 0.1 })));
+    parts.skin.push(...lit.map(onEye));
+    parts.glossy.push(...marks.map(onEye));
     const cheek = painted(new THREE.CircleGeometry(0.045, 16).scale(1, 0.7, 1), 0xff86a8, { crease: 0 });
     parts.skin.push(onHead(cheek, head, { across: side * 0.43, up: -0.17, lift: 0.004 }));
   });
-  parts.glossy.push(...eyebrows(head, { across: 0.21, up: 0.42, length: 0.08, thickness: 0.026, tilt: 0.1, hex: GLOW }));
-  parts.glossy.push(onHead(painted(smileShape(0.19), GLOW, { crease: 0 }), head, { across: 0, up: -0.36, lift: 0.004 }));
+  parts.skin.push(...eyebrows(head, { across: 0.21, up: 0.42, length: 0.08, thickness: 0.026, tilt: 0.1, hex: GLOW }));
+  parts.skin.push(onHead(painted(smileShape(0.19), GLOW, { crease: 0 }), head, { across: 0, up: -0.36, lift: 0.004 }));
 }
 
 // A flat open smile `width` across, as driver-face.js's mouth is shaped: its top curves up to the corners and its

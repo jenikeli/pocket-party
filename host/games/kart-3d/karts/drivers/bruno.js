@@ -12,8 +12,8 @@ import { CHECK_RED, buffaloCheck, checkedLimb, muzzle, ears } from './bruno-part
 const BROWN = 0x8b5a2b;
 const HONEY = 0xe8c48c;
 const NEAR_BLACK = 0x2a2220;
-// His fur is in the matte kind, as hair is: the skin kind's warm glow turned it caramel orange. His light muzzle,
-// inner ears, chest and soles are in the skin kind, so they stay warm and bright in the kart's shade.
+// His fur, light muzzle, inner ears, chest and soles are in the skin kind, whose faint glow in each part's own
+// colour keeps them warm and bright in the kart's shade.
 const FUR = BROWN;
 const DARK_FUR = 0x3a2010;
 const DENIM = 0x3d5f8f;
@@ -64,7 +64,7 @@ function addBody(parts, [x, y, z]) {
   const collar = new THREE.TorusGeometry(0.15, 0.045, 8, 24).rotateX(Math.PI / 2 - 0.25).translate(x, y + 0.63, z + 0.02);
   parts.cloth.push(painted(collar, CHECK_RED, { crease: 0.1 }));
   parts.skin.push(ball(0.11, [1.1, 1, 0.6], [x, y + 0.6, z + 0.13], HONEY, { detail: 14, crease: 0 }));
-  parts.matte.push(limb([x, y + 0.56, z], [x, y + 0.72, z + 0.03], 0.13, FUR));
+  parts.skin.push(limb([x, y + 0.56, z], [x, y + 0.72, z + 0.03], 0.13, FUR));
   [0.2, 0.32, 0.44].forEach((up) => {
     // How far forward the shirt's surface is at this height: on the ball 0.37 round, 0.85 as tall, 0.78 as deep.
     const front = 0.78 * 0.37 * Math.sqrt(1 - ((up - 0.34) / (0.85 * 0.37)) ** 2);
@@ -87,15 +87,14 @@ function addLimbs(parts, seat) {
     sleeves.slice(0, 2).forEach((shape) => shape.dispose());
     const { elbow, wrist } = armBend(shoulder, hand, options);
     parts.cloth.push(checkedLimb(shoulder, elbow, 0.1), checkedLimb(elbow, wrist, 0.095), sleeves[2]);
-    parts.matte.push(...gloves);
+    parts.skin.push(...gloves);
   });
   seat.feet.forEach((foot) => {
     const side = Math.sign(foot[0]);
     const { leg: legParts, shoe } = leg([x + side * 0.15, y + 0.05, z + 0.1], foot, { radius: 0.11, lift: 0.18, cloth: DENIM, shoe: 0.3, shoeHex: FUR, soleHex: HONEY });
     parts.cloth.push(...legParts);
-    const [paw, sole] = shoe;
-    parts.matte.push(paw);
-    parts.skin.push(sole);
+    // The furry foot and its honey sole.
+    parts.skin.push(...shoe);
   });
 }
 
@@ -111,9 +110,7 @@ function armBend(shoulder, hand, { bend, glove }) {
 
 // The brown head with its round ears, big warm eyes, dark brows, a soft blush and the muzzle.
 function addHead(parts, face) {
-  const earParts = ears(face, { size: 0.13, hex: FUR, innerHex: HONEY });
-  parts.matte.push(face.shape, ...earParts.matte);
-  parts.skin.push(...earParts.skin);
+  parts.skin.push(face.shape, ...ears(face, { size: 0.13, hex: FUR, innerHex: HONEY }));
   parts.glossy.push(...eyes(face, { size: 0.15, across: 0.2, up: 0.14, iris: 0x8a5220 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.42, length: 0.085, thickness: 0.036, tilt: 0.12, hex: DARK_FUR }));
   parts.skin.push(...cheeks(face, { across: 0.52, up: -0.12, radius: 0.05, blushHex: 0xc0705a, freckleHex: FUR }).blush);

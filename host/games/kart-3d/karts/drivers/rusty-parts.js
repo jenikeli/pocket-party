@@ -18,13 +18,13 @@ const MUZZLE_STRETCH = 1.9;
 const MUZZLE_TAPER = 0.6;
 
 // The fox's head `radius` round at `at`, its parts sorted into `parts`. `colours` is { fur, white, dark, brow,
-// iris }. All his fur is drawn in the matte kind, not the skin kind: that one's warm glow (kept for peach faces in
-// shade) turns white fur peach and dark fur orange. Only the blush and the insides of his ears are in the skin kind.
+// iris }. All his fur is drawn in the skin kind, whose faint glow in the fur's own colours keeps the white bright
+// and the orange warm in the kart's shade.
 export function addFoxHead(parts, at, radius, colours) {
   const face = head(at, radius, colours.fur);
   // White from below the eyes down over the cheeks and chin, fading out round the sides; orange behind.
   twoTone(face.shape, at, colours.white, (direction) => (-direction.y - 0.12) * 8 + (direction.z - 0.3) * 2);
-  parts.matte.push(face.shape);
+  parts.skin.push(face.shape);
   parts.glossy.push(...eyes(face, { size: 0.165, across: 0.21, up: 0.16, iris: colours.iris }));
   parts.matte.push(...eyebrows(face, { across: 0.23, up: 0.46, length: 0.085, thickness: 0.03, tilt: 0.12, hex: colours.brow }));
   parts.skin.push(...cheeks(face, { across: 0.5, up: -0.12, radius: 0.055, blushHex: 0xffb7a8, freckleHex: colours.white }).blush);
@@ -41,7 +41,7 @@ function addMuzzle(parts, face, { fur, white }) {
   const muzzle = head(centre, MUZZLE_RADIUS, white);
   twoTone(muzzle.shape, centre, fur, (direction) => (direction.y - 0.25) * 4);
   const mouth = smile(muzzle, { width: 0.17, up: -0.48 });
-  parts.matte.push(pointed(muzzle.shape, centre));
+  parts.skin.push(pointed(muzzle.shape, centre));
   mouth.forEach((shape) => parts.matte.push(pointed(shape, centre)));
   muzzle.shape.computeBoundingBox();
   const tip = muzzle.shape.boundingBox.max.z;
@@ -72,7 +72,7 @@ function addEar(parts, { at, radius }, side, { fur, dark }) {
   const tipStart = height * 0.58;
   blendColour(outer, dark, (index) => THREE.MathUtils.smoothstep(outer.attributes.position.getY(index), tipStart, tipStart + height * 0.12));
   const inner = painted(leafShape(height * 0.66, 0.075).scale(1, 1, 0.3).translate(0, 0.02, 0.032), INNER_EAR_HEX, { crease: 0 });
-  parts.matte.push(place(outer));
+  parts.skin.push(place(outer));
   parts.skin.push(place(inner));
 }
 
@@ -81,7 +81,7 @@ function addRuffs(parts, face, white) {
   [1, -1].forEach((side) => {
     [[1.12, -0.18, 0.15], [1.32, -0.36, 0.18], [1.02, -0.45, 0.13]].forEach(([across, up, length]) => {
       const tuft = painted(leafShape(length, 0.055, { round: 8, steps: 6 }).rotateX(Math.PI / 2).rotateX(0.55).rotateY(side * 0.35), white, { crease: 0 });
-      parts.matte.push(onHead(tuft, face, { across: side * across, up, lift: -0.03 }));
+      parts.skin.push(onHead(tuft, face, { across: side * across, up, lift: -0.03 }));
     });
   });
 }

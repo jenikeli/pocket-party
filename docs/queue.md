@@ -20,7 +20,7 @@ and deleted.
 | I | Bruno | 9 | merged |
 | J | Rhino | 10 | merged |
 | K | Wisp | 11 | merged |
-| L | Skin glow in each part's own colour, drivers retuned | - | building |
+| L | Skin glow in each part's own colour, drivers retuned | - | merged |
 
 ## Rules for every task
 

@@ -43,7 +43,7 @@ export function topOf(shape) {
   return [position.getX(top), position.getY(top), position.getZ(top)];
 }
 
-// A tentacle (a glossy part) through `points` ([x, y, z] each), `root` thick at its first point and tapering to
+// A tentacle (a skin part) through `points` ([x, y, z] each), `root` thick at its first point and tapering to
 // `tip` before a rounded end, `steps` rings long, in `hex` with its underside in `undersideHex`. The underside is
 // the side facing down, or, where the tentacle curls, the inside of the curl, as an octopus's suckers are.
 export function tentacle(points, { root, tip, steps, hex, undersideHex }) {

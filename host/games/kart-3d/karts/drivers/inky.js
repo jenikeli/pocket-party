@@ -71,7 +71,7 @@ function buildDriver(seat) {
   const [x, y, z] = seat.hip;
   // The bundle of tentacle roots under the head, where a body would be; the collar round its top, a red
   // neckerchief knot at its front and the anchor on its back flap.
-  parts.glossy.push(ball(0.25, [1, 1.3, 0.95], [x, y + 0.24, z + 0.03], SKIN, { detail: 18, crease: 0.2 }));
+  parts.skin.push(ball(0.25, [1, 1.3, 0.95], [x, y + 0.24, z + 0.03], SKIN, { detail: 18, crease: 0.2 }));
   parts.cloth.push(...sailorCollar([x, y + 0.48, z + 0.04], 0.2, {
     flap: { top: y + 0.5, bottom: y + 0.24, topRadius: 0.23, bottomRadius: 0.29, halfAngle: 0.8 },
     hex: NAVY, stripeHex: WHITE,
@@ -91,7 +91,7 @@ function buildDriver(seat) {
 function addHead(parts, at) {
   const face = head(at, HEAD_RADIUS, SKIN);
   const stretch = (shape) => mantled(shape, at, HEAD_RADIUS);
-  parts.glossy.push(stretch(face.shape));
+  parts.skin.push(stretch(face.shape));
   parts.glossy.push(...eyes(face, { size: 0.22, across: 0.21, up: 0.02, iris: 0xa070ff }).map(stretch));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.34, length: 0.08, thickness: 0.026, tilt: 0.1, hex: DEEP_TEAL }).map(stretch));
   parts.skin.push(...cheeks(face, { across: 0.45, up: -0.2, radius: 0.055, blushHex: 0xffa9b8, freckleHex: 0xffa9b8 }).blush.map(stretch));
@@ -100,7 +100,7 @@ function addHead(parts, at) {
     [Math.PI, 0.7, 0.07], [2.75, 0.15, 0.045], [-2.8, 0.05, 0.05], [0.15, 1.0, 0.045]];
   spots.forEach(([across, up, radius]) => {
     const spot = painted(new THREE.CircleGeometry(radius, 14), SPOT, { crease: 0 });
-    parts.glossy.push(stretch(onHead(spot, face, { across, up, lift: 0.003 })));
+    parts.skin.push(stretch(onHead(spot, face, { across, up, lift: 0.003 })));
   });
   return face;
 }
@@ -118,16 +118,16 @@ function addTentacles(parts, seat) {
   const look = { hex: SKIN, undersideHex: UNDERSIDE };
   [1, -1].forEach((side) => {
     const reach = [[x + side * 0.15, y + 0.42, z + 0.12], [x + side * 0.3, y + 0.42, z + 0.24], [x + side * 0.3, y + 0.36, z + 0.44], [x + side * 0.22, y + 0.4, z + 0.54]];
-    parts.glossy.push(tentacle([...reach, ...gripCoil(side)], { root: 0.075, tip: 0.026, steps: 40, ...look }));
+    parts.skin.push(tentacle([...reach, ...gripCoil(side)], { root: 0.075, tip: 0.026, steps: 40, ...look }));
     const pedal = [[x + side * 0.13, y + 0.12, z + 0.16], [x + side * 0.17, y + 0.2, z + 0.52], [x + side * 0.15, y + 0.06, z + 0.85],
       [x + side * 0.13, y - 0.06, z + 1.02], [x + side * 0.13, y - 0.07, z + 1.12], [x + side * 0.13, y + 0.01, z + 1.16], [x + side * 0.13, y + 0.05, z + 1.1]];
-    parts.glossy.push(tentacle(pedal, { root: 0.08, tip: 0.03, steps: 26, ...look }));
+    parts.skin.push(tentacle(pedal, { root: 0.08, tip: 0.03, steps: 26, ...look }));
     const draped = [[x + side * 0.16, y + 0.2, z], [x + side * 0.3, y + 0.26, z + 0.04], [x + side * 0.42, y + 0.12, z + 0.14], [x + side * 0.5, y + 0.08, z + 0.25],
       [x + side * 0.56, y + 0.08, z + 0.38], [x + side * 0.64, y + 0.02, z + 0.44], [x + side * 0.68, y - 0.06, z + 0.42], [x + side * 0.65, y - 0.08, z + 0.36], [x + side * 0.62, y - 0.04, z + 0.34]];
-    parts.glossy.push(tentacle(draped, { root: 0.075, tip: 0.026, steps: 26, ...look }));
+    parts.skin.push(tentacle(draped, { root: 0.075, tip: 0.026, steps: 26, ...look }));
     const behind = [[x + side * 0.1, y + 0.26, z - 0.12], [x + side * 0.16, y + 0.48, z - 0.26], [x + side * 0.24, y + 0.52, z - 0.38], [x + side * 0.32, y + 0.48, z - 0.48],
       [x + side * 0.38, y + 0.56, z - 0.56], [x + side * 0.38, y + 0.66, z - 0.54], [x + side * 0.34, y + 0.68, z - 0.48], [x + side * 0.32, y + 0.62, z - 0.46]];
-    parts.glossy.push(tentacle(behind, { root: 0.075, tip: 0.026, steps: 28, ...look }));
+    parts.skin.push(tentacle(behind, { root: 0.075, tip: 0.026, steps: 28, ...look }));
   });
 }
 

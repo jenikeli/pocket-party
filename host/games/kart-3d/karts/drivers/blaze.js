@@ -11,7 +11,7 @@ import { eyes, eyebrows, nose, cheeks, smile } from '../driver-face.js';
 const RED = 0xd62a1e;
 const CREAM = 0xf3e7cc;
 const CHARCOAL = 0x34363d;
-const SKIN = 0xffd2ae;
+const SKIN = 0xffc399;
 const HAIR = 0xd0602a;
 const LEATHER = 0x7a4426;
 const SCARF = 0xf5b82e;
@@ -98,7 +98,7 @@ function addFace(parts, face) {
   parts.skin.push(face.shape);
   parts.glossy.push(...eyes(face, { size: 0.155, across: 0.19, up: 0.1, iris: 0x2f9a48 }));
   parts.matte.push(...eyebrows(face, { across: 0.21, up: 0.4, length: 0.085, thickness: 0.032, tilt: 0.12, hex: HAIR }));
-  parts.skin.push(nose(face, { radius: 0.058, up: -0.08, hex: 0xffcfae }));
+  parts.skin.push(nose(face, { radius: 0.058, up: -0.08, hex: 0xffc099 }));
   const { blush, freckles } = cheeks(face, { across: 0.42, up: -0.2, radius: 0.05, blushHex: 0xffb9a2, freckleHex: 0xc77a46 });
   parts.skin.push(...blush);
   parts.matte.push(...freckles);

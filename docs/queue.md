@@ -21,6 +21,7 @@ and deleted.
 | J | Rhino | 10 | merged |
 | K | Wisp | 11 | merged |
 | L | Skin glow in each part's own colour, drivers retuned | - | merged |
+| M | Repeated parts folded into the shared files | - | building |
 
 ## Rules for every task
 
@@ -116,4 +117,21 @@ Decided by the user (2026-11-02), from the pale-faces note above. The skin kind'
   - Grimble: the beard, now cloth.
 - **Check:** one kit-shots sheet per changed driver, with `--name <id>-l`. Then the lineup, `npm run kit-shots -- --name lineup-l karts-lineup`. Up to 4 rounds overall.
 - **Commit:** `m7d5 the skin glow in each part's own colour, and the drivers retuned to it`.
+
+### M: the repeated parts folded into the shared files (after L)
+A tidy-up with no change to how anything looks. The drivers were built three at a time and could not touch the shared files, so some parts were repeated, and two drivers import from another driver's parts file.
+- **Owns:** `karts/part-shapes.js`, `karts/driver-parts.js`, `karts/driver-face.js`, the `drivers/*.js` files that use the parts below, and `test/unit/kart-3d-kart-designs.test.js`. Nothing runs beside it.
+- **Fold:**
+  - Painting a part in two tones by direction. Fern's `twoTone` (`fern-parts.js`, also imported by `rusty-parts.js`) and Pip's `recolour` and `twoTone` (`pip-parts.js`) become one helper in `part-shapes.js`.
+  - Fern's `squashed` (imported by `rhino-parts.js`) moves to `driver-parts.js`, beside `head`. Inky's `mantled` stays his own, since it bends the head.
+  - After this, no driver imports another driver's parts file.
+  - `cheeks()` in `driver-face.js` builds freckles only when it is given a `freckleHex`. Pip, Sprout, Mochi, Bruno and the others stop throwing them away.
+  - `arm()` in `driver-parts.js` also returns its elbow and wrist, so `bruno-parts.js` drops its copy of the bend maths.
+  - Anything else repeated in two or more drivers that you find, if folding it is plainly simpler. Fern's `frogLeg` and Pip's `webbedFoot` differ enough to stay apart unless a shared version is clearly simpler.
+- **Check:**
+  - Shapes and colours stay exactly the same.
+  - Before the first edit, run `npm run kit-shots -- --name m-before karts-lineup kart-pip-close kart-fern-close kart-rusty-close kart-bruno-close kart-rhino-close`; after the last edit, the same with `--name m-after`. Compare the two sheets; they should match.
+  - Triangle counts must not grow.
+  - `npm test` passes.
+- **Commit:** `m7d5 the parts several drivers repeated folded into the shared files`.
 

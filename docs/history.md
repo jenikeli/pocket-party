@@ -618,3 +618,61 @@ rails, portholes and a fender line. They bob as now (`keepWhole`).
 
 Dropped by the main session after Task 0's shots of them: as the study says, they look close enough already, and
 they are seen only from afar.
+
+### M7d5: Karts and drivers (one kart reviewed until approved, then a queue)
+- [x] 12 kart-and-driver designs, one for each of the 12 racers, so every kart in a race looks different: our own go-kart in each character's three colours and an original cast of drivers, both in the style of MK8DX's art (see the decision below)
+- [x] In anti-gravity sections the wheels turn flat and their rims glow cyan, as in MK8DX
+- Decide in M7d5 how a player's design is chosen (for example by roster slot, CPU karts taking the rest); picking a character on the phone is "character and kart selection" in "Later ideas"
+- **Decided at the start of its chat (2026-11-01/02):** a player drives the design of their lobby colour slot, whose kart's main colour is that slot's colour; CPU karts take the designs nobody holds (`assignDesigns` in `karts/kart-roster.js`). The cast is original, not Nintendo's characters (Claude does not reproduce them; Mario was tried in round 1 and dropped): Blaze (red: kid racer, aviator cap and goggles, freckles, scarf), Pip (blue: penguin in a pom-pom beanie), Fern (green: frog in a racing vest), Bolt (yellow: tin robot, glass dome head, antenna), Grimble (purple: garden gnome), Rusty (orange: fox in a bandana), Inky (teal: octopus in a sailor cap), Mochi (pink: bunny with floppy ears and a bow), Sprout (lime: turnip-headed kid), then Bruno (bear in a check shirt), Rhino (rhino in a motocross helmet) and Wisp (little ghost with a scarf), CPU only, slots 9-11. The kart is our own go-kart inspired by MK8DX's Standard Kart (nose with an emblem disc, fairing, side pods, twin exhausts with flared tips, fat treaded tyres), with our own details (each character's emblem, our own tyre lettering and hubs). MK8DX artwork of the Standard Kart is used as a style reference (proportions, finish, kart construction), kept in `test-results/reference/m7d5/` (not committed). The kart, its wheels and anti-gravity are built once, with Blaze, both in JS and in Blender for the user to compare (task A, reviewed round by round); the queue adds one driver each (`karts/drivers/`)
+- **How to build it (the user, 2026-11-01):** first one kart and its driver, reviewed by the user on picture sheets, improved round by round until the user is happy with it; then the other designs as a queue in the same chat (the `milestone-plan` skill's "Queue"), each built to the approved one's standard. If the chat runs out of room, it hands off and the next chat carries on the queue
+
+Notes (built 2026-11-01/02; numbers and the device-run procedure in "M7d5" in `docs/3d-findings.md`):
+- **The first kart, round by round:**
+  - **Round 1** was Mario, built without reference pictures; the user said it looked nothing like him. The references were downloaded from the MarioWiki gallery into `test-results/reference/m7d5/` (not committed; the user crossed out the bare kart body picture and added an in-game shot).
+  - **Mario dropped:** the Blender builder then declined to reproduce Nintendo's characters, and Claude agreed. Our own cast replaced him, with an original go-kart inspired by the Standard Kart, and the pictures kept as style references only.
+  - **Two builds compared:** Blaze was built twice, in JS (rounds 2 and 3) and in Blender (rounds 1 and 2, `tools/blender/kart-blaze.py` and the files beside it, `assets/models/kart-blaze.glb`).
+  - **The user's verdicts:** the Blender face looked like "a character from a horror movie" and the JS head was too big. Both were sent a face brief: large tall eyes set close, mostly iris, with highlights; a soft ball nose; a friendly open smile with one band of teeth; thick rounded brows; hair in big clumps clear of the eyes.
+  - **JS chosen:** after that round the user picked JS ("the js one looks better ... especially the facial features"; the two karts looked alike).
+  - **The Blender build was never merged.** Its branch `worktree-agent-ac20ede945a7b4b57` is kept, unmerged, for reference. It costs about 26,300 triangles, 9 draw calls, a 2.4 MB file and a 6.5-minute build per character.
+- **Then a queue of 11 drivers** (`docs/queue.md`, kept below), one file each in `karts/drivers/`, built to Blaze's approved sheet. Spawned with only the task letter.
+  - **Six builders at once:** three ran at a time, then six at the user's request ("just for this once"). The usage limit was not hit this time, but the kit-shots runs queued for the two drawing slots, and several timed out loading the page and were rerun.
+  - **Merges:** the one shared line, `KART_DESIGNS` in `kart-designs.js`, was settled at each merge by a small script that lists every design in slot order.
+- **Found while building:**
+  - A design with nothing in a material kind used to crash `buildDesignShapes`; now the kind is built empty and draws nothing (a unit test).
+  - **The pale faces:** the skin kind glowed a fixed peach, so anything in it that was not peach was tinted (Wisp pink-mauve, Mochi pink), and pale parts left out of it went grey in the kart's shade (Pip's mask, Sprout's turnip, Bolt's dome, Fern's and Inky's skin). The user chose to fix it inside the one draw call: the glow is now white, and the shader multiplies it by each vertex's colour (Task L). Blaze's skin was warmed a little (`0xffc399`), so his face measures within a few points of the approved sheet. The drivers that had worked round the old glow were retuned, most of them back into the skin kind.
+  - **Task M** folded the parts several drivers repeated into the shared files: `twoTone` and `twoToneShaded` in `part-shapes.js`; `squashed` in `driver-parts.js`; `cheeks()` builds freckles only when given a colour; `arm()` returns its elbow and wrist. Its before and after sheets match pixel for pixel, apart from their titles.
+- **Tests:**
+  - `npm test` passes, with new unit tests for the roster, the designs' budgets and shapes, empty material kinds, freckles and `twoTone`.
+  - The 3D look's browser files (`m7c`, `m7b`, `m7d2`, `m7d4b`) passed after Blaze merged and again at the end, 18 of 18. The red karts did not upset M7d2's count of the start lights' red pixels.
+  - One `npm test` run during the queue had one failure that four reruns did not repeat; which test it was went unrecorded.
+  - No test was changed on purpose, except that the designs test lets an empty kind have no vertex colours.
+- **Not done:** the karts are not yet seen together in a race on the iPad (the device run); picking a character on the phone stays in "Later ideas".
+- **Weak spots the builders reported:**
+  - Rhino's open-face helmet reads a little like a fishbowl from the front.
+  - Inky's tentacles on the wheel read as a cluster of tubes.
+  - Rusty's tail hides some of his back in the chase view.
+  - Fern's webbed feet are hidden in the nose.
+
+#### The queue as planned (docs/queue.md, final statuses)
+
+| Task | Driver | Slot | Model | Status |
+|---|---|---|---|---|
+| A | Pip, a blue penguin in a pom-pom beanie | 1 | opus | merged |
+| B | Fern, a green frog in a racing vest | 2 | opus | merged |
+| C | Bolt, a yellow tin robot with a glass dome head | 3 | opus | merged |
+| D | Grimble, a purple garden gnome | 4 | opus | merged |
+| E | Rusty, an orange fox in a bandana | 5 | opus | merged |
+| F | Inky, a teal octopus in a sailor cap | 6 | opus | merged |
+| G | Mochi, a pink bunny with floppy ears and a bow | 7 | opus | merged |
+| H | Sprout, a lime turnip-headed kid | 8 | opus | merged |
+| I | Bruno, a brown bear in a check shirt (CPU only) | 9 | opus | merged |
+| J | Rhino, a steel grey rhino in a motocross helmet (CPU only) | 10 | opus | merged |
+| K | Wisp, a lavender white ghost with a scarf (CPU only) | 11 | opus | merged |
+| L | The skin glow in each part's own colour, the drivers retuned | - | opus | merged |
+| M | The repeated parts folded into the shared files | - | sonnet | merged |
+
+The rules every task followed:
+- Own `drivers/<id>.js` (and `<id>-parts.js` past about 200 lines) plus one line in `KART_DESIGNS`, nothing shared.
+- `palette.main` is the slot's lobby colour.
+- The driver at most about 10,000 triangles, in the existing material kinds.
+- Kit-shots sheets beside Blaze's, at most 4 rounds.

@@ -998,3 +998,53 @@ On the iPad, Seaside Skyway.
 - **The floating islands and backdrop cliffs look bad:** layers of round shapes, which real rock formations are not, and floating islands make no sense on this course. Mountains are fine.
 - **The course sits too high over open sea,** so many of the props round it cannot be seen. Asked for: the road close to the sea level, running across several islands. Planned as M7f, after the CPU drivers (M7e), with a study of real rock formations first.
 - Not reported: Watch 4's fps and the Measure report.
+
+## M7d5: Karts and drivers
+
+### What was built
+
+Twelve kart-and-driver designs, one per racer (`plan.md`; the specs and how it went are in `docs/history.md`).
+- **The kart:** every kart is our own go-kart in its design's three colours, drawn in JS from shared parts (`host/games/kart-3d/karts/`). Each driver is a file in `karts/drivers/`.
+- **Who drives what:** a player drives the design of their lobby colour slot, and CPU karts take the rest.
+- **Anti-gravity:** in anti-gravity the wheels turn flat and their rims glow cyan, eased over a quarter second.
+- **Reviewed on sheets:** each design was reviewed on kit-shots sheets beside Blaze's approved one (`test-results/review/<id>.png`, and `test-results/review/l/` after the skin-glow fix, with the lineup `lineup-l.png`).
+
+### Measured without a device
+
+Triangles of each kart with its driver and wheels (`buildDesignShapes` in Node; the kart's own parts are 8,974, the four wheels 6,048, the budget 25,000):
+
+| Design | Slot | Triangles |
+|---|---|---|
+| Blaze | 0 | 24,918 |
+| Pip | 1 | 24,850 |
+| Fern | 2 | 23,670 |
+| Bolt | 3 | 24,650 |
+| Grimble | 4 | 24,630 |
+| Rusty | 5 | 24,874 |
+| Inky | 6 | 24,322 |
+| Mochi | 7 | 24,206 |
+| Sprout | 8 | 23,934 |
+| Bruno | 9 | 24,666 |
+| Rhino | 10 | 24,917 |
+| Wisp | 11 | 22,786 |
+
+- **Draw calls and textures:** each kart draws in 10 calls: six material kinds and four wheels. The materials are shared by every kart, except one emblem decal per design (256 px) and one wheel material per kart, for its glow.
+- **Twelve karts:** about 293,000 triangles and 120 draw calls. Before this milestone the karts were simple toys, so the draw calls are the number to watch on the iPad (M6a and M7d4b1 measured that triangles barely cost there).
+- **Build time:** all 12 designs build in about 0.6 s in software, once per game.
+- **Browser tests:** `m7c`, `m7b`, `m7d2` and `m7d4b` (the 3D look) ran after Blaze merged and again at the end of the queue, on a quiet machine: all 18 tests passed both times (the last run took 737 s).
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`, HTTPS as usual), and two phones for step 5.
+
+1. **Time the course's appearance:** the 3D race, Look on High, Seaside Skyway. Time how long the course takes to appear (M7d4d: about 4 s; the karts add about 0.6 s in software).
+2. **Watch the start:** **Watch, no phones: 1**, 12 karts. On the grid, every kart should be different: Blaze (red), Pip (blue), Fern (green), Bolt (yellow), Grimble (purple), Rusty (orange), Inky (teal), Mochi (pink), Sprout (lime), Bruno (brown), Rhino (grey) and Wisp (lavender white). From the chase view, can you tell who is in front of you by the back of their head?
+3. **Watch a lap:** let it drive a lap. At the anti-gravity wall (s 855-960, the road rolling up to vertical round a right half circle), the wheels of every kart in view should turn flat under it with their rims glowing cyan, and turn back after it, smoothly, not snapping.
+4. **Watch, no phones: 4** on High, Seaside Skyway. Note the fps in the Tuning readout (M7d4c2: a steady 60). Then **Measure** on the setup screen, and Copy and paste the report back: this shows what the 12 detailed karts cost (M7d4b2: Medium with 4 views 11.9 ms, High 13.3 ms).
+5. **With two phones:** join on both, take the red and the blue slots in the lobby, and start a race. The red player drives Blaze and the blue player drives Pip, and the 10 CPU karts are the other 10 designs.
+6. **Look closely:**
+   - Which drivers look furthest from MK8DX's art, or least friendly, up close (on the grid) or from the chase view?
+   - Do any faces still look grey or tinted in the shade?
+   - Anything broken: parts floating off a driver, a driver sunk into the kart, flickering, missing pieces.
+
+No **Tune:** steps in this milestone.

@@ -20,6 +20,7 @@ and deleted.
 | I | Bruno | 9 | merged |
 | J | Rhino | 10 | building |
 | K | Wisp | 11 | merged |
+| L | Skin glow in each part's own colour, drivers retuned | - | queued (after J) |
 
 ## Rules for every task
 
@@ -93,3 +94,26 @@ A rhino in a motocross helmet. A grey head with a big horn on the snout and a sm
 
 ### K: Wisp (slot 11, CPU only, main colour lavender white `0xe8e4f4`)
 A little ghost with a scarf. A soft round white body that tapers into a wavy tail curling down into the seat, no legs, stubby arms reaching the wheel, big friendly eyes and a small open smile, blush. Pale lavender shading. A long red-orange scarf streaming behind. Emblem: a star or a moon.
+
+### L: the skin kind's glow in each part's own colour (after J is merged)
+Decided by the user (2026-11-02), from the pale-faces note above. The skin kind's faint glow is a fixed peach (`kart-materials.js`'s `SKIN_GLOW_HEX`), so anything in it that is not peach is tinted, and pale parts left out of it go grey in the kart's shade.
+- **Owns:**
+  - `host/games/kart-3d/karts/kart-materials.js`.
+  - Every `drivers/*.js` and `drivers/*-parts.js` that needs retuning.
+  - `test/unit/kart-3d-kart-designs.test.js`, if a test is worth adding.
+  - Nothing runs beside it.
+- **Build:**
+  - Make the skin material's glow take each vertex's own colour: white emissive, and the shader's emissive multiplied by the vertex colour (`onBeforeCompile`, after `emissivemap_fragment`: `totalEmissiveRadiance *= vColor.rgb;`). Peach glows peach, white glows white, teal glows teal.
+  - Pick the intensity so Blaze looks as he does now: compare his sheet with `test-results/reference/m7d5/blaze-approved.png`. Still no new draw call.
+- **Then retune the drivers that worked round the old glow.** Move their faces and bodies back into the skin kind where that reads better, and take out the colour shifts that made up for the peach:
+  - Wisp: the body is meant to be lavender white, not pink-mauve.
+  - Mochi: its fur base `0xe6edfb` was chosen to offset the peach.
+  - Pip: the white face mask and belly.
+  - Sprout: the turnip.
+  - Bolt: the face plate and eyes, which may now glow cyan.
+  - Fern and Inky: green and teal skin, now glossy.
+  - Rusty, Bruno and Rhino: fur, now matte. Keep whatever reads better.
+  - Grimble: the beard, now cloth.
+- **Check:** one kit-shots sheet per changed driver, with `--name <id>-l`. Then the lineup, `npm run kit-shots -- --name lineup-l karts-lineup`. Up to 4 rounds overall.
+- **Commit:** `m7d5 the skin glow in each part's own colour, and the drivers retuned to it`.
+

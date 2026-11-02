@@ -14,7 +14,7 @@ and deleted.
 | C | Bolt | 3 | merged |
 | D | Grimble | 4 | merged |
 | E | Rusty | 5 | merged |
-| F | Inky | 6 | building |
+| F | Inky | 6 | merged |
 | G | Mochi | 7 | merged |
 | H | Sprout | 8 | merged |
 | I | Bruno | 9 | merged |

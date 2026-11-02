@@ -1,5 +1,7 @@
 // The kit-shots page's script: builds one kit piece (pieces.js, named by ?piece=) on a short straight of road, lit
-// as in the race, and draws one frame from ?view=near (kart height) or ?view=above (higher up, farther back).
+// as in the race, and draws one frame from ?view=near (kart height) or ?view=above (higher up, farther back). Since
+// M7d5 a piece can also be a kart (kart-pieces.js), added after the bake as the race adds its karts, with its own
+// camera.
 // Sets window.kitShotReady when the frame is drawn, or window.kitShotError with a message. Used by
 // tools/kit-shots.js, which waits for either.
 
@@ -77,13 +79,15 @@ async function buildLitScene(renderer, track, piece) {
   if (piece.road === 'decked') {
     buildPlatforms(kitPart(kit, KIT_PARTS.DECKS), [SHOW_DECK], seaLevel);
   }
-  await piece.build(kit, seaLevel);
+  await piece.build?.(kit, seaLevel);
   scene.add(world);
   scene.environment = createSkyEnvironment(renderer).texture;
   scene.environmentIntensity = 1;
   bakeShade(renderer, world, track);
   scene.environment = createCourseLight(renderer, scene, track, sun).texture;
   scene.environmentIntensity = tuning.courseLightStrength;
+  // Karts are not part of the course: the race neither bakes shade into them nor lights the course with them.
+  piece.addAfterBake?.(scene, track);
   return { scene, sun };
 }
 
@@ -124,6 +128,14 @@ function buildCamera(track, focus, view) {
   return camera;
 }
 
+// A camera a piece places itself: { position, target, fov } (world, THREE.Vector3s; fov in degrees, vertical).
+function pieceCamera({ position, target, fov }) {
+  const camera = new THREE.PerspectiveCamera(fov, WIDTH / HEIGHT, 0.05, 500);
+  camera.position.copy(position);
+  camera.lookAt(target);
+  return camera;
+}
+
 async function showPiece() {
   const params = new URLSearchParams(location.search);
   const pieceName = params.get('piece');
@@ -134,7 +146,8 @@ async function showPiece() {
   const track = buildShowTrack(piece.road);
   const renderer = createRenderer();
   const { scene, sun } = await buildLitScene(renderer, track, piece);
-  const camera = buildCamera(track, piece.focus, params.get('view') || 'near');
+  const view = params.get('view') || 'near';
+  const camera = piece.camera ? pieceCamera(piece.camera(track, view)) : buildCamera(track, piece.focus, view);
   // The race fits the sun's shadow map round each view in turn; so does the picture.
   sun.usePerView(true);
   sun.fitView(camera);

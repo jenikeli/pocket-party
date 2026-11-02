@@ -11,9 +11,11 @@
 // host/games/kart-3d/index.js.
 
 import * as THREE from 'three';
-import { PLAYER_COLORS, displayName, colorText } from '/host/roster.js';
+import { displayName, colorText } from '/host/roster.js';
 import { buildScenery, createSkyEnvironment } from './scenery.js';
 import { createKartModels } from './kart-models.js';
+import { KART_DESIGNS } from './karts/kart-designs.js';
+import { assignDesigns } from './karts/kart-roster.js';
 import { createViews } from './views.js';
 import { createEffects, describeEffects } from './effects.js';
 import { createBloom } from './bloom.js';
@@ -26,8 +28,6 @@ import { waitForGpu, frameStats, describeGpu } from './gpu-probe.js';
 import { createCourseLight } from './course-light.js';
 import { bakeShade } from './baked-shade.js';
 
-// CPU karts are drawn in greys so the players' colours stand out.
-const CPU_COLORS = [0xd0d4dc, 0x9aa1ad, 0x6c7380];
 // How much the sea mirrors the sky: at the course light's strength it would reflect so much pale horizon that it
 // turns whitish.
 const SKY_REFLECTIONS = 0.4;
@@ -53,6 +53,9 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
   const scene = new THREE.Scene();
   const environment = createSkyEnvironment(renderer);
   const kartModels = createKartModels(FIELD_SIZE);
+  // The race whose karts' designs (indexes into KART_DESIGNS, one per kart) were last worked out.
+  let designsRace = null;
+  let kartDesigns = [];
   // In one group, so a look can hide them all (setLook).
   const kartGroup = new THREE.Group();
   kartGroup.add(...kartModels.karts);
@@ -138,17 +141,20 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
     }
   }
 
-  // `poses` are the karts' poses as drawn this frame, in the order of race.karts.
+  // `poses` are the karts' poses as drawn this frame, in the order of race.karts. Which design each kart draws is
+  // worked out once per race (kart-roster.js), so a kart keeps its look when its player leaves mid-race.
   function placeKarts(race, players, poses, dt) {
+    if (designsRace !== race) {
+      designsRace = race;
+      kartDesigns = assignDesigns(race.karts, players, KART_DESIGNS);
+    }
     kartModels.karts.forEach((model, index) => {
       const kart = race.karts[index];
       if (!kart) {
         kartModels.hide(index);
         return;
       }
-      const player = kart.playerId === null ? null : players.get(kart.playerId);
-      const hex = player ? PLAYER_COLORS[player.colorIndex] : CPU_COLORS[index % CPU_COLORS.length];
-      kartModels.show(index, kart, poses[index], hex, dt);
+      kartModels.show(index, kart, poses[index], kartDesigns[index], dt);
     });
   }
 

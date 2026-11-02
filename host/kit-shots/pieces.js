@@ -2,7 +2,7 @@
 // entry says how to build the piece into a kit, which road to stand it on, and where the camera looks (its
 // `focus`). Later parts of M7d4c add the pieces they rebuild here, so they get before-and-after picture sheets.
 // M7d4c2's spike adds the palm made in Blender, alone and beside ours; M7d4c3 adds the decks, supports and the sea and
-// sky objects (landmark-pieces.js). Used by viewer.js.
+// sky objects (landmark-pieces.js); M7d5 the karts (kart-pieces.js). Used by viewer.js.
 
 import { buildBarriers } from '../games/kart-3d/kit/barriers.js';
 import { buildProps } from '../games/kart-3d/kit/props.js';
@@ -15,11 +15,12 @@ import { GATE_THEME } from '../games/kart-3d/seaside-scenery.js';
 import { BARRIER_STYLES, KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layout-rules.js';
 import { addBlenderPalms, loadBlenderPalm } from './blender-palm.js';
 import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
+import { KART_PIECES } from './kart-pieces.js';
 
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
 
-// Every entry is { road, build(kit), focus }:
+// Every entry is { road, build(kit), focus }, or for a kart (kart-pieces.js) { road, addAfterBake, camera }:
 //   road   'walled' (a wall on both sides, no ground beside the road) or 'decked' (a grass deck beside the right side, no wall
 //          between, as the courses' decks: props stand on it)
 //   build  adds the piece to the kit (kit/kit.js's createKit); may return a promise (a piece loaded from a file).
@@ -29,6 +30,9 @@ const PROP_CLEARANCE = 0.5;
 //          (its biggest side in units), which sets how far the camera stands back; `eye`, if given, is the near
 //          view's height above the road (a kart's eye, 1.2, if not), so a piece low in the sea is seen from near
 //          the water.
+//   addAfterBake  adds the piece to the scene (scene, track) once the course's shade is baked and its light taken,
+//          as the race adds its karts
+//   camera  (track, view) => { position, target, fov } in place of focus: where the camera stands and looks
 
 // A barrier style along the whole straight on both sides; the camera looks at the right-hand one.
 function barrierPiece(style) {
@@ -121,4 +125,5 @@ export const PIECES = {
   'palm-close': { ...propPiece('palm', PROP_SIZES.palm), focus: PALM_CLOSE_FOCUS },
   'palm-blender-close': { ...BLENDER_PALM, focus: PALM_CLOSE_FOCUS },
   ...LANDMARK_PIECES,
+  ...KART_PIECES,
 };

@@ -1,64 +1,72 @@
-// The 3D race's kart models (shapes in kart-shapes.js): one per kart in the field, each with its own glossy paint
-// so it can take its player's roster colour, which the chase camera sees on the wings, cowl and helmet from
-// behind. Each frame a model is placed at its kart's pose, its wheels roll with the kart's speed and its front
-// wheels turn with the steering. Used by host/games/kart-3d/renderer.js.
+// The 3D race's kart models (M7d5): our go-kart and its driver for each design (karts/kart-designs.js), built
+// once when the renderer is made, and one model per kart in the field, which draws whichever design it is
+// given. Each frame a model is placed at its kart's pose, its wheels roll with the kart's speed, its front wheels
+// turn with the steering, and in anti-gravity its wheels turn flat under it and their rims glow, eased in and out
+// (karts/anti-gravity.js). Used by host/games/kart-3d/renderer.js and the kit-shots kart pieces.
 
 import * as THREE from 'three';
-import { buildKartShapes, WHEELS } from './kart-shapes.js';
 import { forwardSpeed } from './kart-physics.js';
+import { KART_DESIGNS } from './karts/kart-designs.js';
+import { buildKartParts, buildDesignShapes, disposeKartParts } from './karts/design-shapes.js';
+import { buildWheel } from './karts/wheels.js';
+import { createKartMaterials } from './karts/kart-materials.js';
+import { WHEELS } from './karts/kart-layout.js';
+import { MATERIAL_KINDS } from './karts/part-shapes.js';
+import { nextAntiGravityShare, easedShare } from './karts/anti-gravity.js';
 
 // How far the front wheels turn at full steering.
 const WHEEL_TURN_ANGLE = (25 * Math.PI) / 180;
+// Flat, a wheel hovers this far off the road and is tucked this far in under the kart.
+const FLAT_HOVER = 0.05;
+const FLAT_TUCK = 0.06;
 
-// Returns { karts, show(index, kart, pose, hex, dt), hide(index), dispose() }: `count` groups ready to add to
-// the scene. Their matrices are set by hand each frame (matrixAutoUpdate is off), since a kart's pose is a full
+// Returns { karts, show(index, kart, pose, designIndex, dt), hide(index), dispose() }: `count` groups ready to add
+// to the scene. Their matrices are set by hand each frame (matrixAutoUpdate is off), since a kart's pose is a full
 // frame, not an angle.
 export function createKartModels(count) {
-  const shapes = buildKartShapes();
-  const shared = {
-    dark: new THREE.MeshStandardMaterial({ color: 0x23252d, roughness: 0.4, metalness: 0.2 }),
-    chrome: new THREE.MeshStandardMaterial({ color: 0xe8ebf0, roughness: 0.3, metalness: 1 }),
-    white: new THREE.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.5 }),
-    wheel: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }),
-  };
-  const paints = [];
+  const kartParts = buildKartParts();
+  const designShapes = KART_DESIGNS.map((design) => buildDesignShapes(design, kartParts));
+  disposeKartParts(kartParts);
+  const wheelShapes = WHEELS.map(buildWheel);
+  const materials = createKartMaterials(KART_DESIGNS, count);
   const karts = [];
-  // Each model's wheels, and how far its wheels have rolled along the road (units), from which each wheel's
-  // turn follows by its own size.
+  // For each model: its meshes by material kind, its wheels, the design it shows, how far its wheels have rolled
+  // along the road (units, from which each wheel's turn follows by its own size) and how far they have turned
+  // flat (karts/anti-gravity.js, not yet eased).
+  const bodies = [];
   const wheelSets = [];
+  const shownDesigns = [];
   const rolled = [];
+  const flatShares = [];
   for (let index = 0; index < count; index += 1) {
-    // The clear coat is not quite a mirror: a perfectly sharp one turns the low sun into a glare far brighter
-    // than anything else, which bloom then spreads over the whole kart.
-    const paint = new THREE.MeshPhysicalMaterial({ roughness: 0.35, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.25 });
-    paints.push(paint);
     const kart = new THREE.Group();
     kart.matrixAutoUpdate = false;
-    kart.add(new THREE.Mesh(shapes.paint, paint), new THREE.Mesh(shapes.dark, shared.dark));
-    kart.add(new THREE.Mesh(shapes.chrome, shared.chrome), new THREE.Mesh(shapes.white, shared.white));
-    const wheels = WHEELS.map((spot, wheelIndex) => {
-      const wheel = new THREE.Mesh(shapes.wheels[wheelIndex], shared.wheel);
-      wheel.position.set(spot.x, spot.radius, spot.z);
-      // Turned for steering first, then rolled about its own axle.
-      wheel.rotation.order = 'YXZ';
+    const body = Object.fromEntries(MATERIAL_KINDS.map((kind) => [kind, new THREE.Mesh(designShapes[0][kind], materialFor(kind, 0))]));
+    const wheels = wheelShapes.map((shape) => {
+      const wheel = new THREE.Mesh(shape, materials.wheels[index]);
+      // Steered about up, then turned flat about forward, then rolled about its own axle.
+      wheel.rotation.order = 'YZX';
       return wheel;
     });
-    kart.add(...wheels);
+    kart.add(...Object.values(body), ...wheels);
     kart.traverse((part) => (part.castShadow = true));
     karts.push(kart);
+    bodies.push(body);
     wheelSets.push(wheels);
+    shownDesigns.push(0);
     rolled.push(0);
+    flatShares.push(0);
   }
 
   const xAxis = new THREE.Vector3();
   const yAxis = new THREE.Vector3();
   const zAxis = new THREE.Vector3();
-  // `pose` is the kart as drawn this frame (race-views.js kartPose), `hex` its paint, `dt` the real time since
-  // the last drawn frame.
-  function show(index, kart, pose, hex, dt) {
+  // `pose` is the kart as drawn this frame (race-views.js kartPose), `designIndex` an index into KART_DESIGNS
+  // (kart-roster.js's assignDesigns), `dt` the real time since the last drawn frame.
+  function show(index, kart, pose, designIndex, dt) {
     const model = karts[index];
     model.visible = true;
-    setPaint(index, hex);
+    useDesign(index, designIndex);
     const { position, bodyForward, bodyUp } = pose;
     // The model faces +z with +y up, so its axes are: x = up x forward (the kart's left), y = up, z = forward
     // made square to up.
@@ -71,31 +79,49 @@ export function createKartModels(count) {
     if (kart.grounded) {
       rolled[index] += forwardSpeed(kart) * dt;
     }
-    wheelSets[index].forEach((wheel, wheelIndex) => {
-      const spot = WHEELS[wheelIndex];
-      wheel.rotation.x = rolled[index] / spot.radius;
-      // A right turn turns the wheels clockwise seen from above: a negative angle about up.
-      wheel.rotation.y = spot.front ? -kart.wheelTurn * WHEEL_TURN_ANGLE : 0;
-    });
+    flatShares[index] = nextAntiGravityShare(flatShares[index], kart.antiGravity === true, dt);
+    const flat = easedShare(flatShares[index]);
+    materials.setGlow(index, flat);
+    wheelSets[index].forEach((wheel, wheelIndex) => placeWheel(wheel, WHEELS[wheelIndex], rolled[index], kart.wheelTurn, flat));
   }
 
   function hide(index) {
     karts[index].visible = false;
   }
 
-  // Three.js converts the colour each time it is set, so it is only set when it changes.
-  function setPaint(index, hex) {
-    if (paints[index].userData.hex !== hex) {
-      paints[index].userData.hex = hex;
-      paints[index].color.setHex(hex);
+  // Gives model `index` the shapes and emblem of design `designIndex`, if it does not show it already.
+  function useDesign(index, designIndex) {
+    if (shownDesigns[index] === designIndex) {
+      return;
     }
+    shownDesigns[index] = designIndex;
+    MATERIAL_KINDS.forEach((kind) => {
+      const mesh = bodies[index][kind];
+      mesh.geometry = designShapes[designIndex][kind];
+      mesh.material = materialFor(kind, designIndex);
+    });
+  }
+
+  // Every design shares the kinds' materials, except its decal (its own emblem).
+  function materialFor(kind, designIndex) {
+    return kind === 'decal' ? materials.decals[designIndex] : materials.byKind[kind];
   }
 
   function dispose() {
-    [shapes.paint, shapes.dark, shapes.chrome, shapes.white, ...shapes.wheels].forEach((shape) => shape.dispose());
-    Object.values(shared).forEach((material) => material.dispose());
-    paints.forEach((material) => material.dispose());
+    designShapes.forEach((shapes) => Object.values(shapes).forEach((shape) => shape.dispose()));
+    wheelShapes.forEach((shape) => shape.dispose());
+    materials.dispose();
   }
 
   return { karts, show, hide, dispose };
+}
+
+// One wheel at `spot` (kart-layout.js's WHEELS) rolled `rolled` units, steered by `wheelTurn` (-1 to 1) if it is a
+// front wheel, and turned `flat` of the way (0 to 1, eased) flat under the kart, its outer face up, hovering.
+function placeWheel(wheel, spot, rolled, wheelTurn, flat) {
+  wheel.position.set(spot.x - spot.side * FLAT_TUCK * flat, spot.radius + (spot.width / 2 + FLAT_HOVER - spot.radius) * flat, spot.z);
+  wheel.rotation.x = rolled / spot.radius;
+  // A right turn turns the wheels clockwise seen from above: a negative angle about up.
+  wheel.rotation.y = spot.front ? -wheelTurn * WHEEL_TURN_ANGLE : 0;
+  wheel.rotation.z = spot.side * flat * (Math.PI / 2);
 }

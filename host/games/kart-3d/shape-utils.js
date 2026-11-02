@@ -1,7 +1,7 @@
 // Small helpers for building the 3D race's models out of Three.js's simple shapes: placing a shape, stretching
 // one between two points, colouring one per vertex, and merging many into one geometry (one draw call). Used by
-// kart-shapes.js and the kit's pieces (kit/). Since M7d4 also rounded cylinders and shading by position, and since
-// M7d4b2 texture coordinates wrapped round a post.
+// the karts (karts/) and the kit's pieces (kit/). Since M7d4 also rounded cylinders and shading by position, and
+// since M7d4b2 texture coordinates wrapped round a post. The karts' curved shapes are in karts/curved-shapes.js.
 
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';

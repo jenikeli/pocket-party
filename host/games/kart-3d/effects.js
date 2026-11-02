@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { sparkLevel, SPARK_COLORS } from './kart-techniques.js';
 import { SURFACES } from './track.js';
+import { REAR_WHEEL_SPOTS, EXHAUST_SPOTS } from './karts/kart-layout.js';
 
 const MAX_PARTICLES = 1500;
 const SPARK_HEX = { blue: 0x4fb3ff, orange: 0xff9a1f, purple: 0xd04dff };
@@ -17,9 +18,6 @@ const DUST_HEX = 0x6b5a3c;
 // each other (they add up), which would bloom into a white blob over the kart.
 const SPARK_GLOW = 2.5;
 const FLAME_GLOW = 1.2;
-// Where particles start on a kart's body: x left, y up, z forward (the model's own axes, kart-shapes.js).
-const REAR_WHEELS = [[0.66, 0.1, -0.72], [-0.66, 0.1, -0.72]];
-const EXHAUSTS = [[0.33, 0.72, -1.3], [-0.33, 0.72, -1.3]];
 // Particles a second from each source, and how long each lives (seconds).
 const SPARKS_PER_SECOND = 90;
 const SPARK_LIFE = 0.22;
@@ -63,16 +61,16 @@ export function createEffects(scene) {
   function update(sources, dt) {
     for (const source of sources) {
       if (source.spark) {
-        REAR_WHEELS.forEach((spot) => emit(source, spot, SPARKS_PER_SECOND * dt, SPARK_LIFE, SPARK_HEX[source.spark], sparkSpeed, SPARK_GLOW));
+        REAR_WHEEL_SPOTS.forEach((spot) => emit(source, spot, SPARKS_PER_SECOND * dt, SPARK_LIFE, SPARK_HEX[source.spark], sparkSpeed, SPARK_GLOW));
       }
       if (source.boosting) {
-        EXHAUSTS.forEach((spot) => emit(source, spot, (FLAMES_PER_SECOND / 2) * dt, FLAME_LIFE, FLAME_HEXES, flameSpeed, FLAME_GLOW));
+        EXHAUST_SPOTS.forEach((spot) => emit(source, spot, (FLAMES_PER_SECOND / 2) * dt, FLAME_LIFE, FLAME_HEXES, flameSpeed, FLAME_GLOW));
       }
       if (source.stalled) {
-        REAR_WHEELS.forEach((spot) => emit(source, spot, SMOKE_PER_SECOND * dt, SMOKE_LIFE, SMOKE_HEX, smokeSpeed, 1));
+        REAR_WHEEL_SPOTS.forEach((spot) => emit(source, spot, SMOKE_PER_SECOND * dt, SMOKE_LIFE, SMOKE_HEX, smokeSpeed, 1));
       }
       if (source.dusty) {
-        REAR_WHEELS.forEach((spot) => emit(source, spot, DUST_PER_SECOND * dt, DUST_LIFE, DUST_HEX, smokeSpeed, 1));
+        REAR_WHEEL_SPOTS.forEach((spot) => emit(source, spot, DUST_PER_SECOND * dt, DUST_LIFE, DUST_HEX, smokeSpeed, 1));
       }
     }
     particles = particles.filter((particle) => (particle.life -= dt) > 0);

@@ -13,7 +13,7 @@ and deleted.
 | B | Fern | 2 | merged |
 | C | Bolt | 3 | merged |
 | D | Grimble | 4 | merged |
-| E | Rusty | 5 | building |
+| E | Rusty | 5 | merged |
 | F | Inky | 6 | building |
 | G | Mochi | 7 | building |
 | H | Sprout | 8 | merged |
@@ -54,7 +54,7 @@ and deleted.
 
 ## Notes for the end of the queue
 
-- Repeated in the drivers' own files, to fold into the shared files once the queue is done: painting one part in two tones by direction (fern-parts.js and pip-parts.js, both `twoTone`); webbed feet (fern, pip); `cheeks()` has no option to skip its freckles (pip and sprout throw them away).
+- Repeated in the drivers' own files, to fold into the shared files once the queue is done: painting one part in two tones by direction (fern-parts.js and pip-parts.js, both `twoTone`; rusty imports fern's); webbed feet (fern, pip); `cheeks()` has no option to skip its freckles (pip and sprout throw them away).
 - Pale faces that are not peach skin (Pip's white mask, Sprout's turnip, Bolt's dome) go grey in the kart's shade: the skin kind's warm glow tints them, the other kinds have none. A cool-glow kind would fix it at one more draw call; the user's call.
 
 ## Tasks

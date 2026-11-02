@@ -19,7 +19,7 @@ and deleted.
 | H | Sprout | 8 | merged |
 | I | Bruno | 9 | merged |
 | J | Rhino | 10 | building |
-| K | Wisp | 11 | building |
+| K | Wisp | 11 | merged |
 
 ## Rules for every task
 

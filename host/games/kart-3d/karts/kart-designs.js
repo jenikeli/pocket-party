@@ -32,5 +32,6 @@ import { INKY } from './drivers/inky.js';
 import { MOCHI } from './drivers/mochi.js';
 import { SPROUT } from './drivers/sprout.js';
 import { BRUNO } from './drivers/bruno.js';
+import { WISP } from './drivers/wisp.js';
 
-export const KART_DESIGNS = Object.freeze([BLAZE, PIP, FERN, BOLT, GRIMBLE, RUSTY, INKY, MOCHI, SPROUT, BRUNO]);
+export const KART_DESIGNS = Object.freeze([BLAZE, PIP, FERN, BOLT, GRIMBLE, RUSTY, INKY, MOCHI, SPROUT, BRUNO, WISP]);

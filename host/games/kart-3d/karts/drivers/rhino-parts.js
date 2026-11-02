@@ -5,9 +5,8 @@
 
 import * as THREE from 'three';
 import { painted, ball } from '../part-shapes.js';
-import { head, headDirection, onHead } from '../driver-parts.js';
+import { head, headDirection, onHead, squashed } from '../driver-parts.js';
 import { eyes, eyebrows, cheeks, smile } from '../driver-face.js';
-import { squashed } from './fern-parts.js';
 
 const NOSTRIL_HEX = 0x2a2e31;
 const INNER_EAR_HEX = 0xd9a3a0;
@@ -36,7 +35,7 @@ export function addRhinoHead(parts, at, radius, colours) {
   parts.skin.push(withoutHidden(face.shape, (point) => underHelmet(point.clone().sub(new THREE.Vector3(...at)).normalize())));
   parts.glossy.push(...eyes(face, { size: 0.15, across: 0.3, up: 0.25, iris: colours.iris }));
   parts.matte.push(...eyebrows(face, { across: 0.3, up: 0.52, length: 0.085, thickness: 0.036, tilt: 0.16, hex: colours.wrinkle }));
-  parts.skin.push(...cheeks(face, { across: 0.55, up: -0.1, radius: 0.05, blushHex: 0xe9a4a0, freckleHex: colours.hide }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.55, up: -0.1, radius: 0.05, blushHex: 0xe9a4a0 }).blush);
   addWrinkles(parts, face, colours.wrinkle);
   addSnout(parts, face, colours);
   [1, -1].forEach((side) => addEar(parts, face, side, colours.hide));

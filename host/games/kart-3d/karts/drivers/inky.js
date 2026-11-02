@@ -94,7 +94,7 @@ function addHead(parts, at) {
   parts.skin.push(stretch(face.shape));
   parts.glossy.push(...eyes(face, { size: 0.22, across: 0.21, up: 0.02, iris: 0xa070ff }).map(stretch));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.34, length: 0.08, thickness: 0.026, tilt: 0.1, hex: DEEP_TEAL }).map(stretch));
-  parts.skin.push(...cheeks(face, { across: 0.45, up: -0.2, radius: 0.055, blushHex: 0xffa9b8, freckleHex: 0xffa9b8 }).blush.map(stretch));
+  parts.skin.push(...cheeks(face, { across: 0.45, up: -0.2, radius: 0.055, blushHex: 0xffa9b8 }).blush.map(stretch));
   parts.matte.push(...smile(face, { width: 0.14, up: -0.33 }).map(stretch));
   const spots = [[0.75, 0.55, 0.06], [-0.6, 0.75, 0.05], [1.5, 0.3, 0.05], [-1.45, 0.45, 0.06], [2.2, 0.6, 0.06], [-2.3, 0.35, 0.05],
     [Math.PI, 0.7, 0.07], [2.75, 0.15, 0.045], [-2.8, 0.05, 0.05], [0.15, 1.0, 0.045]];

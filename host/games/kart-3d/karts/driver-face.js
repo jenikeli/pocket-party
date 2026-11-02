@@ -64,11 +64,12 @@ export function nose(head, { radius, up, hex }) {
   return onHead(ball(radius, [1.1, 0.95, 0.9], [0, 0, radius * 0.45], hex, { detail: 18, crease: 0.1 }), head, { across: 0, up });
 }
 
-// Soft blush on the cheeks (skin parts) and freckles over the nose and the tops of the cheeks (matte parts).
-export function cheeks(head, { across, up, radius, blushHex, freckleHex }) {
+// Soft blush on the cheeks (skin parts) and, only if `freckleHex` is given, freckles over the nose and the tops of
+// the cheeks (matte parts; an empty list otherwise).
+export function cheeks(head, { across, up, radius, blushHex, freckleHex = null }) {
   const blush = [1, -1].map((side) => onHead(painted(new THREE.CircleGeometry(radius, 20).scale(1, 0.75, 1), blushHex, { crease: 0 }), head, { across: side * across, up, lift: 0.002 }));
   const freckleSpots = [[0.12, -0.04], [0.18, -0.09], [0.25, -0.05], [0.21, -0.01], [0.29, -0.1]];
-  const freckles = [1, -1].flatMap((side) =>
+  const freckles = freckleHex === null ? [] : [1, -1].flatMap((side) =>
     freckleSpots.map(([freckleAcross, freckleUp]) =>
       onHead(painted(new THREE.CircleGeometry(radius * 0.13, 8), freckleHex, { crease: 0 }), head, { across: side * freckleAcross, up: up + 0.12 + freckleUp, lift: 0.004 }),
     ),

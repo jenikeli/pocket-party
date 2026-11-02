@@ -1,33 +1,9 @@
-// The parts only Fern the frog has (M7d5): a way to squash her head and its face together, skin in two tones (a
-// pale throat and belly), the twin racing stripes on her vest, and long frog's legs folded up with webbed feet.
+// The parts only Fern the frog has (M7d5): the twin racing stripes on her vest, and long frog's legs folded up with
+// webbed feet.
 // Used by fern.js. Every place is [x, y, z] in the kart's axes (kart-layout.js).
 
 import * as THREE from 'three';
 import { painted, ball, limb } from '../part-shapes.js';
-
-// `shape` stretched by `stretch` ([x, y, z]) round `at`, so a head and the face laid on it (driver-parts.js's
-// onHead) squash together and the face stays on its surface. Returns `shape`.
-export function squashed(shape, at, stretch) {
-  return shape.translate(-at[0], -at[1], -at[2]).scale(...stretch).translate(...at);
-}
-
-// Recolours `shape` (already painted) toward `hex` where `shareAt(direction)` is above 0, fully where it is 1 or
-// more, `direction` being the unit vector from `centre` to the vertex; the blend is smoothed, so the edge is soft.
-// Returns `shape`.
-export function twoTone(shape, centre, hex, shareAt) {
-  const { position, color } = shape.attributes;
-  const other = new THREE.Color(hex);
-  const middle = new THREE.Vector3(...centre);
-  const direction = new THREE.Vector3();
-  const blended = new THREE.Color();
-  for (let index = 0; index < position.count; index += 1) {
-    direction.fromBufferAttribute(position, index).sub(middle).normalize();
-    const share = THREE.MathUtils.smoothstep(shareAt(direction), 0, 1);
-    blended.setRGB(color.getX(index), color.getY(index), color.getZ(index)).lerp(other, share);
-    color.setXYZ(index, blended.r, blended.g, blended.b);
-  }
-  return shape;
-}
 
 // Two stripes running over the vest from its hem up and over the shoulders, either side of the middle, front and
 // back: thin slices of a ball just bigger than the body's chest (driver-parts.js's body, `shape` its sizes), its

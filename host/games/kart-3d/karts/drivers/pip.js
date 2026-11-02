@@ -4,10 +4,10 @@
 // snowflake on a white disc. Her kart is blue, snow white and black-blue. One entry of kart-designs.js's
 // KART_DESIGNS; her own parts are in pip-parts.js.
 
-import { partList, ball, limb, emblemDisc } from '../part-shapes.js';
+import { partList, ball, limb, emblemDisc, twoToneShaded } from '../part-shapes.js';
 import { head, arm, scarf } from '../driver-parts.js';
 import { eyes, eyebrows, cheeks } from '../driver-face.js';
-import { recolour, twoTone, frontOval, faceMask, beak, beanie, webbedFoot, striped } from './pip-parts.js';
+import { frontOval, faceMask, beak, beanie, webbedFoot, striped } from './pip-parts.js';
 
 const BLUE = 0x3498db;
 const SNOW = 0xf4f7fb;
@@ -59,7 +59,7 @@ function buildDriver(seat) {
   const bodyAt = [x, y + 0.33, z];
   const bodyStretch = [1, 1.1, 0.82];
   const egg = ball(0.33, bodyStretch, bodyAt, WHITE, { detail: 28, crease: 0.25 });
-  parts.skin.push(recolour(egg, twoTone(bodyAt, bodyStretch, SNOW, INK, frontOval(0.95, 1.2, 0.15))));
+  parts.skin.push(twoToneShaded(egg, bodyAt, bodyStretch, SNOW, INK, frontOval(0.95, 1.2, 0.15)));
   const face = head([x, y + 0.86, z + 0.04], HEAD_RADIUS, INK);
   parts.skin.push(face.shape);
   parts.cloth.push(...striped(scarf([x, y + 0.6, z + 0.02], { radius: 0.21, thickness: 0.06, length: 0.42, width: 0.1, hex: WHITE }), { hex: SCARF_RED, otherHex: SNOW, rollCount: 14, tailCount: 5 }));
@@ -97,7 +97,7 @@ function addFace(parts, face) {
   parts.skin.push(faceMask(face, { width: 0.6, height: 0.5, up: -0.12, hex: SNOW }));
   parts.glossy.push(...eyes(face, { size: 0.17, across: 0.2, up: 0.1, iris: 0x2f6fd0 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.4, length: 0.08, thickness: 0.03, tilt: 0.12, hex: INK }));
-  parts.skin.push(...cheeks(face, { across: 0.44, up: -0.2, radius: 0.05, blushHex: 0xffb2c0, freckleHex: 0xffb2c0 }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.44, up: -0.2, radius: 0.05, blushHex: 0xffb2c0 }).blush);
   const { skin, matte } = beak(face, { up: -0.34, width: 0.18 });
   parts.skin.push(...skin);
   parts.matte.push(...matte);

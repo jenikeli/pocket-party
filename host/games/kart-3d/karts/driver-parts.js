@@ -55,6 +55,12 @@ export function onHead(shape, { at, radius }, { across, up, lift = 0 }) {
   return shape;
 }
 
+// `shape` stretched by `stretch` ([x, y, z]) round `at`, so a head and the face laid on it (onHead) squash together
+// and the face stays on its surface. Returns `shape`.
+export function squashed(shape, at, stretch) {
+  return shape.translate(-at[0], -at[1], -at[2]).scale(...stretch).translate(...at);
+}
+
 // How far from the head's middle its surface is along `direction`, a unit vector: on the stretched ball, and
 // further where the face bulges.
 function surfaceReach(direction, radius) {
@@ -76,7 +82,8 @@ export function body(hip, { width, height, depth, lower, upper }) {
 
 // An arm from `shoulder` to `hand`, bent at the elbow outward and down by `bend`, in `sleeve`, with a cuff in
 // `cuff` at the wrist; a big round glove `glove` round in `gloveHex` on the wheel, its thumb on top. Returns
-// { sleeves (cloth), gloves (cloth) }.
+// { sleeves (cloth), gloves (cloth), elbow, wrist } (the bend's points, [x, y, z], for a driver that draws its own
+// sleeve along the same line).
 export function arm(shoulder, hand, { radius, bend, sleeve, cuff, glove, gloveHex }) {
   const side = Math.sign(hand[0] || shoulder[0]);
   const elbow = [(shoulder[0] + hand[0]) / 2 + side * bend, (shoulder[1] + hand[1]) / 2 - bend, (shoulder[2] + hand[2]) / 2];
@@ -87,6 +94,8 @@ export function arm(shoulder, hand, { radius, bend, sleeve, cuff, glove, gloveHe
   return {
     sleeves: [limb(shoulder, elbow, radius, sleeve), limb(elbow, wrist.toArray(), radius * 0.95, sleeve), painted(cuffShape, cuff, { crease: 0.1 })],
     gloves: [ball(glove, [1.05, 0.85, 1.15], hand, gloveHex, { detail: 12, crease: 0.15 }), thumb],
+    elbow,
+    wrist: wrist.toArray(),
   };
 }
 

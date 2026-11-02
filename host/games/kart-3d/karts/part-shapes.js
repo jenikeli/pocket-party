@@ -1,6 +1,7 @@
 // Small helpers the karts and their drivers are built with (M7d5): a part coloured per vertex with a darker
 // crease along its foot (MK8DX's dark creases where parts meet), a squashed ball, a limb (a capsule from one
-// point to another) and a list of parts sorted by the kind of material they are drawn with. Used by the kart's
+// point to another), a part painted in two tones by direction and a list of parts sorted by the kind of material
+// they are drawn with. Used by the kart's
 // builders (karts/) and the shared driver parts (karts/driver-parts.js).
 
 import * as THREE from 'three';
@@ -70,6 +71,47 @@ export function limb(from, to, radius, hex, { detail = 8, crease = 0.15 } = {}) 
   const direction = end.clone().sub(start);
   const shape = new THREE.CapsuleGeometry(radius, Math.max(direction.length(), 0.001), 2, detail);
   return painted(along(shape, start, end), hex, { crease });
+}
+
+// Calls `visit(index, direction)` for every vertex of `shape`, `direction` being the unit vector from `centre`
+// ([x, y, z]) to the vertex after undoing `stretch` (so an egg reads as a ball).
+function eachDirection(shape, centre, stretch, visit) {
+  const { position } = shape.attributes;
+  const middle = new THREE.Vector3(...centre);
+  const squash = new THREE.Vector3(...stretch);
+  const direction = new THREE.Vector3();
+  for (let index = 0; index < position.count; index += 1) {
+    visit(index, direction.fromBufferAttribute(position, index).sub(middle).divide(squash).normalize());
+  }
+}
+
+// Recolours `shape` (already painted) toward `hex` where `shareAt(direction)` is above 0, fully where it is 1 or
+// more, `direction` being the unit vector from `centre` to the vertex; the blend is smoothed, so the edge is soft.
+// Returns `shape`.
+export function twoTone(shape, centre, hex, shareAt) {
+  const { color } = shape.attributes;
+  const other = new THREE.Color(hex);
+  const blended = new THREE.Color();
+  eachDirection(shape, centre, [1, 1, 1], (index, direction) => {
+    const share = THREE.MathUtils.smoothstep(shareAt(direction), 0, 1);
+    blended.setRGB(color.getX(index), color.getY(index), color.getZ(index)).lerp(other, share);
+    color.setXYZ(index, blended.r, blended.g, blended.b);
+  });
+  return shape;
+}
+
+// Like twoTone, but for a shape painted white (so it holds only the crease's shade): multiplies each vertex by
+// `outside` where `share(direction)` is 0 and `inside` where it is 1 (blended between, not smoothed again), after
+// undoing `stretch`. One smooth part carries two colours and keeps its crease on both. Returns `shape`.
+export function twoToneShaded(shape, centre, stretch, inside, outside, share) {
+  const { color } = shape.attributes;
+  const [insideColour, outsideColour] = [new THREE.Color(inside), new THREE.Color(outside)];
+  const tint = new THREE.Color();
+  eachDirection(shape, centre, stretch, (index, direction) => {
+    tint.copy(outsideColour).lerp(insideColour, share(direction));
+    color.setXYZ(index, color.getX(index) * tint.r, color.getY(index) * tint.g, color.getZ(index) * tint.b);
+  });
+  return shape;
 }
 
 // A shape built round the origin along y, turned to point from `start` to `end` (THREE.Vector3s) and moved to

@@ -5,10 +5,10 @@
 // (the squashed head, the two-tone skin, the vest's stripes, the frog's legs) are in fern-parts.js.
 
 import * as THREE from 'three';
-import { partList, limb, painted, emblemDisc } from '../part-shapes.js';
-import { head, body, arm } from '../driver-parts.js';
+import { partList, limb, painted, emblemDisc, twoTone } from '../part-shapes.js';
+import { head, body, arm, squashed } from '../driver-parts.js';
 import { eyes, eyebrows, cheeks, smile } from '../driver-face.js';
-import { squashed, twoTone, vestStripes, frogLeg } from './fern-parts.js';
+import { vestStripes, frogLeg } from './fern-parts.js';
 
 const GREEN = 0x2ecc71;
 const BELLY = 0xf3e9a6;
@@ -117,7 +117,7 @@ function addHead(parts, at) {
   const face = head(at, HEAD_RADIUS, SKIN);
   twoTone(face.shape, at, BELLY, (direction) => (-direction.y - 0.17) * 7);
   const mouth = smile(face, { width: 0.32, up: -0.2 });
-  const { blush } = cheeks(face, { across: 0.62, up: -0.08, radius: 0.06, blushHex: 0xf59a8a, freckleHex: SKIN });
+  const { blush } = cheeks(face, { across: 0.62, up: -0.08, radius: 0.06, blushHex: 0xf59a8a });
   parts.skin.push(squashed(face.shape, at, HEAD_STRETCH));
   parts.skin.push(...blush.map((shape) => squashed(shape, at, HEAD_STRETCH)));
   mouth.forEach((shape) => parts.matte.push(squashed(shape, at, HEAD_STRETCH)));

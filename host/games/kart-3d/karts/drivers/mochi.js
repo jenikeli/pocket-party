@@ -115,7 +115,7 @@ function addLimbs(parts, seat) {
 function addFace(parts, face) {
   parts.glossy.push(...eyes(face, { size: 0.165, across: 0.2, up: 0.1, iris: 0xc23a72 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.43, length: 0.075, thickness: 0.022, tilt: 0.06, hex: 0xe57ba4 }));
-  parts.skin.push(...cheeks(face, { across: 0.44, up: -0.18, radius: 0.06, blushHex: 0xffa3c3, freckleHex: 0xffa3c3 }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.44, up: -0.18, radius: 0.06, blushHex: 0xffa3c3 }).blush);
   const { matte, skin } = muzzle(face, { up: -0.2, padRadius: 0.065, hex: FUR, noseHex: 0xff6aa2, mouthWidth: 0.16 });
   parts.matte.push(...matte);
   parts.skin.push(...skin);

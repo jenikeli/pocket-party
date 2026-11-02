@@ -98,6 +98,6 @@ function addArms(parts, seat, shade) {
 function addFace(parts, face) {
   parts.glossy.push(...eyes(face, { size: 0.17, across: 0.2, up: 0.06, iris: 0x6a4fd8 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.4, length: 0.07, thickness: 0.022, tilt: 0.05, hex: 0xa494d8 }));
-  parts.skin.push(...cheeks(face, { across: 0.42, up: -0.2, radius: 0.06, blushHex: 0xffb0cc, freckleHex: 0xffb0cc }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.42, up: -0.2, radius: 0.06, blushHex: 0xffb0cc }).blush);
   parts.matte.push(...smile(face, { width: 0.13, up: -0.3 }));
 }

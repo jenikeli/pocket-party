@@ -27,7 +27,9 @@ const { KART_DESIGNS } = await import('../../host/games/kart-3d/karts/kart-desig
 const { buildKartParts, buildDesignShapes } = await import('../../host/games/kart-3d/karts/design-shapes.js');
 const { buildWheel } = await import('../../host/games/kart-3d/karts/wheels.js');
 const { WHEELS, EXHAUST_SPOTS, EXHAUST_TIPS } = await import('../../host/games/kart-3d/karts/kart-layout.js');
-const { MATERIAL_KINDS } = await import('../../host/games/kart-3d/karts/part-shapes.js');
+const { MATERIAL_KINDS, ball, twoTone } = await import('../../host/games/kart-3d/karts/part-shapes.js');
+const { head } = await import('../../host/games/kart-3d/karts/driver-parts.js');
+const { cheeks } = await import('../../host/games/kart-3d/karts/driver-face.js');
 const { nextAntiGravityShare, easedShare, ANTI_GRAVITY_SECONDS } = await import('../../host/games/kart-3d/karts/anti-gravity.js');
 
 // 12 karts in every view: about 25,000 triangles and at most about 10 draw calls a kart with its driver.
@@ -107,6 +109,24 @@ test('a driver with no part in a kind (a robot with no skin) builds that kind em
   const shapes = buildDesignShapes(noSkin, kartParts);
   assert.equal(triangles(shapes.skin), 0);
   assert.ok(triangles(shapes.glossy) > 0);
+});
+
+test('cheeks builds freckles only when it is given a freckle colour', () => {
+  const face = head([0, 1, 0], 0.3, 0xffffff);
+  const options = { across: 0.4, up: -0.2, radius: 0.05, blushHex: 0xffaaaa };
+  assert.equal(cheeks(face, options).freckles.length, 0);
+  assert.ok(cheeks(face, { ...options, freckleHex: 0x884422 }).freckles.length > 0);
+});
+
+test('twoTone turns the vertices on one side of a ball to the second colour and leaves the rest', () => {
+  const shape = twoTone(ball(1, [1, 1, 1], [0, 0, 0], 0xffffff, { crease: 0 }), [0, 0, 0], 0xff0000, (direction) => direction.y * 10);
+  const { position, color } = shape.attributes;
+  for (let index = 0; index < position.count; index += 1) {
+    const height = position.getY(index);
+    if (Math.abs(height) > 0.3) {
+      assert.equal(color.getY(index) < 0.5, height > 0, 'the top is red (green drops), the bottom stays white');
+    }
+  }
 });
 
 test('the kart stands on the road and its driver\'s head tops out near the kart\'s length', () => {

@@ -140,8 +140,7 @@ function addFace(parts, face) {
   parts.glossy.push(...eyes(face, { size: 0.16, across: 0.19, up: 0.1, iris: 0x8a62d0 }));
   parts.matte.push(...eyebrows(face, { across: 0.21, up: 0.4, length: 0.085, thickness: 0.032, tilt: 0.12, hex: LEAF_GREEN_DARK }));
   parts.skin.push(nose(face, { radius: 0.055, up: -0.08, hex: 0xfbeee8 }));
-  // A turnip has no freckles: only the blush is kept.
-  const { blush } = cheeks(face, { across: 0.42, up: -0.2, radius: 0.055, blushHex: 0xf7a3b4, freckleHex: TURNIP });
+  const { blush } = cheeks(face, { across: 0.42, up: -0.2, radius: 0.055, blushHex: 0xf7a3b4 });
   parts.skin.push(...blush);
   parts.matte.push(...smile(face, { width: 0.17, up: -0.4 }));
 }

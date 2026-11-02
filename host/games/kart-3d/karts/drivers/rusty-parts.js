@@ -4,10 +4,9 @@
 // Every place is [x, y, z] in the kart's axes (kart-layout.js).
 
 import * as THREE from 'three';
-import { painted, ball } from '../part-shapes.js';
+import { painted, ball, twoTone } from '../part-shapes.js';
 import { head, headDirection, onHead } from '../driver-parts.js';
 import { eyes, eyebrows, cheeks, smile } from '../driver-face.js';
-import { twoTone } from './fern-parts.js';
 
 const NOSE_HEX = 0x1b1416;
 const INNER_EAR_HEX = 0xf6e2d2;
@@ -27,7 +26,7 @@ export function addFoxHead(parts, at, radius, colours) {
   parts.skin.push(face.shape);
   parts.glossy.push(...eyes(face, { size: 0.165, across: 0.21, up: 0.16, iris: colours.iris }));
   parts.matte.push(...eyebrows(face, { across: 0.23, up: 0.46, length: 0.085, thickness: 0.03, tilt: 0.12, hex: colours.brow }));
-  parts.skin.push(...cheeks(face, { across: 0.5, up: -0.12, radius: 0.055, blushHex: 0xffb7a8, freckleHex: colours.white }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.5, up: -0.12, radius: 0.055, blushHex: 0xffb7a8 }).blush);
   addMuzzle(parts, face, colours);
   [1, -1].forEach((side) => addEar(parts, face, side, colours));
   addRuffs(parts, face, colours.white);

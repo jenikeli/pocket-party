@@ -17,7 +17,7 @@ const BADGE_DOWN = 1.05;
 
 // Multiplies each vertex colour of `geometry` (painted white, so it holds only the crease's shade) by
 // `colourAt(index, point)`, a THREE.Color, so one smooth part can carry two colours without a seam.
-export function recolour(geometry, colourAt) {
+function recolour(geometry, colourAt) {
   const { position, color } = geometry.attributes;
   const point = new THREE.Vector3();
   for (let index = 0; index < position.count; index += 1) {
@@ -25,19 +25,6 @@ export function recolour(geometry, colourAt) {
     color.setXYZ(index, color.getX(index) * colour.r, color.getY(index) * colour.g, color.getZ(index) * colour.b);
   }
   return geometry;
-}
-
-// A colour picker for recolour: `inside` where `share(direction)` is 1, `outside` where it is 0, blended between.
-// `direction` is the unit way out from `centre` to the point, after undoing `stretch` (so an egg reads as a ball).
-export function twoTone(centre, stretch, inside, outside, share) {
-  const [insideColour, outsideColour] = [new THREE.Color(inside), new THREE.Color(outside)];
-  const middle = new THREE.Vector3(...centre);
-  const squash = new THREE.Vector3(...stretch);
-  const direction = new THREE.Vector3();
-  return (index, point) => {
-    direction.subVectors(point, middle).divide(squash).normalize();
-    return outsideColour.clone().lerp(insideColour, share(direction));
-  };
 }
 
 // 1 well inside an oval `across` by `up` radians round the front of a ball (its middle `lower` radians below

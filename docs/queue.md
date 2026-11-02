@@ -21,7 +21,7 @@ and deleted.
 | J | Rhino | 10 | merged |
 | K | Wisp | 11 | merged |
 | L | Skin glow in each part's own colour, drivers retuned | - | merged |
-| M | Repeated parts folded into the shared files | - | building |
+| M | Repeated parts folded into the shared files | - | merged |
 
 ## Rules for every task
 

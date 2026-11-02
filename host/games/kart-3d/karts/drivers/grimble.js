@@ -121,7 +121,7 @@ function addFace(parts, face) {
   parts.glossy.push(...eyes(face, { size: 0.14, across: 0.18, up: 0.06, iris: 0x3d7fd1 }));
   parts.skin.push(...eyebrows(face, { across: 0.21, up: 0.32, length: 0.1, thickness: 0.055, tilt: 0.1, hex: BEARD }));
   parts.skin.push(nose(face, { radius: 0.08, up: -0.08, hex: 0xffac8e }));
-  const { blush } = cheeks(face, { across: 0.42, up: -0.14, radius: 0.065, blushHex: 0xff9f8a, freckleHex: SKIN });
+  const { blush } = cheeks(face, { across: 0.42, up: -0.14, radius: 0.065, blushHex: 0xff9f8a });
   parts.skin.push(...blush);
   parts.matte.push(...smile(face, { width: 0.17, up: MOUTH_UP }));
   [-0.5, 0, 0.5].forEach((turn) => {

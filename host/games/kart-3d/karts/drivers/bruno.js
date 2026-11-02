@@ -82,10 +82,9 @@ function addLimbs(parts, seat) {
     const side = Math.sign(hand[0]);
     const shoulder = [x + side * 0.33, y + 0.52, z];
     const options = { radius: 0.1, bend: 0.1, sleeve: CHECK_RED, cuff: NEAR_BLACK, glove: 0.115, gloveHex: FUR };
-    const { sleeves, gloves } = arm(shoulder, hand, options);
+    const { sleeves, gloves, elbow, wrist } = arm(shoulder, hand, options);
     // arm's own sleeves are plain: Bruno's are checked, along the same bend from the shoulder to the cuff.
     sleeves.slice(0, 2).forEach((shape) => shape.dispose());
-    const { elbow, wrist } = armBend(shoulder, hand, options);
     parts.cloth.push(checkedLimb(shoulder, elbow, 0.1), checkedLimb(elbow, wrist, 0.095), sleeves[2]);
     parts.skin.push(...gloves);
   });
@@ -98,22 +97,12 @@ function addLimbs(parts, seat) {
   });
 }
 
-// The elbow and wrist of an arm as driver-parts.js's arm bends it, so the checked sleeves follow the same line.
-function armBend(shoulder, hand, { bend, glove }) {
-  const side = Math.sign(hand[0]);
-  const elbow = [(shoulder[0] + hand[0]) / 2 + side * bend, (shoulder[1] + hand[1]) / 2 - bend, (shoulder[2] + hand[2]) / 2];
-  const handAt = new THREE.Vector3(...hand);
-  const elbowAt = new THREE.Vector3(...elbow);
-  const wrist = handAt.clone().lerp(elbowAt, (glove * 1.3) / handAt.distanceTo(elbowAt));
-  return { elbow, wrist: wrist.toArray() };
-}
-
 // The brown head with its round ears, big warm eyes, dark brows, a soft blush and the muzzle.
 function addHead(parts, face) {
   parts.skin.push(face.shape, ...ears(face, { size: 0.13, hex: FUR, innerHex: HONEY }));
   parts.glossy.push(...eyes(face, { size: 0.15, across: 0.2, up: 0.14, iris: 0x8a5220 }));
   parts.matte.push(...eyebrows(face, { across: 0.22, up: 0.42, length: 0.085, thickness: 0.036, tilt: 0.12, hex: DARK_FUR }));
-  parts.skin.push(...cheeks(face, { across: 0.52, up: -0.12, radius: 0.05, blushHex: 0xc0705a, freckleHex: FUR }).blush);
+  parts.skin.push(...cheeks(face, { across: 0.52, up: -0.12, radius: 0.05, blushHex: 0xc0705a }).blush);
   const snout = muzzle(face, { radius: 0.18, hex: HONEY });
   parts.skin.push(...snout.skin);
   parts.glossy.push(...snout.glossy);

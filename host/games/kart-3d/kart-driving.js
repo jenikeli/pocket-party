@@ -86,7 +86,7 @@ export function steeringRate(steer) {
 }
 
 // The steer (-1 to 1) that turns at `rate` radians per second: steeringRate turned round, for drivers that work
-// out the turn they want (dummy-driver.js). The curve only rises, so halving the interval finds it.
+// out the turn they want (cpu-driver.js). The curve only rises, so halving the interval finds it.
 export function steerForRate(rate) {
   const wanted = Math.abs(rate);
   if (wanted >= steeringRate(1)) {

@@ -6,6 +6,7 @@
 
 import { stepRace, DEFAULT_ENGINE_CLASS } from './race.js';
 import { createStandInRace, MAX_STAND_INS } from './stand-ins.js';
+import { DEFAULT_CPU_LEVEL } from './cpu-levels.js';
 import { GO_AT } from './rocket-start.js';
 import { KIT_PARTS } from './kit/layout-rules.js';
 import { NEUTRAL_CONTROLS } from '../../kart/kart-controls.js';
@@ -28,7 +29,7 @@ const MEDIUM = Object.freeze({ bloom: false, pixelRatio: 1, shadows: true, hidde
 // The race at each moment, as separate copies (the race is plain data), and the stand-in players, in slot
 // order, whose karts the views follow: { races, players }.
 export function createMeasureRaces(track) {
-  const { race, players } = createStandInRace(track, MAX_STAND_INS, 3, DEFAULT_ENGINE_CLASS);
+  const { race, players } = createStandInRace(track, MAX_STAND_INS, 3, DEFAULT_ENGINE_CLASS, DEFAULT_CPU_LEVEL);
   const races = MOMENTS.map((moment) => {
     while (race.time < moment - 1e-9) {
       stepRace(race, track, () => NEUTRAL_CONTROLS, STEP_SECONDS);

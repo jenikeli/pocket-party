@@ -75,7 +75,7 @@ test('the middle line runs only on wide straights, clear of the grid, the ramp a
 });
 
 test('the kit paints a bracket in front of every grid place, where the race puts its karts', () => {
-  const race = createRace(testTrack, ['ana'], 3, 150);
+  const race = createRace(testTrack, ['ana'], 3, 150, 'normal');
   race.karts.forEach((kart, gridIndex) => {
     assert.ok(Math.abs(kart.distance - (gridSpot(testTrack, gridIndex).s - testTrack.startLine)) < 1e-9);
   });

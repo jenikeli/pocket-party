@@ -109,7 +109,7 @@ test('the Measure races are copies at each moment: on the grid, then later and l
   const last = races[races.length - 1];
   for (const player of players) {
     const kart = last.karts.find((each) => each.playerId === player.playerId);
-    assert.notEqual(kart.lane, null);
+    assert.notEqual(kart.cpu, null);
     assert.ok(kart.distance > 200, `${player.name}'s kart drove on (${kart.distance.toFixed(0)} units)`);
   }
 });

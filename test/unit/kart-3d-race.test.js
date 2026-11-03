@@ -1,6 +1,7 @@
 // Unit tests for the 3D race's rules (host/games/kart-3d/race.js) on its courses (courses.js): every course
-// racing, the grid of 12, Seaside Skyway's shape and features, CPU karts lapping it at every engine class, laps, finishing, places, the
-// finished player's kart driving itself, the time limit, players leaving, and the engine classes' top speeds.
+// racing, the grid of 12, Seaside Skyway's shape and features, CPU karts lapping it at every engine class, laps,
+// finishing, places, the finished player's kart driving itself, the time limit, players leaving, and the engine
+// classes' top speeds. The CPU drivers' own rules are tested in kart-3d-race-cpus.test.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,8 +33,8 @@ import { subtract, length } from '../../host/games/kart-3d/vector.js';
 const STEP = 1 / 60;
 const track = buildTrack(SEASIDE_SKYWAY);
 
-// A player who drives like the CPU karts, in the middle of the road, and holds Go through the countdown too
-// late for a rocket start (a normal start).
+// A player who drives steadily in the middle of the road (the lane driver, which never drifts), and holds Go
+// through the countdown too late for a rocket start (a normal start).
 function steadyDriver(race) {
   return (playerId) => {
     if (race.phase === RACE_PHASES.COUNTDOWN) {
@@ -62,7 +63,7 @@ test('every course has its own id and a name, and a 1-lap race on it ends with n
   assert.deepEqual(COURSES.map((course) => course.name), ['Seaside Skyway', 'Test track']);
   for (const course of COURSES) {
     const courseTrack = buildTrack(course);
-    const race = createRace(courseTrack, ['p1'], 1, 150);
+    const race = createRace(courseTrack, ['p1'], 1, 150, 'normal');
     for (const kart of race.karts) {
       assert.ok(kart.s > 0 && kart.s < courseTrack.startLine, `${course.name}: on the grid behind the line: ${kart.s}`);
     }
@@ -114,7 +115,7 @@ test('no two parts of Seaside Skyway overlap, unless one passes high over the ot
 });
 
 test('the grid: CPU karts fill the field to 12, players at the back, all behind the line, apart, placed in grid order', () => {
-  const race = createRace(track, ['p1', 'p2'], 3, 150);
+  const race = createRace(track, ['p1', 'p2'], 3, 150, 'normal');
   assert.equal(race.karts.length, FIELD_SIZE);
   assert.deepEqual(race.karts.slice(-3).map((kart) => kart.playerId), [null, 'p1', 'p2']);
   assert.deepEqual(race.karts.map((kart) => kart.place), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
@@ -130,10 +131,10 @@ test('the grid: CPU karts fill the field to 12, players at the back, all behind 
   }
 });
 
-test('CPU karts lap the course at every engine class: over the jump, up the wall, braking for the hairpin, none falling off', () => {
+test('CPU karts lap the course at every engine class: over the jump, up the wall, none falling off', () => {
   const lapTimes = {};
   for (const engineClass of Object.keys(ENGINE_CLASSES)) {
-    const race = createRace(track, ['p1'], 3, Number(engineClass));
+    const race = createRace(track, ['p1'], 3, Number(engineClass), 'normal');
     let falls = 0;
     const seen = race.karts.map(() => ({ airSteps: 0, wallSteps: 0, slowestInHairpin: Infinity }));
     runRace(race, steadyDriver(race), 200, () => {
@@ -154,15 +155,14 @@ test('CPU karts lap the course at every engine class: over the jump, up the wall
       assert.ok(kart.distance > 2.8 * track.length, `${engineClass}cc kart ${index} drove ${kart.distance}`);
       assert.ok(seen[index].airSteps > 2 * 30, `${engineClass}cc kart ${index} jumped`);
       assert.ok(seen[index].wallSteps > 2 * 30, `${engineClass}cc kart ${index} drove on the vertical wall`);
-      // The hairpin turns left with radius 26, so a lane `lane` right of the middle has radius 26 + lane, and a
-      // full steer gets round it at steeringRate(1) x radius at most (the CPU driver brakes 5% above that).
-      // The outer lanes can be taken flat out.
-      const lane = kart.lane ?? 0;
-      const laneLimit = steeringRate(1) * (HAIRPIN_RADIUS + lane);
-      if (laneLimit < kartTopSpeed(kart)) {
-        assert.ok(seen[index].slowestInHairpin <= laneLimit * 1.05, `${engineClass}cc kart ${index} slowed for the hairpin`);
-      }
     });
+    // The player's lane driver: the hairpin turns left with radius 26 in the middle, and a full steer gets round
+    // it at steeringRate(1) x radius at most (the lane driver brakes 5% above that).
+    const player = playerKart(race, 'p1');
+    const laneLimit = steeringRate(1) * HAIRPIN_RADIUS;
+    if (laneLimit < kartTopSpeed(player)) {
+      assert.ok(seen[race.karts.indexOf(player)].slowestInHairpin <= laneLimit * 1.05, `${engineClass}cc: the player slowed for the hairpin`);
+    }
     lapTimes[engineClass] = playerKart(race, 'p1').finishTime / 3;
   }
   // The middle lane, braking for every corner and never drifting: MK8DX's staff ghosts lap its courses in 38-44 s
@@ -172,7 +172,7 @@ test('CPU karts lap the course at every engine class: over the jump, up the wall
 });
 
 test('laps, finishing and places: the player finishes, drives on by itself, and the race is over', () => {
-  const race = createRace(track, ['p1'], 2, 150);
+  const race = createRace(track, ['p1'], 2, 150, 'normal');
   const lapsSeen = new Set();
   runRace(race, steadyDriver(race), 200, () => {
     lapsSeen.add(playerKart(race, 'p1').lap);
@@ -182,7 +182,7 @@ test('laps, finishing and places: the player finishes, drives on by itself, and 
   assert.deepEqual([...lapsSeen], [1, 2]);
   assert.ok(kart.finishTime > 50 && kart.finishTime < 90, `finished in ${kart.finishTime} s`);
   assert.ok(Math.abs(kart.lapStartedAt - kart.finishTime / 2) < 5, 'the second lap started about halfway');
-  assert.ok(kart.lane !== null, 'the CPU driver drives the kart now');
+  assert.ok(kart.cpu !== null, 'the CPU driver drives the kart now');
   assert.deepEqual(kartsInPlaceOrder(race).map((each) => each.place), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   const places = race.karts.map((each) => each.place);
   runRace(race, steadyDriver(race), 5);
@@ -191,7 +191,7 @@ test('laps, finishing and places: the player finishes, drives on by itself, and 
 });
 
 test('reversing over the start line takes distance away; the lap only counts once it is driven again', () => {
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   runRace(race, () => NEUTRAL_CONTROLS, GO_AT + 0.1);
   const kart = playerKart(race, 'p1');
   const startDistance = kart.distance;
@@ -201,7 +201,7 @@ test('reversing over the start line takes distance away; the lap only counts onc
 });
 
 test('the time limit: 30 s after the first player finishes, the race ends without the other', () => {
-  const race = createRace(track, ['fast', 'still'], 1, 200);
+  const race = createRace(track, ['fast', 'still'], 1, 200, 'normal');
   const driver = steadyDriver(race);
   runRace(race, (playerId) => (playerId === 'fast' ? driver(playerId) : NEUTRAL_CONTROLS), 120, () => race.firstPlayerFinishTime !== null);
   assert.equal(race.phase, RACE_PHASES.RACING);
@@ -210,11 +210,11 @@ test('the time limit: 30 s after the first player finishes, the race ends withou
   const still = playerKart(race, 'still');
   assert.equal(still.finishTime, null);
   assert.equal(still.place, FIELD_SIZE, 'the kart that never left the grid is last');
-  assert.ok(still.lane !== null, 'at the results it drives on by itself too');
+  assert.ok(still.cpu !== null, 'at the results it drives on by itself too');
 });
 
 test('a player leaving: their kart goes; if everyone left has finished, the race is over', () => {
-  const race = createRace(track, ['fast', 'gone'], 1, 200);
+  const race = createRace(track, ['fast', 'gone'], 1, 200, 'normal');
   const driver = steadyDriver(race);
   runRace(race, (playerId) => (playerId === 'fast' ? driver(playerId) : NEUTRAL_CONTROLS), 120, () => race.firstPlayerFinishTime !== null);
   removeKart(race, 'gone');
@@ -225,13 +225,16 @@ test('a player leaving: their kart goes; if everyone left has finished, the race
 });
 
 test('engine classes: speeds are 150cc\'s times 0.8, 0.9, 1 and 1.5, as in MK8DX, acceleration included', () => {
-  // The kart on pole (a CPU kart, with open road ahead) accelerating for 3 s down the start straight: the same
-  // curve, scaled by the class.
+  // The kart on pole accelerating for 3 s down the start straight: the same curve, scaled by the class. A full
+  // grid of players, so the pole kart is a player's, held straight with Go from GO (a CPU kart may rocket start
+  // and is caught up to the players).
   const fastest = {};
+  const playerIds = Array.from({ length: FIELD_SIZE }, (unused, index) => `p${index}`);
   for (const engineClass of Object.keys(ENGINE_CLASSES)) {
-    const race = createRace(track, ['p1'], 3, Number(engineClass));
+    const race = createRace(track, playerIds, 3, Number(engineClass), 'normal');
     assert.ok(race.karts.every((kart) => kart.engineClassShare === ENGINE_CLASSES[engineClass]));
-    runRace(race, () => NEUTRAL_CONTROLS, GO_AT + 3);
+    const goHeld = { ...NEUTRAL_CONTROLS, accelerate: true };
+    runRace(race, () => (race.phase === RACE_PHASES.COUNTDOWN ? NEUTRAL_CONTROLS : goHeld), GO_AT + 3);
     fastest[engineClass] = forwardSpeed(race.karts[0]);
   }
   assert.ok(fastest[150] > 0.7 * tuning.topSpeed && fastest[150] < tuning.topSpeed, `150cc reached ${fastest[150]}`);

@@ -45,7 +45,7 @@ test('phone views: the setup view has the laps and engine class; the race view c
   const setup = createSetup();
   applyChoice(setup, 'p1', { choice: 'steering', value: 'tilt' }, true);
   assert.deepEqual(setupView(setup, 200, 'p1'), { phase: 'setup', laps: 3, engineClass: 200, steering: 'tilt', autoAccelerate: false, ready: false });
-  const race = createRace(track, ['p1'], 3, 200);
+  const race = createRace(track, ['p1'], 3, 200, 'normal');
   assert.deepEqual(raceView(race, setup, 'p1'), {
     phase: 'countdown',
     steering: 'tilt',
@@ -64,7 +64,7 @@ test('phone views: the setup view has the laps and engine class; the race view c
 
 test('phone views count down, then show the drift\'s spark colour and, for a moment after GO, the start', () => {
   const setup = createSetup();
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   const countdowns = [];
   for (let step = 0; step < (GO_AT + 0.5) * 60; step += 1) {
     stepRace(race, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: race.time >= ROCKET_PRESS }), STEP);
@@ -84,7 +84,7 @@ test('phone views count down, then show the drift\'s spark colour and, for a mom
 
 test('the final lap shows for 3 s on the phone and in the view; then the finish', () => {
   const setup = createSetup();
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   runRace(race, () => NEUTRAL_CONTROLS, GO_AT + 10);
   const kart = playerKart(race, 'p1');
   // As if the kart had just started its last lap.
@@ -103,7 +103,7 @@ test('the final lap shows for 3 s on the phone and in the view; then the finish'
 });
 
 test('the host\'s countdown and clock, with the time left once a player has finished', () => {
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   assert.equal(describeCountdown(race), '3');
   assert.equal(describeClock(race), '', 'no clock before GO');
   runRace(race, () => NEUTRAL_CONTROLS, GO_AT + 0.5);
@@ -119,7 +119,7 @@ test('the host\'s countdown and clock, with the time left once a player has fini
 });
 
 test('standings list every kart in place order, with finish times', () => {
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   playerKart(race, 'p1').finishTime = 101.5;
   playerKart(race, 'p1').place = 1;
   race.karts[0].place = 12;
@@ -134,7 +134,7 @@ test('views: one per player kart in slot order; 3 players get a CPU kart in the 
   for (const playerId of ['a', 'b', 'c']) {
     addPlayer(players, playerId);
   }
-  const race = createRace(track, ['c', 'b', 'a'], 3, 150);
+  const race = createRace(track, ['c', 'b', 'a'], 3, 150, 'normal');
   const targets = viewTargets(race, players);
   assert.deepEqual(targets.map((target) => target.player?.playerId ?? null), ['a', 'b', 'c', null]);
   assert.equal(targets[0].kart, playerKart(race, 'a'));
@@ -162,7 +162,7 @@ test('view rectangles: 1 fills the canvas, 2 stack, 4 are quarters, all inside i
 });
 
 test('poses between steps and the readout line', () => {
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   const kart = playerKart(race, 'p1');
   kart.previousPosition = vec(0, 0, 0);
   kart.position = vec(1, 0, 0);
@@ -174,7 +174,7 @@ test('poses between steps and the readout line', () => {
 });
 
 test('the drawn body leans into a drift and spins the short way round, while the camera follows the travel', () => {
-  const kart = playerKart(createRace(track, ['p1'], 3, 150), 'p1');
+  const kart = playerKart(createRace(track, ['p1'], 3, 150, 'normal'), 'p1');
   kart.previousBodyYaw = 0.3;
   kart.bodyYaw = 0.3;
   const leaning = kartPose(kart, 0.5);
@@ -258,7 +258,7 @@ test('the readout is rebuilt four times a second during a race, from the frames 
   const readout = createReadout();
   const players = new Map();
   addPlayer(players, 'p1');
-  const race = createRace(track, ['p1'], 3, 150);
+  const race = createRace(track, ['p1'], 3, 150, 'normal');
   assert.equal(readout.frameDrawn(1000, 5, null, track, players, null), null, 'nothing on the setup screen');
   assert.equal(readout.frameDrawn(1100, 3, race, track, players, null), null, 'not yet');
   const text = readout.frameDrawn(1250, 3, race, track, players, null);
@@ -277,7 +277,7 @@ test('the readout keeps each player\'s last starts across races, the lip timing 
   addPlayer(players, 'p1');
   readout.recordRoundTrip('p1', 40);
   for (const pressAt of [ROCKET_PRESS, 0.5]) {
-    const race = createRace(track, ['p1'], 3, 150);
+    const race = createRace(track, ['p1'], 3, 150, 'normal');
     for (let step = 0; step < GO_AT * 60 + 1; step += 1) {
       stepRace(race, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: race.time >= pressAt }), STEP);
     }

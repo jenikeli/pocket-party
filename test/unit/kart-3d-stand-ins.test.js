@@ -13,7 +13,7 @@ const track = buildTrack(TEST_TRACK);
 
 test('1 to 4 stand-ins race as players, in their colours, with CPU karts filling the field', () => {
   for (let count = 1; count <= MAX_STAND_INS; count += 1) {
-    const { race, players } = createStandInRace(track, count, 2, DEFAULT_ENGINE_CLASS);
+    const { race, players } = createStandInRace(track, count, 2, DEFAULT_ENGINE_CLASS, 'normal');
     assert.equal(players.size, count);
     assert.deepEqual([...players.values()].map((player) => player.colorIndex), [...Array(count).keys()]);
     assert.ok([...players.values()].every((player) => player.connected && player.name.startsWith('View ')));
@@ -24,13 +24,13 @@ test('1 to 4 stand-ins race as players, in their colours, with CPU karts filling
   }
 });
 
-test('the stand-ins drive themselves, in lanes of their own', () => {
-  const { race, players } = createStandInRace(track, MAX_STAND_INS, 3, DEFAULT_ENGINE_CLASS);
-  const lanes = race.karts.filter((kart) => players.has(kart.playerId)).map((kart) => kart.lane);
-  assert.ok(lanes.every((lane) => lane !== null));
-  assert.equal(new Set(lanes).size, lanes.length);
+test('the stand-ins drive themselves, each with a CPU driver of its own', () => {
+  const { race, players } = createStandInRace(track, MAX_STAND_INS, 3, DEFAULT_ENGINE_CLASS, 'normal');
+  const drivers = race.karts.filter((kart) => players.has(kart.playerId)).map((kart) => kart.cpu);
+  assert.ok(drivers.every((cpu) => cpu !== null));
+  assert.equal(new Set(drivers.map((cpu) => cpu.offset)).size, drivers.length, 'each keeps its own offset from the line');
   // Given only neutral controls (the race asks for a player's Go button during the countdown), they still drive:
-  // a kart with a lane drives itself.
+  // a kart with a CPU driver drives itself.
   for (let step = 0; step < 60 * 15; step += 1) {
     stepRace(race, track, () => NEUTRAL_CONTROLS, 1 / 60);
   }
@@ -40,6 +40,6 @@ test('the stand-ins drive themselves, in lanes of their own', () => {
 });
 
 test('a race takes 1 to 4 stand-ins', () => {
-  assert.throws(() => createStandInRace(track, 0, 3, DEFAULT_ENGINE_CLASS), /1 to 4/);
-  assert.throws(() => createStandInRace(track, MAX_STAND_INS + 1, 3, DEFAULT_ENGINE_CLASS), /1 to 4/);
+  assert.throws(() => createStandInRace(track, 0, 3, DEFAULT_ENGINE_CLASS, 'normal'), /1 to 4/);
+  assert.throws(() => createStandInRace(track, MAX_STAND_INS + 1, 3, DEFAULT_ENGINE_CLASS, 'normal'), /1 to 4/);
 });

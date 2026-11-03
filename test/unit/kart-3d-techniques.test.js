@@ -205,7 +205,7 @@ test('rocket start: Go arriving just after "2" and held boosts; earlier stalls; 
     { pressAt: inWindow, letGoAt: 2.5 },
     { pressAt: 2.5, letGoAt: Infinity },
   ].map(({ pressAt, letGoAt }) => {
-    const race = createRace(testTrack, ['p1'], 3, 150);
+    const race = createRace(testTrack, ['p1'], 3, 150, 'normal');
     const goHeld = () => race.time >= pressAt && (race.phase !== RACE_PHASES.COUNTDOWN || race.time < letGoAt);
     const speeds = [];
     for (let step = 0; step < (GO_AT + 1.5) * 60; step += 1) {
@@ -230,7 +230,7 @@ test('a rocket start boosts longest at the start of its window and shortest at i
   // Presses a tenth and nine tenths of the way into the window.
   const boostAtGo = [0.1, 0.9].map((share) => {
     const pressAt = 1 + tuning.rocketFrom + share * (tuning.rocketTo - tuning.rocketFrom);
-    const race = createRace(testTrack, ['p1'], 3, 150);
+    const race = createRace(testTrack, ['p1'], 3, 150, 'normal');
     while (race.phase === RACE_PHASES.COUNTDOWN) {
       stepRace(race, testTrack, () => controls({ accelerate: race.time >= pressAt }), STEP);
     }

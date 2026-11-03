@@ -1048,3 +1048,47 @@ On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`,
    - Anything broken: parts floating off a driver, a driver sunk into the kart, flickering, missing pieces.
 
 No **Tune:** steps in this milestone.
+
+### Device run
+
+**First report (iPad, before the fix):** the karts look good, but Watch 4 on High flickered, and the iPad no longer held a steady 60 fps.
+- **The flicker:** whole frames turned green, or solid cyan. It only happened on High (bloom) with four views; lowering the quality or the number of racers stopped it.
+  - **The cause:** one pixel of NaN or infinity in bloom's half-float buffer. Bloom blurs that buffer through ever smaller copies, so the one pixel covered the whole frame: infinity in green gave the green frames, in green and blue the cyan ones.
+  - **Where the bad pixel came from:** triangles whose corner normals point more than a right angle apart, or are near zero (the exhaust bell's rim, the scarves' edges, some pointed tips). The blended normal across such a triangle passes through almost zero, and the iPad's GPU does that maths in half precision.
+  - **Fixed in `a48167c`:** those triangles get flat normals of their own (`karts/safe-normals.js`, applied in `design-shapes.js`; the bell and the scarves are creased instead of smoothed), and bloom limits what it reads to between 0 and 16 (`guardBloomInput` in `bloom.js`), which also stops the metal's single-pixel glints (up to 92 on the dev box) from spreading.
+  - The dev box's GPU works in full precision and never made a NaN, so only the iPad can show the fix works.
+- **What the karts cost, dev box** (software; Seaside Skyway, Medium; "karts" is the full frame minus "no karts", shadow passes included):
+
+  | | Before M7d5's karts | Now |
+  |---|---|---|
+  | 4 views: the karts' draw calls | 704 | 883 |
+  | 4 views: the karts' triangles | 0.26M | 2.16M |
+  | 4 views: frame | 1832 ms | 2422 ms |
+
+  So triangles went up about 8 times and draw calls by a quarter.
+
+**Galaxy S24 (Chrome, Xclipse 940), after the fix:** Watch 4 on High did not flicker. This does not settle it: the flicker was seen on the iPad, and the S24 had not been tried before the fix.
+
+Measure on the S24, ms per frame with the GPU made to finish each frame:
+
+| | 1 view | 4 views |
+|---|---|---|
+| High | 28.9 | 55.3 |
+| Medium | 28.5 | 52.6 |
+| Medium, no karts | 26.6 | 44.0 |
+| Medium, no shadows | 26.2 | 43.1 |
+
+- **What the karts cost:** about 2 ms in one view and 8.6 ms in four, about a sixth of the four-view frame.
+- **One view barely gets cheaper** with anything removed, which suggests the S24 is limited by its pixel count (2124x798 at device pixel ratio 2.625) or by the forced GPU finish more than by triangles.
+- **Not comparable with the iPad's numbers** (M7d4b2: Medium with 4 views 11.9 ms).
+
+**Still to do on the iPad:**
+- Watch 4 on High: does it still flicker?
+- Measure: paste the report, to compare "Medium" with "Medium, no karts".
+- Steps 1-3, 5 and 6 of the procedure above.
+
+**If the karts cost too much there:**
+- Cast the karts' shadows from a low-poly stand-in: a shadow pixel is about 0.14 units, so the drivers' detail is lost in the shadow pass anyway.
+- Simpler models for far karts.
+
+**Seen on the dev box:** the heads of karts just behind the viewed kart poke into the bottom of its view. Hiding or fading karts that close to the camera is a possible later fix.

@@ -361,6 +361,7 @@ Built 2026-11-01/02: one kart reviewed round by round until the user approved it
 - **Helpers:** `effects.js` takes the exhaust and rear-wheel spots from `karts/kart-layout.js`; `kart-shapes.js` is gone, and the karts' curved shapes are in `karts/curved-shapes.js`.
 - **kit-shots pieces** for every design: `kart-<id>`, `-side`, `-close`, `-antigravity`, and `karts-lineup` (`host/kit-shots/kart-pieces.js`).
 - **References:** the style references are in `test-results/reference/m7d5/`, not committed, with Blaze's approved sheet beside them (`blaze-approved.png`).
+- **Device run so far:** the flicker on High with 4 views (whole frames cyan or green) is fixed (`a48167c`, the cause in `docs/3d-findings.md`); the Galaxy S24 showed no flicker. **Still to do on the iPad:** Watch 4 on High for the flicker, Measure, and the procedure's other steps.
 - **Blender:** the Blender build of Blaze stays unmerged on the branch `worktree-agent-ac20ede945a7b4b57`. Blender is still for future courses only.
 
 #### M7e: CPU drivers

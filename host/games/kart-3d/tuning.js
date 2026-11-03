@@ -87,6 +87,12 @@ export const TUNABLES = Object.freeze([
   { key: 'rocketBestSeconds', group: 'Boosts', label: 'Rocket start, best timing', unit: 's', min: 0.2, max: 2, step: 0.05, value: 1 },
   { key: 'rocketWorstSeconds', group: 'Boosts', label: 'Rocket start, latest timing', unit: 's', min: 0.1, max: 2, step: 0.05, value: 0.3 },
 
+  // The CPU drivers' catch-up (M7e; cpu-pace.js), mild as in MK8DX: a CPU kart behind the leading player gets up
+  // to this share more top speed, one ahead up to this share less, in full at the range's distance (guesses; 0
+  // turns it off).
+  { key: 'cpuCatchUp', group: 'CPU drivers', label: 'Catch-up share', unit: 'x top', min: 0, max: 0.2, step: 0.01, value: 0.05 },
+  { key: 'cpuCatchUpRange', group: 'CPU drivers', label: 'Catch-up in full at', unit: 'units', min: 20, max: 600, step: 10, value: 200 },
+
   // The chase camera (chase-camera.js). It felt right on the M6c device run.
   { key: 'cameraBehind', group: 'Camera', label: 'Behind the kart', unit: 'units', min: 2, max: 15, step: 0.1, value: 6.5 },
   { key: 'cameraAbove', group: 'Camera', label: 'Above the kart', unit: 'units', min: 0.5, max: 6, step: 0.1, value: 2.4 },

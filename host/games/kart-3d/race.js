@@ -9,6 +9,7 @@ import { bumpKarts } from './kart-bumps.js';
 import { updateSlipstreams } from './slipstream.js';
 import { startBoost, BOOST_KINDS } from './kart-boosts.js';
 import { cpuControls } from './cpu-driver.js';
+import { racingLineFor } from './racing-line.js';
 import { driveByCpu, handOver, startCpuKarts, updateCpuPaces } from './race-cpus.js';
 import { progressBetween } from './track.js';
 import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart, rocketBoostSeconds } from './rocket-start.js';
@@ -44,6 +45,9 @@ const PLAYER_WEIGHT = 1;
 // lap the lap it is on (1 to laps; it stays at laps once finished); lapStartedAt the race clock when that lap
 // began; finishTime the race clock when it finished, or null; place 1 for first (on the grid, the grid order).
 export function createRace(track, playerIds, laps, engineClass, cpuLevel) {
+  // The course's racing line takes some tens of milliseconds to work out the first time: here, on the setup
+  // screen's click, rather than at GO, when the CPU drivers first look at it.
+  racingLineFor(track);
   const cpuCount = Math.max(FIELD_SIZE - playerIds.length, 0);
   const race = { phase: RACE_PHASES.COUNTDOWN, time: 0, laps, engineClass, cpuLevel, firstPlayerFinishTime: null, karts: [] };
   for (let gridIndex = 0; gridIndex < cpuCount + playerIds.length; gridIndex += 1) {

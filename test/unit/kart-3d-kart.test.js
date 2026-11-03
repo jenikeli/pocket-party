@@ -13,7 +13,7 @@ import { tuning, resetTuning } from '../../host/games/kart-3d/tuning.js';
 import { createKart, stepKart, forwardSpeed, RESPAWN_DELAY } from '../../host/games/kart-3d/kart-physics.js';
 import { KART_RADIUS } from '../../host/games/kart-3d/kart-walls.js';
 import { bumpKarts, kartMass } from '../../host/games/kart-3d/kart-bumps.js';
-import { dummyControls } from '../../host/games/kart-3d/dummy-driver.js';
+import { laneControls } from '../helpers/lane-driver.js';
 import { scale, addScaled, dot, length, subtract } from '../../host/games/kart-3d/vector.js';
 
 const STEP = 1 / 60;
@@ -182,7 +182,7 @@ test('the hill has no walls: steering off its edge falls, and about 1.5 s later 
 test('on the anti-gravity wall the kart drives on the vertical road, and gravity pulls it back to the road', () => {
   const wallMiddle = distanceAt(testTrack, -34, 0, 34, 580);
   const kart = movingKart(testTrack, wallMiddle - 30, 0, 20);
-  drive(testTrack, kart, (each) => dummyControls(testTrack, each, 0), 1.5);
+  drive(testTrack, kart, (each) => laneControls(testTrack, each, 0), 1.5);
   assert.equal(kart.grounded, true);
   assert.equal(kart.antiGravity, true);
   assert.ok(Math.abs(kart.up.y) < 0.05, `up ${JSON.stringify(kart.up)} lies flat: the kart is on the wall`);

@@ -21,7 +21,7 @@ import {
   FINISH_TIME_LIMIT_SECONDS,
 } from '../../host/games/kart-3d/race.js';
 import { forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
-import { dummyControls } from '../../host/games/kart-3d/dummy-driver.js';
+import { laneControls } from '../helpers/lane-driver.js';
 import { steeringRate, kartTopSpeed } from '../../host/games/kart-3d/kart-driving.js';
 import { KART_RADIUS } from '../../host/games/kart-3d/kart-walls.js';
 import { tuning } from '../../host/games/kart-3d/tuning.js';
@@ -39,7 +39,7 @@ function steadyDriver(race) {
     if (race.phase === RACE_PHASES.COUNTDOWN) {
       return NEUTRAL_CONTROLS;
     }
-    return { ...dummyControls(track, playerKart(race, playerId), 0), drift: false };
+    return { ...laneControls(track, playerKart(race, playerId), 0), drift: false };
   };
 }
 
@@ -69,7 +69,7 @@ test('every course has its own id and a name, and a 1-lap race on it ends with n
     const player = playerKart(race, 'p1');
     let falls = 0;
     for (let step = 0; step < 120 * 60 && race.phase !== RACE_PHASES.RESULTS; step += 1) {
-      const controls = race.phase === RACE_PHASES.COUNTDOWN ? NEUTRAL_CONTROLS : { ...dummyControls(courseTrack, player, 0), drift: false };
+      const controls = race.phase === RACE_PHASES.COUNTDOWN ? NEUTRAL_CONTROLS : { ...laneControls(courseTrack, player, 0), drift: false };
       stepRace(race, courseTrack, () => controls, STEP);
       falls += race.karts.filter((kart) => kart.respawnIn !== null).length;
     }

@@ -10,7 +10,7 @@ import { createKart, stepKart, forwardSpeed } from '../../host/games/kart-3d/kar
 import { nextSpeed, steeringRate, steerForRate } from '../../host/games/kart-3d/kart-driving.js';
 import { bumpKarts } from '../../host/games/kart-3d/kart-bumps.js';
 import { springToward, startTrickRoll, moveBody } from '../../host/games/kart-3d/kart-body.js';
-import { dummyControls } from '../../host/games/kart-3d/dummy-driver.js';
+import { laneControls } from '../helpers/lane-driver.js';
 import { TUNABLES, tuning, setTuning, resetTuning, describeTuning } from '../../host/games/kart-3d/tuning.js';
 import { scale, addScaled, subtract, cross, dot } from '../../host/games/kart-3d/vector.js';
 
@@ -121,13 +121,13 @@ function timeThroughHairpin(controlsFor) {
 }
 
 test('riding the wall round the hairpin is slower than slowing down for it', () => {
-  // The dummy driver brakes for the hairpin and drives round it in the middle lane, off the walls.
-  const clean = timeThroughHairpin((kart) => dummyControls(testTrack, kart, 0));
+  // The lane driver (test/helpers/lane-driver.js) brakes for the hairpin and drives round it in the middle lane, off the walls.
+  const clean = timeThroughHairpin((kart) => laneControls(testTrack, kart, 0));
   const flatOut = { ...NEUTRAL, accelerate: true };
   const wallRiders = {
     'half steer, flat out': (kart) => ({ ...flatOut, steer: kart.s > HAIRPIN_START - 4 ? 0.5 : 0 }),
     'no steering, flat out': () => flatOut,
-    'hugging the outside wall, flat out': (kart) => ({ ...dummyControls(testTrack, kart, -7.5), accelerate: true, brake: false }),
+    'hugging the outside wall, flat out': (kart) => ({ ...laneControls(testTrack, kart, -7.5), accelerate: true, brake: false }),
   };
   for (const [name, controlsFor] of Object.entries(wallRiders)) {
     const time = timeThroughHairpin(controlsFor);

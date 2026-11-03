@@ -24,9 +24,10 @@ export function fromMk8Acceleration(perFrame, topSpeed) {
 }
 
 // The kart's top speed on the road: the tuned 150cc top speed times its engine class's share (race.js), as in
-// MK8DX, where 50, 100 and 200cc are the 150cc speeds times 0.8, 0.9 and 1.5. Accelerations and boosts follow it.
+// MK8DX, where 50, 100 and 200cc are the 150cc speeds times 0.8, 0.9 and 1.5, times its paceShare (the CPU
+// catch-up share of cpu-pace.js; 1 for players). Accelerations and boosts follow it.
 export function kartTopSpeed(kart) {
-  return tuning.topSpeed * kart.engineClassShare;
+  return tuning.topSpeed * kart.engineClassShare * kart.paceShare;
 }
 
 // Our own guesses (MK8DX's data has no numbers for these), in units per second and units per second squared.

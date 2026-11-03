@@ -1,5 +1,5 @@
-// The 3D race's HTML panels over the canvas: the setup screen (course, laps and engine class for everyone, the
-// host's drawing quality with the Measure tool's button (M7d4b) and the Watch buttons (a race of 1 to 4
+// The 3D race's HTML panels over the canvas: the setup screen (course, laps, engine class and CPU level for
+// everyone, the host's drawing quality with the Measure tool's button (M7d4b) and the Watch buttons (a race of 1 to 4
 // self-driving karts with a view each, M7d4c1), each player's control style and ready, and Start race), and
 // during the race a small bar at the top (Back to setup, Restart and Tuning, which opens tuning-panel.js and the
 // readout), the race clock top right, and the countdown in big letters in the middle. The results are results-panel.js's. Used by host/games/kart-3d/index.js, which owns
@@ -10,6 +10,7 @@ import { KART_STEERING } from '/shared/protocol.js';
 import { playerSetup, playersHoldingUpStart, canStartRace } from '/host/kart/setup.js';
 import { ENGINE_CLASSES } from './race.js';
 import { COURSES } from './courses.js';
+import { CPU_LEVELS } from './cpu-levels.js';
 import { QUALITY_LEVELS } from './quality.js';
 import { MAX_STAND_INS } from './stand-ins.js';
 
@@ -46,12 +47,13 @@ const STYLE = `
 `;
 
 // `onCourse(courseId)` gets an id from COURSES, `onLapsStep(step)` -1 or 1, `onEngineClass(engineClass)` a key of
-// ENGINE_CLASSES, `onQuality(level)` a key of QUALITY_LEVELS; `onWatch(viewCount)` 1 to MAX_STAND_INS;
+// ENGINE_CLASSES, `onCpuLevel(level)` a key of CPU_LEVELS, `onQuality(level)` a key of QUALITY_LEVELS;
+// `onWatch(viewCount)` 1 to MAX_STAND_INS;
 // `onMeasure()`, `onStartRace()`, `onBackToSetup()`, `onRestart()` and `onTuning()` run on a click of those buttons (`handlers` holds them). Returns
 // { showSetup(setup, choices, players), showRace(...), hideAll() }: one of the first two shows at a time, or none
 // (hideAll, while the Measure tool runs).
 export function createPanels(container, handlers) {
-  const { onCourse, onLapsStep, onEngineClass, onQuality, onMeasure, onWatch, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
+  const { onCourse, onLapsStep, onEngineClass, onCpuLevel, onQuality, onMeasure, onWatch, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
   const style = document.createElement('style');
   style.textContent = STYLE;
   const setupPanel = createSetupPanel();
@@ -73,12 +75,14 @@ export function createPanels(container, handlers) {
   const lapsValue = byId('kart-3d-laps');
   const courseButtons = [...setupPanel.querySelectorAll('[data-course-id]')];
   const engineButtons = [...setupPanel.querySelectorAll('[data-engine-class]')];
+  const cpuButtons = [...setupPanel.querySelectorAll('[data-cpu-level]')];
   const qualityButtons = [...setupPanel.querySelectorAll('[data-quality]')];
   const readout = byId('kart-3d-readout');
   byId('kart-3d-laps-minus').addEventListener('click', () => onLapsStep(-1));
   byId('kart-3d-laps-plus').addEventListener('click', () => onLapsStep(1));
   courseButtons.forEach((button) => button.addEventListener('click', () => onCourse(button.dataset.courseId)));
   engineButtons.forEach((button) => button.addEventListener('click', () => onEngineClass(Number(button.dataset.engineClass))));
+  cpuButtons.forEach((button) => button.addEventListener('click', () => onCpuLevel(button.dataset.cpuLevel)));
   qualityButtons.forEach((button) => button.addEventListener('click', () => onQuality(button.dataset.quality)));
   byId('kart-3d-measure-button').addEventListener('click', onMeasure);
   setupPanel.querySelectorAll('[data-watch-views]').forEach((button) => button.addEventListener('click', () => onWatch(Number(button.dataset.watchViews))));
@@ -89,8 +93,8 @@ export function createPanels(container, handlers) {
   // What the rows show, as text, so they are only rebuilt when something changed (this runs every frame).
   let shownRows = null;
 
-  // `choices` is { courseId, engineClass, quality }: the host's choices that are not in the shared kart setup.
-  function showSetup(setup, { courseId, engineClass, quality }, players) {
+  // `choices` is { courseId, engineClass, cpuLevel, quality }: the host's choices that are not in the shared kart setup.
+  function showSetup(setup, { courseId, engineClass, cpuLevel, quality }, players) {
     setupPanel.hidden = false;
     raceBar.hidden = true;
     clock.hidden = true;
@@ -98,6 +102,7 @@ export function createPanels(container, handlers) {
     setText(lapsValue, String(setup.laps));
     courseButtons.forEach((button) => setPressed(button, button.dataset.courseId === courseId));
     engineButtons.forEach((button) => setPressed(button, Number(button.dataset.engineClass) === engineClass));
+    cpuButtons.forEach((button) => setPressed(button, button.dataset.cpuLevel === cpuLevel));
     qualityButtons.forEach((button) => setPressed(button, button.dataset.quality === quality));
     const inOrder = playersInSlotOrder(players);
     const entries = inOrder.map((player) => describeRow(player, playerSetup(setup, player.playerId)));
@@ -147,6 +152,9 @@ function createSetupPanel() {
   const engineButtons = Object.keys(ENGINE_CLASSES)
     .map((engineClass) => `<button type="button" data-engine-class="${engineClass}" aria-pressed="false">${engineClass}cc</button>`)
     .join('');
+  const cpuButtons = Object.entries(CPU_LEVELS)
+    .map(([level, { label }]) => `<button type="button" data-cpu-level="${level}" aria-pressed="false">${label}</button>`)
+    .join('');
   const qualityButtons = Object.entries(QUALITY_LEVELS)
     .map(([level, { label }]) => `<button type="button" data-quality="${level}" aria-pressed="false">${label}</button>`)
     .join('');
@@ -162,6 +170,7 @@ function createSetupPanel() {
       <button type="button" id="kart-3d-laps-plus">+</button>
     </div>
     <div class="settings">${engineButtons}</div>
+    <div class="settings">CPU ${cpuButtons}</div>
     <div class="settings quality">Look ${qualityButtons}
       <button type="button" id="kart-3d-measure-button">Measure</button></div>
     <div class="settings quality">Watch, no phones: ${watchButtons} views</div>

@@ -1,5 +1,5 @@
-// The 3D kart race (M6 to M7d4c1), a game module: a setup screen (course, laps, engine class and drawing quality
-// on the host, with the Measure tool and Watch, and control style and ready on each phone), then a countdown
+// The 3D kart race (M6 to M7e), a game module: a setup screen (course, laps, engine class, CPU level and drawing
+// quality on the host, with the Measure tool and Watch, and control style and ready on each phone), then a countdown
 // with MK8DX's rocket start, and 1-4 players race their laps in split screen, drifting and boosting, with CPU
 // karts filling the field to 12; then the results, and Race again or Back to lobby. Watch races 1-4 stand-ins
 // (stand-ins.js) instead of the players, with no phones needed. Loaded through host/games/index.js and run by
@@ -17,6 +17,7 @@ import { createRace, stepRace, removeKart, ENGINE_CLASSES, DEFAULT_ENGINE_CLASS,
 import { setupView, raceView, standingRows, describeClock, describeCountdown } from './race-views.js';
 import { createStepTimer } from './step-timer.js';
 import { createReadout } from './readout.js';
+import { DEFAULT_CPU_LEVEL, CPU_LEVELS } from './cpu-levels.js';
 import { createPanels } from './panels.js';
 import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
@@ -52,6 +53,7 @@ export function createGame() {
   let courseId = COURSES[0].id;
   let track = tracks.get(courseId);
   let engineClass = DEFAULT_ENGINE_CLASS;
+  let cpuLevel = DEFAULT_CPU_LEVEL;
   // The host device's drawing quality, remembered between games (quality.js).
   let quality = loadQuality();
   // Whether the course is drawn plain, for the rules' browser tests (plain-course.js); nothing in the UI sets it.
@@ -88,6 +90,7 @@ export function createGame() {
       onCourse: chooseCourse,
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onEngineClass: chooseEngineClass,
+      onCpuLevel: chooseCpuLevel,
       onQuality: chooseQuality,
       onMeasure: startMeasuring,
       onWatch: watchRace,
@@ -133,6 +136,12 @@ export function createGame() {
     }
   }
 
+  function chooseCpuLevel(chosen) {
+    if (!race && Object.hasOwn(CPU_LEVELS, chosen)) {
+      cpuLevel = chosen;
+    }
+  }
+
   function chooseQuality(chosen) {
     if (!race && Object.hasOwn(QUALITY_LEVELS, chosen) && chosen !== quality) {
       quality = chosen;
@@ -164,7 +173,7 @@ export function createGame() {
   }
 
   function putStandInsOnGrid(viewCount) {
-    ({ race, players: standIns } = createStandInRace(track, viewCount, setup.laps, engineClass));
+    ({ race, players: standIns } = createStandInRace(track, viewCount, setup.laps, engineClass, cpuLevel));
     controls = createControlsTable();
   }
 
@@ -186,7 +195,7 @@ export function createGame() {
   // Everyone in the roster gets a kart, at the back of the grid in slot order. Inputs held from the last race are
   // dropped.
   function putKartsOnGrid() {
-    race = createRace(track, playersInSlotOrder(players).map((player) => player.playerId), setup.laps, engineClass);
+    race = createRace(track, playersInSlotOrder(players).map((player) => player.playerId), setup.laps, engineClass, cpuLevel);
     controls = createControlsTable();
   }
 
@@ -254,7 +263,7 @@ export function createGame() {
     const racing = race !== null && race.phase !== RACE_PHASES.RESULTS;
     tuningPanel.setVisible(racing);
     if (!race) {
-      panels.showSetup(setup, { courseId, engineClass, quality }, players);
+      panels.showSetup(setup, { courseId, engineClass, cpuLevel, quality }, players);
       resultsPanel.hide();
       return;
     }

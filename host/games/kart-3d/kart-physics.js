@@ -38,9 +38,9 @@ const AIR_STEERING_SHARE = 0.5;
 
 // A kart standing on the road at distance `s` along it and `lateral` right of the centre line, facing along
 // the road. `weight` (about 1) decides bumps (kart-bumps.js); `engineClassShare` is its engine class's top speed
-// as a share of 150cc's (kartTopSpeed). The kart is plain data: { position, velocity, forward, up,
+// as a share of 150cc's (kartTopSpeed); `paceShare` (1) is the CPU catch-up share on top of it (cpu-pace.js). The kart is plain data: { position, velocity, forward, up,
 // previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded, surface,
-// antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, engineClassShare,
+// antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, engineClassShare, paceShare,
 // driftHeld, lipTiming }, plus the fields of freshTechniques(), freshBoosts() and freshBody(). forward and up are unit
 // vectors (the nose, and the road's normal under it); previous* are one step ago, for smooth drawing; surface
 // is a SURFACES value, or null in the air; respawnIn counts down while it falls after leaving the road, and is
@@ -48,7 +48,7 @@ const AIR_STEERING_SHARE = 0.5;
 // driftHeld is the Drift button last step, and lipTiming the last trick timing (kart-techniques.js), both kept
 // when the kart is put back on the road.
 export function createKart(track, s, lateral, weight = 1, engineClassShare = 1) {
-  const kart = { weight, engineClassShare, driftHeld: false, lipTiming: null };
+  const kart = { weight, engineClassShare, paceShare: 1, driftHeld: false, lipTiming: null };
   placeOnRoad(track, kart, s, lateral);
   return kart;
 }

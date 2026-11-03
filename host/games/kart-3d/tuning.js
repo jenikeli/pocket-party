@@ -92,6 +92,11 @@ export const TUNABLES = Object.freeze([
   // turns it off).
   { key: 'cpuCatchUp', group: 'CPU drivers', label: 'Catch-up share', unit: 'x top', min: 0, max: 0.2, step: 0.01, value: 0.05 },
   { key: 'cpuCatchUpRange', group: 'CPU drivers', label: 'Catch-up in full at', unit: 'units', min: 20, max: 600, step: 10, value: 200 },
+  // How the CPU drivers drive (M7e; cpu-driver.js): they steer toward the point on their racing line this many
+  // seconds of driving ahead (at least 5 units; longer is smoother but cuts corners), and plan their braking for
+  // corners as if braking this hard (a kart brakes at 30 units/s^2: less leaves a margin).
+  { key: 'cpuLookAhead', group: 'CPU drivers', label: 'Steering looks ahead', unit: 's', min: 0.1, max: 1, step: 0.01, value: 0.35 },
+  { key: 'cpuBraking', group: 'CPU drivers', label: 'Braking planned with', unit: 'units/s^2', min: 5, max: 30, step: 0.5, value: 22 },
 
   // The chase camera (chase-camera.js). It felt right on the M6c device run.
   { key: 'cameraBehind', group: 'Camera', label: 'Behind the kart', unit: 'units', min: 2, max: 15, step: 0.1, value: 6.5 },

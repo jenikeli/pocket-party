@@ -1092,3 +1092,60 @@ Measure on the S24, ms per frame with the GPU made to finish each frame:
 - Simpler models for far karts.
 
 **Seen on the dev box:** the heads of karts just behind the viewed kart poke into the bottom of its view. Hiding or fading karts that close to the camera is a possible later fix.
+
+## M7e: CPU drivers
+
+### What was built
+
+CPU drivers for every kart that drives itself (`plan.md`; how it went is in `docs/history.md`):
+- **A racing line per course:** out-in-out, straight over the jumps, over the dash panels.
+- **A driver that follows it:** it brakes only for what the corners ahead need, drifts corners for mini-turbos, tricks off the ramp, passes slower karts, and turns round or backs off a wall when it has to.
+- **A CPU level on the setup screen** (Easy, Normal, Hard).
+- **CPU rocket starts.**
+- **A mild catch-up** toward the leading player.
+
+### Measured without a device
+
+In Node on the dev box (task A's report, checked by its unit tests):
+
+| | Easy | Normal | Hard |
+|---|---|---|---|
+| Lone flying lap, Seaside Skyway 150cc (seeds 0-7) | 37.1-37.7 s | 36.1-36.5 s | 35.6-35.9 s |
+| Mini-turbos a lap | 2 blue | orange in the big sweeper, 2 blue | purple out of the big sweeper, blue in the hairpin and the last corner |
+| Tricks at the jump | 30% | 70% | 95% (every jump in the test) |
+| Rocket starts (share of CPU karts) | 10% | 40% | 80% |
+
+- **Against the old driver:** the dummy driver lapped in about 39 s, so even Easy is faster. MK8DX's staff ghosts lap its courses in 38-44 s, with mushrooms.
+- **No falls:** none, for 12 karts × 3 laps on Seaside Skyway at 50, 100, 150 and 200cc, and on the Test track at 150cc.
+- **The racing line:** about 58 ms to work out for Seaside Skyway (26 ms for the Test track), once per track, when the race is set up. On Seaside it is 1164 units a lap against the centre line's 1213, and its sum of squared curvature is 30% lower.
+- **The cost:** the 12 drivers take about 0.1 ms a step in Node, about what stepping 12 karts' physics took before (M6b).
+- **The start:** no bumps for the first 5 s off the grid. About 20 come as the 12 drifting karts close up through the first corner and the chicane.
+- **Not reached:** Hard takes no orange in the first corner (90 degrees; orange needs about 115 of drifting).
+- **Browser tests:** the 3D rules files (`m6b`, `m6c`, `m7a`, `m7b`, since the race rules, the setup panel and `index.js` changed) passed, 25 tests in 250 s, on the final code.
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`, HTTPS as usual), and one phone for steps 5-6. Seaside Skyway, 150cc, 3 laps, Look on High, unless a step says otherwise.
+
+1. **The setup screen:** below the engine classes there is a row "CPU Easy Normal Hard", with Normal pressed. Pick Hard, then Normal again. The pressed button follows.
+2. **Watch the field:** CPU on Hard, **Watch, no phones: 1**. Open **Tuning** to see the readout. Watch the whole first lap from the view kart, and look for:
+   - **At GO:** most CPU karts boost off the line with a rocket start (flames).
+   - **The first corner and chicane (s 150-340):** do the karts spread over the road, or drive in single file? Any pile-up?
+   - **Drift sparks** in the corners. In the big banked right sweeper after the climb (s 430-570), Hard karts reach purple sparks.
+   - **The jump after the narrow bridge (s 630-690):** the karts trick (a barrel roll) and land on the road in the hairpin after it.
+   - Any kart riding a wall, stuck, turning round, or falling off.
+3. **The frame rate:** CPU on Normal, **Watch, no phones: 4** on High. Note the readout's fps and the physics step time (M7d4c2: a steady 60 fps with 4 views).
+4. **The M7d5 checks still to do:** Watch 4 on High, any flicker (whole frames cyan or green)? Then **Measure** on the setup screen, and Copy and paste the report.
+5. **Race them, with one phone:** a 3-lap race at each level, Normal first, then Easy, then Hard. Note your place and time each race, and answer:
+   - Is Easy beatable for a new player?
+   - Is Normal a fair race?
+   - Is Hard a challenge to a good one?
+   - Do the CPU karts feel like MK8DX's?
+6. **Tune:** the Tuning panel's "CPU drivers" group, during the race:
+   - *Catch-up share* (0-0.2, default 0.05): the most top speed a CPU kart gains when behind the leading player, or loses when ahead. Too strong, and a CPU you passed comes straight back. Too weak, and the field strings out. Note the value that feels like MK8DX (0 turns it off).
+   - *Catch-up in full at* (20-600 units, default 200): how far ahead or behind before the catch-up is full. A lap is about 1213 units.
+   - *Steering looks ahead* (0.1-1 s, default 0.35): lower follows the line more tightly but can weave; higher is smoother but cuts the insides of corners. Watch the CPUs through the chicane (s 235-340).
+   - *Braking planned with* (5-30 units/s², default 22): lower brakes earlier and more gently before the hairpin (s 690-775).
+7. **Anything broken:** a CPU stuck against a wall, going the wrong way, falling off the course, or hopping without drifting again and again. Note where on the lap (what is there to recognise it) and at which level.
+
+Copy values in the Tuning panel gives the changed numbers to paste back.

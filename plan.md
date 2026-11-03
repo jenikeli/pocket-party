@@ -364,8 +364,15 @@ Built 2026-11-01/02: one kart reviewed round by round until the user approved it
 - **Device run so far:** the flicker on High with 4 views (whole frames cyan or green) is fixed (`a48167c`, the cause in `docs/3d-findings.md`); the Galaxy S24 showed no flicker. **Still to do on the iPad:** Watch 4 on High for the flicker, Measure, and the procedure's other steps.
 - **Blender:** the Blender build of Blaze stays unmerged on the branch `worktree-agent-ac20ede945a7b4b57`. Blender is still for future courses only.
 
-#### M7e: CPU drivers
-- [ ] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
+#### M7e: CPU drivers (built, device run pending)
+Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and the device-run procedure in `docs/3d-findings.md`.
+- **The CPU driver** (`cpu-driver.js` with `cpu-road.js`, `cpu-aim.js`, `cpu-drift.js`, `cpu-trick.js`, `cpu-recovery.js`) drives every kart that drives itself: the CPU karts, a player's kart once finished, every kart at the results, and the Watch and Measure stand-ins. Its state is plain data on the kart, `kart.cpu` (null for a player driving), made by `createCpu(level, seed)`; `cpuControls(track, kart, karts, dt)` gives a phone's controls. It follows the racing line with its own small offset, brakes only for what the corners ahead need (from the live tuning), drifts corners for mini-turbos, tricks off ramps, passes slower karts and gets itself going again when turned round or stuck. `dummy-driver.js` is gone (the rules tests' scripted player is `test/helpers/lane-driver.js`).
+- **The racing line** (`racingLineFor(track)` in `racing-line.js`, pins in `racing-line-pins.js`): out-in-out, per station, worked out once per track (about 60 ms for Seaside Skyway, when the race is set up), straight over jumps, over the dash panels.
+- **CPU level** on the host's setup screen: Easy, Normal, Hard (`cpu-levels.js`, default Normal): corner speed, top-speed share, spark target, drift and trick chances, rocket-start chance, how far from the line. Passed as `createRace(track, playerIds, laps, engineClass, cpuLevel)`.
+- **Race rules for CPUs** (`race-cpus.js`): CPU rocket starts at GO by level (seeded, the same every race), and a mild catch-up every step: `kart.paceShare` from `cpuPaceShare(gap)` (`cpu-pace.js`), up to ±5% top speed at 200 units from the leading player, multiplied into `kartTopSpeed`.
+- **Sliders** in the tuning panel's "CPU drivers" group: catch-up share and range, look-ahead, braking.
+- **Measured in Node:** a lone kart laps Seaside Skyway at 150cc in about 35.7 s (Hard), 36.2 (Normal), 37.2 (Easy), against the old dummy driver's 39; no kart fell off in 3 laps at any class; the 12 drivers cost about 0.1 ms a step.
+- For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
 #### M7f: Seaside Skyway down by the sea, across islands
 Asked for after the M7d4c3-d device run: most of the props round the course cannot be seen from a road high over open sea.

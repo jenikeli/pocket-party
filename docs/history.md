@@ -676,3 +676,42 @@ The rules every task followed:
 - `palette.main` is the slot's lobby colour.
 - The driver at most about 10,000 triangles, in the existing material kinds.
 - Kit-shots sheets beside Blaze's, at most 4 rounds.
+
+### M7e: CPU drivers
+- [x] CPU drivers fill the race to 12 karts: they drive the racing line, drift, use boosts and recover from falls
+
+Notes (built 2026-11-03 in one chat; numbers and the device-run procedure in "M7e" in `docs/3d-findings.md`):
+- **Decided at the start (the user approved the plan as proposed):**
+  - **A CPU level on the setup screen:** Easy, Normal, Hard, default Normal, kept from race to race like the engine class (MK8DX's versus races have a CPU setting like it; not confirmed online).
+  - **A mild catch-up (rubber-banding), on by default:** CPU karts behind the leading player get up to 5% more top speed, those ahead up to 5% less, with sliders (0 turns it off). Reports agree MK8DX has one, weaker than older Mario Karts, with no published numbers.
+  - **Not in M7e:** CPUs cutting across grass with a boost; items (M8).
+- **Two tasks in parallel, then the wiring in the main session:**
+  - **A, the racing line and the driver (Opus, about 42 minutes):**
+    - `racing-line.js` with `racing-line-pins.js` hold the line.
+    - `cpu-driver.js` drives, with `cpu-road.js` (lookups along the line), `cpu-aim.js` (the kart's own offset, passing, merging), `cpu-drift.js`, `cpu-trick.js` and `cpu-recovery.js`.
+    - The levels' numbers are in `cpu-levels.js`.
+    - Two sliders: `cpuLookAhead` and `cpuBraking`.
+    - It split the driver into more files than planned, to keep each under 200 lines.
+  - **B, the setup row and the catch-up rule (Sonnet, about 2 minutes):** the CPU row in `panels.js` and `index.js`, `cpuPaceShare(gap)` in `cpu-pace.js`, and `kartTopSpeed` times `kart.paceShare` (1 for players, set in `createKart`).
+  - **The main session:** before the tasks, the interfaces (`cpu-levels.js`'s keys, the `cpuCatchUp*` sliders). After them:
+    - `race-cpus.js` (handing a kart to the driver, CPU rocket starts at GO, the catch-up every step).
+    - The wiring in `race.js`: `kart.cpu` replaces `kart.lane`, and `createRace` takes `cpuLevel` and works out the racing line at once, so there is no pause at GO.
+    - `stand-ins.js` and `measure-plan.js` pass the CPU level.
+    - `dummy-driver.js` deleted.
+- **How the line is found:** K1999's rule (a well-known driver for the TORCS simulator). Each point moves across the road until its curvature is the average of its neighbours', coarse to fine, measured about the road's normal, so the anti-gravity wall needs nothing special. It keeps 1.8 inside the road's edges. It is pinned to the middle from 30 before a ramp's lip to 8 past the landing, and over each dash panel.
+- **How the driver drives:**
+  - **Steering and speed:** pure pursuit toward its line plus its own offset. It brakes for the corners ahead from the live steering and speed tuning, so the sliders change how the CPUs drive.
+  - **Drifting:** it drifts corners whose line turns at least its level's angle, following the line inside the drift, and pumps the stick between the widest drift and a hard push. The counter charges about 4.8 per degree turned at either end and only about 3 in between. It lets go at its level's sparks as the corner ends, or turns in past the end ("overshoot") to reach them.
+  - **Jumps:** it tricks a short random delay after a lip, at its level's chance, and steers in the air after a lip, so a boosted kart lands in the hairpin instead of the wall.
+  - **Recovery:** it turns round when facing the wrong way, and backs off when stuck for a second.
+- **Decisions made while building (task A):**
+  - The drift follows the racing line, not the lane it hopped in on, which cost about 1.7 s a lap.
+  - Hard takes no orange in Seaside's first corner: lining up for it cost about 0.4 s against the 0.1 s it gains.
+  - Each level drives at its own share of top speed (`throttleShare`: Easy 0.95, Normal 0.98, Hard 1). At 150cc most corners are flat out, so technique alone barely set the levels apart.
+- **Tests changed on purpose:**
+  - The rules tests' scripted player (the old dummy driver) moved to `test/helpers/lane-driver.js` as `laneControls`.
+  - `kart-3d-race.test.js`'s hairpin-braking check is now made for the player's lane driver only, since CPU karts drift through it.
+  - Its engine-class test measures a player on pole holding Go, since a CPU kart may now rocket start and is caught up to the players.
+  - Tests that read `kart.lane` read `kart.cpu`.
+  - Every `createRace` and `createStandInRace` in the tests passes a CPU level.
+- **New tests:** `kart-3d-racing-line.test.js`, `kart-3d-cpu-driver.test.js`, `kart-3d-cpu-pace.test.js`, `kart-3d-race-cpus.test.js`. `npm test` now takes about 24 s on the dev box.

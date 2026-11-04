@@ -6,8 +6,9 @@
 import { createBursts } from './burst-look.js';
 import { createBoxDrawing } from './item-box-look.js';
 import { createKartEffectDrawing } from './kart-effect-looks.js';
+import { createRoadObjectDrawing } from './road-object-drawing.js';
 
-const DRAWINGS = [createBoxDrawing, createKartEffectDrawing];
+const DRAWINGS = [createBoxDrawing, createKartEffectDrawing, createRoadObjectDrawing];
 
 // Returns { update(race, track, poses, dt), dispose() }: `race` is null on the setup screen (nothing is drawn but
 // bursts still flying), `poses` the karts' poses this frame in the order of race.karts (race-views.js kartPose),

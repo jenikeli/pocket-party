@@ -165,7 +165,10 @@ describe('M6b 3D driving', () => {
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_RECONNECTED, 10000);
     // Just after GO the view says how the start went for a moment; the view after that is the plain one.
     const view = await nextView(bo, (each) => each.phase === 'racing' && each.start === null);
-    assert.deepEqual({ ...view, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
+    // Items are on (M8): what Bo holds depends on the boxes Bo's kart has met by now, so only its presence is checked.
+    const { item, ...rest } = view;
+    assert.deepEqual({ ...rest, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
+    assert.notEqual(item, null, 'items are on');
     await bo.page.waitForSelector('#kart-controls:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
   });

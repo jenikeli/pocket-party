@@ -71,11 +71,13 @@ describe('M7a 3D feel', () => {
   }
 
   // Shows a driving view on the player's page through the page's own controls module, as the host makes one.
+  // With items on (M8), so the Item button shows in its place: with items off it is hidden.
   function showView(player, steering, autoAccelerate) {
+    const item = { held: null, rolling: false, effects: [] };
     return player.page.evaluate(async (view) => {
       const controls = await import('/controller/kart/controls.js');
       controls.showView(view);
-    }, { phase: 'racing', steering: steering, autoAccelerate: autoAccelerate, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
+    }, { phase: 'racing', steering: steering, autoAccelerate: autoAccelerate, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false, item });
   }
 
   before(async () => {

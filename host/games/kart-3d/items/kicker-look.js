@@ -6,7 +6,7 @@
 // size the rules launch karts off. Used by road-object-drawing.js; how it moves is road-object-motion.js.
 
 import * as THREE from 'three';
-import { coloured, mergeShapes, roundedBox, shaded } from '../shape-utils.js';
+import { coloured, indexed, mergeShapes, roundedBox, shaded } from '../shape-utils.js';
 import { createSurface } from '../kit/surface-maps.js';
 import { RAMP_SIZE } from './road-objects.js';
 
@@ -156,11 +156,4 @@ function drawChevrons(surface) {
 // from the road at its near end to HEIGHT at its far end.
 function pitched(geometry) {
   return geometry.rotateX(-PITCH).translate(0, HEIGHT / 2, 0);
-}
-
-// The cheeks are extruded, which Three.js gives no index; the frame's other parts have one, and merged shapes
-// must all have one or none.
-function indexed(geometry) {
-  geometry.setIndex(Array.from({ length: geometry.attributes.position.count }, (unused, index) => index));
-  return geometry;
 }

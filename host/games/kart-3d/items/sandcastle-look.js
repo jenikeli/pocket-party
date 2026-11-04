@@ -6,7 +6,7 @@
 // Used by road-object-drawing.js; how it moves is road-object-motion.js.
 
 import * as THREE from 'three';
-import { coloured, mergeShapes, roundedBox } from '../shape-utils.js';
+import { coloured, indexed, mergeShapes, roundedBox } from '../shape-utils.js';
 import { finishInSand } from './sand-look.js';
 import { BLOCKER_SIZE } from './road-objects.js';
 
@@ -174,11 +174,4 @@ function finish(geometry) {
   const upward = BLOCKER_SIZE.height / DESIGN_HEIGHT;
   const across = BLOCKER_SIZE.radius / DESIGN_RADIUS;
   return finishInSand(geometry.scale(across, upward, across), MOUND_TOP * upward);
-}
-
-// Some of Three.js's shapes (the extruded star, the icosahedra) come without an index, and merged shapes must
-// all have one or none: the rest here have one.
-function indexed(geometry) {
-  geometry.setIndex(Array.from({ length: geometry.attributes.position.count }, (unused, index) => index));
-  return geometry;
 }

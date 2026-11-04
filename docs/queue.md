@@ -21,8 +21,8 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | merged |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
-| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | building |
-| I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | building |
+| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | merged |
+| I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | merged |
 | J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | queued |
 | K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | queued |
 | L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | queued |
@@ -480,3 +480,27 @@ and where to change it).
   (29 tests, 327 s). H was stopped before it changed anything (its worktree is gone): spawn it afresh.
 - **I built beside H** (main session, on resuming): I owns no file H touches and draws nothing, so it was spawned
   with H rather than after H's merge, to save a step's wait. H still merges first.
+- **H, looks:** the kicker's "hinge" is a scale of its height (near end on the road), first reaching full height
+  at 0.08 s and overshooting to about 1.5 times by 0.16 s, since a plain 1-unit flip barely showed; check on the
+  device that it reads as the spec's 0.25 s (`road-object-motion.js` `FLIP_SECONDS`). The slump is the whole
+  castle squashing and leaning into a pile, not towers crumbling one by one. Puffs are the shared white smoke
+  (`bursts.smoke` has no tint). Three extra files (`road-object-motion.js`, `sand-look.js`,
+  `instanced-part-look.js`) keep each under 200 lines. After merge (main session): `indexed()` moved to
+  `shape-utils.js`, `roadCamera` exported from `item-pieces.js` instead of copied, the drawing's update no longer
+  allocates an empty list or Map entries per frame. `createRoadObjectDrawing` is about 140 lines in one closure
+  (scratch objects shared by its helpers): a split candidate in M10.
+- **I, teleport:** a kart in the air also hops (its jump and any trick boost due are lost); a kart held on a
+  sticky wall is let go; a CPU kart that hops rejoins its line (`kart.cpu.started = false`); a second use restarts
+  the warning. The "Teleport!" banner also shows on views following a CPU kart (so Watch shows it).
+- **I, magnet and push:** mass is `weight * effectMassShare` (as the bumps). Magnet targets must also be within
+  the reach in a straight line (no pull across a hairpin). Measured: a kart 10 ahead settles at 0.75 of top
+  speed; one at 29 hardly slows; a kart alongside is pushed 3.9 units in 0.5 s. Twelve magnets in one CPU race
+  bunched the finish; `magnetPull` is the slider for the device run.
+- **I, sticky walls:** only a kart on the ground sticks; sticking ends a drift with no mini-turbo and removes
+  boosts; the blocker's hit stays a plain bounce. `kart-walls.js` reads a per-kart copy (`kart.item.stickyWalls`),
+  refreshed each step. A held kart can still be shoved sideways by a bump (`kart-bumps.js` does not treat it as
+  fixed): check on the device. `kart-physics.js` is now 222 lines: a split candidate in M10.
+- **I, CPU rules:** teleport only from the back half; magnet with any magnet target; push with a kart within 5;
+  sticky walls after holding it 3 s; each after the usual 0.5 to 2 s.
+- **I's review** asked to restore a comment about an import circle between `item-rules.js` and `race.js`; not
+  done, since `race-phases.js` (imports nothing) removed that circle and the comment was stale.

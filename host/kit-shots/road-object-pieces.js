@@ -4,11 +4,9 @@
 // drawing (item-pieces.js's itemShowRace and drawItemRace), counted down a few frames as the rules would. Used by
 // pieces.js.
 
-import * as THREE from 'three';
 import { KART_ITEMS } from '../../shared/protocol.js';
-import { pointAt } from '../games/kart-3d/track.js';
 import { tuning } from '../games/kart-3d/tuning.js';
-import { itemShowRace, drawItemRace } from './item-pieces.js';
+import { itemShowRace, drawItemRace, roadCamera } from './item-pieces.js';
 import { PIECE_S } from './landmark-pieces.js';
 
 const FRAME_SECONDS = 1 / 60;
@@ -30,17 +28,6 @@ function objectPiece(objects, withKart, cameras) {
     },
     camera: (track, view) => roadCamera(track, ...cameras[view]),
   };
-}
-
-// A camera standing in the road's axes at PIECE_S: `eye` and `look` are [across (right), up, along].
-function roadCamera(track, eye, look, fov) {
-  const { position, forward, right, normal } = pointAt(track, PIECE_S);
-  const toWorld = ([across, up, along]) => new THREE.Vector3(
-    position.x + right.x * across + normal.x * up + forward.x * along,
-    position.y + right.y * across + normal.y * up + forward.y * along,
-    position.z + right.z * across + normal.z * up + forward.z * along,
-  );
-  return { position: toWorld(eye), target: toWorld(look), fov };
 }
 
 const settled = () => tuning.itemEffectSeconds - 2;

@@ -69,7 +69,7 @@ function countDown(race) {
 }
 
 // A camera standing in the road's axes at PIECE_S: `eye` and `look` are [across (right), up, along].
-function roadCamera(track, eye, look, fov) {
+export function roadCamera(track, eye, look, fov) {
   const { position, forward, right, normal } = pointAt(track, PIECE_S);
   const toWorld = ([across, up, along]) => new THREE.Vector3(
     position.x + right.x * across + normal.x * up + forward.x * along,

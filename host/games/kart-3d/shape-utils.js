@@ -62,9 +62,9 @@ export function roundedBox(width, height, depth, radius, { chamfered = false } =
   shape.translate(0, 0, -(depth - 2 * radius) / 2);
   // Extruded shapes come unindexed; merging their identical corners indexes them, and keeps their flat faces
   // flat (corners whose normals differ stay apart).
-  const indexed = mergeVertices(shape);
+  const welded = mergeVertices(shape);
   shape.dispose();
-  return indexed;
+  return welded;
 }
 
 // A cylinder `height` tall round its middle (like Three.js's), `radiusTop` and `radiusBottom` wide, with both
@@ -120,6 +120,13 @@ export function wrapUv(geometry, bottom, height) {
     us.forEach((u, corner) => uv.setXY(first + corner, crossesBack && u < 0.5 ? u + 1 : u, (position.getY(first + corner) - bottom) / height));
   }
   return wrapped;
+}
+
+// Gives a shape that came without an index (extruded shapes, icosahedra) one, since shapes merged by
+// mergeShapes must all have an index or all have none.
+export function indexed(geometry) {
+  geometry.setIndex(Array.from({ length: geometry.attributes.position.count }, (unused, index) => index));
+  return geometry;
 }
 
 // One geometry from many, which are disposed. Three.js's shapes (and roundedBox) are all indexed with position,

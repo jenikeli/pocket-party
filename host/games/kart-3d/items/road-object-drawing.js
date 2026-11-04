@@ -14,6 +14,9 @@ import { createSandMaps, createSandMaterial } from './sand-look.js';
 import { buildKickerPlate, buildKickerFrame, kickerPlateMaps, createPlateMaterial, createFrameMaterial } from './kicker-look.js';
 import { createInstancedPart } from './instanced-part-look.js';
 
+// Shared by every frame with no race, so update allocates nothing.
+const NO_OBJECTS = [];
+
 // The flag swings about its pole this far either way (radians) at this rate (radians a second).
 const FLAG_SWING = 0.4;
 const FLAG_SWING_RATE = 5;
@@ -60,7 +63,7 @@ export function createRoadObjectDrawing(scene, bursts) {
       shownRace = race;
       records.clear();
     }
-    const objects = race?.items?.objects ?? [];
+    const objects = race?.items?.objects ?? NO_OBJECTS;
     frameNumber += 1;
     time += dt;
     let blockers = 0;
@@ -85,11 +88,11 @@ export function createRoadObjectDrawing(scene, bursts) {
       }
     }
     // Objects gone from the race are forgotten.
-    for (const [id, record] of records) {
+    records.forEach((record, id) => {
       if (record.seenAt !== frameNumber) {
         records.delete(id);
       }
-    }
+    });
     for (const part of parts) {
       part.end();
     }

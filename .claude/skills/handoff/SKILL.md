@@ -20,6 +20,7 @@ The next chat starts with no memory of this one, so everything it needs must be 
 4. Update `plan.md`'s design sections if a decision changed them.
 5. Update `CLAUDE.md`'s Commands section for any new or changed command, and its Testing map for any new browser test file.
 6. For 3D work, the milestone's section in `docs/3d-findings.md`: what was built, what was measured without a device, and the device-run procedure (the `device-run` skill).
+7. `docs/unused.md`: add anything the milestone left unused but kept (a tool, an asset, a spike's pieces), with what to delete; remove entries for what it deleted or put back to use.
 
 ## 3. Commit
 

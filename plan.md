@@ -363,7 +363,7 @@ Built 2026-11-01/02: one kart reviewed round by round until the user approved it
 - **References:** the style references are in `test-results/reference/m7d5/`, not committed, with Blaze's approved sheet beside them (`blaze-approved.png`).
 - **Device run so far:** the flicker on High with 4 views (whole frames cyan or green) is fixed (`a48167c`, the cause in `docs/3d-findings.md`): no flicker on the Galaxy S24 or the iPad. iPad Measure: High with 4 views 17.5 ms (M7d4b2: 13.3), so Watch 4 drops from 60 to about 40 at times; the karts cost 3.4 ms with 4 views (about 900 more draw calls, shadow passes included) and bloom 3.5 ms (was 1.4, likely the flicker fix's clamp pass). Still above MK8DX's 30 fps with 3-4 players; the fix went into M10 Polish.
 - **Device run finished (iPad, 2026-11-04):** the designs look good enough, the anti-gravity wheels are liked, each phone drives its lobby colour's design. Seaside Skyway now takes almost 7 s to appear (M7d4d: about 4 s).
-- **Blender:** the Blender build of Blaze stays unmerged on the branch `worktree-agent-ac20ede945a7b4b57`. Blender is still for future courses only.
+- **Blender:** the Blender build of Blaze was never merged, and its branch was deleted after the M7e device run (its last commit is in `docs/unused.md`). Blender is still for future courses only.
 
 #### M7e: CPU drivers (done)
 Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and the device-run procedure in `docs/3d-findings.md`.

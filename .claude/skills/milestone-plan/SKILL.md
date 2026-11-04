@@ -20,7 +20,8 @@ The main session (Opus) plans, integrates and hands off; `implementer` subagents
    - **Depends on:** a task that must be merged first, if any. Prefer tasks that do not depend on each other.
 4. **Reference pictures for any task that builds a look** (a character, a kart, a prop, a course piece): before spawning, decide whether the spec's words are enough for the builder to match MK8DX's style. If not, find reference pictures online yourself (fan wikis' galleries), save them under `test-results/reference/<milestone>/` (ignored, not committed), and give the builder their paths; or ask the user for pictures when you cannot find good ones. M7d5's first kart, built without pictures, looked nothing like its target until the references were sent.
 5. Keep work in the main session when it is small (a few lines), touches shared files, or needs a decision while building. Spawning an agent costs a cold start; it pays for work of about half an hour or more.
-6. Show the plan to the user (the tasks in a short table: goal, files, model) with any decisions that are theirs, and wait for one approval. After it, stop again only for decisions that are the user's.
+6. **Parallel work is for speed, not a rule** (the user, after M7e): split into parallel tasks only where they really are independent and each is worth an agent; one task, or none, is fine. The main aim is that nothing waits on long runs: while browser tests or kit-shots run in the background, keep building (the main session's own share, the next task's review or merge, the docs), and start the next task's agent while the last one's tests run.
+7. Show the plan to the user (the tasks in a short table: goal, files, model) with any decisions that are theirs, and wait for one approval. After it, stop again only for decisions that are the user's.
 
 ## 2. Build in parallel
 

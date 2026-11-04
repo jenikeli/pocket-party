@@ -4,6 +4,8 @@ Project context for Claude Code. Read this first every session, then read `plan.
 
 `docs/spike-findings.md` holds the results of tests I ran on my real devices before writing any game code (a throwaway `spike.js`), to check viability and pin down parameters: HTTPS requirements, latency, socket survival when the screen locks, tilt rates. Treat its numbers as measured facts that override general assumptions, and note that they come from single runs on a few devices.
 
+`docs/unused.md` lists the code, assets and tools that are kept but not used by the game (such as the Blender pipeline), with what to delete for each, so a cleanup is quick. Keep it up to date (the `handoff` skill).
+
 ## What this is
 
 A local-network racing party game in the style of Mario Kart (a 2D race first, then a 3D one). The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it. It is for my private use and never published, so copying MK8DX's designs (karts, drivers, track pieces, look) is fine; we build every model and texture ourselves rather than extracting files from the game. `docs/mk8dx-reference.md` holds the researched numbers; they are fan-wiki data, so measured findings win where they disagree. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.

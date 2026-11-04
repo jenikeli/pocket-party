@@ -7,8 +7,10 @@ import { createBursts } from './burst-look.js';
 import { createBoxDrawing } from './item-box-look.js';
 import { createKartEffectDrawing } from './kart-effect-looks.js';
 import { createRoadObjectDrawing } from './road-object-drawing.js';
+import { createMagnetDrawing } from './magnet-look.js';
+import { createPushDrawing } from './push-look.js';
 
-const DRAWINGS = [createBoxDrawing, createKartEffectDrawing, createRoadObjectDrawing];
+const DRAWINGS = [createBoxDrawing, createKartEffectDrawing, createRoadObjectDrawing, createMagnetDrawing, createPushDrawing];
 
 // Returns { update(race, track, poses, dt), dispose() }: `race` is null on the setup screen (nothing is drawn but
 // bursts still flying), `poses` the karts' poses this frame in the order of race.karts (race-views.js kartPose),

@@ -18,6 +18,7 @@ import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
 import { KART_PIECES } from './kart-pieces.js';
 import { ITEM_PIECES } from './item-pieces.js';
 import { ROAD_OBJECT_PIECES } from './road-object-pieces.js';
+import { MAGNET_PUSH_PIECES } from './magnet-push-pieces.js';
 
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
@@ -130,4 +131,5 @@ export const PIECES = {
   ...KART_PIECES,
   ...ITEM_PIECES,
   ...ROAD_OBJECT_PIECES,
+  ...MAGNET_PUSH_PIECES,
 };

@@ -2,7 +2,9 @@
 // once when the renderer is made, and one model per kart in the field, which draws whichever design it is
 // given. Each frame a model is placed at its kart's pose, its wheels roll with the kart's speed, its front wheels
 // turn with the steering, and in anti-gravity its wheels turn flat under it and their rims glow, eased in and out
-// (karts/anti-gravity.js). Used by host/games/kart-3d/renderer.js and the kit-shots kart pieces.
+// (karts/anti-gravity.js). Since M8 a model is drawn at the size an item's effect gives it
+// (items/kart-effect-looks.js), standing on the road, and can wear bouncy's pink rubber coat. Used by host/games/kart-3d/renderer.js and the
+// kit-shots kart and item pieces.
 
 import * as THREE from 'three';
 import { forwardSpeed } from './kart-physics.js';
@@ -19,16 +21,22 @@ const WHEEL_TURN_ANGLE = (25 * Math.PI) / 180;
 // Flat, a wheel hovers this far off the road and is tucked this far in under the kart.
 const FLAT_HOVER = 0.05;
 const FLAT_TUCK = 0.06;
+const SAME_SIZE = Object.freeze({ x: 1, y: 1, z: 1 });
+// Bouncy's coat: see-through glossy pink rubber over every part but the decal (which lies on the paint, coated
+// already), with a faint glow of its own so it stays pink in the shade.
+const RUBBER_HEX = 0xff5cb8;
+const RUBBER_OPACITY = 0.5;
 
-// Returns { karts, show(index, kart, pose, designIndex, dt), hide(index), dispose() }: `count` groups ready to add
-// to the scene. Their matrices are set by hand each frame (matrixAutoUpdate is off), since a kart's pose is a full
-// frame, not an angle.
+// Returns { karts, show(index, kart, pose, designIndex, dt, scale, rubbery), hide(index), dispose() }: `count`
+// groups ready to add to the scene. Their matrices are set by hand each frame (matrixAutoUpdate is off), since a
+// kart's pose is a full frame, not an angle.
 export function createKartModels(count) {
   const kartParts = buildKartParts();
   const designShapes = KART_DESIGNS.map((design) => buildDesignShapes(design, kartParts));
   disposeKartParts(kartParts);
   const wheelShapes = WHEELS.map(buildWheel);
   const materials = createKartMaterials(KART_DESIGNS, count);
+  const rubber = createRubberMaterial();
   const karts = [];
   // For each model: its meshes by material kind, its wheels, the design it shows, how far its wheels have rolled
   // along the road (units, from which each wheel's turn follows by its own size) and how far they have turned
@@ -38,6 +46,8 @@ export function createKartModels(count) {
   const shownDesigns = [];
   const rolled = [];
   const flatShares = [];
+  // For each model: its rubber coat, a see-through copy of each part (the body's by material kind, then the wheels').
+  const coats = [];
   for (let index = 0; index < count; index += 1) {
     const kart = new THREE.Group();
     kart.matrixAutoUpdate = false;
@@ -50,6 +60,7 @@ export function createKartModels(count) {
     });
     kart.add(...Object.values(body), ...wheels);
     kart.traverse((part) => (part.castShadow = true));
+    coats.push(addCoat(body, wheels));
     karts.push(kart);
     bodies.push(body);
     wheelSets.push(wheels);
@@ -62,8 +73,10 @@ export function createKartModels(count) {
   const yAxis = new THREE.Vector3();
   const zAxis = new THREE.Vector3();
   // `pose` is the kart as drawn this frame (race-views.js kartPose), `designIndex` an index into KART_DESIGNS
-  // (kart-roster.js's assignDesigns), `dt` the real time since the last drawn frame.
-  function show(index, kart, pose, designIndex, dt) {
+  // (kart-roster.js's assignDesigns), `dt` the real time since the last drawn frame, `scale` the model's size
+  // { x across, y up, z along } (kart-effect-looks.js's kartLookScale), about its base, so it stays standing on the
+  // road, and `rubbery` whether it wears bouncy's coat (kartRubbery).
+  function show(index, kart, pose, designIndex, dt, scale = SAME_SIZE, rubbery = false) {
     const model = karts[index];
     model.visible = true;
     useDesign(index, designIndex);
@@ -73,7 +86,12 @@ export function createKartModels(count) {
     yAxis.set(bodyUp.x, bodyUp.y, bodyUp.z);
     xAxis.set(bodyForward.x, bodyForward.y, bodyForward.z).cross(yAxis).negate().normalize();
     zAxis.crossVectors(xAxis, yAxis);
+    // The model's base is its origin (the wheels stand on y = 0), so scaling its axes scales it about its base.
+    xAxis.multiplyScalar(scale.x);
+    yAxis.multiplyScalar(scale.y);
+    zAxis.multiplyScalar(scale.z);
     model.matrix.makeBasis(xAxis, yAxis, zAxis).setPosition(position.x, position.y, position.z);
+    coats[index].forEach((coat) => (coat.visible = rubbery));
     model.matrixWorldNeedsUpdate = true;
     // The wheels roll only on the ground; in the air they keep turning as they were (rolled stays).
     if (kart.grounded) {
@@ -100,6 +118,20 @@ export function createKartModels(count) {
       mesh.geometry = designShapes[designIndex][kind];
       mesh.material = materialFor(kind, designIndex);
     });
+    coats[index].forEach((coat) => (coat.geometry = coat.parent.geometry));
+  }
+
+  // A coat over each body part and wheel of one model: a child of the part sharing its shape, so it follows the
+  // wheel's turns; show() hides it unless the kart is bouncy. Visible until then, so the renderer builds its shader
+  // while the game starts (renderer.js compiles every visible thing). Added after the shadows are set:
+  // see-through, it casts none.
+  function addCoat(body, wheels) {
+    const parts = [...MATERIAL_KINDS.filter((kind) => kind !== 'decal').map((kind) => body[kind]), ...wheels];
+    return parts.map((part) => {
+      const coat = new THREE.Mesh(part.geometry, rubber);
+      part.add(coat);
+      return coat;
+    });
   }
 
   // Every design shares the kinds' materials, except its decal (its own emblem).
@@ -111,9 +143,19 @@ export function createKartModels(count) {
     designShapes.forEach((shapes) => Object.values(shapes).forEach((shape) => shape.dispose()));
     wheelShapes.forEach((shape) => shape.dispose());
     materials.dispose();
+    rubber.dispose();
   }
 
   return { karts, show, hide, dispose };
+}
+
+// Bouncy's coat, drawn over the part it covers: it lies exactly on the part's surface, so it is pulled a little
+// toward the camera in the depth test (polygon offset) to win over the part instead of flickering with it.
+function createRubberMaterial() {
+  return new THREE.MeshPhysicalMaterial({
+    color: RUBBER_HEX, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.04, emissive: RUBBER_HEX, emissiveIntensity: 0.18,
+    transparent: true, opacity: RUBBER_OPACITY, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4,
+  });
 }
 
 // One wheel at `spot` (kart-layout.js's WHEELS) rolled `rolled` units, steered by `wheelTurn` (-1 to 1) if it is a

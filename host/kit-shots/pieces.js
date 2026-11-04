@@ -16,6 +16,7 @@ import { BARRIER_STYLES, KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layo
 import { addBlenderPalms, loadBlenderPalm } from './blender-palm.js';
 import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
 import { KART_PIECES } from './kart-pieces.js';
+import { ITEM_PIECES } from './item-pieces.js';
 
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
@@ -126,4 +127,5 @@ export const PIECES = {
   'palm-blender-close': { ...BLENDER_PALM, focus: PALM_CLOSE_FOCUS },
   ...LANDMARK_PIECES,
   ...KART_PIECES,
+  ...ITEM_PIECES,
 };

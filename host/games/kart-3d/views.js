@@ -24,9 +24,10 @@ export function createViews(container) {
     hud: createViewHud(container),
   }));
 
-  // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting, hud }: the kart's pose as drawn, the
-  // label text and its CSS colour, whether the kart boosts (the camera pulls back), and what its HUD shows
-  // (view-hud.js). `dt` is the real time since the last drawn frame, in seconds, for the cameras' lag.
+  // `targets` is 1, 2 or 4 views' worth of { pose, name, color, boosting, scale, hud }: the kart's pose as drawn,
+  // the label text and its CSS colour, whether the kart boosts (the camera pulls back), the kart model's scale
+  // (items/kart-effect-looks.js: a big kart's camera pulls back and up), and what its HUD shows (view-hud.js).
+  // `dt` is the real time since the last drawn frame, in seconds, for the cameras' lag.
   // beforeView(camera) is called with each view's camera, placed, just before that view is drawn (the sun's
   // shadow map can follow each view: renderer.js).
   function draw(renderer, scene, targets, dt, renderTarget, beforeView) {
@@ -38,7 +39,7 @@ export function createViews(container) {
     renderer.clear();
     targets.forEach((target, index) => {
       const view = views[index];
-      followKart(view.chase, target.pose, dt, target.boosting);
+      followKart(view.chase, target.pose, dt, target.boosting, target.scale.y);
       const { position, up, look, fieldOfView } = view.chase;
       view.camera.fov = fieldOfView;
       view.camera.position.set(position.x, position.y, position.z);

@@ -6,7 +6,8 @@
 // Measure tool (measure-run.js) can set any look, wait for the GPU to finish a frame and read how much was drawn;
 // since M7d4b2 the course has shade baked into it (since M7d4c1 round the whole lap, baked-shade.js) and is lit by
 // a light taken from itself (course-light.js), except in the plain course (plain-course.js), which the rules'
-// browser tests use.
+// browser tests use. Since M8 it draws the items (items/item-drawing.js: the item boxes, bursts and puffs) and the
+// karts at the size their item's effect gives them, which the chase camera follows.
 // Loaded by the game's load() with a dynamic import(), so Three.js is fetched only when the game starts. Used by
 // host/games/kart-3d/index.js.
 
@@ -27,6 +28,8 @@ import { createOverviewCamera } from './overview-camera.js';
 import { waitForGpu, frameStats, describeGpu } from './gpu-probe.js';
 import { createCourseLight } from './course-light.js';
 import { bakeShade } from './baked-shade.js';
+import { createItemDrawing } from './items/item-drawing.js';
+import { kartLookScale, kartRubbery } from './items/kart-effect-looks.js';
 
 // How much the sea mirrors the sky: at the course light's strength it would reflect so much pale horizon that it
 // turns whitish.
@@ -61,6 +64,9 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
   kartGroup.add(...kartModels.karts);
   scene.add(kartGroup);
   const effects = createEffects(scene);
+  const itemDrawing = createItemDrawing(scene);
+  // The course drawn now, where the item drawing places the boxes.
+  let shownTrack = track;
   // The course's road and scenery (scenery.js's world), and the light taken from it (none in the plain course).
   let world = null;
   let courseLight = null;
@@ -108,17 +114,20 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
       }
       overview.fly(dt);
       effects.update([], dt);
+      itemDrawing.update(null, shownTrack, [], dt);
       drawFrame((target) => views.drawOne(renderer, scene, overview.camera, target), 1);
       return;
     }
     const poses = race.karts.map((kart) => kartPose(kart, alpha));
     placeKarts(race, players, poses, dt);
+    itemDrawing.update(race, shownTrack, poses, dt);
     effects.update(race.karts.map((kart, index) => describeEffects(kart, poses[index])), dt);
     const targets = viewTargets(race, players).map(({ kart, player }) => ({
       pose: poses[race.karts.indexOf(kart)],
       name: player ? displayName(player) : 'CPU',
       color: player ? colorText(player) : '#ffffff',
       boosting: kart.boost !== null,
+      scale: kartLookScale(race, kart),
       hud: viewHud(race, kart),
     }));
     drawFrame((target) => views.draw(renderer, scene, targets, dt, target, fitShadow), targets.length);
@@ -154,7 +163,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
         kartModels.hide(index);
         return;
       }
-      kartModels.show(index, kart, poses[index], kartDesigns[index], dt);
+      kartModels.show(index, kart, poses[index], kartDesigns[index], dt, kartLookScale(race, kart), kartRubbery(race, kart));
     });
   }
 
@@ -213,6 +222,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
   function showTrack(newTrack) {
     world.dispose();
     courseLight?.dispose();
+    shownTrack = newTrack;
     buildWorld(newTrack);
     overview.showCourse(newTrack);
     applyLook();
@@ -226,6 +236,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
     views.destroy();
     bloom.dispose();
     effects.dispose();
+    itemDrawing.dispose();
     kartModels.dispose();
     world.dispose();
     courseLight?.dispose();

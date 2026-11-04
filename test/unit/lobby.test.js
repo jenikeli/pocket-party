@@ -118,6 +118,12 @@ test('the game starts only with a player count in the game\'s range, all connect
   assert.equal(canStartGame(withDropped, TWO_TO_THREE), false);
 });
 
+test('a game that takes no players (the 3D race, for Watch) starts with an empty room', () => {
+  const noneToFour = { id: 'test-game', title: 'Test game', minPlayers: 0, maxPlayers: 4 };
+  assert.equal(canStartGame(rosterOf(), noneToFour), true);
+  assert.equal(canStartGame(rosterOf(false), noneToFour), false, 'a player in the room must still be ready');
+});
+
 test('the lobby says what it is waiting for', () => {
   assert.equal(describeWaitingFor(rosterOf(true), TWO_TO_THREE), 'Waiting for players (at least 2)');
   assert.equal(describeWaitingFor(rosterOf(true, false), TWO_TO_THREE), 'Waiting for 1 player to be ready');

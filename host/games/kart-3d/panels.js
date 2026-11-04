@@ -112,7 +112,7 @@ export function createPanels(container, handlers) {
       rows.replaceChildren(...entries.map(createRow));
     }
     const waitingFor = playersHoldingUpStart(setup, inOrder).map(displayName);
-    setText(status, waitingFor.length > 0 ? `Waiting for ${waitingFor.join(', ')}` : 'Everyone is ready');
+    setText(status, describeStatus(inOrder, waitingFor));
     startButton.disabled = !canStartRace(setup, inOrder);
   }
 
@@ -199,6 +199,14 @@ function setText(element, text) {
   if (element.textContent !== text) {
     element.textContent = text;
   }
+}
+
+// The line under the players: who the race waits for. With nobody in the room only Watch can run.
+function describeStatus(players, waitingFor) {
+  if (players.length === 0) {
+    return 'No players: Watch races without phones';
+  }
+  return waitingFor.length > 0 ? `Waiting for ${waitingFor.join(', ')}` : 'Everyone is ready';
 }
 
 function describeRow(player, { steering, autoAccelerate, ready }) {

@@ -996,7 +996,7 @@ On the iPad, Seaside Skyway.
 - **The course takes about 4 s to appear** (M7d4c1: about 2 s), as the census predicted: the maps are drawn in JS at every build. Accepted for now; drawing each map once per game and keeping it, as the baked shade is kept, would win most of it back.
 - **All the props look a lot better in general.**
 - **The floating islands and backdrop cliffs look bad:** layers of round shapes, which real rock formations are not, and floating islands make no sense on this course. Mountains are fine.
-- **The course sits too high over open sea,** so many of the props round it cannot be seen. Asked for: the road close to the sea level, running across several islands. Planned as M7f, after the CPU drivers (M7e), with a study of real rock formations first.
+- **The course sits too high over open sea,** so many of the props round it cannot be seen. Asked for: the road close to the sea level, running across several islands. Planned as M7f, after the CPU drivers (M7e), with a study of real rock formations first; moved to the first step of M10 Polish after the M7e device run.
 - Not reported: Watch 4's fps and the Measure report.
 
 ## M7d5: Karts and drivers
@@ -1101,7 +1101,13 @@ The other parts (road, sea, supports, decks, gate, surroundings, sky) each moved
 - **Bloom costs more than before:** High over Medium is 3.5 ms with 4 views, against 1.4 in M7d4b2. The likely cause is the clamp pass added by the flicker fix (`guardBloomInput`), a full-screen pass at pixel ratio 2. Not measured on its own.
 - **Still well above MK8DX's own bar,** 30 fps with 3-4 players. A steady 60 on High with four views would need about 1-4 ms back. The candidates: the karts' shadows from a one-mesh stand-in per kart, and the clamp folded into bloom's first pass.
 
-**Still to do on the iPad:** steps 1-3, 5 and 6 of the procedure above (how long the course takes to appear, the designs up close, the anti-gravity wheels, the two phones' designs).
+**The rest of the procedure on the iPad (2026-11-04):**
+- **Step 1:** Seaside Skyway took almost 7 s to appear, against about 4 s in M7d4d.
+- **Steps 2 and 6:** the designs look good enough, and nothing broken was seen.
+- **Step 3:** the anti-gravity wheels are liked.
+- **Step 5:** each phone drove its lobby colour's design.
+
+**Decided after it (the user):** the work toward a steady 60 fps with 4 views goes into M10 Polish (the karts' shadows from a simple stand-in, bloom's clamp folded into its first pass), together with the optional faster course build.
 
 **If the karts cost too much there:**
 - Cast the karts' shadows from a low-poly stand-in: a shadow pixel is about 0.14 units, so the drivers' detail is lost in the shadow pass anyway.
@@ -1172,6 +1178,6 @@ On the iPad (2026-11-04), one phone:
 - **Steps 1-2:** the CPU row is there. On Hard the CPU karts do what step 2 lists: rocket starts, spreading, sparks with purple in the big sweeper, tricks at the jump.
 - **Step 3:** Watch 4 holds 60 fps at times and drops to about 40 at others. The cause is the M7d5 karts and bloom, not the CPU drivers: see M7d5's Measure above, where the CPU time per frame is unchanged.
 - **Step 4:** no flicker, and the Measure report is in M7d5's notes.
-- **Step 5:** racing the CPUs "is a challenge, but feels possible to beat", so the levels stay as they are.
+- **Step 5:** raced on Normal and Hard. Normal: getting first from 12th is doable. Hard: quite challenging. Easy drives like the old default driver, which the user finds good. "The difficulties do make sense and feel challenging where appropriate", so the levels stay as they are.
 - **Step 6:** the CPU drivers' sliders seemed fine at their defaults, so nothing was tuned. They stay in the Tuning panel for later adjustment.
 - **Step 7:** nothing broken was seen.

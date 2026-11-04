@@ -55,7 +55,7 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 | Race format | countdown, 3 laps, places, results, engine classes (50, 100, 150, 200cc) | M7b |
 | Look | kart and driver models, a dressed track, glossy lit karts, shadows, bloom, sky, particles; a quality setting for slow hosts | cost measured in M6a, first pass in M7c, made close to MK8DX in M7d |
 | CPU drivers | fill the race up to 12 karts (or the number M6 found the iPad can carry); they drive the racing line, drift and recover from falls | cost measured in M6a and M6b, built in M7e |
-| Items and coins | item boxes, two held items, odds by place, coins up to 10 | M8 |
+| Items | our own nine items replace MK8DX's (decided after M7e): item boxes, one held item, odds by place, settings to turn items off | M8 |
 | Glide ramps and spin-boost posts | gliding off blue ramps; posts in anti-gravity sections that give a spin boost | M9 |
 | Assists | auto-accelerate and tilt (exist), Smart Steering | Smart Steering later |
 | More course types and modes | underwater, Grand Prix (4 races with points) | later |
@@ -345,9 +345,9 @@ Built as one queue in one chat (2026-11-01, at the user's request), 14 tasks by 
 - **Cost (measured in software):** Seaside Skyway's scene from 913,000 to 1,516,000 triangles, its textures from 50 to 81 MB (uncompressed), and the scenery's build from 6 s to 14 s before the bake (the maps are drawn in JS at every build). The device run times how long the course takes to appear on the iPad; if it is too slow, draw the maps once per game rather than per build.
 - **kit-shots:** a piece for every kit object (`host/kit-shots/pieces.js`, `landmark-pieces.js`); props stand on a deck beside the road (`road: 'decked'`), sea pieces stand in a sea, `focus.eye` sets the near view's height. Runs share 2 machine-wide slots (`tools/machine-slots.js`).
 - Carried on: the shared nearest-point code is the only helper two textures share; any later texture of stones or slabs uses `kit/cell-noise.js`.
-- **Device run (iPad):** Seaside Skyway takes about 4 s to appear (was about 2 s: the maps drawn at every build; drawing them once per game would win most of it back, if wanted). All the props look a lot better, except the floating islands and backdrop cliffs, which look bad (stacked rings of round shapes, unlike real rock) and make no sense: they go in M7f, with the course brought down near the sea.
+- **Device run (iPad):** Seaside Skyway takes about 4 s to appear (was about 2 s: the maps drawn at every build; drawing them once per game would win most of it back, if wanted). All the props look a lot better, except the floating islands and backdrop cliffs, which look bad (stacked rings of round shapes, unlike real rock) and make no sense: they go in M10 Polish's first step (planned as M7f until the M7e device run), with the course brought down near the sea.
 
-##### M7d5: Karts and drivers (built, device run pending)
+##### M7d5: Karts and drivers (done)
 Built 2026-11-01/02: one kart reviewed round by round until the user approved it (JS chosen over Blender), then the other 11 drivers as a queue. The specs and how it went are in "M7d5" in `docs/history.md`, the numbers and the device-run procedure in `docs/3d-findings.md`.
 - **12 designs, one per racer** (`host/games/kart-3d/karts/kart-designs.js`).
   - The cast, in slot order: Blaze (red kid racer), Pip (blue penguin), Fern (green frog), Bolt (yellow robot), Grimble (purple gnome), Rusty (orange fox), Inky (teal octopus), Mochi (pink bunny), Sprout (lime turnip kid), then Bruno (bear), Rhino and Wisp (ghost), CPU only, slots 9-11.
@@ -361,7 +361,8 @@ Built 2026-11-01/02: one kart reviewed round by round until the user approved it
 - **Helpers:** `effects.js` takes the exhaust and rear-wheel spots from `karts/kart-layout.js`; `kart-shapes.js` is gone, and the karts' curved shapes are in `karts/curved-shapes.js`.
 - **kit-shots pieces** for every design: `kart-<id>`, `-side`, `-close`, `-antigravity`, and `karts-lineup` (`host/kit-shots/kart-pieces.js`).
 - **References:** the style references are in `test-results/reference/m7d5/`, not committed, with Blaze's approved sheet beside them (`blaze-approved.png`).
-- **Device run so far:** the flicker on High with 4 views (whole frames cyan or green) is fixed (`a48167c`, the cause in `docs/3d-findings.md`): no flicker on the Galaxy S24 or the iPad. iPad Measure: High with 4 views 17.5 ms (M7d4b2: 13.3), so Watch 4 drops from 60 to about 40 at times; the karts cost 3.4 ms with 4 views (about 900 more draw calls, shadow passes included) and bloom 3.5 ms (was 1.4, likely the flicker fix's clamp pass). Still above MK8DX's 30 fps with 3-4 players. **Still to do on the iPad:** the procedure's steps 1-3, 5 and 6.
+- **Device run so far:** the flicker on High with 4 views (whole frames cyan or green) is fixed (`a48167c`, the cause in `docs/3d-findings.md`): no flicker on the Galaxy S24 or the iPad. iPad Measure: High with 4 views 17.5 ms (M7d4b2: 13.3), so Watch 4 drops from 60 to about 40 at times; the karts cost 3.4 ms with 4 views (about 900 more draw calls, shadow passes included) and bloom 3.5 ms (was 1.4, likely the flicker fix's clamp pass). Still above MK8DX's 30 fps with 3-4 players; the fix went into M10 Polish.
+- **Device run finished (iPad, 2026-11-04):** the designs look good enough, the anti-gravity wheels are liked, each phone drives its lobby colour's design. Seaside Skyway now takes almost 7 s to appear (M7d4d: about 4 s).
 - **Blender:** the Blender build of Blaze stays unmerged on the branch `worktree-agent-ac20ede945a7b4b57`. Blender is still for future courses only.
 
 #### M7e: CPU drivers (done)
@@ -372,23 +373,48 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 - **Race rules for CPUs** (`race-cpus.js`): CPU rocket starts at GO by level (seeded, the same every race), and a mild catch-up every step: `kart.paceShare` from `cpuPaceShare(gap)` (`cpu-pace.js`), up to ±5% top speed at 200 units from the leading player, multiplied into `kartTopSpeed`.
 - **Sliders** in the tuning panel's "CPU drivers" group: catch-up share and range, look-ahead, braking.
 - **Measured in Node:** a lone kart laps Seaside Skyway at 150cc in about 35.7 s (Hard), 36.2 (Normal), 37.2 (Easy), against the old dummy driver's 39; no kart fell off in 3 laps at any class; the 12 drivers cost about 0.1 ms a step.
-- **Device run (iPad):** the CPUs do all of the above, racing them "is a challenge, but feels possible to beat", the sliders stay at their defaults (kept in the panel), nothing broke.
+- **Device run (iPad):** the CPUs do all of the above. Normal: winning from 12th is doable; Hard: quite challenging; Easy drives like the old default driver, which is good. The levels stay as they are, the sliders at their defaults (kept in the panel); nothing broke.
+- **After it:** the 3D race starts from the lobby with no players (`minPlayers: 0` in `host/games/index.js`), for Watch; a race still needs a player.
 - For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
-#### M7f: Seaside Skyway down by the sea, across islands
-Asked for after the M7d4c3-d device run: most of the props round the course cannot be seen from a road high over open sea.
-- [ ] The road brought down close to the sea and run across several islands, so the decks, props and surroundings are seen from the karts; the jump, climb and anti-gravity sections kept, redesigned where the new ground needs it (designed in that chat, with a top-down sketch, before building)
-- [ ] The floating islands and the backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
-- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built: the islands' rock was rings of round shapes, which rock is not
-- Probably more than one chat: the chat proposes a split
+### M8: Items (our own)
+The part of Mario Kart I want most after the race itself. Decided after the M7e device run (2026-11-04): our own nine items **replace MK8DX's** (no banana, shells or mushrooms, and no coins). Like MK8DX, they come from item boxes on the road and are used with the phone's Item button. Each effect lasts 5 s and is drawn on the kart, so everyone can see it is in effect. Split into three chats below, each with its own device run.
 
-### M8: Items and coins
-The part of Mario Kart I want most after the race itself. Probably several chats; the first proposes how to split it.
-- [ ] Item boxes in rows across the road (the quiet straight after Seaside Skyway's hairpin was kept for them), breaking and coming back
-- [ ] Items modelled on MK8DX's (banana, green and red shells, mushrooms, and the rest), two held at once, odds by place (see "Items" in `docs/mk8dx-reference.md`)
-- [ ] The phone's Item button, in the place kept free for it since M6c
-- [ ] Coins up to 10, each adding a little top speed
-- [ ] CPU drivers (M7e) pick up and use items
+**Getting and using items:**
+- **Item boxes** sit in rows across the road (the quiet straight after Seaside Skyway's hairpin was kept for them). A box breaks when driven through and comes back after a few seconds.
+- **One item held at a time.** Picking one up runs a short roulette, shown on the kart's host view and on the phone, before the item lands.
+- **The Item button** on the phone (in the place kept free for it since M6c) uses the held item.
+- **Odds by place, MK8DX's idea:** karts further back get more of the catch-up items (teleport, magnet, ramp), leaders more of the defensive ones (blocker, bouncy, push).
+- **On screen:** while an effect lasts, its view shows the item's icon with a ring counting down the 5 s, and the phone shows the held item and the running effect.
+- **Effect length:** 5 s, a slider in the tuning panel, like every tuned number.
+- **CPU drivers (M7e)** pick up and use items, with a simple rule for each (for example, a blocker when a kart is close behind).
+- **Settings:** the host's setup screen gets Items on or off (off races without boxes, as now), and a switch for each item, so any item can be left out. A race setting like the engine class: one set for everyone, kept from race to race, reset on going back to the lobby.
+
+**The nine items** (each look and animation is designed in its chat, with references; "be creative" with the objects):
+1. **Blocker:** an object dropped just behind the kart, on the road, that karts bump off like a wall. It vanishes after 5 s with an animation (for example, a sandcastle that crumbles away in the Seaside theme).
+2. **Ramp:** a ramp that appears a little ahead of the kart (for example, a kicker that flips up out of the road). Any kart driving onto it is launched and can trick with Drift as off the course's ramp, and gets the trick boost. It vanishes after 5 s with an animation.
+3. **Bouncy:** for 5 s the kart is rubbery (a squash-and-stretch wobble, a rubber shine), and karts bumping it bounce off much harder than usual.
+4. **Teleport (everyone):** every kart, the user's too, hops a short random way along the road, up to about 40 units forward or back, onto a random lane, so the pack is shaken up without wrecking the standings.
+   - It flashes a short warning first, and each kart vanishes and reappears in a burst of sparkles.
+   - Never onto a gap or into another kart.
+   - Race distance moves with the hop, so laps stay right.
+5. **Big and slow:** for 5 s the kart grows (about 1.6 times, in a wobble like MK8DX's Mega Mushroom), is slower (about 80% of top speed) and much heavier, so it wins every bump.
+6. **Small and fast-turning:** for 5 s the kart shrinks (about 0.6 times, with a poof), turns much faster (about 1.6 times the steering and drift), and is light in bumps.
+7. **Magnet:** for 5 s other karts within a reach (about 30 units) are pulled toward the kart, more strongly when nearer. A field drawn round it (a magnet over the kart, rings, lines to each kart pulled). Its chat decides whether karts behind, which a pull would speed up, are pulled too.
+8. **Push:** for 5 s other karts within a reach are pushed away from the kart, with shockwave rings or a bubble round it.
+9. **Sticky walls (everyone, the user too):** for 5 s every wall on the course is sticky and drawn so (goo or honey). Any kart touching one is held for about 1.5 s, then let go with a small push off the wall.
+
+**How it is split (proposed; each chat's milestone-plan can adjust it):**
+- [ ] **M8a: the item system and the kart's own effects.** Item boxes, the roulette, holding and the Item button, odds by place, the effect timer and HUD, the settings, CPUs using items, and the three items that change only the user's kart: bouncy, big and slow, small and fast-turning.
+- [ ] **M8b: objects on the road.** A model for objects placed on the road (by distance and lane, with a lifetime), and the blocker and the ramp, their looks and their vanishing.
+- [ ] **M8c: effects on the whole field.** Teleport, magnet, push and sticky walls.
+
+Research done while planning (2026-11-04):
+- **Mario Kart's own versions of size effects:** Lightning shrinks the karts it hits (smaller and slower, longest for the leaders), and the Mega Mushroom grows a kart to flatten others ([Mario Wiki: Lightning](https://mariowiki.com/Lightning), [Mega Mushroom](https://mariokart.fandom.com/wiki/Mega_Mushroom)).
+- **Effects must be readable at a glance:** each one needs its own look on the kart and a timer. Item effects players could not read were a common complaint about smaller kart games ([itch.io comment](https://itch.io/post/13870986)), and KartRider scales its collision effects with how hard the hit was ([KartRider dev blog](https://forums.kartrider.nexon.net/discussion/396/dev-blog-revving-up-the-fun-part-1?lang=en)).
+- **Crash Team Racing's items** ([TheGamer's guide](https://www.thegamer.com/definitive-guide-how-to-use-every-item-ctr-nitro-fueled/)), as another kart game's take on items like these:
+  - its shield fades on its own if never hit;
+  - its bomb can be thrown either way and set off early.
 
 ### M9: Glide ramps and spin-boost posts
 Both need new rules (gliding in the air; a post that gives a spin boost when hit), so each is designed in that chat before building.
@@ -397,10 +423,16 @@ Both need new rules (gliding in the air; a post that gives a spin boost when hit
 - [ ] Added to Seaside Skyway or a new course
 
 ### M10: Polish
+The first step is Seaside Skyway down by the sea (planned as M7f until the M7e device run, when the user moved it here, after items and glide ramps). Asked for after the M7d4c3-d device run: most of the props round the course cannot be seen from a road high over open sea. Probably more than one chat: its first chat proposes a split.
+- [ ] Seaside Skyway's road brought down close to the sea and run across several islands, so the decks, props and surroundings are seen from the karts; the jump, climb and anti-gravity sections kept, redesigned where the new ground needs it (designed in that chat, with a top-down sketch, before building). Item boxes (M8) and glide ramps or spin-boost posts (M9) on the course move with it
+- [ ] The floating islands and the backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
+- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built: the islands' rock was rings of round shapes, which rock is not
 - [ ] Sound effects and music (MP3/M4A, small)
 - [ ] Host "Tap to start" screen (unlocks audio, requests fullscreen where supported)
 - [ ] Loading screen with a progress bar (lazy loading and the ready check already exist from M5a)
 - [ ] Revisit what happens when a player drops mid-race, using the device runs of M5b, M5c and M7 (M5b's choice: the kart keeps its place with neutral input)
+- [ ] The 3D race back to a steady 60 fps on the iPad with 4 views on High (M7d5's Measure: 17.5 ms a frame, drops to about 40 fps): the karts' shadows from a simple one-mesh stand-in per kart (each kart's 10 draw calls are drawn again in every view's shadow pass) and bloom's clamp folded into its first pass (bloom went from 1.4 to 3.5 ms with 4 views after the flicker fix); measure each with Measure (decided after the M7e device run)
+- [ ] Optional: Seaside Skyway takes almost 7 s to appear on the iPad (M7d4d: about 4 s): drawing the kit's maps once per game instead of at every build would win most of it back (M7d4d's note)
 
 ### M11: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin

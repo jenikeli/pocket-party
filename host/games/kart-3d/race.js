@@ -14,10 +14,12 @@ import { driveByCpu, handOver, startCpuKarts, updateCpuPaces } from './race-cpus
 import { progressBetween } from './track.js';
 import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart, rocketBoostSeconds } from './rocket-start.js';
 import { createItems, freshItem, stepItems } from './items/item-rules.js';
+import { RACE_PHASES } from './race-phases.js';
+
+export { RACE_PHASES };
 
 // MK8DX always races 12 karts.
 export const FIELD_SIZE = 12;
-export const RACE_PHASES = Object.freeze({ COUNTDOWN: 'countdown', RACING: 'racing', RESULTS: 'results' });
 // MK8DX's engine classes: each top speed is 150cc's times this share (docs/mk8dx-reference.md).
 export const ENGINE_CLASSES = Object.freeze({ 50: 0.8, 100: 0.9, 150: 1, 200: 1.5 });
 export const DEFAULT_ENGINE_CLASS = 150;

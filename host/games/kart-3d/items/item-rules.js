@@ -12,7 +12,7 @@ import { createRandom } from '../random.js';
 import { tuning } from '../tuning.js';
 // race.js calls stepItems and this file reads its phases: each only while the race runs, never while the
 // modules load, so the circle is harmless.
-import { RACE_PHASES } from '../race.js';
+import { RACE_PHASES } from '../race-phases.js';
 
 // The items' own effects start with startEffect (kart-effect.js); it is exported here too, with the rest of the
 // item rules.
@@ -40,7 +40,16 @@ export function createItems(track, allowedItems) {
 // will land on (drawn at the pickup); landedAt the race time it landed and cpuWait how long a CPU kart waits
 // from then; button the Item button this step (race.js sets it from the controls) and buttonBefore last step's.
 export function freshItem() {
-  return { held: null, rollLeft: 0, effect: null, landing: null, landedAt: 0, cpuWait: 0, button: false, buttonBefore: false };
+  return {
+    held: null,
+    rollLeft: 0,
+    effect: null,
+    landing: null,
+    landedAt: 0,
+    cpuWait: 0,
+    button: false,
+    buttonBefore: false,
+  };
 }
 
 // One step of the items, after the karts moved and bumped. Boxes break whenever any kart drives through them,

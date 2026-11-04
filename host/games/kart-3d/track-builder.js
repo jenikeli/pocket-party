@@ -15,9 +15,10 @@ const CLOSING_TOLERANCE = 0.01;
 // across (Seaside Skyway's last corner), a gentle S for a kart at speed.
 const SHOULDER_EASE = 16;
 
-// `definition` is { halfWidth, startLine, pieces, dashPanels, itemBoxRows, scenery }. The track starts at the origin heading along +x, at
-// height 0 with no roll, its road halfWidth either side of the centre line. Each piece is a straight
-// ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and may also have:
+// `definition` is { halfWidth, startLine, pieces, dashPanels, itemBoxRows, scenery }. The track starts at the
+// origin heading along +x, at height 0 with no roll, its road halfWidth either side of the centre line. Each
+// piece is a straight ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and
+// may also have:
 //   height    the height at its end; it changes smoothly (flat at both ends) from the previous piece's
 //   linear    true: the height changes at a steady slope instead (a ramp, whose lip must still slope)
 //   roll      the roll at its end in degrees (+ lowers the right edge, banking into a right turn), smoothly
@@ -33,10 +34,10 @@ const SHOULDER_EASE = 16;
 // (items/item-boxes.js spreads each row's boxes).
 // scenery names the course's look (scenery.js): its road and the dressing round it. Every course in courses.js
 // has one; a track built without one (as the rules' unit tests do) can be driven but not drawn.
-// Returns the track: { stations, length, startLine, dashPanels, itemBoxRows, scenery }. Station i describes the road from
-// itself to station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength,
-// halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the distance along
-// the centre line from the start.
+// Returns the track: { stations, length, startLine, dashPanels, itemBoxRows, scenery }. Station i describes the
+// road from itself to station i + 1 (the last one joins the first): { point, tangent, right, normal, s,
+// segmentLength, halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the
+// distance along the centre line from the start.
 export function buildTrack(definition) {
   const samples = samplePieces(definition.pieces, definition.halfWidth);
   const stations = samples.map((sample, index) => {

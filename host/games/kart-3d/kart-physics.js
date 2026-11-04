@@ -17,6 +17,7 @@ import { freshTechniques, useDriftButton, afterMove, hopGravity } from './kart-t
 import { freshBoosts, stepBoosts } from './kart-boosts.js';
 import { freshBody, moveBody } from './kart-body.js';
 import { tuning } from './tuning.js';
+import { effectTurnShare } from './items/effect-rules.js';
 
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
@@ -129,7 +130,8 @@ function drive(kart, controls, dt) {
   const grip = kart.slideLeft > 0 ? tuning.slideGrip : tuning.grip;
   kart.slideLeft = Math.max(kart.slideLeft - dt, 0);
   const slide = dot(kart.velocity, side) * Math.exp(-grip * dt);
-  const turn = kart.driftDirection === 0 ? turnAngle(controls.steer, speed, dt) : driftTurnAngle(kart.driftDirection, controls.steer, speed, dt);
+  const steered = kart.driftDirection === 0 ? turnAngle(controls.steer, speed, dt) : driftTurnAngle(kart.driftDirection, controls.steer, speed, dt);
+  const turn = steered * effectTurnShare(kart);
   // A right turn turns the nose clockwise seen from above the road: a negative angle about up.
   kart.forward = normalize(rotate(kart.forward, kart.up, -turn));
   kart.velocity = addScaled(scale(kart.forward, speed), cross(kart.forward, kart.up), slide);
@@ -140,7 +142,7 @@ function drive(kart, controls, dt) {
 function fly(kart, controls, dt) {
   const gravity = kart.antiGravity ? scale(kart.up, -1) : DOWN;
   kart.velocity = addScaled(kart.velocity, gravity, (kart.hopping ? hopGravity() : GRAVITY) * dt);
-  const angle = -turnAngle(controls.steer, forwardSpeed(kart), dt) * AIR_STEERING_SHARE;
+  const angle = -turnAngle(controls.steer, forwardSpeed(kart), dt) * AIR_STEERING_SHARE * effectTurnShare(kart);
   kart.forward = normalize(rotate(kart.forward, kart.up, angle));
   kart.velocity = rotate(kart.velocity, kart.up, angle);
 }

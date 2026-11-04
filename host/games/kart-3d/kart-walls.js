@@ -1,12 +1,13 @@
 // The 3D race's walls: a kart that went through one is pushed back inside; a hit costs speed by how square it
 // was and bounces the kart off, and rubbing along the wall drags it, so the wall is never the fast line round a
 // corner. Plain maths on plain kart objects, unit tested in Node through kart-physics.js, which calls it every
-// step after moving the kart. KART_RADIUS is also the size kart-bumps.js uses. The tuned numbers are tuning.js's.
+// step after moving the kart. KART_RADIUS is also the size kart-bumps.js uses; both times the kart's item effect size (big, small). The tuned numbers are tuning.js's.
 
 import { scale, addScaled, dot, length, normalize, flatten } from './vector.js';
 import { outerEdge, wallOnSide } from './track.js';
 import { endBoost, BOOST_KINDS } from './kart-boosts.js';
 import { tuning } from './tuning.js';
+import { effectSize } from './items/effect-rules.js';
 
 // A kart is a ball of this radius for walls and bumps (it is 2 units long and about 1.4 wide).
 export const KART_RADIUS = 1;
@@ -21,7 +22,7 @@ const HIT_SPEED = 1;
 // Pushes the kart back inside a wall it went through and deals with its speed into the wall. Returns true if
 // it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in MK8DX.
 export function hitWall(track, kart, contact, dt) {
-  const limit = outerEdge(contact) - KART_RADIUS;
+  const limit = outerEdge(contact) - KART_RADIUS * effectSize(kart);
   const nearRoad = contact.height < WALL_HEIGHT && contact.height > -WALL_DEPTH;
   if (contact.station.gap || !nearRoad || Math.abs(contact.lateral) <= limit || !wallOnSide(contact)) {
     return false;

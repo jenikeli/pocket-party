@@ -4,6 +4,7 @@
 // numbers apply to one step each. The tuned numbers (top speed, steering, drift) are read live from tuning.js.
 
 import { tuning } from './tuning.js';
+import { effectTopSpeedShare } from './items/effect-rules.js';
 
 // MK8DX's values, in its own distance units per frame. Its unit's size is not public, so only their ratios
 // are used: everything below is scaled by our top speed (tuning.js).
@@ -25,9 +26,9 @@ export function fromMk8Acceleration(perFrame, topSpeed) {
 
 // The kart's top speed on the road: the tuned 150cc top speed times its engine class's share (race.js), as in
 // MK8DX, where 50, 100 and 200cc are the 150cc speeds times 0.8, 0.9 and 1.5, times its paceShare (the CPU
-// catch-up share of cpu-pace.js; 1 for players). Accelerations and boosts follow it.
+// catch-up share of cpu-pace.js; 1 for players), times its item effect's share (big is slower). Accelerations and boosts follow it.
 export function kartTopSpeed(kart) {
-  return tuning.topSpeed * kart.engineClassShare * kart.paceShare;
+  return tuning.topSpeed * kart.engineClassShare * kart.paceShare * effectTopSpeedShare(kart);
 }
 
 // Our own guesses (MK8DX's data has no numbers for these), in units per second and units per second squared.

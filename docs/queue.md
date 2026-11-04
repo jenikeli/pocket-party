@@ -21,8 +21,8 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | merged |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
-| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | queued (stopped at the usage limit before any change; spawn afresh) |
-| I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | queued |
+| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | building |
+| I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | building |
 | J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | queued |
 | K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | queued |
 | L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | queued |
@@ -478,3 +478,5 @@ and where to change it).
 - **Run state at the usage limit (2026-11-04):** M8a (0, A to F) and G merged. Browser tests on main at 64fa172:
   the full suite passed apart from m6b and m7a (fixed, see above); then m6b, m6c, m7a, m7b and m8 all passed
   (29 tests, 327 s). H was stopped before it changed anything (its worktree is gone): spawn it afresh.
+- **I built beside H** (main session, on resuming): I owns no file H touches and draws nothing, so it was spawned
+  with H rather than after H's merge, to save a step's wait. H still merges first.

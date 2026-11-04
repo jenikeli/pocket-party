@@ -2,7 +2,7 @@
 // countdown with the rocket start, laps, finishing, places, the time limit after the first player finishes, and
 // the engine classes. The race is plain data (see createRace). No Three.js, no DOM: unit tested in Node by
 // driving whole races. Used by host/games/kart-3d/index.js. The CPU drivers' part (their drivers, rocket starts
-// and catch-up) is race-cpus.js's.
+// and catch-up) is race-cpus.js's, the items' (M8) items/item-rules.js's.
 
 import { createKart, stepKart } from './kart-physics.js';
 import { bumpKarts } from './kart-bumps.js';
@@ -13,6 +13,7 @@ import { racingLineFor } from './racing-line.js';
 import { driveByCpu, handOver, startCpuKarts, updateCpuPaces } from './race-cpus.js';
 import { progressBetween } from './track.js';
 import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart, rocketBoostSeconds } from './rocket-start.js';
+import { createItems, freshItem, stepItems } from './items/item-rules.js';
 
 // MK8DX always races 12 karts.
 export const FIELD_SIZE = 12;
@@ -34,22 +35,33 @@ const CPU_WEIGHTS = [0.8, 1, 1.25];
 const PLAYER_WEIGHT = 1;
 
 // `playerIds` in grid order, `laps`, `engineClass` (a key of ENGINE_CLASSES) and `cpuLevel` (a key of
-// CPU_LEVELS, cpu-levels.js) from the setup screen. As in MK8DX the players start at the back, behind the CPU
-// karts. Returns the race: { phase, time, laps, engineClass, cpuLevel, firstPlayerFinishTime, karts }. time counts from the start of the countdown (GO is at GO_AT);
-// raceClock() gives the race's own clock from GO. Each kart is a kart from kart-physics.js plus { playerId,
-// cpu, goHeld, goPressedAt, startResult, distance, lapStartedAt, finishTime, place }: playerId is null for a
-// CPU kart; cpu is its CPU driver's state when it drives itself (a CPU kart, or a player's once finished;
-// null otherwise; cpu-driver.js); the go
+// CPU_LEVELS, cpu-levels.js) from the setup screen, and `allowedItems` the item ids allowed (none: items off).
+// As in MK8DX the players start at the back, behind the CPU karts. Returns the race: { phase, time, laps,
+// engineClass, cpuLevel, firstPlayerFinishTime, items, karts }; items is item-rules.js's createItems. time
+// counts from the start of the countdown (GO is at GO_AT); raceClock() gives the race's own clock from GO.
+// Each kart is a kart from kart-physics.js plus { playerId, cpu, goHeld, goPressedAt, startResult, distance,
+// lapStartedAt, finishTime, place, item }: playerId is null for a CPU kart; cpu is its CPU driver's state when
+// it drives itself (a CPU kart, or a player's once finished; null otherwise; cpu-driver.js); the go
 // fields are rocket-start.js's, and startResult what judgeStart gave at GO (null before, and for CPU karts);
 // distance is how far it has driven from the start line (negative on the grid, the track's length per lap);
 // lap the lap it is on (1 to laps; it stays at laps once finished); lapStartedAt the race clock when that lap
-// began; finishTime the race clock when it finished, or null; place 1 for first (on the grid, the grid order).
-export function createRace(track, playerIds, laps, engineClass, cpuLevel) {
+// began; finishTime the race clock when it finished, or null; place 1 for first (on the grid, the grid order);
+// item its items (item-rules.js's freshItem).
+export function createRace(track, playerIds, laps, engineClass, cpuLevel, allowedItems = []) {
   // The course's racing line takes some tens of milliseconds to work out the first time: here, on the setup
   // screen's click, rather than at GO, when the CPU drivers first look at it.
   racingLineFor(track);
   const cpuCount = Math.max(FIELD_SIZE - playerIds.length, 0);
-  const race = { phase: RACE_PHASES.COUNTDOWN, time: 0, laps, engineClass, cpuLevel, firstPlayerFinishTime: null, karts: [] };
+  const race = {
+    phase: RACE_PHASES.COUNTDOWN,
+    time: 0,
+    laps,
+    engineClass,
+    cpuLevel,
+    firstPlayerFinishTime: null,
+    items: createItems(track, allowedItems),
+    karts: [],
+  };
   for (let gridIndex = 0; gridIndex < cpuCount + playerIds.length; gridIndex += 1) {
     const { s, lateral } = gridSpot(track, gridIndex);
     const isCpu = gridIndex < cpuCount;
@@ -67,6 +79,7 @@ export function createRace(track, playerIds, laps, engineClass, cpuLevel) {
       finishTime: null,
       // Grid index 0 is pole position, the furthest ahead.
       place: gridIndex + 1,
+      item: freshItem(),
     });
     if (isCpu) {
       driveByCpu(race, race.karts[gridIndex], gridIndex);
@@ -89,7 +102,7 @@ export function raceClock(race) {
 }
 
 // Advances the race by `dt` seconds. `controlsFor(playerId)` returns that player's controls
-// ({ steer, accelerate, brake, drift }); the caller hands back neutral controls for a player who is not
+// ({ steer, accelerate, brake, drift, item }); the caller hands back neutral controls for a player who is not
 // connected. During the countdown nothing moves; only the players' Go buttons are watched. After the results
 // every kart drives on by itself behind the results.
 export function stepRace(race, track, controlsFor, dt) {
@@ -109,10 +122,13 @@ export function stepRace(race, track, controlsFor, dt) {
   }
   for (const kart of race.karts) {
     const before = kart.s;
-    stepKart(track, kart, kart.cpu === null ? controlsFor(kart.playerId) : cpuControls(track, kart, race.karts, dt), dt);
+    const controls = kart.cpu === null ? controlsFor(kart.playerId) : cpuControls(track, kart, race.karts, dt);
+    stepKart(track, kart, controls, dt);
     kart.distance += progressBetween(track, before, kart.s);
+    kart.item.button = controls.item === true;
   }
   bumpKarts(race.karts);
+  stepItems(race, track, dt);
   updateSlipstreams(race.karts, dt);
   race.time += dt;
   if (race.phase === RACE_PHASES.RACING) {

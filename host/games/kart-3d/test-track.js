@@ -25,6 +25,9 @@ export const TEST_TRACK = Object.freeze({
     { s: 205, lateral: 0 },
     { s: 470, lateral: -3 },
   ],
+  // Rows of item boxes (M8): on the start straight past the grid, and on the off-road straight, short of its
+  // dash panel.
+  itemBoxRows: [50, 455],
   pieces: [
     { straight: 60 },
     // Hill: up 8 and down again, no walls on either side.

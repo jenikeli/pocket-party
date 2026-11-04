@@ -1,5 +1,6 @@
 // Turns the INPUT messages from each player's phone into their kart's controls,
-// { steer, accelerate, brake, drift } (drift is the 3D race's held Drift button; the 2D race ignores it).
+// { steer, accelerate, brake, drift, item } (drift and item are the 3D race's held Drift and Item buttons; the
+// 2D race ignores them).
 // The race reads the latest controls every step instead of acting on each message, because the stick sends
 // about 30 times a second and the race steps at 60. Plain data and functions, unit tested in Node.
 // Shared by both kart races: host/games/kart-2d/index.js and host/games/kart-3d/index.js.
@@ -7,7 +8,7 @@
 import { INPUT_KINDS, KART_BUTTONS } from '../../shared/protocol.js';
 
 // No steering, no pedals: what a kart gets from a player whose phone dropped.
-export const NEUTRAL_CONTROLS = Object.freeze({ steer: 0, accelerate: false, brake: false, drift: false });
+export const NEUTRAL_CONTROLS = Object.freeze({ steer: 0, accelerate: false, brake: false, drift: false, item: false });
 
 // Returns { handleInput(playerId, input), controlsFor(player, autoAccelerate) }.
 export function createControlsTable() {
@@ -59,6 +60,9 @@ function applyInput(controls, input) {
   }
   if (input?.kind === INPUT_KINDS.BUTTON && input.button === KART_BUTTONS.DRIFT) {
     return { ...controls, drift: input.pressed === true };
+  }
+  if (input?.kind === INPUT_KINDS.BUTTON && input.button === KART_BUTTONS.ITEM) {
+    return { ...controls, item: input.pressed === true };
   }
   return controls;
 }

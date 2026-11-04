@@ -58,6 +58,7 @@ test('phone views: the setup view has the laps and engine class; the race view c
     place: 12,
     finalLap: false,
     finished: false,
+    item: null,
   });
   assert.equal(raceView(race, setup, 'late'), null, 'a player with no kart waits for the next race');
 });
@@ -91,7 +92,7 @@ test('the final lap shows for 3 s on the phone and in the view; then the finish'
   kart.lap = 3;
   kart.lapStartedAt = raceClock(race) - 1;
   assert.equal(raceView(race, setup, 'p1').finalLap, true);
-  assert.deepEqual(viewHud(race, kart), { lap: 3, laps: 3, place: kart.place, banner: BANNERS.FINAL_LAP });
+  assert.deepEqual(viewHud(race, kart), { lap: 3, laps: 3, place: kart.place, banner: BANNERS.FINAL_LAP, item: null });
   kart.lapStartedAt = raceClock(race) - 3.5;
   assert.equal(raceView(race, setup, 'p1').finalLap, false);
   assert.equal(viewHud(race, kart).banner, null);
@@ -99,7 +100,7 @@ test('the final lap shows for 3 s on the phone and in the view; then the finish'
   assert.equal(raceView(race, setup, 'p1').finished, true);
   assert.equal(viewHud(race, kart).banner, BANNERS.FINISH);
   const cpu = race.karts[0];
-  assert.deepEqual(viewHud(race, cpu), { lap: null, laps: 3, place: cpu.place, banner: null }, 'a CPU kart\'s view shows only its place');
+  assert.deepEqual(viewHud(race, cpu), { lap: null, laps: 3, place: cpu.place, banner: null, item: null }, 'a CPU kart\'s view shows only its place');
 });
 
 test('the host\'s countdown and clock, with the time left once a player has finished', () => {

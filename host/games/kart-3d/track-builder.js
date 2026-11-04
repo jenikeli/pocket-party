@@ -15,7 +15,7 @@ const CLOSING_TOLERANCE = 0.01;
 // across (Seaside Skyway's last corner), a gentle S for a kart at speed.
 const SHOULDER_EASE = 16;
 
-// `definition` is { halfWidth, startLine, pieces, dashPanels, scenery }. The track starts at the origin heading along +x, at
+// `definition` is { halfWidth, startLine, pieces, dashPanels, itemBoxRows, scenery }. The track starts at the origin heading along +x, at
 // height 0 with no roll, its road halfWidth either side of the centre line. Each piece is a straight
 // ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and may also have:
 //   height    the height at its end; it changes smoothly (flat at both ends) from the previous piece's
@@ -29,9 +29,11 @@ const SHOULDER_EASE = 16;
 //   gap       true: no road at all (a jump)
 //   antiGravity true: gravity pulls karts toward the road, so they can drive up walls
 // dashPanels (optional) lists { s, lateral }: where each dash panel's centre is (kart-boosts.js has their size).
+// itemBoxRows (optional) lists distances along the lap where a row of item boxes stands across the road
+// (items/item-boxes.js spreads each row's boxes).
 // scenery names the course's look (scenery.js): its road and the dressing round it. Every course in courses.js
 // has one; a track built without one (as the rules' unit tests do) can be driven but not drawn.
-// Returns the track: { stations, length, startLine, dashPanels, scenery }. Station i describes the road from
+// Returns the track: { stations, length, startLine, dashPanels, itemBoxRows, scenery }. Station i describes the road from
 // itself to station i + 1 (the last one joins the first): { point, tangent, right, normal, s, segmentLength,
 // halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the distance along
 // the centre line from the start.
@@ -59,6 +61,7 @@ export function buildTrack(definition) {
     length: s,
     startLine: definition.startLine,
     dashPanels: definition.dashPanels ?? [],
+    itemBoxRows: definition.itemBoxRows ?? [],
     scenery: definition.scenery ?? null,
   };
 }

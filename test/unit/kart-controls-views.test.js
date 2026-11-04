@@ -19,9 +19,9 @@ test('the stick steers, the pedals are held between press and release', () => {
   table.handleInput('p1', { kind: 'drag', x: -0.4, y: 0.9 });
   table.handleInput('p1', { kind: 'button', button: 'accelerate', pressed: true });
   table.handleInput('p1', { kind: 'button', button: 'brake', pressed: true });
-  assert.deepEqual(table.controlsFor(connected), { steer: -0.4, accelerate: true, brake: true, drift: false });
+  assert.deepEqual(table.controlsFor(connected), { steer: -0.4, accelerate: true, brake: true, drift: false, item: false });
   table.handleInput('p1', { kind: 'button', button: 'brake', pressed: false });
-  assert.deepEqual(table.controlsFor(connected), { steer: -0.4, accelerate: true, brake: false, drift: false });
+  assert.deepEqual(table.controlsFor(connected), { steer: -0.4, accelerate: true, brake: false, drift: false, item: false });
 });
 
 test('odd input from a phone is clamped or ignored', () => {
@@ -31,7 +31,7 @@ test('odd input from a phone is clamped or ignored', () => {
   table.handleInput('p1', { kind: 'button', button: 'horn', pressed: true });
   table.handleInput('p1', { kind: 'tap' });
   table.handleInput('p1', undefined);
-  assert.deepEqual(table.controlsFor(connected), { steer: 1, accelerate: false, brake: false, drift: false });
+  assert.deepEqual(table.controlsFor(connected), { steer: 1, accelerate: false, brake: false, drift: false, item: false });
 });
 
 test('tilt steers like the stick', () => {
@@ -44,16 +44,16 @@ test('tilt steers like the stick', () => {
 
 test('with auto-accelerate the kart accelerates unless brake is held', () => {
   const table = createControlsTable();
-  assert.deepEqual(table.controlsFor(connected, true), { steer: 0, accelerate: true, brake: false, drift: false });
+  assert.deepEqual(table.controlsFor(connected, true), { steer: 0, accelerate: true, brake: false, drift: false, item: false });
   table.handleInput('p1', { kind: 'button', button: 'brake', pressed: true });
-  assert.deepEqual(table.controlsFor(connected, true), { steer: 0, accelerate: false, brake: true, drift: false });
+  assert.deepEqual(table.controlsFor(connected, true), { steer: 0, accelerate: false, brake: true, drift: false, item: false });
   assert.deepEqual(table.controlsFor(dropped, true), NEUTRAL_CONTROLS, 'a dropped player does not drive on by itself');
 });
 
 test('the 3D race\'s Drift button is held between press and release, and accelerates while held', () => {
   const table = createControlsTable();
   table.handleInput('p1', { kind: 'button', button: 'drift', pressed: true });
-  assert.deepEqual(table.controlsFor(connected), { steer: 0, accelerate: true, brake: false, drift: true });
+  assert.deepEqual(table.controlsFor(connected), { steer: 0, accelerate: true, brake: false, drift: true, item: false });
   table.handleInput('p1', { kind: 'button', button: 'brake', pressed: true });
   assert.equal(table.controlsFor(connected, true).accelerate, false, 'with auto-accelerate, brake still wins');
   table.handleInput('p1', { kind: 'button', button: 'drift', pressed: false });

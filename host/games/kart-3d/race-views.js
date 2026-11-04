@@ -12,6 +12,7 @@ import { playerSetup } from '../../kart/setup.js';
 import { playersInSlotOrder } from '../../roster.js';
 import { playerKart, kartsInPlaceOrder, raceClock, RACE_PHASES, FINISH_TIME_LIMIT_SECONDS } from './race.js';
 import { formatRaceTime } from '../../kart/race-time.js';
+import { itemHud, itemPhoneView } from './items/item-views.js';
 
 // The phase a phone's view has on the setup screen (the shared kart controls know it by this name); the race's
 // own are RACE_PHASES.
@@ -30,11 +31,12 @@ export function setupView(setup, engineClass, playerId) {
 }
 
 // The view during the race, or null if the player has no kart (they joined after the race started):
-// { phase, steering, autoAccelerate, countdown, spark, start, lap, laps, place, finalLap, finished }. It
+// { phase, steering, autoAccelerate, countdown, spark, start, lap, laps, place, finalLap, finished, item }. It
 // carries the control style so a phone that reloads shows the right controls again. countdown is
 // countdownNumber's (3, 2, 1, 0 for GO, or null); spark the drift's spark colour (SPARK_COLORS) or null, shown
 // on the Drift button; start the start's outcome (START_OUTCOMES) for a moment after GO, null otherwise;
-// finalLap true for a moment after the last lap starts. It only changes when something on the phone should,
+// finalLap true for a moment after the last lap starts; item the kart's items for the phone (item-views.js's
+// itemPhoneView, null with items off). It only changes when something on the phone should,
 // so the host sends it rarely.
 export function raceView(race, setup, playerId) {
   const kart = playerKart(race, playerId);
@@ -55,6 +57,7 @@ export function raceView(race, setup, playerId) {
     place: kart.place,
     finalLap: isFinalLapShowing(race, kart),
     finished: kart.finishTime !== null,
+    item: itemPhoneView(race, kart),
   };
 }
 
@@ -63,14 +66,15 @@ function isFinalLapShowing(race, kart) {
   return onLastLap && raceClock(race) - kart.lapStartedAt < FINAL_LAP_SHOWN_FOR;
 }
 
-// What one split-screen view shows over the picture for `kart`: { lap, laps, place, banner }, where banner is
-// one of BANNERS or null. A view that follows a CPU kart shows its place only (lap null).
+// What one split-screen view shows over the picture for `kart`: { lap, laps, place, banner, item }, where banner
+// is one of BANNERS or null, and item the kart's items (item-views.js's itemHud, null with items off). A view
+// that follows a CPU kart shows its place only (lap and item null).
 export function viewHud(race, kart) {
   if (kart.playerId === null) {
-    return { lap: null, laps: race.laps, place: kart.place, banner: null };
+    return { lap: null, laps: race.laps, place: kart.place, banner: null, item: null };
   }
   const banner = kart.finishTime !== null ? BANNERS.FINISH : isFinalLapShowing(race, kart) ? BANNERS.FINAL_LAP : null;
-  return { lap: kart.lap, laps: race.laps, place: kart.place, banner };
+  return { lap: kart.lap, laps: race.laps, place: kart.place, banner, item: itemHud(race, kart) };
 }
 
 // The host's big countdown in the middle of the screen: '3', '2', '1', 'GO!', or '' once the karts are off.

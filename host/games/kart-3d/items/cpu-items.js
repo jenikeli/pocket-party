@@ -1,0 +1,53 @@
+// When a kart the CPU drives (a CPU kart, a stand-in) uses its held item (M8): a short wait after the item
+// lands, then a simple rule per item. The same at every CPU level: the level changes only the driving
+// (cpu-driver.js). Plain functions, unit tested in Node. Used by item-rules.js.
+
+import { KART_ITEMS } from '../../../../shared/protocol.js';
+import { turnAhead, wrapIndex } from '../track.js';
+import { subtract, length, dot } from '../vector.js';
+
+// Bouncy: a kart within this reach that is behind or alongside (at most this far ahead along the nose).
+const BOUNCY_REACH = 6;
+const ALONGSIDE = 1;
+// Big: a kart this close ahead and about in line, to flatten; or once it has held the item this long anyway.
+const BIG_AHEAD_REACH = 12;
+const BIG_IN_LINE = 3;
+const BIG_ANYWAY_SECONDS = 4;
+// Small: when the road ahead turns this much in all (radians, either way) over the next stations looked at,
+// so the quick turning is used through a run of corners.
+const CORNER_LOOKS = [0, 10, 20, 30, 40];
+const CORNERS_TURN = 1.2;
+
+// Per item: (race, track, kart, heldFor) -> true to use it now. heldFor is the seconds since it landed.
+const CPU_RULES = Object.freeze({
+  [KART_ITEMS.BOUNCY]: (race, track, kart) =>
+    otherKarts(race, kart).some(({ ahead, distance }) => distance <= BOUNCY_REACH && ahead <= ALONGSIDE),
+  [KART_ITEMS.BIG]: (race, track, kart, heldFor) =>
+    heldFor >= BIG_ANYWAY_SECONDS ||
+    otherKarts(race, kart).some(({ ahead, sideways }) => ahead > 0 && ahead <= BIG_AHEAD_REACH && sideways <= BIG_IN_LINE),
+  [KART_ITEMS.SMALL]: (race, track, kart) => cornersAhead(track, kart) >= CORNERS_TURN,
+});
+
+// True when the CPU-driven `kart` should use its held item this step.
+export function cpuWantsItem(race, track, kart) {
+  const heldFor = race.time - kart.item.landedAt;
+  return heldFor >= kart.item.cpuWait && CPU_RULES[kart.item.held](race, track, kart, heldFor);
+}
+
+// Every other kart seen from `kart`: [{ ahead, sideways, distance }], ahead how far in front along its nose
+// (negative behind), sideways how far off that line either way, distance how far in all.
+function otherKarts(race, kart) {
+  return race.karts
+    .filter((other) => other !== kart)
+    .map((other) => {
+      const offset = subtract(other.position, kart.position);
+      const distance = length(offset);
+      const ahead = dot(offset, kart.forward);
+      return { ahead, sideways: Math.sqrt(Math.max(distance * distance - ahead * ahead, 0)), distance };
+    });
+}
+
+// How much the road turns, either way, over the stations ahead of `kart`.
+function cornersAhead(track, kart) {
+  return CORNER_LOOKS.reduce((sum, look) => sum + Math.abs(turnAhead(track, wrapIndex(track, kart.trackIndex + look))), 0);
+}

@@ -9,7 +9,7 @@
 // purple mini-turbo needs about 2.8 s of hard drifting.
 //
 // Its parts, in the order they come, quiet and busy in turn as MK8DX paces a lap:
-//   s 0-150     start straight, wide (18), the grid behind the line at 45
+//   s 0-150     start straight, wide (18), the grid behind the line at 45, a row of item boxes past it
 //   s 150-235   first corner: a 90 degree right sweeper, radius 55, long enough for orange sparks
 //   s 235-340   a short straight, then a quick left-right chicane (the drift's side flips; blue sparks at most)
 //   s 340-430   climb to height 10
@@ -19,7 +19,7 @@
 //               the only road without them is over the jump's gap)
 //   s 630-690   the jump: a ramp up to 8 and a 14-long gap that lands 5 lower (press Drift at the lip for a trick)
 //   s 690-775   a left hairpin, radius 26, with grass on its inside to clip with a boost
-//   s 775-855   a quiet, wide straight (20): where item boxes will go
+//   s 775-855   a quiet, wide straight (20), with a row of item boxes
 //   s 855-960   the anti-gravity wall: the road rolls up to vertical round a right half circle (spin boosts)
 //   s 960-1075  an S-bend, left then right, radius 54
 //   s 1075-1150 a straight with grass on both sides and a dash panel
@@ -38,6 +38,9 @@ export const SEASIDE_SKYWAY = Object.freeze({
     // On the grass straight, off the middle, so it is a line to choose.
     { s: 1100, lateral: -3 },
   ],
+  // Rows of item boxes (M8), on straight, level road: on the start straight, past the grid and the start gate,
+  // and on the quiet straight after the hairpin.
+  itemBoxRows: [120, 805],
   pieces: [
     { straight: 150 },
     { turn: 90, radius: 55, halfWidth: 8 },

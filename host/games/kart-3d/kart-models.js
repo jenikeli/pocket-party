@@ -3,8 +3,8 @@
 // given. Each frame a model is placed at its kart's pose, its wheels roll with the kart's speed, its front wheels
 // turn with the steering, and in anti-gravity its wheels turn flat under it and their rims glow, eased in and out
 // (karts/anti-gravity.js). Since M8 a model is drawn at the size an item's effect gives it
-// (items/kart-effect-looks.js), standing on the road, and can wear bouncy's pink rubber coat. Used by host/games/kart-3d/renderer.js and the
-// kit-shots kart and item pieces.
+// (items/kart-effect-looks.js), standing on the road, and can wear bouncy's pink rubber coat. Used by
+// host/games/kart-3d/renderer.js and the kit-shots kart and item pieces.
 
 import * as THREE from 'three';
 import { forwardSpeed } from './kart-physics.js';

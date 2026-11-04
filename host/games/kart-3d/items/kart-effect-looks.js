@@ -3,7 +3,7 @@
 // stretches all the time under a glossy pink rubber coat (kart-models.js draws the coat). In each effect's last
 // second the look blinks, to warn it is ending: a big or small kart flickers between its sizes, a bouncy one's
 // coat comes and goes. The sizes are plain functions of the race state; only the puffs need a drawing. Used by
-// renderer.js (kartLookScale, kartRubbery) and item-drawing.js (createKartEffectDrawing).
+// renderer.js (kartLookScale, kartCameraSize, kartRubbery) and item-drawing.js (createKartEffectDrawing).
 
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { tuning } from '../tuning.js';
@@ -49,6 +49,13 @@ export function kartLookScale(race, kart) {
     return { x: narrower, y: stretch, z: narrower };
   }
   return ONE;
+}
+
+// The size the kart's chase camera follows (views.js pulls back and up with it): a big or small kart's, 1
+// otherwise, so bouncy's squash and stretch does not make the camera breathe.
+export function kartCameraSize(race, kart) {
+  const item = kart.item?.effect?.item;
+  return item === KART_ITEMS.BIG || item === KART_ITEMS.SMALL ? kartLookScale(race, kart).y : 1;
 }
 
 // True while the kart wears bouncy's rubber coat (off every other blink in its last second).

@@ -17,7 +17,7 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | A | M8a | Item rules: boxes, roulette, odds by place, holding and using, effect timers, settings rules, CPU use, views | opus | 0 | merged |
 | B | M8a | Phone: the Item button with the held item, the roulette and running effects | sonnet | 0 (merges after C) | merged |
 | C | M8a | Host: item icons, the HUD's item frame and effect rings, the Items settings, wiring in index.js | sonnet | 0 (merges after A) | merged |
-| D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | building |
+| D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | merged |
 | E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | queued |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | queued |
@@ -141,6 +141,14 @@ without items.
 - `kartLookScale(race, kart)` in `items/kart-effect-looks.js` (task D): the model's scale this frame,
   `{ x, y, z }` (1, 1, 1 with no effect), passed to `kartModels.show(...)`, which applies it. J adds the
   teleport's pop to it.
+- **As D built it (merged):** each drawing is `create<Thing>Drawing(scene, bursts)`, `bursts` the shared particle
+  pools of `items/burst-look.js` (`bursts.shards`, `bursts.sparkles(at, count, reach)`, `bursts.smoke(...)`):
+  use them for sparkles and puffs rather than making new pools. `item-drawing.js`'s `DRAWINGS` list takes one
+  entry per drawing. `kart-effect-looks.js` also exports `kartRubbery` (bouncy's coat) and `kartCameraSize` (the
+  size the chase camera follows: big or small only); its `isBlinkedOff(left)` (the last second's blink) is
+  private: export it if a later look needs the same blink. kit-shots: `host/kit-shots/item-pieces.js` exports
+  `itemShowRace(track, { karts: [{ lateral, effect }], boxes })` and `drawItemRace(scene, track, race, { frames,
+  change(race, frame) })` for later pieces.
 - Road objects (G, H) and field effects (I, J, K) are read from the state above and the fields G and I define.
 
 ## Task 0: prep (main session)
@@ -452,3 +460,9 @@ and where to change it).
   (about 20 pickups in all). `itemBoxReturnSeconds` is the slider to try on the device run.
 - **A, the race is not wholly plain data, and was not before M8:** `sinceDriftPress` starts at `Infinity`, which
   JSON turns into null; the items test round-trips only the item state.
+- **D, looks:** the "?" sways ±0.6 rad to face oncoming karts rather than turning all the way (turning, it read
+  back to front); the box, bursts and coats are made at the start, visible but drawing nothing, so their shaders
+  compile before the race (no stall at the first burst). The bursts' dot texture is `effects.js`'s (exported).
+- **D, the camera** pulls back with a big kart's size only (`kartCameraSize`, main session after the review: the
+  scale's height made the camera breathe with bouncy's squash and stretch).
+- **D, `renderer.js`** is 260 lines (247 before M8): a candidate for a split in M10.

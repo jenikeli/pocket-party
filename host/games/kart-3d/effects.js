@@ -151,8 +151,9 @@ function smokeSpeed(forward, up, left) {
     .addScaledVector(up, 1 + Math.random());
 }
 
-// A soft round dot, drawn once on a small canvas, so particles are glowing circles instead of squares.
-function createDotTexture() {
+// A soft round dot, drawn once on a small canvas, so particles are glowing circles instead of squares. Also
+// used by the items' bursts (items/burst-look.js).
+export function createDotTexture() {
   const canvas = document.createElement('canvas');
   canvas.width = 32;
   canvas.height = 32;

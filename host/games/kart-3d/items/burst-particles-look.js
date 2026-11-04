@@ -82,18 +82,3 @@ export function createCloud(capacity, channels, texture, { size, blending }) {
 
   return { points, write, dispose };
 }
-
-// A soft round dot, so points are round glows instead of squares (as effects.js's).
-export function createDotTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = 32;
-  canvas.height = 32;
-  const context = canvas.getContext('2d');
-  const gradient = context.createRadialGradient(16, 16, 0, 16, 16, 16);
-  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  gradient.addColorStop(0.45, 'rgba(255, 255, 255, 0.7)');
-  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 32, 32);
-  return new THREE.CanvasTexture(canvas);
-}

@@ -6,7 +6,8 @@
 // kart-effect-looks.js).
 
 import * as THREE from 'three';
-import { createPool, createCloud, createDotTexture } from './burst-particles-look.js';
+import { createPool, createCloud } from './burst-particles-look.js';
+import { createDotTexture } from '../effects.js';
 
 const SHARD_COUNT = 48;
 const SPARKLE_COUNT = 240;

@@ -1,7 +1,8 @@
 // The 3D race's walls: a kart that went through one is pushed back inside; a hit costs speed by how square it
 // was and bounces the kart off, and rubbing along the wall drags it, so the wall is never the fast line round a
 // corner. Plain maths on plain kart objects, unit tested in Node through kart-physics.js, which calls it every
-// step after moving the kart. KART_RADIUS is also the size kart-bumps.js uses; both times the kart's item effect size (big, small). The tuned numbers are tuning.js's.
+// step after moving the kart. KART_RADIUS is also the size kart-bumps.js uses; both times the kart's item
+// effect size (big, small). The tuned numbers are tuning.js's.
 
 import { scale, addScaled, dot, length, normalize, flatten } from './vector.js';
 import { outerEdge, wallOnSide } from './track.js';

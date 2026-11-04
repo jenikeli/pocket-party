@@ -25,7 +25,8 @@ export function bumpKarts(karts) {
   }
 }
 
-// The kart's weight (times its item effect's mass share) times tuning.standingMassShare standing still, rising to its full weight at its top speed.
+// The kart's weight (times its item effect's mass share) times tuning.standingMassShare standing still, rising
+// to its full weight at its top speed.
 export function kartMass(kart) {
   const speedShare = Math.min(length(kart.velocity) / kartTopSpeed(kart), 1);
   return kart.weight * effectMassShare(kart) * (tuning.standingMassShare + (1 - tuning.standingMassShare) * speedShare);

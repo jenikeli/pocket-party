@@ -19,9 +19,9 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | C | M8a | Host: item icons, the HUD's item frame and effect rings, the Items settings, wiring in index.js | sonnet | 0 (merges after A) | merged |
 | D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | merged |
 | E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
-| F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | queued |
-| G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | queued |
-| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | queued |
+| F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | merged |
+| G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
+| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | building |
 | I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | queued |
 | J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | queued |
 | K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | queued |
@@ -466,3 +466,12 @@ and where to change it).
 - **D, the camera** pulls back with a big kart's size only (`kartCameraSize`, main session after the review: the
   scale's height made the camera breathe with bouncy's squash and stretch).
 - **D, `renderer.js`** is 260 lines (247 before M8): a candidate for a split in M10.
+- **G, blockers:** a standing blocker is a stand-in kart in `kart.cpu.obstacles` (the item rules refill it every
+  step); the CPU looks 2 s ahead for one (0.5 s for a kart: too late to steer round a thing that does not move).
+  The blocker's hit is the wall's (`kart-walls.js` `bounceOff`, exported, main session after the review); a big
+  kart drops its blocker far enough back to clear it. CPU karts are launched by any ramp they drive over (they
+  do not steer round ramps). `rampLaunchSpeed` 6.5 flies a top-speed kart about 16 units (the course's jump gap
+  is 14).
+- **Old browser tests (M8a):** `m6b` (the reloaded phone's view) and `m7a` (the tilt layout's Item place, a view
+  shown by hand) now expect the race view's `item`: a test changed on purpose (the race view grew; the Item
+  button shows only with items). No other old browser test failed with items on.

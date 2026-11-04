@@ -23,8 +23,8 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
 | H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | merged |
 | I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | merged |
-| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | queued |
-| K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | queued |
+| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | building |
+| K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | building |
 | L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | queued |
 
 ## Rules for every task
@@ -504,3 +504,5 @@ and where to change it).
   sticky walls after holding it 3 s; each after the usual 0.5 to 2 s.
 - **I's review** asked to restore a comment about an import circle between `item-rules.js` and `race.js`; not
   done, since `race-phases.js` (imports nothing) removed that circle and the comment was stale.
+- **Browser tests after H and I** (main at da1f853): m6b, m6c, m7a, m7b, m7c, m7d2, m7d4b and m8 all pass (39
+  tests, 1002 s).

@@ -96,11 +96,10 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 ## Workflow (Opus plans, subagents build in parallel)
 
-- **Plan:** the main session (Opus) plans each milestone into tasks that own separate files, with fixed interfaces between them, and I approve the plan once (the `milestone-plan` skill).
-- **Build:** each task goes to an `implementer` subagent (`.claude/agents/implementer.md`) in its own git worktree, at most 3 at a time (more used up the usage limit at once in M7d4c3; kit-shots also lets only 2 runs draw at once on the dev box, `tools/machine-slots.js`), on Sonnet (Haiku for mechanical work, Opus where building needs judgement; Fable is not available). Implementers run `npm test` (and kit-shots on their own pieces) and commit on their own branch.
-- **Integrate:** the main session reviews each task's diff, squash-merges it into `main`, runs the browser tests one file at a time, fixes what breaks, then hands off.
-- The skills in `.claude/skills/` and the agent in `.claude/agents/` are the workflow's single source. When we change how we work, they are edited in the same chat, like any other file.
-- Be precise. If you are unsure about something (an iOS Safari quirk, a Termux limitation, an HTTPS-on-LAN trick), say so and tell me how to verify it rather than guessing.
+The main session (Opus) plans each milestone into tasks with fixed interfaces between them and I approve the plan once; `implementer` subagents build the tasks in their own git worktrees, a few at a time; a `reviewer` subagent reads each task's diff; the main session merges, runs the browser tests and hands off. The details (how many agents at once, which models, reviewing, merging, queues of several milestones, the main session's context, runs while I am away) live only in these files, the workflow's single source, and nothing else repeats them. When we change how we work, they are edited in the same chat, like any other file:
+- `.claude/skills/milestone-plan/SKILL.md`: planning, building, reviewing and merging, queues
+- `.claude/agents/implementer.md`, `.claude/agents/reviewer.md`: the rules each subagent follows
+- `.claude/skills/handoff/SKILL.md`, `.claude/skills/device-run/SKILL.md`: the end of a milestone
 
 ## Commands
 
@@ -136,7 +135,7 @@ Every behaviour that has been built must stay working as the code changes. Autom
 
   - The full browser suite only when shared code changed: `server/`, `shared/`, the host shell (`host/*.js`, `host/index.html`), the controller shell (`controller/*.js`, `controller/index.html`), `host/games/index.js`, or `test/helpers/`. Say in the handoff which browser files ran and why.
   - If unsure which area a file belongs to, run the wider set. Correctness comes before speed.
-- Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel, and only the main session runs them (implementers run `npm test` only).
+- Browser test files run one at a time (`--test-concurrency=1`) on purpose: the dev box is old and the WebGL tests are CPU-heavy. Do not run them in parallel, and only the main session runs them (implementers run `npm test` only), except a browser-test task spawned alone (the `milestone-plan` skill).
 - If a change breaks an existing test, fix the code, not the test. Change a test only when the intended behaviour changed on purpose, and say so in the handoff.
 - Keep game rules in plain functions that do not depend on Phaser or the DOM, so they can be unit tested in Node.
 - Tests use Node's built-in runner (`node --test`) and live in `test/`. Test dependencies are dev-only and must never be needed by `npm start`.

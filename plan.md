@@ -378,10 +378,10 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 - For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
 ### M8: Items (our own)
-The part of Mario Kart I want most after the race itself. Decided after the M7e device run (2026-11-04): our own nine items **replace MK8DX's** (no banana, shells or mushrooms, and no coins). Like MK8DX, they come from item boxes on the road and are used with the phone's Item button. Each effect lasts 5 s and is drawn on the kart, so everyone can see it is in effect. Split into three chats below, each with its own device run.
+The part of Mario Kart I want most after the race itself. Decided after the M7e device run (2026-11-04): our own nine items **replace MK8DX's** (no banana, shells or mushrooms, and no coins). Like MK8DX, they come from item boxes on the road and are used with the phone's Item button. Each effect lasts 5 s and is drawn on the kart, so everyone can see it is in effect. Built as one queue of tasks in one session (planned 2026-11-04 in `docs/queue.md`, which holds every task's spec and the fixed interfaces), with one review and one device run at the end of all three parts.
 
 **Getting and using items:**
-- **Item boxes** sit in rows across the road (the quiet straight after Seaside Skyway's hairpin was kept for them). A box breaks when driven through and comes back after a few seconds.
+- **Item boxes** sit in rows across the road: on Seaside Skyway two rows, on the start straight and on the quiet straight after the hairpin that was kept for them. A box breaks when driven through and comes back after a few seconds.
 - **One item held at a time.** Picking one up runs a short roulette, shown on the kart's host view and on the phone, before the item lands.
 - **The Item button** on the phone (in the place kept free for it since M6c) uses the held item.
 - **Odds by place, MK8DX's idea:** karts further back get more of the catch-up items (teleport, magnet, ramp), leaders more of the defensive ones (blocker, bouncy, push).
@@ -400,11 +400,11 @@ The part of Mario Kart I want most after the race itself. Decided after the M7e 
    - Race distance moves with the hop, so laps stay right.
 5. **Big and slow:** for 5 s the kart grows (about 1.6 times, in a wobble like MK8DX's Mega Mushroom), is slower (about 80% of top speed) and much heavier, so it wins every bump.
 6. **Small and fast-turning:** for 5 s the kart shrinks (about 0.6 times, with a poof), turns much faster (about 1.6 times the steering and drift), and is light in bumps.
-7. **Magnet:** for 5 s other karts within a reach (about 30 units) are pulled toward the kart, more strongly when nearer. A field drawn round it (a magnet over the kart, rings, lines to each kart pulled). Its chat decides whether karts behind, which a pull would speed up, are pulled too.
+7. **Magnet:** for 5 s other karts within a reach (about 30 units) are pulled toward the kart, more strongly when nearer. A field drawn round it (a magnet over the kart, rings, lines to each kart pulled). Only karts ahead are pulled (decided while planning): a pull would speed up the karts behind.
 8. **Push:** for 5 s other karts within a reach are pushed away from the kart, with shockwave rings or a bubble round it.
 9. **Sticky walls (everyone, the user too):** for 5 s every wall on the course is sticky and drawn so (goo or honey). Any kart touching one is held for about 1.5 s, then let go with a small push off the wall.
 
-**How it is split (proposed; each chat's milestone-plan can adjust it):**
+**Its three parts** (the tasks of each are in `docs/queue.md`):
 - [ ] **M8a: the item system and the kart's own effects.** Item boxes, the roulette, holding and the Item button, odds by place, the effect timer and HUD, the settings, CPUs using items, and the three items that change only the user's kart: bouncy, big and slow, small and fast-turning.
 - [ ] **M8b: objects on the road.** A model for objects placed on the road (by distance and lane, with a lifetime), and the blocker and the ramp, their looks and their vanishing.
 - [ ] **M8c: effects on the whole field.** Teleport, magnet, push and sticky walls.

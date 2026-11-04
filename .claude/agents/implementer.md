@@ -18,12 +18,12 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 - Build exactly what the task says, to the interfaces it names (function names, arguments, data shapes), since other tasks are built against them at the same time.
 - Follow `CLAUDE.md`'s Readability and Conventions sections: a header comment on every file, files under about 200 lines, functions under about 40, the *why* commented, no dead code or debug logging, existing patterns reused.
 - Add or update unit tests for what you build, as the task says.
-- If the task is unclear or a decision is not yours to make, stop and report the question rather than guess.
+- If the task is unclear or a decision is not yours to make, stop and report the question rather than guess. In a queue the user is away until the end: there, follow the queue's own rule for questions.
 
 ## Testing
 
 - Run `npm test` (unit and server tests, about 25 s). It must pass before you commit.
-- **Never run browser tests** (`npm run test:browser` or anything in `test/browser/`). They are CPU-heavy, other implementers share the machine, and the main session runs them after merging.
+- **Never run browser tests** (`npm run test:browser` or anything in `test/browser/`). They are CPU-heavy, other implementers share the machine, and the main session runs them after merging. The one exception is a **browser-test task** (its spec says so): you were spawned while nothing else builds or draws, so run your own test file, and only that one, as the spec says.
 - `npm run kit-shots` on your own pieces is allowed, when your task asks for it: one run at a time, only your pieces. Make your "before" run first, before you change any file (a run that waits for a slot while you edit draws your new code). Run it in the foreground: it waits for a free slot by itself (other implementers' runs share 2 slots). Never wait for a process with a `while pgrep -f ...` loop: the pattern is in the loop's own command line, so it matches itself and never ends.
 
 ## Committing
@@ -34,4 +34,4 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 
 ## Report back
 
-End with a short report: the files you added or changed and what each does now; any decision you made that the plan did not spell out, and why; the `npm test` result; and anything the main session must know to merge (a question, a change you needed outside your files, a test you could not write).
+End with a report the main session can review and merge from without reading your whole diff (a `reviewer` agent reads the diff for it): the files you added or changed and what each does now; any decision you made that the plan did not spell out, and why; the `npm test` result; and anything the main session must know to merge (a question, a change you needed outside your files, a test you could not write). Complete, without padding.

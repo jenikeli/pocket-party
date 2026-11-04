@@ -23,8 +23,8 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
 | H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | merged |
 | I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | merged |
-| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | building |
-| K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | building |
+| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | built, in review |
+| K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | merged |
 | L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | queued |
 
 ## Rules for every task
@@ -506,3 +506,12 @@ and where to change it).
   done, since `race-phases.js` (imports nothing) removed that circle and the comment was stale.
 - **Browser tests after H and I** (main at da1f853): m6b, m6c, m7a, m7b, m7c, m7d2, m7d4b and m8 all pass (39
   tests, 1002 s).
+- **K, looks:** two extra files, `field-ring-look.js` (road rings shared by magnet and push, faded out at the
+  road's edge in their shader, from the road's frame at the kart, so a sharp bend can clip a ring a little early
+  or late) and `field-line-look.js` (the magnet's lines). Lines are 1 px with normal blending (additive bloomed
+  where five met). The looks scale out over the last 0.3 s rather than blink; they do not follow `kartLookScale`
+  (a magnet on a big kart is not raised). Main-session review sent it back once: rings floating over the void
+  beside the skyway, the 212-line file, bloom, per-frame allocation, the lines' bulge along world y, horseshoes
+  sharing one set of geometries.
+- **J** sent back once after its review and sheet: goo read as lava, blobs as oranges, faint hop sparkles, the
+  warning rings blooming where they meet, per-frame allocation, drips growing along world y.

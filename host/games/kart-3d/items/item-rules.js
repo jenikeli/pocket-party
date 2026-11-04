@@ -1,18 +1,20 @@
 // The 3D race's item rules (M8): the race's item state, and every step: boxes broken and coming back, the
-// roulette, using the held item (a player's Item button, a CPU kart's cpu-items.js), and the running effects
-// counting down. Plain functions on the race's plain data, no Three.js or DOM, unit tested in Node. Used by
-// race.js (createRace, stepRace) and by the items in item-catalog.js (startEffect).
+// roulette, using the held item (a player's Item button, a CPU kart's cpu-items.js), the running effects
+// counting down, and stepping what the items started (road objects, the teleport, magnets and pushes, sticky
+// walls; each in its own file). Plain functions on the race's plain data, no Three.js or DOM, unit tested in
+// Node. Used by race.js (createRace, stepRace) and by the items in item-catalog.js (startEffect).
 
 import { ITEM_CATALOG, BUILT_ITEMS } from './item-catalog.js';
 import { drawItem } from './item-odds.js';
 import { createBoxes, breakBoxesAt, countBoxesBack } from './item-boxes.js';
 import { stepObjects, standingBlockers } from './road-objects.js';
+import { stepTeleport } from './teleport.js';
+import { applyFieldForces } from './field-forces.js';
+import { stepStickyWalls } from './sticky-walls.js';
 import { cpuWantsItem } from './cpu-items.js';
 import { countDownEffect } from './kart-effect.js';
 import { createRandom } from '../random.js';
 import { tuning } from '../tuning.js';
-// race.js calls stepItems and this file reads its phases: each only while the race runs, never while the
-// modules load, so the circle is harmless.
 import { RACE_PHASES } from '../race-phases.js';
 
 // The items' own effects start with startEffect (kart-effect.js); it is exported here too, with the rest of the
@@ -27,10 +29,11 @@ const ITEM_SEED = 8;
 const CPU_WAIT_FROM = 0.5;
 const CPU_WAIT_TO = 2;
 
-// The race's item state: { allowed, random, boxes, objects, nextObjectId }. `allowedItems` lists the item ids
-// the setup allows; with none, items are off: no boxes, as before M8. random is the race's own random numbers'
-// state (see drawRandom); boxes are item-boxes.js's; objects what items left on the road (road-objects.js's)
-// and nextObjectId the id the next one gets.
+// The race's item state: { allowed, random, boxes, objects, nextObjectId, teleport, stickyLeft }. `allowedItems`
+// lists the item ids the setup allows; with none, items are off: no boxes, as before M8. random is the race's
+// own random numbers' state (see drawRandom); boxes are item-boxes.js's; objects what items left on the road
+// (road-objects.js's) and nextObjectId the id the next one gets; teleport the running teleport (teleport.js's,
+// null when none) and stickyLeft the seconds the walls stay sticky (sticky-walls.js's, 0 when they are not).
 export function createItems(track, allowedItems) {
   const allowed = allowedItems.filter((id) => BUILT_ITEMS.includes(id));
   return {
@@ -39,25 +42,31 @@ export function createItems(track, allowedItems) {
     boxes: allowed.length > 0 ? createBoxes(track) : [],
     objects: [],
     nextObjectId: 1,
+    teleport: null,
+    stickyLeft: 0,
   };
 }
 
-// A kart's item state at the start: { held, rollLeft, effect, landing, landedAt, cpuWait, lastRampId, button,
-// buttonBefore }.
+// A kart's item state at the start: { held, rollLeft, effect, stuckLeft, landing, landedAt, cpuWait, lastRampId,
+// stickAgainIn, stickyWalls, button, buttonBefore }.
 // held is the item ready to use, or null; rollLeft the roulette's seconds left (0 when not rolling); effect the
-// kart's running effect { item, left }, or null. The rest are this file's own: landing the item the roulette
-// will land on (drawn at the pickup); landedAt the race time it landed and cpuWait how long a CPU kart waits
-// from then; lastRampId the ramp that last launched it, so one ramp throws a kart once (road-objects.js);
+// kart's running effect { item, left }, or null; stuckLeft the seconds it is still held on a sticky wall (0 when
+// free; stickAgainIn and stickyWalls are sticky-walls.js's too). The rest are this file's own: landing the item
+// the roulette will land on (drawn at the pickup); landedAt the race time it landed and cpuWait how long a CPU
+// kart waits from then; lastRampId the ramp that last launched it, so one ramp throws a kart once (road-objects.js);
 // button the Item button this step (race.js sets it from the controls) and buttonBefore last step's.
 export function freshItem() {
   return {
     held: null,
     rollLeft: 0,
     effect: null,
+    stuckLeft: 0,
     landing: null,
     landedAt: 0,
     cpuWait: 0,
     lastRampId: null,
+    stickAgainIn: 0,
+    stickyWalls: false,
     button: false,
     buttonBefore: false,
   };
@@ -65,10 +74,12 @@ export function freshItem() {
 
 // One step of the items, after the karts moved and bumped. Boxes break whenever any kart drives through them,
 // but only a kart still racing (not at the results, not finished) gets an item from one or uses one; running
-// effects and roulettes go on regardless, so they still run out.
+// effects and roulettes go on regardless, so they still run out. Then the running magnets and pushes act, and
+// the sticky walls hold and let go.
 export function stepItems(race, track, dt) {
   countBoxesBack(race.items.boxes, dt);
   stepObjects(race, track, dt);
+  stepTeleport(race, track, dt, () => drawRandom(race.items));
   tellCpusOfBlockers(race, track);
   const racing = race.phase === RACE_PHASES.RACING;
   for (const kart of race.karts) {
@@ -87,6 +98,8 @@ export function stepItems(race, track, dt) {
       kart.item.held = null;
     }
   }
+  applyFieldForces(race, dt);
+  stepStickyWalls(race, track, dt);
 }
 
 // The CPU drivers pass a standing blocker as they pass a slow kart (cpu-aim.js), so each gets the list.

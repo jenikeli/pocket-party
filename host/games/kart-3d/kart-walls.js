@@ -2,13 +2,15 @@
 // was and bounces the kart off, and rubbing along the wall drags it, so the wall is never the fast line round a
 // corner. Plain maths on plain kart objects, unit tested in Node through kart-physics.js, which calls it every
 // step after moving the kart. KART_RADIUS is also the size kart-bumps.js uses; both times the kart's item
-// effect size (big, small). The tuned numbers are tuning.js's.
+// effect size (big, small). While the sticky walls item runs (M8c), a wall holds a kart that touches it instead
+// (items/sticky-walls.js). The tuned numbers are tuning.js's.
 
 import { scale, addScaled, dot, length, normalize, flatten } from './vector.js';
 import { outerEdge, wallOnSide } from './track.js';
 import { endBoost, BOOST_KINDS } from './kart-boosts.js';
 import { tuning } from './tuning.js';
 import { effectSize } from './items/effect-rules.js';
+import { stickToWall } from './items/sticky-walls.js';
 
 // A kart is a ball of this radius for walls and bumps (it is 2 units long and about 1.4 wide).
 export const KART_RADIUS = 1;
@@ -21,7 +23,8 @@ const WALL_DEPTH = 1.5;
 export const HIT_SPEED = 1;
 
 // Pushes the kart back inside a wall it went through and deals with its speed into the wall. Returns true if
-// it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in MK8DX.
+// it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in MK8DX. A
+// sticky wall holds the kart where it touched it, with no bounce.
 export function hitWall(track, kart, contact, dt) {
   const limit = outerEdge(contact) - KART_RADIUS * effectSize(kart);
   const nearRoad = contact.height < WALL_HEIGHT && contact.height > -WALL_DEPTH;
@@ -30,6 +33,9 @@ export function hitWall(track, kart, contact, dt) {
   }
   const outward = scale(contact.right, Math.sign(contact.lateral));
   kart.position = addScaled(kart.position, outward, limit - Math.abs(contact.lateral));
+  if (stickToWall(kart)) {
+    return true;
+  }
   const intoWall = dot(kart.velocity, outward);
   if (intoWall > HIT_SPEED) {
     bounceOff(kart, outward, intoWall);

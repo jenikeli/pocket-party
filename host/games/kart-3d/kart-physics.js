@@ -1,7 +1,7 @@
 // Hand-written arcade physics for one 3D kart: driving on the road (any slope or roll), flying and landing,
 // gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Each step also
 // runs the Drift button's techniques (kart-techniques.js), the boosts (kart-boosts.js) and the body's animation
-// (kart-body.js). Plain functions on
+// (kart-body.js). A kart held on a sticky wall (items/sticky-walls.js, M8c) stays still. Plain functions on
 // plain kart objects, unit tested in Node. Used by host/games/kart-3d/race.js, stepped at the fixed 60 Hz.
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
@@ -18,6 +18,7 @@ import { freshBoosts, stepBoosts } from './kart-boosts.js';
 import { freshBody, moveBody } from './kart-body.js';
 import { tuning } from './tuning.js';
 import { effectTurnShare } from './items/effect-rules.js';
+import { isHeldOnWall } from './items/sticky-walls.js';
 
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
@@ -98,6 +99,10 @@ export function stepKart(track, kart, controls, dt) {
     // Kept up to date while falling, so a button still held when the kart is put back does not hop it.
     kart.driftHeld = controls.drift === true;
     stepFalling(track, kart, dt);
+    return;
+  }
+  if (isHeldOnWall(kart)) {
+    holdOnWall(track, kart, controls, dt);
     return;
   }
   const fromIndex = kart.trackIndex;
@@ -183,6 +188,16 @@ function stickToRoad(kart, contact, surface) {
   kart.grounded = true;
   kart.surface = surface;
   kart.lastGroundIndex = contact.index;
+}
+
+// Held on a sticky wall (items/sticky-walls.js, which lets it go): it stays where it is, whatever the controls.
+// The Drift button is still watched, so one held down is not a fresh press once the kart is let go, and the
+// boost and stall timers and the body's lean run on as usual.
+function holdOnWall(track, kart, controls, dt) {
+  kart.driftHeld = controls.drift === true;
+  kart.velocity = vec(0, 0, 0);
+  stepBoosts(track, kart, dt);
+  moveBody(kart, controls, dt);
 }
 
 // Off the road and falling: no control, until it is put back.

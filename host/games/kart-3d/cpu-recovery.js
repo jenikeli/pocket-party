@@ -6,6 +6,7 @@
 
 import { forwardSpeed } from './kart-physics.js';
 import { headingToRoad } from './cpu-road.js';
+import { isHeldOnWall } from './items/sticky-walls.js';
 
 const DEGREES = Math.PI / 180;
 // Pointing more than this far from the road's direction is the wrong way; it turns until it is within the
@@ -31,8 +32,13 @@ export function freshRecovery() {
 }
 
 // The controls while recovering, or null to drive the racing line. Only on the road: in the air nothing helps.
+// A kart held on a sticky wall (M8c) is not stuck: it is let go by itself, so it does not count as standing.
 export function recoveryControls(track, kart, cpu, dt) {
   if (!kart.grounded) {
+    return null;
+  }
+  if (isHeldOnWall(kart)) {
+    cpu.stuckFor = 0;
     return null;
   }
   const heading = headingToRoad(track, kart);

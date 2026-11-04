@@ -22,7 +22,7 @@ const START_SHOWN_FOR = 2;
 const FINAL_LAP_SHOWN_FOR = 3;
 // A kart is 2 units long; the readout gives speeds in kart lengths too, to compare with MK8DX footage.
 const KART_LENGTH = 2;
-export const BANNERS = Object.freeze({ FINAL_LAP: 'Final lap!', FINISH: 'Finish!' });
+export const BANNERS = Object.freeze({ FINAL_LAP: 'Final lap!', FINISH: 'Finish!', TELEPORT: 'Teleport!' });
 
 // The setup view for one player's phone: { phase: 'setup', laps, engineClass, steering, autoAccelerate, ready }.
 export function setupView(setup, engineClass, playerId) {
@@ -68,13 +68,25 @@ function isFinalLapShowing(race, kart) {
 
 // What one split-screen view shows over the picture for `kart`: { lap, laps, place, banner, item }, where banner
 // is one of BANNERS or null, and item the kart's items (item-views.js's itemHud, null with items off). A view
-// that follows a CPU kart shows its place only (lap and item null).
+// that follows a CPU kart shows its place and a teleport's banner only (lap and item null). The teleport's
+// banner (M8c) shows from its warning to the end of its sparkles, over every view of a kart still racing (nobody
+// hops at the results).
 export function viewHud(race, kart) {
+  const teleporting = race.items.teleport !== null && race.phase === RACE_PHASES.RACING && kart.finishTime === null;
   if (kart.playerId === null) {
-    return { lap: null, laps: race.laps, place: kart.place, banner: null, item: null };
+    return { lap: null, laps: race.laps, place: kart.place, banner: teleporting ? BANNERS.TELEPORT : null, item: null };
   }
-  const banner = kart.finishTime !== null ? BANNERS.FINISH : isFinalLapShowing(race, kart) ? BANNERS.FINAL_LAP : null;
-  return { lap: kart.lap, laps: race.laps, place: kart.place, banner, item: itemHud(race, kart) };
+  return { lap: kart.lap, laps: race.laps, place: kart.place, banner: playerBanner(race, kart, teleporting), item: itemHud(race, kart) };
+}
+
+function playerBanner(race, kart, teleporting) {
+  if (kart.finishTime !== null) {
+    return BANNERS.FINISH;
+  }
+  if (teleporting) {
+    return BANNERS.TELEPORT;
+  }
+  return isFinalLapShowing(race, kart) ? BANNERS.FINAL_LAP : null;
 }
 
 // The host's big countdown in the middle of the screen: '3', '2', '1', 'GO!', or '' once the karts are off.

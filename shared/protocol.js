@@ -164,6 +164,22 @@ export const KART_BUTTONS = Object.freeze({
   // The 3D race only: hop, drift and trick, like MK8DX's R button. Held, it also accelerates (see
   // host/kart/kart-controls.js).
   DRIFT: 'drift',
+  // The 3D race only (M8): uses the held item. Sent on press and release like Drift; one press uses one item.
+  ITEM: 'item',
+});
+
+// The 3D race's items (M8), the ids the phone and the host share. Their rules live in host/games/kart-3d/items/,
+// their icons in shared/item-icons.js.
+export const KART_ITEMS = Object.freeze({
+  BLOCKER: 'blocker',
+  RAMP: 'ramp',
+  BOUNCY: 'bouncy',
+  TELEPORT: 'teleport',
+  BIG: 'big',
+  SMALL: 'small',
+  MAGNET: 'magnet',
+  PUSH: 'push',
+  STICKY: 'sticky',
 });
 
 // The kart races' per-player choices (INPUT kind choice) and the values each takes.

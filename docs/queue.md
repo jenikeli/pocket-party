@@ -13,12 +13,12 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 
 | Task | Part | What | Model | Waits for | Status |
 |---|---|---|---|---|---|
-| 0 | M8a | Prep (main session): item ids, the Item button's name, M8a's tunables | main | none | queued |
-| A | M8a | Item rules: boxes, roulette, odds by place, holding and using, effect timers, settings rules, CPU use, views | opus | 0 | queued |
+| 0 | M8a | Prep (main session): item ids, the Item button's name, M8a's tunables | main | none | merged |
+| A | M8a | Item rules: boxes, roulette, odds by place, holding and using, effect timers, settings rules, CPU use, views | opus | 0 | building |
 | B | M8a | Phone: the Item button with the held item, the roulette and running effects | sonnet | 0 (merges after C) | queued |
 | C | M8a | Host: item icons, the HUD's item frame and effect rings, the Items settings, wiring in index.js | sonnet | 0 (merges after A) | queued |
-| D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | queued |
-| E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | queued |
+| D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | building |
+| E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | building |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | queued |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | queued |
 | H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | queued |

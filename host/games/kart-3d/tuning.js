@@ -6,6 +6,8 @@
 // A kart is 2 units long. Angles are in degrees and turn rates in degrees per second, which read more easily on a
 // slider than radians. MK8DX's numbers (docs/mk8dx-reference.md, level 10) are noted where a default came from.
 
+import { ITEM_TUNABLES } from './items/item-tuning.js';
+
 export const TUNABLES = Object.freeze([
   // 16 kart lengths a second, tuned by feel on the M7a device run to feel like MK8DX's 150cc (M6 guessed 24).
   // Every speed-based rule scales with it.
@@ -130,6 +132,9 @@ export const TUNABLES = Object.freeze([
   // in for most of the flat sky light. Software screenshots suggested 1.5; the M7d4b2 device run on the iPad
   // chose 0.7. The plain course (plain-course.js) lights itself from the sky's environment map at this strength.
   { key: 'courseLightStrength', group: 'Look', label: 'Light from the course, strength', unit: '', min: 0, max: 3, step: 0.05, value: 0.7 },
+
+  // The items (M8), in their own file beside their rules.
+  ...ITEM_TUNABLES,
 ]);
 
 // The live values, by key. The rules read from here every step, so a slider changes the race at once.

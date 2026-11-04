@@ -13,6 +13,7 @@ import { COURSES } from './courses.js';
 import { CPU_LEVELS } from './cpu-levels.js';
 import { QUALITY_LEVELS } from './quality.js';
 import { MAX_STAND_INS } from './stand-ins.js';
+import { createItemSettingsRow } from './items/item-settings-panel.js';
 
 const STYLE = `
   #kart-3d-setup { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(720px, 90vw);
@@ -48,15 +49,19 @@ const STYLE = `
 
 // `onCourse(courseId)` gets an id from COURSES, `onLapsStep(step)` -1 or 1, `onEngineClass(engineClass)` a key of
 // ENGINE_CLASSES, `onCpuLevel(level)` a key of CPU_LEVELS, `onQuality(level)` a key of QUALITY_LEVELS;
-// `onWatch(viewCount)` 1 to MAX_STAND_INS;
+// `onWatch(viewCount)` 1 to MAX_STAND_INS; `onToggleItems()` and `onToggleItem(id)` flip the Items settings;
 // `onMeasure()`, `onStartRace()`, `onBackToSetup()`, `onRestart()` and `onTuning()` run on a click of those buttons (`handlers` holds them). Returns
 // { showSetup(setup, choices, players), showRace(...), hideAll() }: one of the first two shows at a time, or none
 // (hideAll, while the Measure tool runs).
-export function createPanels(container, handlers) {
-  const { onCourse, onLapsStep, onEngineClass, onCpuLevel, onQuality, onMeasure, onWatch, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
+// `itemSettings` (items/item-settings.js) is read once, for which items get a button; index.js owns it.
+export function createPanels(container, itemSettings, handlers) {
+  const { onCourse, onLapsStep, onEngineClass, onCpuLevel, onQuality, onMeasure, onWatch } = handlers;
+  const { onToggleItems, onToggleItem, onStartRace, onBackToSetup, onRestart, onTuning } = handlers;
   const style = document.createElement('style');
   style.textContent = STYLE;
   const setupPanel = createSetupPanel();
+  const itemRow = createItemSettingsRow(itemSettings, { onToggleItems, onToggleItem });
+  setupPanel.querySelector('#kart-3d-item-row-slot').replaceWith(itemRow.element);
   const raceBar = document.createElement('div');
   raceBar.id = 'kart-3d-race-bar';
   raceBar.hidden = true;
@@ -93,8 +98,9 @@ export function createPanels(container, handlers) {
   // What the rows show, as text, so they are only rebuilt when something changed (this runs every frame).
   let shownRows = null;
 
-  // `choices` is { courseId, engineClass, cpuLevel, quality }: the host's choices that are not in the shared kart setup.
-  function showSetup(setup, { courseId, engineClass, cpuLevel, quality }, players) {
+  // `choices` is { courseId, engineClass, cpuLevel, quality, items }: the host's choices that are not in the
+  // shared kart setup.
+  function showSetup(setup, { courseId, engineClass, cpuLevel, quality, items }, players) {
     setupPanel.hidden = false;
     raceBar.hidden = true;
     clock.hidden = true;
@@ -104,6 +110,7 @@ export function createPanels(container, handlers) {
     engineButtons.forEach((button) => setPressed(button, Number(button.dataset.engineClass) === engineClass));
     cpuButtons.forEach((button) => setPressed(button, button.dataset.cpuLevel === cpuLevel));
     qualityButtons.forEach((button) => setPressed(button, button.dataset.quality === quality));
+    itemRow.show(items);
     const inOrder = playersInSlotOrder(players);
     const entries = inOrder.map((player) => describeRow(player, playerSetup(setup, player.playerId)));
     const rowsText = JSON.stringify(entries);
@@ -171,6 +178,7 @@ function createSetupPanel() {
     </div>
     <div class="settings">${engineButtons}</div>
     <div class="settings">CPU ${cpuButtons}</div>
+    <div id="kart-3d-item-row-slot"></div>
     <div class="settings quality">Look ${qualityButtons}
       <button type="button" id="kart-3d-measure-button">Measure</button></div>
     <div class="settings quality">Watch, no phones: ${watchButtons} views</div>

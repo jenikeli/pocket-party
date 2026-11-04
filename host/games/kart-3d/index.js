@@ -1,9 +1,9 @@
-// The 3D kart race (M6 to M7e), a game module: a setup screen (course, laps, engine class, CPU level and drawing
-// quality on the host, with the Measure tool and Watch, and control style and ready on each phone), then a countdown
-// with MK8DX's rocket start, and 1-4 players race their laps in split screen, drifting and boosting, with CPU
-// karts filling the field to 12; then the results, and Race again or Back to lobby. Watch races 1-4 stand-ins
-// (stand-ins.js) instead of the players, with no phones needed. Loaded through host/games/index.js and run by
-// the shell (host/game-session.js).
+// The 3D kart race (M6 to M8), a game module: a setup screen (course, laps, engine class, CPU level, drawing
+// quality and the items on the host, with the Measure tool and Watch, and control style and ready on each
+// phone), then a countdown with MK8DX's rocket start, and 1-4 players race their laps in split screen, drifting
+// and boosting, with CPU karts filling the field to 12; then the results, and Race again or Back to lobby. Watch
+// races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones needed. Loaded through
+// host/games/index.js and run by the shell (host/game-session.js).
 // The rules live in DOM-free modules next to this file; this file connects them to the shell, the phones, the
 // renderer, the panels and the tuning sliders.
 
@@ -25,6 +25,7 @@ import { createMeasurePanel } from './measure-panel.js';
 import { QUALITY_LEVELS, loadQuality, saveQuality } from './quality.js';
 import { loadPlainCourse } from './plain-course.js';
 import { createStandInRace } from './stand-ins.js';
+import { createItemSettings, toggleItems, toggleItem, allowedItems } from './items/item-settings.js';
 
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
 const PING_INTERVAL_MS = 2000;
@@ -54,6 +55,9 @@ export function createGame() {
   let track = tracks.get(courseId);
   let engineClass = DEFAULT_ENGINE_CLASS;
   let cpuLevel = DEFAULT_CPU_LEVEL;
+  // The Items row's choices (items/item-settings.js), kept from race to race like the setup; a new game starts
+  // afresh.
+  const itemSettings = createItemSettings();
   // The host device's drawing quality, remembered between games (quality.js).
   let quality = loadQuality();
   // Whether the course is drawn plain, for the rules' browser tests (plain-course.js); nothing in the UI sets it.
@@ -86,7 +90,7 @@ export function createGame() {
     renderer = rendererModule.createRenderer(shell.container, track, quality, photoAsphalt, plainCourse);
     tuningPanel = createTuningPanel(shell.container);
     measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(quality));
-    panels = createPanels(shell.container, {
+    panels = createPanels(shell.container, itemSettings, {
       onCourse: chooseCourse,
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onEngineClass: chooseEngineClass,
@@ -94,6 +98,8 @@ export function createGame() {
       onQuality: chooseQuality,
       onMeasure: startMeasuring,
       onWatch: watchRace,
+      onToggleItems: () => !race && toggleItems(itemSettings),
+      onToggleItem: (id) => !race && toggleItem(itemSettings, id),
       onStartRace: startRace,
       onBackToSetup: showSetup,
       onRestart: restart,
@@ -173,7 +179,8 @@ export function createGame() {
   }
 
   function putStandInsOnGrid(viewCount) {
-    ({ race, players: standIns } = createStandInRace(track, viewCount, setup.laps, engineClass, cpuLevel));
+    const items = allowedItems(itemSettings);
+    ({ race, players: standIns } = createStandInRace(track, viewCount, setup.laps, engineClass, cpuLevel, items));
     controls = createControlsTable();
   }
 
@@ -195,7 +202,8 @@ export function createGame() {
   // Everyone in the roster gets a kart, at the back of the grid in slot order. Inputs held from the last race are
   // dropped.
   function putKartsOnGrid() {
-    race = createRace(track, playersInSlotOrder(players).map((player) => player.playerId), setup.laps, engineClass, cpuLevel);
+    const playerIds = playersInSlotOrder(players).map((player) => player.playerId);
+    race = createRace(track, playerIds, setup.laps, engineClass, cpuLevel, allowedItems(itemSettings));
     controls = createControlsTable();
   }
 
@@ -263,7 +271,7 @@ export function createGame() {
     const racing = race !== null && race.phase !== RACE_PHASES.RESULTS;
     tuningPanel.setVisible(racing);
     if (!race) {
-      panels.showSetup(setup, { courseId, engineClass, cpuLevel, quality }, players);
+      panels.showSetup(setup, { courseId, engineClass, cpuLevel, quality, items: itemSettings }, players);
       resultsPanel.hide();
       return;
     }

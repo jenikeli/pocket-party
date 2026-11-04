@@ -39,6 +39,12 @@ test('the stand-ins drive themselves, each with a CPU driver of its own', () => 
   }
 });
 
+test('the stand-ins race with the allowed items, and with none by default', () => {
+  assert.deepEqual(createStandInRace(track, 1, 2, DEFAULT_ENGINE_CLASS, 'normal').race.items.allowed, []);
+  const { race } = createStandInRace(track, 2, 2, DEFAULT_ENGINE_CLASS, 'normal', ['big', 'small']);
+  assert.deepEqual(race.items.allowed, ['big', 'small']);
+});
+
 test('a race takes 1 to 4 stand-ins', () => {
   assert.throws(() => createStandInRace(track, 0, 3, DEFAULT_ENGINE_CLASS, 'normal'), /1 to 4/);
   assert.throws(() => createStandInRace(track, MAX_STAND_INS + 1, 3, DEFAULT_ENGINE_CLASS, 'normal'), /1 to 4/);

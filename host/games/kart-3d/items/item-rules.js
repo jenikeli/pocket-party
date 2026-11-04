@@ -6,6 +6,7 @@
 import { ITEM_CATALOG, BUILT_ITEMS } from './item-catalog.js';
 import { drawItem } from './item-odds.js';
 import { createBoxes, breakBoxesAt, countBoxesBack } from './item-boxes.js';
+import { stepObjects, standingBlockers } from './road-objects.js';
 import { cpuWantsItem } from './cpu-items.js';
 import { countDownEffect } from './kart-effect.js';
 import { createRandom } from '../random.js';
@@ -26,19 +27,28 @@ const ITEM_SEED = 8;
 const CPU_WAIT_FROM = 0.5;
 const CPU_WAIT_TO = 2;
 
-// The race's item state: { allowed, random, boxes }. `allowedItems` lists the item ids the setup allows; with
-// none, items are off: no boxes, as before M8. random is the race's own random numbers' state (see
-// drawRandom); boxes are item-boxes.js's.
+// The race's item state: { allowed, random, boxes, objects, nextObjectId }. `allowedItems` lists the item ids
+// the setup allows; with none, items are off: no boxes, as before M8. random is the race's own random numbers'
+// state (see drawRandom); boxes are item-boxes.js's; objects what items left on the road (road-objects.js's)
+// and nextObjectId the id the next one gets.
 export function createItems(track, allowedItems) {
   const allowed = allowedItems.filter((id) => BUILT_ITEMS.includes(id));
-  return { allowed, random: ITEM_SEED, boxes: allowed.length > 0 ? createBoxes(track) : [] };
+  return {
+    allowed,
+    random: ITEM_SEED,
+    boxes: allowed.length > 0 ? createBoxes(track) : [],
+    objects: [],
+    nextObjectId: 1,
+  };
 }
 
-// A kart's item state at the start: { held, rollLeft, effect, landing, landedAt, cpuWait, button, buttonBefore }.
+// A kart's item state at the start: { held, rollLeft, effect, landing, landedAt, cpuWait, lastRampId, button,
+// buttonBefore }.
 // held is the item ready to use, or null; rollLeft the roulette's seconds left (0 when not rolling); effect the
 // kart's running effect { item, left }, or null. The rest are this file's own: landing the item the roulette
 // will land on (drawn at the pickup); landedAt the race time it landed and cpuWait how long a CPU kart waits
-// from then; button the Item button this step (race.js sets it from the controls) and buttonBefore last step's.
+// from then; lastRampId the ramp that last launched it, so one ramp throws a kart once (road-objects.js);
+// button the Item button this step (race.js sets it from the controls) and buttonBefore last step's.
 export function freshItem() {
   return {
     held: null,
@@ -47,6 +57,7 @@ export function freshItem() {
     landing: null,
     landedAt: 0,
     cpuWait: 0,
+    lastRampId: null,
     button: false,
     buttonBefore: false,
   };
@@ -57,6 +68,8 @@ export function freshItem() {
 // effects and roulettes go on regardless, so they still run out.
 export function stepItems(race, track, dt) {
   countBoxesBack(race.items.boxes, dt);
+  stepObjects(race, track, dt);
+  tellCpusOfBlockers(race, track);
   const racing = race.phase === RACE_PHASES.RACING;
   for (const kart of race.karts) {
     const pressed = kart.item.button && !kart.item.buttonBefore;
@@ -73,6 +86,14 @@ export function stepItems(race, track, dt) {
       ITEM_CATALOG[kart.item.held].use(race, track, kart);
       kart.item.held = null;
     }
+  }
+}
+
+// The CPU drivers pass a standing blocker as they pass a slow kart (cpu-aim.js), so each gets the list.
+function tellCpusOfBlockers(race, track) {
+  const blockers = standingBlockers(track, race.items.objects);
+  for (const kart of race.karts.filter((each) => each.cpu !== null)) {
+    kart.cpu.obstacles = blockers;
   }
 }
 

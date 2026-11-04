@@ -19,4 +19,7 @@ export const ITEM_TUNABLES = Object.freeze([
   { key: 'smallMassShare', group: 'Items', label: 'Small, mass', unit: 'x', min: 0.1, max: 1, step: 0.05, value: 0.5 },
   // Bouncy: a kart bumping it parts at this many times the usual parting speed.
   { key: 'bouncyBounceShare', group: 'Items', label: 'Bouncy, bounce', unit: 'x', min: 1, max: 6, step: 0.1, value: 3 },
+  // The ramp (M8b): how fast it throws a kart up. With the game's gravity, 6.5 keeps a top-speed kart in the air
+  // about 0.5 s, 16 units, a little over the course's jump gap (14).
+  { key: 'rampLaunchSpeed', group: 'Items', label: 'Ramp, launch', unit: 'units/s', min: 2, max: 14, step: 0.5, value: 6.5 },
 ]);

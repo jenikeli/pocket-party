@@ -11,6 +11,9 @@ import { lineLateralAt } from './cpu-road.js';
 // PASS_WIDTH of where this one aims, and slower by PASS_CLOSING, or closer than TOO_CLOSE however fast.
 const PASS_LOOK = 4;
 const PASS_LOOK_SECONDS = 0.5;
+// A standing blocker is seen this many seconds of driving ahead instead: it will not move out of the way, and
+// hitting it costs far more speed than touching a kart, so the move across starts earlier.
+const STANDING_LOOK_SECONDS = 2;
 const PASS_WIDTH = 2.2;
 const PASS_CLOSING = 1;
 const TOO_CLOSE = 3.5;
@@ -30,11 +33,21 @@ const ALONGSIDE = 3;
 const SIDE_CLEAR = 2.4;
 
 // The aim fields of a fresh driver: shift how far a pass moves it off its line, passTarget the shift the pass
-// wants and passLeft how much longer; mergeFrom the lateral it is rejoining its line from and mergeShare how
-// far it has got (1 is on its line); clearLeft and clearRight the least and most lateral it may aim at, kept
-// clear of karts alongside (null when none).
+// wants and passLeft how much longer; obstacles the standing blockers (items/road-objects.js), stand-in karts
+// that never move, which it passes as it passes a slow kart (the item rules refill them every step); mergeFrom
+// the lateral it is rejoining its line from and mergeShare how far it has got (1 is on its line); clearLeft and
+// clearRight the least and most lateral it may aim at, kept clear of karts alongside (null when none).
 export function freshAim() {
-  return { shift: 0, passTarget: 0, passLeft: 0, mergeFrom: 0, mergeShare: 1, clearLeft: null, clearRight: null };
+  return {
+    obstacles: [],
+    shift: 0,
+    passTarget: 0,
+    passLeft: 0,
+    mergeFrom: 0,
+    mergeShare: 1,
+    clearLeft: null,
+    clearRight: null,
+  };
 }
 
 // From now on it rejoins its line from `lateral`.
@@ -57,7 +70,7 @@ export function updateAim(track, kart, karts, cpu, dt) {
   cpu.mergeShare = Math.min(cpu.mergeShare + dt / MERGE_SECONDS, 1);
   keepClearAlongside(track, kart, karts, cpu);
   cpu.passLeft = Math.max(cpu.passLeft - dt, 0);
-  const blocker = kartInTheWay(track, kart, karts, cpu);
+  const blocker = kartInTheWay(track, kart, [...karts, ...cpu.obstacles], cpu);
   if (blocker) {
     cpu.passTarget = passingShift(track, cpu, blocker);
     cpu.passLeft = PASS_SECONDS;
@@ -84,14 +97,15 @@ function keepClearAlongside(track, kart, karts, cpu) {
   }
 }
 
-// The nearest kart ahead that is in its way (see PASS_*), or null. Karts falling off are not in anyone's way.
+// The nearest kart (or standing blocker) ahead that is in its way (see PASS_*), or null. Karts falling off are
+// not in anyone's way.
 function kartInTheWay(track, kart, karts, cpu) {
   const speed = forwardSpeed(kart);
-  const look = PASS_LOOK + speed * PASS_LOOK_SECONDS;
   let nearest = null;
   let nearestGap = Infinity;
   for (const other of karts) {
     const gap = other === kart || other.respawnIn !== null ? -1 : progressBetween(track, kart.s, other.s);
+    const look = PASS_LOOK + speed * (other.standing ? STANDING_LOOK_SECONDS : PASS_LOOK_SECONDS);
     if (gap <= 0 || gap > look || gap >= nearestGap) {
       continue;
     }

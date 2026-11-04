@@ -18,7 +18,7 @@ const WALL_HEIGHT = 1.5;
 const WALL_DEPTH = 1.5;
 // Going into the wall slower than this (units per second) is resting against it, not a hit: a kart steered
 // along a curving wall meets it a little every step, and only scrapes.
-const HIT_SPEED = 1;
+export const HIT_SPEED = 1;
 
 // Pushes the kart back inside a wall it went through and deals with its speed into the wall. Returns true if
 // it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in MK8DX.
@@ -49,7 +49,8 @@ export function hitWall(track, kart, contact, dt) {
 // A hit: the speed along the wall drops by the graze loss plus the hit loss times the sine of the angle (all of
 // it for a square hit), and the kart bounces back with a share of its speed into the wall, at least the least
 // bounce speed. Its grip stays loose for a moment (kart-physics.js), so the bounce carries it away from the wall.
-function bounceOff(kart, outward, intoWall) {
+// `outward` points into the wall. Also the items' blocker's hit (items/road-objects.js).
+export function bounceOff(kart, outward, intoWall) {
   const sine = intoWall / length(kart.velocity);
   const kept = Math.max(1 - tuning.wallGrazeLoss - tuning.wallHitLoss * sine, 0);
   const alongWall = addScaled(kart.velocity, outward, -intoWall);

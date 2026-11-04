@@ -18,6 +18,13 @@ const BIG_ANYWAY_SECONDS = 4;
 const CORNER_LOOKS = [0, 10, 20, 30, 40];
 const CORNERS_TURN = 1.2;
 
+// Blocker: a kart this close behind, about in line, to bump into it.
+const BLOCKER_BEHIND_REACH = 12;
+const BLOCKER_IN_LINE = 3;
+// Ramp: on the ground with the road running straight: less than this turn (radians) at the same stations
+// (the ramp is 15 ahead and a launched kart flies about 16 further).
+const RAMP_STRAIGHT = 0.25;
+
 // Per item: (race, track, kart, heldFor) -> true to use it now. heldFor is the seconds since it landed.
 const CPU_RULES = Object.freeze({
   [KART_ITEMS.BOUNCY]: (race, track, kart) =>
@@ -25,7 +32,10 @@ const CPU_RULES = Object.freeze({
   [KART_ITEMS.BIG]: (race, track, kart, heldFor) =>
     heldFor >= BIG_ANYWAY_SECONDS ||
     otherKarts(race, kart).some(({ ahead, sideways }) => ahead > 0 && ahead <= BIG_AHEAD_REACH && sideways <= BIG_IN_LINE),
-  [KART_ITEMS.SMALL]: (race, track, kart) => cornersAhead(track, kart) >= CORNERS_TURN,
+  [KART_ITEMS.SMALL]: (race, track, kart) => cornersAhead(track, kart, CORNER_LOOKS) >= CORNERS_TURN,
+  [KART_ITEMS.BLOCKER]: (race, track, kart) =>
+    otherKarts(race, kart).some(({ ahead, sideways }) => ahead < 0 && ahead >= -BLOCKER_BEHIND_REACH && sideways <= BLOCKER_IN_LINE),
+  [KART_ITEMS.RAMP]: (race, track, kart) => kart.grounded && cornersAhead(track, kart, CORNER_LOOKS) < RAMP_STRAIGHT,
 });
 
 // True when the CPU-driven `kart` should use its held item this step.
@@ -47,7 +57,7 @@ function otherKarts(race, kart) {
     });
 }
 
-// How much the road turns, either way, over the stations ahead of `kart`.
-function cornersAhead(track, kart) {
-  return CORNER_LOOKS.reduce((sum, look) => sum + Math.abs(turnAhead(track, wrapIndex(track, kart.trackIndex + look))), 0);
+// How much the road turns, either way, at the stations `looks` ahead of `kart`.
+function cornersAhead(track, kart, looks) {
+  return looks.reduce((sum, look) => sum + Math.abs(turnAhead(track, wrapIndex(track, kart.trackIndex + look))), 0);
 }

@@ -119,8 +119,9 @@ export function afterMove(track, kart, controls, fromIndex, wasGrounded, dt) {
   chargeDrift(kart, controls, dt);
 }
 
-// A hop that goes over the lip becomes a jump, falling at the normal gravity.
-function crossLip(kart) {
+// A hop that goes over the lip becomes a jump, falling at the normal gravity. Also what a ramp item's launch
+// does (items/road-objects.js), so its trick window and timing readout are the course ramp's.
+export function crossLip(kart) {
   kart.sinceLip = 0;
   kart.hopping = false;
   const pressedJustBefore = kart.sinceDriftPress <= tuning.trickEarly;

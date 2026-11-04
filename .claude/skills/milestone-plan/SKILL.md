@@ -25,7 +25,7 @@ The main session (Opus) plans, integrates and hands off; `implementer` subagents
 
 ## 2. Build in parallel
 
-- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 3 at a time: the dev box has 4 threads and 7 GB, and every agent's commands run on it (kit-shots also lets only 2 runs draw at once across all worktrees, `tools/machine-slots.js`). Ten at once (tried in M7d4c3) used up the user's 5-hour usage limit within minutes and stopped every agent mid-task; six at once (M7d5) queued every kit-shots run and timed several out. Keep to 3 even when asked for more for one batch: the user decided so after M7d5.
+- Spawn one `implementer` per task with the Agent tool: `subagent_type: "implementer"`, `isolation: "worktree"`, `model` as planned, in the background. At most 3 at a time: the dev box has 4 threads and 7 GB, and every agent's commands run on it (kit-shots also lets only 2 runs draw at once across all worktrees, `tools/machine-slots.js`). Ten at once (tried in M7d4c3) used up the user's 5-hour usage limit within minutes and stopped every agent mid-task; six at once (M7d5) queued every kit-shots run and timed several out. Keep to 3 even when asked for more for one batch: the user decided so after M7d5. The 3 counts every subagent running at once, reviewers and browser-test tasks included (confirmed by the user before M8): with 3 implementers building, a finished task's reviewer waits for one of them to finish.
 - Give each the whole task as written in the plan (goal, files, interfaces, tests) plus the milestone id for the commit message. It starts with no context: say what it needs to know.
 - While they build, do the main session's own share (shared files, small edits) in the main checkout, without touching the files a task owns.
 
@@ -50,7 +50,7 @@ Then run the browser tests the change calls for, picked by `CLAUDE.md`'s Testing
 When the user asks for several similar milestones in one chat (CLAUDE.md), plan them all at once as a queue:
 - Write every task's spec, with the rules shared by all, into `docs/queue.md`, with a status table (queued, building, merged, dropped). Spawn each implementer with only its task letter and the file's path, so the spawn costs little of the main session's context; the file also keeps the queue's state if the conversation is summarized.
 - First a prep task where needed, so later tasks each own their own files (for the M7d4 look: each piece makes its own materials). Tasks that share a file never run at the same time.
-- At most 3 implementers at once; when one finishes, review and merge it, then spawn the next queued task whose dependencies are merged.
+- At most 3 subagents at once, reviewers included; when an implementer finishes, its reviewer takes its place, then the next queued task whose dependencies are merged.
 - Implementers judge their own work (kit-shots before and after) and report; a `reviewer` reads each diff (step 3); the main session reads both and the after sheet, merges, and sends the user the after sheet (SendUserFile) for feedback, or, when the user reviews only at the end (M8), keeps the sheets for the handoff.
 - Browser tests when no implementer is drawing (they time out beside kit-shots runs); while they run, only tasks that do not draw build. The census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
 

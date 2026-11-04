@@ -1,7 +1,7 @@
 # Task queue: M8 (our own items), M8a to M8c in one session
 
-M8 (`plan.md`) planned on 2026-11-04 as one queue, built in one session by `implementer` subagents, at most 3 at a
-time, with one review and one device run at the end (the user's choice: no stops between M8a, M8b and M8c). Each
+M8 (`plan.md`) planned on 2026-11-04 as one queue, built in one session by `implementer` subagents, at most 3 subagents at a
+time (reviewers included), with one review and one device run at the end (the user's choice: no stops between M8a, M8b and M8c). Each
 implementer is told one task letter; everything it needs is here. The main session keeps the Status column up to
 date at every spawn and merge, so a summarised conversation picks up from this file. At the handoff this file is
 folded into `docs/history.md` and deleted.

@@ -14,11 +14,11 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | Task | Part | What | Model | Waits for | Status |
 |---|---|---|---|---|---|
 | 0 | M8a | Prep (main session): item ids, the Item button's name, M8a's tunables | main | none | merged |
-| A | M8a | Item rules: boxes, roulette, odds by place, holding and using, effect timers, settings rules, CPU use, views | opus | 0 | building |
-| B | M8a | Phone: the Item button with the held item, the roulette and running effects | sonnet | 0 (merges after C) | queued |
-| C | M8a | Host: item icons, the HUD's item frame and effect rings, the Items settings, wiring in index.js | sonnet | 0 (merges after A) | queued |
+| A | M8a | Item rules: boxes, roulette, odds by place, holding and using, effect timers, settings rules, CPU use, views | opus | 0 | merged |
+| B | M8a | Phone: the Item button with the held item, the roulette and running effects | sonnet | 0 (merges after C) | merged |
+| C | M8a | Host: item icons, the HUD's item frame and effect rings, the Items settings, wiring in index.js | sonnet | 0 (merges after A) | merged |
 | D | M8a | Looks: the item box (spin, break, return) and the kart effects (big, small, bouncy) | opus | 0 (merges after A) | building |
-| E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | building |
+| E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | queued |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | queued |
 | H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | queued |
@@ -426,4 +426,29 @@ items per race by switching items between races); report it.
 Choices the main session or an implementer made while the user was away, for the review at the end (what, why,
 and where to change it).
 
-(none yet)
+- **E, CPU karts and small's faster turning** (main session, after E's review): the CPU driver's turn estimates
+  (`steerFor`, `speedAhead` in `cpu-driver.js`) do not know a small kart turns 1.6 times faster. Measured with a
+  Hard kart on Seaside Skyway, kept small for two laps: it flipped its stick 15 times a lap (a normal kart 70),
+  lapped in 34.8 s (normal 35.7 s) and never fell, so it does not weave and nothing was changed. If small CPU karts
+  look twitchy on the device run, divide `pursuitRate`'s result by `effectTurnShare(kart)` there.
+- **E, two bouncy karts** part as usual (no extra); the extra goes wholly to the non-bouncy kart, so the pair
+  parts at exactly `bouncyBounceShare` times the usual speed (`kart-bumps.js` `addBouncyExtra`).
+- **A, `startEffect`** lives in `items/kart-effect.js` and is re-exported by `item-rules.js` (the interface is
+  unchanged): the catalog importing it from `item-rules.js` made an import loop that threw at load time.
+- **A, items run on at the results:** `stepItems` also runs at the results, so effects, roulettes and box returns
+  run out behind them (a big kart would otherwise stay big); no pickups or uses there or by a finished kart. A box
+  breaks for any kart after GO, also one that cannot pick up (as in MK8DX, where a box breaks either way).
+- **A, falling:** no item use while falling; the kart keeps its item, and a press made then is used up.
+- **A, stand-ins and finished players' karts** use items by the CPU rules, so Watch shows items.
+- **A, the race's random:** `race.items.random` is a counter (from 8); each draw is the first number of
+  `random.js`'s `createRandom(counter)`, then the counter goes up by one.
+- **A, box rows:** Seaside's 805 row is 30 units into the straight after the hairpin, where the road still widens
+  (half-width about 8.6), so it holds 5 boxes about 3.6 apart. Test track rows at 50 and 455 (the dash panel is
+  at 470).
+- **A, CPU rules:** bouncy when a kart within 6 is behind or alongside; big when a kart is up to 12 ahead within 3
+  of its line, or after 4 s; small when the road turns 1.2 rad or more over the next 50 stations; each after a
+  random 0.5 to 2 s. No catch-all: a CPU kart may hold bouncy a long time when nobody is near (a defensive hold).
+- **A, few pickups per row:** in a simulated 120 s race the pack broke most boxes inside the 3 s return time
+  (about 20 pickups in all). `itemBoxReturnSeconds` is the slider to try on the device run.
+- **A, the race is not wholly plain data, and was not before M8:** `sinceDriftPress` starts at `Infinity`, which
+  JSON turns into null; the items test round-trips only the item state.

@@ -1,5 +1,5 @@
 // The phone side of the 3D race, a game module: the shared kart controls (controller/kart/controls.js) with the
-// Drift button. The middle of the controls shows the countdown, then the place, with a line for the lap, how
+// Drift and Item buttons. The middle of the controls shows the countdown, then the place, with a line for the lap, how
 // the start went (for a moment after GO), the final lap and the finish. Loaded and started by
 // controller/game-screen.js.
 
@@ -9,7 +9,7 @@ import * as kartControls from '/controller/kart/controls.js';
 const START_TEXT = { rocket: 'Rocket start!', stall: 'Too early: stalled' };
 
 export function start(container, send) {
-  kartControls.start(container, send, { describeStatus, drift: true });
+  kartControls.start(container, send, { describeStatus, drift: true, items: true });
 }
 
 // `view` is what host/games/kart-3d/race-views.js made for this player (see kartControls.showView).

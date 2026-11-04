@@ -8,15 +8,18 @@ import * as buttonInput from '/controller/inputs/button.js';
 import * as steering from '/controller/kart/steering.js';
 import * as setupScreen from '/controller/kart/setup-screen.js';
 import { MARKUP } from '/controller/kart/markup.js';
+import { ITEM_ICONS } from '/shared/item-icons.js';
+import { createItemSlot } from '/controller/kart/item-slot.js';
 
 // The page elements, looked up by start() once MARKUP is in place.
 let setup, controls, accelerateButton, driftButton, bigText, lineText;
 let sendMessage = null; // set by start
+let itemSlot = null; // the Item button's display in the 3D race, else null. Set by start
 // (view) -> { big, line }: what the middle of the controls says for a race view. Set by start.
 let describeStatus = null;
 
-// `race` is { describeStatus, drift }: describeStatus(view) -> { big, line }, and drift true to show the Drift
-// button (the 3D race).
+// `race` is { describeStatus, drift, items }: describeStatus(view) -> { big, line }, drift true to show the Drift
+// button and items true to show the Item button (the 3D race).
 export function start(container, send, race) {
   container.innerHTML = MARKUP;
   const byId = (id) => document.getElementById(id);
@@ -28,11 +31,10 @@ export function start(container, send, race) {
   lineText = byId('kart-line');
   sendMessage = send;
   describeStatus = race.describeStatus;
-  // With Drift the buttons join the controls' grid (controller/kart/style.css), with the Item button's place
-  // kept free.
+  // With Drift the buttons join the controls' grid (controller/kart/style.css), the Item button's place too.
   controls.classList.toggle('with-drift', race.drift);
   driftButton.hidden = !race.drift;
-  byId('kart-item-slot').hidden = !race.drift;
+  itemSlot = race.items ? createItemSlot(byId('kart-item-slot'), ITEM_ICONS) : null;
   // A long press on a held button must not open the browser's menu.
   // On the game's own element, not the container, which the shell keeps between games.
   byId('kart-screen').addEventListener('contextmenu', (event) => event.preventDefault());
@@ -80,6 +82,7 @@ export function showView(view) {
   // The 3D race's drift shows its spark colour on the button (styled by data-spark), so a player can see the
   // level without looking up at the host screen.
   driftButton.dataset.spark = view.spark ?? '';
+  itemSlot?.show(view.item);
   const status = describeStatus(view);
   bigText.textContent = status.big;
   lineText.textContent = status.line;
@@ -89,6 +92,7 @@ export function showView(view) {
 export function stop() {
   steering.stop();
   buttonInput.stop();
+  itemSlot?.stop();
 }
 
 function sendInput(input) {

@@ -21,7 +21,7 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | E | M8a | Rules of the kart effects: big, small, bouncy in speed, steering, bumps and walls | sonnet | 0 | merged |
 | F | M8a | Browser test `m8-kart-3d-items` (M8a's items), spawned alone | sonnet | A-E merged | merged |
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
-| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | interrupted (usage limit): worktree agent-a0e09bf21464319f4, respawn or continue |
+| H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | queued (stopped at the usage limit before any change; spawn afresh) |
 | I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | queued |
 | J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | queued |
 | K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | queued |
@@ -477,5 +477,4 @@ and where to change it).
   button shows only with items). No other old browser test failed with items on.
 - **Run state at the usage limit (2026-11-04):** M8a (0, A to F) and G merged. Browser tests on main at 64fa172:
   the full suite passed apart from m6b and m7a (fixed, see above); then m6b, m6c, m7a, m7b and m8 all passed
-  (29 tests, 327 s). H was stopped mid-build: look at `.claude/worktrees/agent-a0e09bf21464319f4` (`git status`,
-  `git log`), keep anything committed, else spawn H afresh. Then I, J, K, L as planned.
+  (29 tests, 327 s). H was stopped before it changed anything (its worktree is gone): spawn it afresh.

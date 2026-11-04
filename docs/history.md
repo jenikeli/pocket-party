@@ -715,3 +715,4 @@ Notes (built 2026-11-03 in one chat; numbers and the device-run procedure in "M7
   - Tests that read `kart.lane` read `kart.cpu`.
   - Every `createRace` and `createStandInRace` in the tests passes a CPU level.
 - **New tests:** `kart-3d-racing-line.test.js`, `kart-3d-cpu-driver.test.js`, `kart-3d-cpu-pace.test.js`, `kart-3d-race-cpus.test.js`. `npm test` now takes about 24 s on the dev box.
+- **Device run (iPad, 2026-11-04):** the CPUs rocket start, spread out, drift with purple in the big sweeper and trick at the jump; racing them "is a challenge, but feels possible to beat"; the CPU sliders stay at their defaults and stay in the Tuning panel; nothing broke. Watch 4 dropped to about 40 fps at times, from M7d5's karts and bloom, not the CPU drivers (M7d5's Measure in `docs/3d-findings.md`).

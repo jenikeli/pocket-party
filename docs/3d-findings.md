@@ -1082,10 +1082,26 @@ Measure on the S24, ms per frame with the GPU made to finish each frame:
 - **One view barely gets cheaper** with anything removed, which suggests the S24 is limited by its pixel count (2124x798 at device pixel ratio 2.625) or by the forced GPU finish more than by triangles.
 - **Not comparable with the iPad's numbers** (M7d4b2: Medium with 4 views 11.9 ms).
 
-**Still to do on the iPad:**
-- Watch 4 on High: does it still flicker?
-- Measure: paste the report, to compare "Medium" with "Medium, no karts".
-- Steps 1-3, 5 and 6 of the procedure above.
+**iPad, after the fix (2026-11-04, during M7e's device run):** Watch 4 on High did not flicker. It held 60 fps at times and dropped to about 40 at others. Measure (Seaside Skyway, canvas 1366x892 at pixel ratio 2), ms a frame with the GPU made to finish:
+
+| | 1 view | 4 views | 4 views: calls, triangles |
+|---|---|---|---|
+| High | 9.5 | 17.5 (worst 20.5) | 2042, 7.66M |
+| Medium | 6.4 | 14.0 (worst 17.0) | 2028, 7.66M |
+| Low | 5.6 | 13.5 | 2028 |
+| Medium, no shadows | 5.9 | 10.9 | 1196 |
+| Medium, no barriers | 5.5 | 10.6 | 1637 |
+| Medium, no props | 5.6 | 12.4 | 1807 |
+| Medium, no karts | 5.8 | 10.6 | 1121, 5.44M |
+
+The other parts (road, sea, supports, decks, gate, surroundings, sky) each moved the four-view frame by under a millisecond. CPU time was 1.0-1.8 ms with one view and 2.6-4.5 with four.
+
+- **Why it drops to 40:** High with 4 views went from 13.3 ms (M7d4b2) to 17.5. That is past the 16.7 ms of a 60 Hz frame, so frames miss their slot.
+- **The karts cost 3.4 ms with 4 views** (Medium 14.0 against 10.6 without them), and 0.6 ms with one. They add about 900 draw calls, since each kart's 10 calls are drawn again in each view's shadow pass.
+- **Bloom costs more than before:** High over Medium is 3.5 ms with 4 views, against 1.4 in M7d4b2. The likely cause is the clamp pass added by the flicker fix (`guardBloomInput`), a full-screen pass at pixel ratio 2. Not measured on its own.
+- **Still well above MK8DX's own bar,** 30 fps with 3-4 players. A steady 60 on High with four views would need about 1-4 ms back. The candidates: the karts' shadows from a one-mesh stand-in per kart, and the clamp folded into bloom's first pass.
+
+**Still to do on the iPad:** steps 1-3, 5 and 6 of the procedure above (how long the course takes to appear, the designs up close, the anti-gravity wheels, the two phones' designs).
 
 **If the karts cost too much there:**
 - Cast the karts' shadows from a low-poly stand-in: a shadow pixel is about 0.14 units, so the drivers' detail is lost in the shadow pass anyway.
@@ -1149,3 +1165,13 @@ On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`,
 7. **Anything broken:** a CPU stuck against a wall, going the wrong way, falling off the course, or hopping without drifting again and again. Note where on the lap (what is there to recognise it) and at which level.
 
 Copy values in the Tuning panel gives the changed numbers to paste back.
+
+### Device run
+
+On the iPad (2026-11-04), one phone:
+- **Steps 1-2:** the CPU row is there. On Hard the CPU karts do what step 2 lists: rocket starts, spreading, sparks with purple in the big sweeper, tricks at the jump.
+- **Step 3:** Watch 4 holds 60 fps at times and drops to about 40 at others. The cause is the M7d5 karts and bloom, not the CPU drivers: see M7d5's Measure above, where the CPU time per frame is unchanged.
+- **Step 4:** no flicker, and the Measure report is in M7d5's notes.
+- **Step 5:** racing the CPUs "is a challenge, but feels possible to beat", so the levels stay as they are.
+- **Step 6:** the CPU drivers' sliders seemed fine at their defaults, so nothing was tuned. They stay in the Tuning panel for later adjustment.
+- **Step 7:** nothing broken was seen.

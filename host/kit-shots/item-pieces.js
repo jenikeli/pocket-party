@@ -1,8 +1,7 @@
 // The kit-shots pieces for the items' looks (M8): item-box, item-box-row (a row across the road), item-box-broken
-// (one box mid-burst, one popping back), and kart-big, kart-small, kart-bouncy (each beside a kart with no effect,
-// for size). They draw from a made-up race state through the race's own drawing (items/item-drawing.js,
-// kart-models.js), a few frames on so the bursts and wobbles are under way; itemShowRace and drawItemRace are for
-// the later items' pieces too. Used by pieces.js.
+// (one box mid-burst, one popping back). They draw from a made-up race state through the race's own drawing
+// (items/item-drawing.js, kart-models.js), a few frames on so the bursts are under way; itemShowRace and
+// drawItemRace are for the later items' pieces too. Used by pieces.js.
 
 import * as THREE from 'three';
 import { KART_ITEMS } from '../../shared/protocol.js';
@@ -13,14 +12,12 @@ import { RACE_PHASES } from '../games/kart-3d/race.js';
 import { pointAt } from '../games/kart-3d/track.js';
 import { tuning } from '../games/kart-3d/tuning.js';
 import { createItemDrawing } from '../games/kart-3d/items/item-drawing.js';
-import { kartLookScale, kartRubbery } from '../games/kart-3d/items/kart-effect-looks.js';
+import { kartLookScale } from '../games/kart-3d/items/kart-effect-looks.js';
 import { PIECE_S } from './landmark-pieces.js';
 
 const FRAME_SECONDS = 1 / 60;
-// Two karts side by side stand this far either side of the road's middle.
-const PAIR_LATERAL = 1.7;
 const ROW_LATERALS = [-5.4, -1.8, 1.8, 5.4];
-// Which design each shown kart draws (indexes into KART_DESIGNS): a plain one beside the one with the effect.
+// Which design each shown kart draws (indexes into KART_DESIGNS): a different one beside it.
 const DESIGNS = [0, 1];
 
 // A race as the item drawing reads it (queue.md's "State"), racing, standing still at PIECE_S: `karts` is
@@ -50,22 +47,13 @@ export function drawItemRace(scene, track, race, { frames = 1, change } = {}) {
     change?.(race, frame);
     const poses = race.karts.map((kart) => kartPose(kart, 1));
     race.karts.forEach((kart, index) => {
-      models.show(index, kart, poses[index], DESIGNS[index % DESIGNS.length], FRAME_SECONDS, kartLookScale(race, kart), kartRubbery(race, kart));
+      models.show(index, kart, poses[index], DESIGNS[index % DESIGNS.length], FRAME_SECONDS, kartLookScale(race, kart));
     });
     if (race.karts.length === 0) {
       models.hide(0);
     }
     items.update(race, track, poses, FRAME_SECONDS);
   }
-}
-
-// Counts every running effect down one frame, as the rules would.
-function countDown(race) {
-  race.karts.forEach(({ item }) => {
-    if (item.effect) {
-      item.effect.left -= FRAME_SECONDS;
-    }
-  });
 }
 
 // A camera standing in the road's axes at PIECE_S: `eye` and `look` are [across (right), up, along].
@@ -96,10 +84,6 @@ const ROW_CAMERAS = {
   near: [[3, 1.3, -11], [0, 1.2, 0], 40],
   above: [[0, 6, -16], [0, 0.8, 0], 40],
 };
-const KART_CAMERAS = {
-  near: [[3.6, 1.5, 6.2], [0, 0.9, 0], 38],
-  above: [[0, 3.4, -8.5], [0, 1, 0], 34],
-};
 
 const row = (returnLefts) => ROW_LATERALS.map((lateral, index) => ({ s: PIECE_S, lateral, returnLeft: returnLefts[index] }));
 
@@ -111,23 +95,6 @@ function breakSecondBox(race, frame) {
   race.items.boxes.forEach((box) => (box.returnLeft = Math.max(box.returnLeft - (frame > 1 ? FRAME_SECONDS : 0), 0)));
 }
 
-// A kart beside a plain one whose effect `item` starts on the second frame and has run `frames` frames since.
-function effectPiece(item, frames) {
-  return itemPiece(
-    (track) => itemShowRace(track, { karts: [{ lateral: -PAIR_LATERAL }, { lateral: PAIR_LATERAL }] }),
-    {
-      frames,
-      change(race, frame) {
-        if (frame === 1) {
-          race.karts[1].item.effect = { item, left: tuning.itemEffectSeconds };
-        }
-        countDown(race);
-      },
-    },
-    KART_CAMERAS,
-  );
-}
-
 export const ITEM_PIECES = {
   'item-box': itemPiece((track) => itemShowRace(track, { boxes: [{ s: PIECE_S, lateral: 0, returnLeft: 0 }] }), { frames: 20 }, BOX_CAMERAS),
   'item-box-row': itemPiece((track) => itemShowRace(track, { boxes: row([0, 0, 0, 0]) }), { frames: 20 }, ROW_CAMERAS),
@@ -136,7 +103,4 @@ export const ITEM_PIECES = {
     { frames: 10, change: breakSecondBox },
     ROW_CAMERAS,
   ),
-  'kart-big': effectPiece(KART_ITEMS.BIG, 90),
-  'kart-small': effectPiece(KART_ITEMS.SMALL, 24),
-  'kart-bouncy': effectPiece(KART_ITEMS.BOUNCY, 70),
 };

@@ -12,7 +12,6 @@ import { tuning } from './tuning.js';
 import { kartTopSpeed } from './kart-driving.js';
 import { startBoost, endBoost, BOOST_KINDS } from './kart-boosts.js';
 import { startSpin } from './kart-body.js';
-import { effectMassShare, effectSize, effectBounceShare } from './items/effect-rules.js';
 
 // Pushes every overlapping pair apart and bounces their velocities along the line between them. Karts that are
 // falling after leaving the road are left out.
@@ -25,34 +24,16 @@ export function bumpKarts(karts) {
   }
 }
 
-// The kart's weight (times its item effect's mass share) times tuning.standingMassShare standing still, rising
-// to its full weight at its top speed.
+// The kart's weight times tuning.standingMassShare standing still, rising to its full weight at its top speed.
 export function kartMass(kart) {
   const speedShare = Math.min(length(kart.velocity) / kartTopSpeed(kart), 1);
-  return kart.weight * effectMassShare(kart) * (tuning.standingMassShare + (1 - tuning.standingMassShare) * speedShare);
-}
-
-// A bouncy kart (item effect) parts from a normal kart at its bounce share times the usual parting speed. The
-// extra speed goes wholly to the other kart, so the bouncy one keeps its line. Two bouncy karts, or none, part
-// as usual.
-function addBouncyExtra(first, second, normal, partingSpeed) {
-  const firstBounce = effectBounceShare(first);
-  const secondBounce = effectBounceShare(second);
-  if ((firstBounce > 1) === (secondBounce > 1)) {
-    return;
-  }
-  const extra = partingSpeed * (Math.max(firstBounce, secondBounce) - 1);
-  if (firstBounce > 1) {
-    second.velocity = addScaled(second.velocity, normal, extra);
-  } else {
-    first.velocity = addScaled(first.velocity, normal, -extra);
-  }
+  return kart.weight * (tuning.standingMassShare + (1 - tuning.standingMassShare) * speedShare);
 }
 
 function bumpPair(first, second) {
   const between = subtract(second.position, first.position);
   const distance = length(between);
-  const overlap = KART_RADIUS * (effectSize(first) + effectSize(second)) - distance;
+  const overlap = KART_RADIUS * 2 - distance;
   if (overlap <= 0) {
     return;
   }
@@ -76,7 +57,6 @@ function bumpPair(first, second) {
   const impulse = (partingSpeed - closingSpeed) / (1 / firstMass + 1 / secondMass);
   first.velocity = addScaled(first.velocity, normal, -impulse / firstMass);
   second.velocity = addScaled(second.velocity, normal, impulse / secondMass);
-  addBouncyExtra(first, second, normal, partingSpeed);
   first.slideLeft = tuning.slideSeconds;
   second.slideLeft = tuning.slideSeconds;
   // Only when they meet (closing in), not every step they stay touching.

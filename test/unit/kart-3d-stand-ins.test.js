@@ -41,8 +41,9 @@ test('the stand-ins drive themselves, each with a CPU driver of its own', () => 
 
 test('the stand-ins race with the allowed items, and with none by default', () => {
   assert.deepEqual(createStandInRace(track, 1, 2, DEFAULT_ENGINE_CLASS, 'normal').race.items.allowed, []);
-  const { race } = createStandInRace(track, 2, 2, DEFAULT_ENGINE_CLASS, 'normal', ['big', 'small']);
-  assert.deepEqual(race.items.allowed, ['big', 'small']);
+  const { race } = createStandInRace(track, 2, 2, DEFAULT_ENGINE_CLASS, 'normal', ['magnet', 'push'], 77);
+  assert.deepEqual(race.items.allowed, ['magnet', 'push']);
+  assert.equal(race.items.random, 77, 'the item seed is passed on');
 });
 
 test('a race takes 1 to 4 stand-ins', () => {

@@ -9,7 +9,7 @@ test('no item view (items off, 2D race) hides the button', () => {
 });
 
 test('nothing held is empty, with its effects still shown', () => {
-  const effects = [{ item: 'big', secondsLeft: 3 }];
+  const effects = [{ item: 'magnet', secondsLeft: 3 }];
   const slot = describeItemSlot({ held: null, rolling: false, effects });
   assert.deepEqual(slot, { state: 'empty', held: null, effects });
 });
@@ -26,7 +26,7 @@ test('an id the icons do not know passes through unchanged (the drawing skips it
 });
 
 test('effects are passed through while rolling', () => {
-  const effects = [{ item: 'small', secondsLeft: 4 }];
+  const effects = [{ item: 'push', secondsLeft: 4 }];
   assert.deepEqual(describeItemSlot({ held: null, rolling: true, effects }).effects, effects);
 });
 

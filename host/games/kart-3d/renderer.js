@@ -29,7 +29,7 @@ import { waitForGpu, frameStats, describeGpu } from './gpu-probe.js';
 import { createCourseLight } from './course-light.js';
 import { bakeShade } from './baked-shade.js';
 import { createItemDrawing } from './items/item-drawing.js';
-import { kartLookScale, kartCameraSize, kartRubbery } from './items/kart-effect-looks.js';
+import { kartLookScale } from './items/kart-effect-looks.js';
 
 // How much the sea mirrors the sky: at the course light's strength it would reflect so much pale horizon that it
 // turns whitish.
@@ -127,7 +127,6 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
       name: player ? displayName(player) : 'CPU',
       color: player ? colorText(player) : '#ffffff',
       boosting: kart.boost !== null,
-      cameraSize: kartCameraSize(race, kart),
       hud: viewHud(race, kart),
     }));
     drawFrame((target) => views.draw(renderer, scene, targets, dt, target, fitShadow), targets.length);
@@ -163,7 +162,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
         kartModels.hide(index);
         return;
       }
-      kartModels.show(index, kart, poses[index], kartDesigns[index], dt, kartLookScale(race, kart), kartRubbery(race, kart));
+      kartModels.show(index, kart, poses[index], kartDesigns[index], dt, kartLookScale(race, kart));
     });
   }
 

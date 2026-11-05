@@ -15,7 +15,6 @@ import { forwardSpeed } from '../kart-physics.js';
 import { KART_RADIUS, HIT_SPEED, bounceOff } from '../kart-walls.js';
 import { endBoost, BOOST_KINDS } from '../kart-boosts.js';
 import { crossLip } from '../kart-techniques.js';
-import { effectSize } from './effect-rules.js';
 import { tuning } from '../tuning.js';
 
 // How long a vanished object stays in the list for the drawing to play its ending.
@@ -24,7 +23,7 @@ export const OBJECT_VANISH_SECONDS = 0.6;
 export const BLOCKER_SIZE = Object.freeze({ radius: 1.4, height: 1.6 });
 // The ramp's footprint on the road (length along it, width across it) and how high its far end stands.
 export const RAMP_SIZE = Object.freeze({ length: 6, width: 6, height: 1 });
-// The blocker is dropped this far behind the kart's middle (further for a big kart, clear of its own blocker),
+// The blocker is dropped this far behind the kart's middle (clear of its own blocker),
 // the ramp this far ahead of it.
 const BLOCKER_BEHIND = 3;
 const BLOCKER_CLEARANCE = 0.3;
@@ -42,7 +41,7 @@ export function objectFrame(track, object) {
 
 // The kart drops a blocker just behind it at its lane, kept on the road and off gaps.
 export function dropBlocker(race, track, kart) {
-  const clear = BLOCKER_SIZE.radius + KART_RADIUS * effectSize(kart) + BLOCKER_CLEARANCE;
+  const clear = BLOCKER_SIZE.radius + KART_RADIUS + BLOCKER_CLEARANCE;
   const behind = Math.max(BLOCKER_BEHIND, clear);
   addObject(race, track, KART_ITEMS.BLOCKER, kart.s - behind, kart.lateral, BLOCKER_SIZE.radius, 0);
 }
@@ -100,7 +99,7 @@ export function stepObjects(race, track, dt) {
 // bounce (tuning.js: wallGrazeLoss, wallHitLoss, wallBounce, wallBounceSpeed, wallScrape), so a blocker is
 // no better a thing to rub along than a wall. kart-walls.js's own version only knows the road's edge.
 function bumpOffBlocker(track, object, kart) {
-  const reach = BLOCKER_SIZE.radius + KART_RADIUS * effectSize(kart);
+  const reach = BLOCKER_SIZE.radius + KART_RADIUS;
   if (Math.abs(progressBetween(track, object.s, kart.s)) > reach) {
     return;
   }

@@ -25,6 +25,7 @@ import { createMeasurePanel } from './measure-panel.js';
 import { QUALITY_LEVELS, loadQuality, saveQuality } from './quality.js';
 import { loadPlainCourse } from './plain-course.js';
 import { createStandInRace } from './stand-ins.js';
+import { freshItemSeed } from './items/item-rules.js';
 import { createItemSettings, toggleItems, toggleItem, allowedItems } from './items/item-settings.js';
 
 // Each phone's round-trip time is measured this often while the game runs, for the readout.
@@ -203,7 +204,7 @@ export function createGame() {
   // dropped.
   function putKartsOnGrid() {
     const playerIds = playersInSlotOrder(players).map((player) => player.playerId);
-    race = createRace(track, playerIds, setup.laps, engineClass, cpuLevel, allowedItems(itemSettings));
+    race = createRace(track, playerIds, setup.laps, engineClass, cpuLevel, allowedItems(itemSettings), freshItemSeed());
     controls = createControlsTable();
   }
 

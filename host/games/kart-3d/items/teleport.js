@@ -11,7 +11,6 @@ import { pointAt, wrapDistance, progressBetween, SURFACES } from '../track.js';
 import { subtract, length, scale } from '../vector.js';
 import { forwardSpeed } from '../kart-physics.js';
 import { KART_RADIUS } from '../kart-walls.js';
-import { effectSize } from './effect-rules.js';
 import { tuning } from '../tuning.js';
 import { RACE_PHASES } from '../race-phases.js';
 
@@ -73,7 +72,7 @@ function findSpot(race, track, kart, random) {
   for (let tries = 0; tries < HOP_TRIES; tries += 1) {
     const s = kart.s + (random() * 2 - 1) * tuning.teleportReach;
     const station = track.stations[pointAt(track, s).index];
-    const limit = station.halfWidth - KART_RADIUS * effectSize(kart);
+    const limit = station.halfWidth - KART_RADIUS;
     const lateral = (random() * 2 - 1) * limit;
     const position = pointAt(track, s, lateral).position;
     const crowded = race.karts.some((other) => other !== kart && length(subtract(other.position, position)) < KART_SPACING);

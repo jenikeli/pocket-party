@@ -7,24 +7,13 @@ import { turnAhead, wrapIndex } from '../track.js';
 import { subtract, length, dot } from '../vector.js';
 import { magnetTargets } from './field-forces.js';
 
-// Bouncy: a kart within this reach that is behind or alongside (at most this far ahead along the nose).
-const BOUNCY_REACH = 6;
-const ALONGSIDE = 1;
-// Big: a kart this close ahead and about in line, to flatten; or once it has held the item this long anyway.
-const BIG_AHEAD_REACH = 12;
-const BIG_IN_LINE = 3;
-const BIG_ANYWAY_SECONDS = 4;
-// Small: when the road ahead turns this much in all (radians, either way) over the next stations looked at,
-// so the quick turning is used through a run of corners.
-const CORNER_LOOKS = [0, 10, 20, 30, 40];
-const CORNERS_TURN = 1.2;
-
 // Blocker: a kart this close behind, about in line, to bump into it.
 const BLOCKER_BEHIND_REACH = 12;
 const BLOCKER_IN_LINE = 3;
-// Ramp: on the ground with the road running straight: less than this turn (radians) at the same stations
+// Ramp: on the ground with the road running straight: less than this turn (radians) at these stations ahead
 // (the ramp is 15 ahead and a launched kart flies about 16 further).
 const RAMP_STRAIGHT = 0.25;
+const CORNER_LOOKS = [0, 10, 20, 30, 40];
 // Push: a kart this close, any way round, to shove aside (the push is strongest close up).
 const PUSH_CLOSE = 5;
 // Sticky walls: once it has held the item this long, so not every CPU kart uses it the moment it lands.
@@ -32,12 +21,6 @@ const STICKY_AFTER_SECONDS = 3;
 
 // Per item: (race, track, kart, heldFor) -> true to use it now. heldFor is the seconds since it landed.
 const CPU_RULES = Object.freeze({
-  [KART_ITEMS.BOUNCY]: (race, track, kart) =>
-    otherKarts(race, kart).some(({ ahead, distance }) => distance <= BOUNCY_REACH && ahead <= ALONGSIDE),
-  [KART_ITEMS.BIG]: (race, track, kart, heldFor) =>
-    heldFor >= BIG_ANYWAY_SECONDS ||
-    otherKarts(race, kart).some(({ ahead, sideways }) => ahead > 0 && ahead <= BIG_AHEAD_REACH && sideways <= BIG_IN_LINE),
-  [KART_ITEMS.SMALL]: (race, track, kart) => cornersAhead(track, kart, CORNER_LOOKS) >= CORNERS_TURN,
   [KART_ITEMS.BLOCKER]: (race, track, kart) =>
     otherKarts(race, kart).some(({ ahead, sideways }) => ahead < 0 && ahead >= -BLOCKER_BEHIND_REACH && sideways <= BLOCKER_IN_LINE),
   [KART_ITEMS.RAMP]: (race, track, kart) => kart.grounded && cornersAhead(track, kart, CORNER_LOOKS) < RAMP_STRAIGHT,

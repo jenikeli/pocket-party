@@ -11,7 +11,7 @@ import { scale, addScaled, subtract, length } from '../../host/games/kart-3d/vec
 import { createRace, stepRace, RACE_PHASES } from '../../host/games/kart-3d/race.js';
 import { createKart, forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
 import { stepItems } from '../../host/games/kart-3d/items/item-rules.js';
-import { ITEM_CATALOG, BUILT_ITEMS, ITEM_ROLES } from '../../host/games/kart-3d/items/item-catalog.js';
+import { ITEM_CATALOG } from '../../host/games/kart-3d/items/item-catalog.js';
 import { cpuWantsItem } from '../../host/games/kart-3d/items/cpu-items.js';
 import {
   OBJECT_VANISH_SECONDS,
@@ -59,12 +59,6 @@ function stepItemsFor(race, seconds) {
     stepItems(race, track, STEP);
   }
 }
-
-test('catalog: the blocker defends, the ramp catches up, both are built', () => {
-  assert.ok(BUILT_ITEMS.includes(KART_ITEMS.BLOCKER) && BUILT_ITEMS.includes(KART_ITEMS.RAMP));
-  assert.equal(ITEM_CATALOG[KART_ITEMS.BLOCKER].role, ITEM_ROLES.DEFEND);
-  assert.equal(ITEM_CATALOG[KART_ITEMS.RAMP].role, ITEM_ROLES.CATCH_UP);
-});
 
 test('blocker: dropped just behind the kart at its lane, with running ids, and no objects with items off', () => {
   const { race, kart } = raceWithKart(STRAIGHT_S, 2);

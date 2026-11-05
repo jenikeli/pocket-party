@@ -8,7 +8,7 @@
 
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { subtract, length, scale, addScaled, flatten, cross } from '../vector.js';
-import { runningEffect, effectMassShare } from './effect-rules.js';
+import { runningEffect } from './effect-rules.js';
 import { tuning } from '../tuning.js';
 
 // The karts `kart`'s running magnet or push acts on this step: [] with neither running.
@@ -77,6 +77,6 @@ function accelerate(other, point, amount, dt) {
   const toward = flatten(subtract(point, other.position), other.up);
   const distance = length(toward);
   const direction = distance > 0 ? scale(toward, 1 / distance) : cross(other.forward, other.up);
-  const mass = other.weight * effectMassShare(other);
+  const mass = other.weight;
   other.velocity = addScaled(other.velocity, direction, (amount / mass) * dt);
 }

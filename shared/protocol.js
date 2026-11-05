@@ -173,10 +173,7 @@ export const KART_BUTTONS = Object.freeze({
 export const KART_ITEMS = Object.freeze({
   BLOCKER: 'blocker',
   RAMP: 'ramp',
-  BOUNCY: 'bouncy',
   TELEPORT: 'teleport',
-  BIG: 'big',
-  SMALL: 'small',
   MAGNET: 'magnet',
   PUSH: 'push',
   STICKY: 'sticky',

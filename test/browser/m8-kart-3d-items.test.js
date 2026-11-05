@@ -1,4 +1,4 @@
-// Browser test for M8, the 3D race's items on real pages: with Items on and one item allowed per race (all nine
+// Browser test for M8, the 3D race's items on real pages: with Items on and one item allowed per race (all six
 // items, one race each), a one-lap race where Ana (an Android phone, auto-accelerate, so no touch is needed to
 // drive) goes through the first row of item boxes; her phone's views show the roulette, then the held item; a
 // press of the Item button shows what the item does (a running effect on the phone's view and a ring in the
@@ -92,7 +92,7 @@ describe('M8 items', () => {
     await server?.stop();
   });
 
-  test('the setup screen\'s Items row has a button for each of the nine items; one lap is set', async () => {
+  test('the setup screen\'s Items row has a button for each of the six items; one lap is set', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('#kart-3d-items-button', 'aria-pressed'), 'true');
     const ids = await hostPage.locator('[data-item-id]').evaluateAll((buttons) => buttons.map((button) => button.dataset.itemId));
@@ -136,12 +136,9 @@ describe('M8 items', () => {
     return nextView((view) => view.item && view.item.held === null && !view.item.rolling);
   }
 
-  // The nine items, each used once in a race of its own. `shows` is what the item must show after the press.
+  // The six items, each used once in a race of its own. `shows` is what the item must show after the press.
   const TIMED_EFFECT = 'effect on the phone\'s view and a ring in the host\'s HUD';
   const ITEM_CHECKS = [
-    { id: KART_ITEMS.BIG, shows: TIMED_EFFECT },
-    { id: KART_ITEMS.SMALL, shows: TIMED_EFFECT },
-    { id: KART_ITEMS.BOUNCY, shows: TIMED_EFFECT },
     { id: KART_ITEMS.MAGNET, shows: TIMED_EFFECT },
     { id: KART_ITEMS.PUSH, shows: TIMED_EFFECT },
     { id: KART_ITEMS.STICKY, shows: TIMED_EFFECT },

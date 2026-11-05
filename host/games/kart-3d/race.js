@@ -13,7 +13,7 @@ import { racingLineFor } from './racing-line.js';
 import { driveByCpu, handOver, startCpuKarts, updateCpuPaces } from './race-cpus.js';
 import { progressBetween } from './track.js';
 import { GO_AT, STALL_SECONDS, START_OUTCOMES, watchGoButton, judgeStart, rocketBoostSeconds } from './rocket-start.js';
-import { createItems, freshItem, stepItems } from './items/item-rules.js';
+import { createItems, freshItem, stepItems, DEFAULT_ITEM_SEED } from './items/item-rules.js';
 import { RACE_PHASES } from './race-phases.js';
 
 export { RACE_PHASES };
@@ -37,7 +37,8 @@ const CPU_WEIGHTS = [0.8, 1, 1.25];
 const PLAYER_WEIGHT = 1;
 
 // `playerIds` in grid order, `laps`, `engineClass` (a key of ENGINE_CLASSES) and `cpuLevel` (a key of
-// CPU_LEVELS, cpu-levels.js) from the setup screen, and `allowedItems` the item ids allowed (none: items off).
+// CPU_LEVELS, cpu-levels.js) from the setup screen, `allowedItems` the item ids allowed (none: items off) and
+// `itemSeed` where the race's item draws start (items/item-rules.js; the game passes a fresh one each race).
 // As in MK8DX the players start at the back, behind the CPU karts. Returns the race: { phase, time, laps,
 // engineClass, cpuLevel, firstPlayerFinishTime, items, karts }; items is item-rules.js's createItems. time
 // counts from the start of the countdown (GO is at GO_AT); raceClock() gives the race's own clock from GO.
@@ -49,7 +50,7 @@ const PLAYER_WEIGHT = 1;
 // lap the lap it is on (1 to laps; it stays at laps once finished); lapStartedAt the race clock when that lap
 // began; finishTime the race clock when it finished, or null; place 1 for first (on the grid, the grid order);
 // item its items (item-rules.js's freshItem).
-export function createRace(track, playerIds, laps, engineClass, cpuLevel, allowedItems = []) {
+export function createRace(track, playerIds, laps, engineClass, cpuLevel, allowedItems = [], itemSeed = DEFAULT_ITEM_SEED) {
   // The course's racing line takes some tens of milliseconds to work out the first time: here, on the setup
   // screen's click, rather than at GO, when the CPU drivers first look at it.
   racingLineFor(track);
@@ -61,7 +62,7 @@ export function createRace(track, playerIds, laps, engineClass, cpuLevel, allowe
     engineClass,
     cpuLevel,
     firstPlayerFinishTime: null,
-    items: createItems(track, allowedItems),
+    items: createItems(track, allowedItems, itemSeed),
     karts: [],
   };
   for (let gridIndex = 0; gridIndex < cpuCount + playerIds.length; gridIndex += 1) {

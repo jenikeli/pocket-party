@@ -1,4 +1,4 @@
-// A kart's own running effect (M8: big, small, bouncy; later magnet and push): starting one and counting it
+// A kart's own running effect (M8: magnet and push): starting one and counting it
 // down. A kart has one running effect at a time, kart.item.effect = { item, left }, or null. Plain functions,
 // unit tested in Node. Used by the items in item-catalog.js (through item-rules.js, which exports startEffect)
 // and by item-rules.js's step.

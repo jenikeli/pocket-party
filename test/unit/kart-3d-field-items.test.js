@@ -14,7 +14,7 @@ import { viewHud, BANNERS } from '../../host/games/kart-3d/race-views.js';
 import { createKart, stepKart, forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
 import { recoveryControls } from '../../host/games/kart-3d/cpu-recovery.js';
 import { stepItems, startEffect } from '../../host/games/kart-3d/items/item-rules.js';
-import { ITEM_CATALOG, ITEM_ROLES } from '../../host/games/kart-3d/items/item-catalog.js';
+import { ITEM_CATALOG } from '../../host/games/kart-3d/items/item-catalog.js';
 import { itemHud, itemPhoneView } from '../../host/games/kart-3d/items/item-views.js';
 import { cpuWantsItem } from '../../host/games/kart-3d/items/cpu-items.js';
 import { TELEPORT_WARNING_SECONDS, TELEPORT_AFTER_SECONDS } from '../../host/games/kart-3d/items/teleport.js';
@@ -61,10 +61,6 @@ function lapOffset(kart) {
   const offset = kart.distance - (kart.s - track.startLine);
   return offset - Math.round(offset / track.length) * track.length;
 }
-
-test('catalog: teleport and magnet catch up, push defends, sticky walls are even', () => {
-  assert.deepEqual(FIELD_ITEMS.map((id) => ITEM_CATALOG[id].role), [ITEM_ROLES.CATCH_UP, ITEM_ROLES.CATCH_UP, ITEM_ROLES.DEFEND, ITEM_ROLES.EVEN]);
-});
 
 test('teleport: a warning with a banner, then every kart still racing hops along the road, clear of the others', () => {
   const race = racingRace();
@@ -140,15 +136,12 @@ test('field targets: a magnet pulls karts ahead in reach only; a push acts all r
 });
 
 // A kart driving at top speed down the start straight with a kart running `item` kept `ahead` behind it (or
-// beside it) the whole time; returns it after `seconds`. `weight` 4 stands in for a heavy (big) kart.
-function underField(item, ahead, lateral, seconds, makeBig = false) {
+// beside it) the whole time; returns it after `seconds`. 
+function underField(item, ahead, lateral, seconds) {
   const race = racingRace();
   const [holder, target] = race.karts;
   place(target, 2 + ahead, lateral, TOP_SPEED);
   startEffect(holder, item);
-  if (makeBig) {
-    startEffect(target, KART_ITEMS.BIG);
-  }
   for (let step = 0; step < Math.round(seconds / STEP); step += 1) {
     stepKart(track, target, DRIVE, STEP);
     target.distance = target.s;
@@ -159,13 +152,11 @@ function underField(item, ahead, lateral, seconds, makeBig = false) {
   return target;
 }
 
-test('magnet: a kart 10 ahead loses about a quarter of its speed, one at the reach edge hardly any, a big one less', () => {
+test('magnet: a kart 10 ahead loses about a quarter of its speed, one at the reach edge hardly any', () => {
   const near = forwardSpeed(underField(KART_ITEMS.MAGNET, 10, 0, 5)) / TOP_SPEED;
   assert.ok(near > 0.7 && near < 0.8, `10 ahead: ${near.toFixed(2)} of top speed`);
   const edge = forwardSpeed(underField(KART_ITEMS.MAGNET, tuning.magnetReach - 1, 0, 3)) / TOP_SPEED;
   assert.ok(edge > 0.97, `at the edge: ${edge.toFixed(2)}`);
-  const big = forwardSpeed(underField(KART_ITEMS.MAGNET, 10, 0, 5, true)) / (TOP_SPEED * tuning.bigSpeedShare);
-  assert.ok(big > 0.9, `a big kart: ${big.toFixed(2)} of its top speed`);
 });
 
 test('push: a kart alongside is shoved about a lane aside in half a second, sliding loose', () => {

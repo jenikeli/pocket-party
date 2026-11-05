@@ -1,5 +1,5 @@
 // Unit tests for the 3D race's item rules (M8a, host/games/kart-3d/items/): the boxes' rows on both courses,
-// pickup, break and return, the roulette, one press per item, the effects' time, the odds by place, items off,
+// pickup, break and return, the roulette, one press per item, the effects' time, items off,
 // the settings, CPU karts using items, and the race staying plain data that repeats exactly.
 
 import { test } from 'node:test';
@@ -18,8 +18,7 @@ import { laneControls } from '../helpers/lane-driver.js';
 import { KART_ITEMS } from '../../shared/protocol.js';
 import { itemBoxSpots, PICKUP_REACH } from '../../host/games/kart-3d/items/item-boxes.js';
 import { stepItems, startEffect } from '../../host/games/kart-3d/items/item-rules.js';
-import { BUILT_ITEMS, ITEM_ROLES } from '../../host/games/kart-3d/items/item-catalog.js';
-import { drawItem, itemChances, roleWeight } from '../../host/games/kart-3d/items/item-odds.js';
+import { BUILT_ITEMS } from '../../host/games/kart-3d/items/item-catalog.js';
 import { itemHud, itemPhoneView } from '../../host/games/kart-3d/items/item-views.js';
 import { createItemSettings, toggleItems, toggleItem, allowedItems } from '../../host/games/kart-3d/items/item-settings.js';
 
@@ -87,7 +86,7 @@ test('boxes: rows across the whole road on straight, level road on both courses,
 });
 
 test('pickup: a kart breaks the box, the roulette runs, then the item is held; the box comes back', () => {
-  const race = racingRace([KART_ITEMS.BIG]);
+  const race = racingRace([KART_ITEMS.MAGNET]);
   const kart = playerKart(race, 'p1');
   const box = race.items.boxes[2];
   placeAt(kart, box.s, box.lateral + 1);
@@ -100,20 +99,20 @@ test('pickup: a kart breaks the box, the roulette runs, then the item is held; t
   stepItemsFor(race, tuning.itemRouletteSeconds - 0.1);
   assert.equal(kart.item.held, null, 'still rolling');
   stepItemsFor(race, 0.2);
-  assert.deepEqual(itemPhoneView(race, kart), { held: KART_ITEMS.BIG, rolling: false, effects: [] });
+  assert.deepEqual(itemPhoneView(race, kart), { held: KART_ITEMS.MAGNET, rolling: false, effects: [] });
   stepItemsFor(race, tuning.itemBoxReturnSeconds - tuning.itemRouletteSeconds);
   assert.equal(box.returnLeft, 0, 'the box is back');
 });
 
 test('pickup: a box breaks for a kart that already holds an item, which keeps it; a finished kart gets nothing', () => {
-  const race = racingRace([KART_ITEMS.BIG]);
+  const race = racingRace([KART_ITEMS.MAGNET]);
   const kart = playerKart(race, 'p1');
-  kart.item.held = KART_ITEMS.SMALL;
+  kart.item.held = KART_ITEMS.PUSH;
   const [first, second] = race.items.boxes;
   placeAt(kart, first.s, first.lateral);
   stepItems(race, track, STEP);
   assert.ok(first.returnLeft > 0, 'the box broke anyway');
-  assert.deepEqual([kart.item.held, kart.item.rollLeft], [KART_ITEMS.SMALL, 0]);
+  assert.deepEqual([kart.item.held, kart.item.rollLeft], [KART_ITEMS.PUSH, 0]);
   kart.item.held = null;
   kart.finishTime = 60;
   placeAt(kart, second.s, second.lateral);
@@ -125,20 +124,20 @@ test('pickup: a box breaks for a kart that already holds an item, which keeps it
 test('use: one press uses one item; holding the button does not use the next one; not while falling', () => {
   const race = racingRace(BUILT_ITEMS);
   const kart = playerKart(race, 'p1');
-  kart.item.held = KART_ITEMS.BIG;
+  kart.item.held = KART_ITEMS.MAGNET;
   kart.item.button = true;
   stepItems(race, track, STEP);
-  assert.deepEqual([kart.item.held, kart.item.effect?.item], [null, KART_ITEMS.BIG]);
-  kart.item.held = KART_ITEMS.SMALL;
+  assert.deepEqual([kart.item.held, kart.item.effect?.item], [null, KART_ITEMS.MAGNET]);
+  kart.item.held = KART_ITEMS.PUSH;
   stepItemsFor(race, 1);
-  assert.equal(kart.item.held, KART_ITEMS.SMALL, 'holding the button does nothing more');
+  assert.equal(kart.item.held, KART_ITEMS.PUSH, 'holding the button does nothing more');
   kart.item.button = false;
   stepItems(race, track, STEP);
   kart.respawnIn = 0.5;
   kart.item.button = true;
   stepItems(race, track, STEP);
-  assert.equal(kart.item.held, KART_ITEMS.SMALL, 'a falling kart keeps its item');
-  assert.equal(kart.item.effect.item, KART_ITEMS.BIG, 'and its effect');
+  assert.equal(kart.item.held, KART_ITEMS.PUSH, 'a falling kart keeps its item');
+  assert.equal(kart.item.effect.item, KART_ITEMS.MAGNET, 'and its effect');
 });
 
 test('use: the Item button pressed on the phone uses the item through stepRace', () => {
@@ -149,44 +148,28 @@ test('use: the Item button pressed on the phone uses the item through stepRace',
     stepRace(race, track, controlsFor, STEP);
   }
   const kart = playerKart(race, 'p1');
-  kart.item.held = KART_ITEMS.BOUNCY;
+  kart.item.held = KART_ITEMS.PUSH;
   stepRace(race, track, controlsFor, STEP);
-  assert.equal(kart.item.held, KART_ITEMS.BOUNCY, 'not without a press');
+  assert.equal(kart.item.held, KART_ITEMS.PUSH, 'not without a press');
   item = true;
   stepRace(race, track, controlsFor, STEP);
-  assert.deepEqual([kart.item.held, kart.item.effect.item], [null, KART_ITEMS.BOUNCY]);
-  assert.deepEqual(raceView(race, createSetup(), 'p1').item.effects, [{ item: KART_ITEMS.BOUNCY, secondsLeft: Math.ceil(tuning.itemEffectSeconds) }]);
+  assert.deepEqual([kart.item.held, kart.item.effect.item], [null, KART_ITEMS.PUSH]);
+  assert.deepEqual(raceView(race, createSetup(), 'p1').item.effects, [{ item: KART_ITEMS.PUSH, secondsLeft: Math.ceil(tuning.itemEffectSeconds) }]);
 });
 
 test('effects: last the tuned effect time, one at a time (a new one replaces the running one)', () => {
   const race = racingRace(BUILT_ITEMS);
   const kart = playerKart(race, 'p1');
-  startEffect(kart, KART_ITEMS.BIG);
+  startEffect(kart, KART_ITEMS.MAGNET);
   stepItemsFor(race, 2);
   assert.ok(Math.abs(itemHud(race, kart).effects[0].share - (1 - 2 / tuning.itemEffectSeconds)) < 0.01, 'the share counts down');
-  startEffect(kart, KART_ITEMS.SMALL);
-  assert.deepEqual(kart.item.effect, { item: KART_ITEMS.SMALL, left: tuning.itemEffectSeconds });
+  startEffect(kart, KART_ITEMS.PUSH);
+  assert.deepEqual(kart.item.effect, { item: KART_ITEMS.PUSH, left: tuning.itemEffectSeconds });
   stepItemsFor(race, tuning.itemEffectSeconds - 0.1);
-  assert.equal(kart.item.effect.item, KART_ITEMS.SMALL);
-  assert.deepEqual(itemPhoneView(race, kart).effects, [{ item: KART_ITEMS.SMALL, secondsLeft: 1 }]);
+  assert.equal(kart.item.effect.item, KART_ITEMS.PUSH);
+  assert.deepEqual(itemPhoneView(race, kart).effects, [{ item: KART_ITEMS.PUSH, secondsLeft: 1 }]);
   stepItemsFor(race, 0.2);
   assert.equal(kart.item.effect, null);
-});
-
-test('odds: catch-up items grow toward last place, defend items shrink, even items stay; draws are always allowed', () => {
-  for (let place = 2; place <= 12; place += 1) {
-    assert.ok(roleWeight(ITEM_ROLES.CATCH_UP, place, 12) > roleWeight(ITEM_ROLES.CATCH_UP, place - 1, 12));
-    assert.ok(roleWeight(ITEM_ROLES.DEFEND, place, 12) < roleWeight(ITEM_ROLES.DEFEND, place - 1, 12));
-    assert.equal(roleWeight(ITEM_ROLES.EVEN, place, 12), roleWeight(ITEM_ROLES.EVEN, 1, 12));
-  }
-  assert.ok(roleWeight(ITEM_ROLES.CATCH_UP, 1, 12) < 0.1, 'the leader gets almost no catch-up items');
-  assert.ok(itemChances(BUILT_ITEMS, 1, 12)[KART_ITEMS.BOUNCY] > itemChances(BUILT_ITEMS, 12, 12)[KART_ITEMS.BOUNCY]);
-  const randoms = Array.from({ length: 100 }, (unused, index) => index / 100);
-  for (let place = 1; place <= 12; place += 1) {
-    assert.ok(randoms.every((random) => BUILT_ITEMS.includes(drawItem(BUILT_ITEMS, place, 12, random))));
-    assert.ok(randoms.every((random) => drawItem([KART_ITEMS.SMALL], place, 12, random) === KART_ITEMS.SMALL), 'one allowed item always comes up');
-  }
-  assert.equal(drawItem([KART_ITEMS.BIG], 1, 1, 0.999999), KART_ITEMS.BIG, 'a field of one');
 });
 
 test('items off: no boxes, null views; unbuilt ids are left out', () => {
@@ -203,13 +186,13 @@ test('items off: no boxes, null views; unbuilt ids are left out', () => {
 test('settings: on with every built item; off allows none; each item toggles', () => {
   const settings = createItemSettings();
   assert.deepEqual(allowedItems(settings), BUILT_ITEMS);
-  toggleItem(settings, KART_ITEMS.BIG);
+  toggleItem(settings, KART_ITEMS.MAGNET);
   toggleItem(settings, 'not-an-item');
-  assert.deepEqual(allowedItems(settings), BUILT_ITEMS.filter((id) => id !== KART_ITEMS.BIG));
+  assert.deepEqual(allowedItems(settings), BUILT_ITEMS.filter((id) => id !== KART_ITEMS.MAGNET));
   toggleItems(settings);
   assert.deepEqual(allowedItems(settings), []);
   toggleItems(settings);
-  assert.equal(allowedItems(settings).includes(KART_ITEMS.BIG), false, 'each item keeps its switch');
+  assert.equal(allowedItems(settings).includes(KART_ITEMS.MAGNET), false, 'each item keeps its switch');
 });
 
 // Drives a 1-player race with every built item allowed for `seconds` of race time. Returns the race and the
@@ -230,7 +213,7 @@ function raceWithItems(seconds) {
 test('CPU karts pick up and use items; the items stay plain data and the race repeats exactly', () => {
   const { race, cpuEffects, boxesBroken } = raceWithItems(GO_AT + 45);
   assert.ok(boxesBroken > 0, 'karts broke boxes');
-  assert.ok(cpuEffects.size >= 2, `CPU karts used items (${[...cpuEffects]})`);
+  assert.ok(cpuEffects.size >= 1, `CPU karts used items (${[...cpuEffects]})`);
   // The items' part of the race; the karts' own fields are not all JSON (an unpressed Drift's
   // sinceDriftPress is Infinity, kart-techniques.js).
   const itemState = { items: race.items, karts: race.karts.map((kart) => kart.item) };

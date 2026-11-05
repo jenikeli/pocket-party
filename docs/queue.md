@@ -17,7 +17,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
 | G | Terminal and control tower | opus | 0 | merged |
-| H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | building |
+| H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | building |
 | J | Ground vehicles (props) | sonnet | 0 | queued |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | queued |
@@ -665,6 +665,14 @@ session merges that line).
   `CONTROL_TOWER_FOOTPRINT` are exported for M. Round glass drums at both ends (beyond the spec, from the reference).
   In kit-shots' light the sun is behind the terminal's front, so M's orientation decides how it reads. Terminal
   about 40,000 triangles, tower 12,800. After sheet: `test-results/review/G-after.png`.
+- **Task H:** `buildBigHangar` also returns `spot` (place it with `placeLandmark(kit, hangar, hangar.spot)`; about
+  x 381, z 384, heading 1.56); its footprint covers the ring by design, so M's footprint test leaves it out. It
+  builds lattice towers under the raised ring (beyond the spec): M makes sure only one set of towers stands there if
+  D's road builds supports too. Half the roof is skylight glass (four skylights left the ring too dark); check the
+  ring's light with the bake on M's `--course` sheets. Floor markings in the infield, with a plane stand "H1" (a spot
+  for I's prop plane). `buildHangar` takes an `airline` option ('Palm Air', 'Coral Wings', 'Skipjack Air'); I's
+  liveries should use the same colours. At merge the small hangars' signs were cut to 512x128 (the 512 rule). Big
+  about 39,000 triangles, small about 3,900. After sheet: `test-results/review/H-after.png`.
 - **Task F:** each kart's glider is built open so the renderer compiles its shader up front (no stall at the first
   glide), and the first `show()` folds it. From the chase spot the canopy is seen almost edge-on; a higher
   `glideCameraLift` would show more of its top (judge at N's test or the device run). After sheet:

@@ -107,4 +107,6 @@ trick after it boosts on landing; held while airborne; the ramp's tests removed.
 
 ## Decisions made during the run
 
-(none yet)
+- **P's first bloom sheet** (`teleport-warning`, `sticky-walls`): the teleport rings get a soft cyan halo and the
+  goo a faint warm one, so the rings do reach bloom, against M8's estimate. Left as they are: the user saw both
+  on the iPad on High and liked the effects; the sheet goes to the user at the handoff.

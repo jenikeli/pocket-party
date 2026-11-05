@@ -13,7 +13,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | merged |
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | merged |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
-| D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | queued |
+| D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | building |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
 | G | Terminal and control tower | opus | 0 | building |
@@ -655,6 +655,8 @@ session merges that line).
     with walls, and a kart landing near the edge rubs the closing wall hard (31 to 6 units/s in a second): widen the
     beach road's start or narrow the glide. Boosted floats sometimes land just past 1246, at the start of the turn
     after the beach straight.
+- **Browser tests after A** (while G, H and D drew): m6b, m7a, m7b and m8 passed; m6c's drift test timed out once
+  under the load and passed alone. The look files (m7c, m7d2, m7d4b) wait for a quiet moment or the end's full suite.
 - **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
   spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
   materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.

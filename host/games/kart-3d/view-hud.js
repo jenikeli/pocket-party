@@ -132,6 +132,7 @@ function createItemFrame(root) {
 function createRing(frame, itemId) {
   const ring = document.createElement('div');
   ring.className = 'kart-3d-effect-ring';
+  ring.dataset.item = itemId;
   // The icons are our own SVG text, never from a phone.
   ring.innerHTML = ITEM_ICONS[itemId].svg;
   frame.append(ring);

@@ -22,7 +22,7 @@ const RACE_TIMEOUT = { timeoutMs: 90000 };
 // How long the Item button is held: the host reads the controls once per step and a frame can take seconds.
 const ITEM_PRESS_MS = 400;
 
-describe('M8a items', () => {
+describe('M8 items', () => {
   let server;
   let chromium;
   let hostPage;
@@ -152,21 +152,28 @@ describe('M8a items', () => {
 
   ITEM_CHECKS.forEach(({ id, shows }, index) => {
     test(`${id}: picked up, used once, shows ${shows}; the game keeps running`, async () => {
-      const after = await useItem(id, index === 0);
+      const viewAfterPress = await useItem(id, index === 0);
+      const effects = viewAfterPress.item.effects;
       if (shows === TIMED_EFFECT) {
-        assert.ok(after.item.effects.some((effect) => effect.item === id), `${id} running: ${JSON.stringify(after.item.effects)}`);
-        await hostPage.waitForSelector('.kart-3d-view-hud:not([hidden]) .kart-3d-effect-ring', { timeout: 30000 });
+        assert.ok(effects.some((effect) => effect.item === id), `${id} running: ${JSON.stringify(effects)}`);
+        await hostPage.waitForSelector(`.kart-3d-view-hud:not([hidden]) .kart-3d-effect-ring[data-item="${id}"]`, { timeout: 30000 });
       } else if (id === KART_ITEMS.TELEPORT) {
         await hostPage.waitForFunction(() => [...document.querySelectorAll('.kart-3d-view-banner')].some((banner) => banner.textContent === 'Teleport!'),
           null, { timeout: 30000, polling: 'raf' });
       } else {
-        assert.deepEqual(after.item.effects, []);
-        assert.equal(await hostPage.locator('.kart-3d-effect-ring').count(), 0);
+        assert.deepEqual(effects, []);
+        // The host has drawn the used item (its box empty) before the rings are counted, so none is left over.
+        await hostPage.waitForSelector('.kart-3d-view-hud:not([hidden]) .kart-3d-item-box:not(:has(svg))', { timeout: 30000 });
+        assert.equal(await hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-effect-ring').count(), 0);
       }
       await saveScreenshot(hostPage, `m8-1-host-${id}`);
       if (index === 0) {
         await saveScreenshot(ana.page, 'm8-2-phone-effect');
       }
+      // The item was used mid-race (not at the results), and the page threw nothing. (A phone's view is sent only
+      // when it changes, so no later view can be waited for: after a ramp nothing changes until the results.)
+      assert.equal(viewAfterPress.phase, 'racing');
+      assert.deepEqual(pageErrors, []);
       assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the game keeps running');
       assert.equal(await ana.page.isVisible('#kart-controls'), true);
     });

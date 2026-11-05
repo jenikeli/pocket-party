@@ -381,7 +381,7 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 Our own six items replace MK8DX's (no coins). Everything in detail, with the queues' interfaces and decisions, is in
 "M8" in `docs/history.md`; the device runs in "M8" and "M8d" in `docs/3d-findings.md`. M8's device run (iPad, 4
 players) went well apart from what M8d changed: big, small and bouncy removed, the ramp replaced by the jump, every
-item equally likely (M8d's own device run is pending).
+item equally likely (M8d's own device run is put off until after M9, the user's choice: do it with M9's).
 - **The system:** item boxes in rows (`track.itemBoxRows`), a roulette, one held item used with the phone's Item
   button (`KART_BUTTONS.ITEM`), every allowed item equally likely, drawn when the roulette stops from the race's
   own seeded numbers (a fresh seed each race, `freshItemSeed`; the tests a fixed one), CPU karts using items
@@ -412,6 +412,8 @@ session like M8, left running unattended and resumed from the queue's Status tab
   high over open space as Seaside Skyway and the Test track do. New ground the track builder does not have yet
   (terrain round the road, tunnels) is part of the plan.
 - **Size:** slightly larger than Seaside Skyway (1213 units a lap): about 1500.
+- **Device run:** M9's also covers M8d's, put off until then by the user ("M8d" in `docs/3d-findings.md`; its
+  steps can run on the new course with Items on).
 - [ ] Glide ramps: a blue ramp launches the kart into a glide with its glider, steered in the air, as in MK8DX
   (the airport's natural one: off the end of a runway, like a plane taking off)
 - [ ] Spin-boost posts in an anti-gravity section (for example through a hangar or the terminal)

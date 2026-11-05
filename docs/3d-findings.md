@@ -1329,6 +1329,8 @@ unless a step says otherwise. Items are all in the Tuning panel's **Items** grou
 
 ### Device run procedure
 
+Put off by the user until after M9: run it together with M9's device run.
+
 On the iPad (host), with the server on the laptop as usual and one phone (iPhone or Android). Seaside Skyway,
 150cc, CPU Normal, Look on High, Items On with all six, unless a step says otherwise.
 

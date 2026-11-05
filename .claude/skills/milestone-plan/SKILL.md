@@ -67,6 +67,7 @@ The main session plans, reviews, merges and hands off a whole milestone, or a wh
 ## When the user is away (a queue run to the end)
 
 - Questions that come up are decided by the main session where they are not the user's (the choice that fits `plan.md` and MK8DX best), and logged in the queue's "Decisions made during the run" for the review at the end. Stop only for what `CLAUDE.md` says must be asked (a new dependency, logic in the server, a hard constraint).
+- **Keep running to the end** (the user, after M8d: the run stopped halfway and needed "continue"). The session only wakes by itself when a background agent or command it started finishes (its notification). So never end a turn while the queue has work left unless at least one background agent or command is running; with nothing running, do the next step (spawn, review, merge, test, the docs) instead of stopping. Scheduled wakeups (ScheduleWakeup) fire only in `/loop` mode, so the user starts an unattended run as `/loop run the <milestone> queue in docs/queue.md`, and each turn then ends with a fallback wakeup (about 30 minutes) as a heartbeat in case a notification is missed.
 - After an interruption (the usage limit, a crash), pick up from the Status table: for each task marked building, look at its worktree (`git worktree list`, then `git -C <path> status` and `log`): merge it if committed, otherwise send its implementer on with SendMessage if it still runs, or spawn the task again in a fresh worktree.
 
 ## Commits

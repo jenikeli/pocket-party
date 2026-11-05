@@ -20,8 +20,6 @@ const HOST_SIZE = { width: 960, height: 540 };
 // The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
 const HOST_SCALE = 0.5;
 const RACE_TIMEOUT = { timeoutMs: 90000 };
-// How long the Item button is held: the host reads the controls once per step and a frame can take seconds.
-const ITEM_PRESS_MS = 400;
 
 describe('M8 items', () => {
   let server;
@@ -50,12 +48,19 @@ describe('M8 items', () => {
     await ana.page.waitForSelector('#kart-controls:not([hidden])');
   }
 
-  async function pressItemButton() {
+  // Holds the Item button down until `released()` says the host used the item, then lets go. The host reads the
+  // controls once per step, and in software a frame (and its steps) can be delayed by seconds, so a press of a
+  // fixed short time can fall between two reads and never be seen; a held button always is (a phone's real
+  // tap is read at 60 steps a second).
+  async function holdItemButtonUntil(released) {
     const box = await ana.page.locator('#kart-item-slot').boundingBox();
     await ana.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await ana.page.mouse.down();
-    await ana.page.waitForTimeout(ITEM_PRESS_MS);
-    await ana.page.mouse.up();
+    try {
+      return await released();
+    } finally {
+      await ana.page.mouse.up();
+    }
   }
 
   before(async () => {
@@ -133,8 +138,7 @@ describe('M8 items', () => {
     assert.equal(held.item.rolling, false);
     assert.equal(await ana.page.isVisible('#kart-item-slot'), true);
     await waitUntil(async () => hostPage.isVisible('.kart-3d-view-hud:not([hidden]) .kart-3d-item-frame'), { ...RACE_TIMEOUT, message: 'the item frame' });
-    await pressItemButton();
-    return nextView((view) => view.item && view.item.held === null && !view.item.rolling);
+    return holdItemButtonUntil(() => nextView((view) => view.item && view.item.held === null && !view.item.rolling));
   }
 
   // The six items, each used once in a race of its own. `shows` is what the item must show after the press.

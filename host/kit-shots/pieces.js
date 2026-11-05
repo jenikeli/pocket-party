@@ -21,6 +21,7 @@ import { ROAD_OBJECT_PIECES } from './road-object-pieces.js';
 import { MAGNET_PUSH_PIECES } from './magnet-push-pieces.js';
 import { TELEPORT_STICKY_PIECES } from './teleport-sticky-pieces.js';
 import { AIRPORT_E_PIECES } from './airport-e-pieces.js';
+import { AIRPORT_G_PIECES } from './airport-g-pieces.js';
 
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
@@ -136,4 +137,5 @@ export const PIECES = {
   ...MAGNET_PUSH_PIECES,
   ...TELEPORT_STICKY_PIECES,
   ...AIRPORT_E_PIECES,
+  ...AIRPORT_G_PIECES,
 };

@@ -16,7 +16,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | building |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
-| G | Terminal and control tower | opus | 0 | building |
+| G | Terminal and control tower | opus | 0 | merged |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | building |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | queued |
 | J | Ground vehicles (props) | sonnet | 0 | queued |
@@ -660,6 +660,11 @@ session merges that line).
 - **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
   spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
   materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.
+- **Task G:** the terminal's origin is the foot of its hall glass (not its middle); `terminalFootprint(length)`,
+  `terminalGates(length)` (3 jet-bridge doors at x 21.2, sill 3.2: I's planes should match or M moves them) and
+  `CONTROL_TOWER_FOOTPRINT` are exported for M. Round glass drums at both ends (beyond the spec, from the reference).
+  In kit-shots' light the sun is behind the terminal's front, so M's orientation decides how it reads. Terminal
+  about 40,000 triangles, tower 12,800. After sheet: `test-results/review/G-after.png`.
 - **Task F:** each kart's glider is built open so the renderer compiles its shader up front (no stall at the first
   glide), and the first `show()` folds it. From the chase spot the canopy is seen almost edge-on; a higher
   `glideCameraLift` would show more of its top (judge at N's test or the device run). After sheet:

@@ -378,31 +378,52 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 - For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
 ### M8: Items (our own) (built, device run pending)
-Our own nine items replace MK8DX's (no coins). Everything in detail, with the queue's interfaces and decisions, is in
-"M8" in `docs/history.md`; the device run in "M8" in `docs/3d-findings.md`.
+Our own six items replace MK8DX's (no coins). Everything in detail, with the queues' interfaces and decisions, is in
+"M8" in `docs/history.md`; the device runs in "M8" and "M8d" in `docs/3d-findings.md`. M8's device run (iPad, 4
+players) went well apart from what M8d changed: big, small and bouncy removed, the ramp replaced by the jump, every
+item equally likely (M8d's own device run is pending).
 - **The system:** item boxes in rows (`track.itemBoxRows`), a roulette, one held item used with the phone's Item
-  button (`KART_BUTTONS.ITEM`), odds by place by each item's role (catch-up, defend, even), CPU karts using items
+  button (`KART_BUTTONS.ITEM`), every allowed item equally likely, drawn when the roulette stops from the race's
+  own seeded numbers (a fresh seed each race, `freshItemSeed`; the tests a fixed one), CPU karts using items
   (`items/cpu-items.js`), Items On/Off and one switch per item on the setup screen (Watch races too). Every number
   is in the Tuning panel's Items group (`items/item-tuning.js`).
 - **The code:** all in `host/games/kart-3d/items/`: rules are plain files (`item-rules.js` steps everything once a
-  race step; `item-catalog.js` has one entry per item, `{ role, use }`), drawings end in `-look.js`/`-drawing.js`
-  and are listed in `item-drawing.js`'s `DRAWINGS`. Icons for phone and host in `shared/item-icons.js`.
-- **The items:** bouncy, big, small (kart effects, 5 s); blocker (sandcastle) and ramp (kicker), road objects with
-  a lifetime (`race.items.objects`); teleport, magnet, push, sticky walls (field items).
-- **Split candidates for M10:** `renderer.js` (260 lines), `kart-physics.js` (222), `createRoadObjectDrawing` (about
-  140 lines in one closure), `sticky-walls-look.js` (204).
+  race step; `item-catalog.js` has one entry per item, `{ use, needsGround }`), drawings end in
+  `-look.js`/`-drawing.js` and are listed in `item-drawing.js`'s `DRAWINGS`. Icons for phone and host in
+  `shared/item-icons.js`.
+- **The items:** blocker (a sandcastle on the road with a lifetime, `race.items.objects`); jump (throws the kart
+  straight up, a takeoff for the trick, `items/jump.js`); teleport, magnet, push, sticky walls (field items).
+  Magnet and push are timed effects on the kart (`kart-effect.js`).
+- **Split candidates for M10:** `renderer.js` (259 lines), `kart-physics.js` (220), `createRoadObjectDrawing` (one long closure),
+  `sticky-walls-look.js` (204 lines).
 
-### M9: Glide ramps and spin-boost posts
-Both need new rules (gliding in the air; a post that gives a spin boost when hit), so each is designed in that chat before building.
+### M9: Palm Bay Airport (working name), a new course with glide ramps and spin-boost posts
+Decided after the M8 device run (2026-11-05): a new course, built around one consistent theme, replaces the idea
+of adding M9's features to Seaside Skyway (which has no single theme and floats high over the sea). Planned as one
+queue (`docs/queue.md`, the `milestone-plan` skill's "Queue") in a planning chat with the user, then run in one
+session like M8, left running unattended and resumed from the queue's Status table after any stop.
+- **Theme: a sunny seaside airport**, our own course, with MK8DX's Sunshine Airport as the style reference for how
+  the theme is kept consistent (references collected while planning, under `test-results/reference/m9/`): a
+  runway, a terminal, hangars, a control tower, parked planes, baggage carts, a windsock, runway lights, taxiway
+  signs, palm trees, beaches and the sea. Reuses the seaside pieces where they fit (sea, sand, palms, decks,
+  barriers, item boxes).
+- **On the ground, not in the air** (the user): the road runs at ground level on terrain, with parts going
+  underground (a tunnel, an underpass) and parts above ground (a bridge or ramp), but the course never floats
+  high over open space as Seaside Skyway and the Test track do. New ground the track builder does not have yet
+  (terrain round the road, tunnels) is part of the plan.
+- **Size:** slightly larger than Seaside Skyway (1213 units a lap): about 1500.
 - [ ] Glide ramps: a blue ramp launches the kart into a glide with its glider, steered in the air, as in MK8DX
-- [ ] Spin-boost posts in anti-gravity sections
-- [ ] Added to Seaside Skyway or a new course
+  (the airport's natural one: off the end of a runway, like a plane taking off)
+- [ ] Spin-boost posts in an anti-gravity section (for example through a hangar or the terminal)
+- [ ] The course's layout designed with a top-down sketch, approved by the user while planning
+- [ ] Item boxes, the racing line for the CPU drivers, the jump with a trick, dash panels
+- [ ] The theme's new pieces and props, built from the references, judged on kit-shots sheets
+- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built (moved from M10: the
+  Seaside islands' rock was rings of round shapes, which rock is not)
 
 ### M10: Polish
-The first step is Seaside Skyway down by the sea (planned as M7f until the M7e device run, when the user moved it here, after items and glide ramps). Asked for after the M7d4c3-d device run: most of the props round the course cannot be seen from a road high over open sea. Probably more than one chat: its first chat proposes a split.
-- [ ] Seaside Skyway's road brought down close to the sea and run across several islands, so the decks, props and surroundings are seen from the karts; the jump, climb and anti-gravity sections kept, redesigned where the new ground needs it (designed in that chat, with a top-down sketch, before building). Item boxes (M8) and glide ramps or spin-boost posts (M9) on the course move with it
-- [ ] The floating islands and the backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
-- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built: the islands' rock was rings of round shapes, which rock is not
+Probably more than one chat: its first chat proposes a split. (Seaside Skyway's rework, down by the sea, was dropped after the M8 device run: the new M9 course is built on the ground instead.)
+- [ ] Seaside Skyway's floating islands and backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
 - [ ] Sound effects and music (MP3/M4A, small)
 - [ ] The UI of the whole app improved, not just the kart race: the lobby, the controller pages, every game's phone screen and setup (asked for after the M8 device run)
 - [ ] iPhone: a double tap zooms the page in and it cannot be zoomed back out; stop the zoom everywhere (very annoying for iPhone players)

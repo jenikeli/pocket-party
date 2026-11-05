@@ -1284,3 +1284,67 @@ unless a step says otherwise. Items are all in the Tuning panel's **Items** grou
    - **Tune:** *Sticky walls, hold* (0.2-4 s, default 1.5) and *push off* (0-15 units/s, default 6): long enough
      to hurt, short enough not to annoy. Also check that a held kart is not shoved along the wall by bumps.
 9. **Anything broken:** note what, where on the lap (what is there to recognise it), and which item.
+
+### Device run (2026-11-05, iPad host, 4 players)
+
+- It works and looks okay. With 4 views the race does not hold 60 fps, but it still looks fine (M10 has the
+  frame-rate item).
+- Big, small and bouncy: not liked, so removed (M8d).
+- The ramp item felt weird and buggy: replaced by a jump item that throws the kart up to trick (M8d).
+- The same few items kept coming up and some almost never: two causes, both fixed in M8d (below).
+- The other items (blocker, teleport, magnet, push, sticky walls) are liked as they are. Nothing was tuned.
+
+## M8d: Items after the device run
+
+### What was built
+
+- **Six items:** blocker, jump, teleport, magnet, push, sticky walls. Big, small and bouncy are gone everywhere
+  (rules, looks, icons, sliders, the bouncy coat on the kart models, the big kart's camera pull-back).
+- **Every item equally likely, drawn when the roulette stops.** Why items repeated before:
+  - **Odds by place:** each item had a role, and the leader got blocker, bouncy or push about a quarter of the
+    time each but teleport, magnet and ramp 0.4% each (last place the reverse). Roles and odds are gone.
+  - **The same seed every race:** the races' item numbers started from the same seed so tests repeat, which made
+    the first pickups of every race draw the same numbers. The game now starts each race from a fresh seed
+    (`freshItemSeed` in `items/item-rules.js`, called by `index.js`); the tests keep a fixed one. The rules still
+    use only the race's own seeded numbers, so a race given the same seed and driving repeats exactly.
+- **The jump** (`items/jump.js`) replaces the ramp: the kart is thrown straight up along the road's up, about 2.5
+  units at the top and about 0.9 s in the air, keeping its speed along the road. The launch is a takeoff
+  (`crossLip`, as off the course's jump), so the trick works as before: Drift up to 0.1 s before the Item press or
+  0.3 s after it does a trick and the trick boost on landing. MK8DX's own rule is the same: the trick button pressed
+  just before leaving the ground, off ramps and lips, not at any time in the air. A jump is kept in the slot while
+  the kart is in the air or held on a sticky wall (whose hold would stop the launch). At the launch, a puff of
+  dust and a ring of sparkles burst under the kart (`items/jump-look.js`). The kicker is gone.
+- **CPU karts** use the jump on a straight with no gap in the next 30 units, and trick off it on their level's
+  share of jumps, as off the course's jump.
+- **kit-shots `--bloom`:** pieces drawn through the race's bloom, as on High.
+
+### Measured without a device
+
+- **Draws:** each allowed item's chance is the same at every place; two seeds give different first items over a
+  field (unit tests, `kart-3d-item-draws`).
+- **Jump:** peak about `jumpHeight` (2.5), 0.8-1.1 s in the air, speed along the road kept (`kart-3d-jump`).
+- **Bloom, seen at last** (`npm run kit-shots -- --bloom teleport-warning sticky-walls`): the teleport rings get a
+  soft cyan halo and the honey a faint warm glow, so the rings do reach bloom, against M8's estimate. Left as they
+  are, since the device run liked them. The jump's sparkles glow; its dust does not.
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop as usual and one phone (iPhone or Android). Seaside Skyway,
+150cc, CPU Normal, Look on High, Items On with all six, unless a step says otherwise.
+
+1. **The setup screen:** the Items row has six buttons: blocker, jump, teleport, magnet, push, sticky walls, with
+   the jump's new icon (a green up arrow over a spring).
+2. **Variety, with the phone:** two 3-lap races. Note the items you get. Over the two races each item should come
+   up about as often, whatever your place, and the first box row should not give you the same item both races.
+3. **The jump, with the phone:** only Jump on, a 2-lap race. On a straight, press Item: the kart lifts straight up
+   with a puff of dust and sparkles under it, and lands about a second later at the same speed. Then press Drift
+   just after Item (or a moment before it): the kart tricks and boosts on landing. Press Item while in the air
+   (off the course's jump after the narrow bridge, s 630-690, or during a jump): the item stays until you land.
+   Using it just before the course's jump gap: does it carry you over or drop you in? Note which.
+   - **Tune:** Tuning panel, **Items** group, *Jump, height* (1-6 units, default 2.5): high enough to feel like a
+     jump and leave time for the trick, low enough not to look silly; note the value you like.
+4. **CPU jumps:** Watch, no phones: 1, only Jump on, a lap: CPU karts use the jump on straights and some trick off
+   it. Any that jump into the gap or hit a wall?
+5. **The rest of M8's Tune steps** (M8's step 8 above, without Big, Small, Bouncy and Ramp) still stand if
+   anything feels off in a race with all six items.
+6. **Anything broken:** note what, where on the lap, and which item.

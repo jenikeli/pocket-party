@@ -414,6 +414,25 @@ session like M8, left running unattended and resumed from the queue's Status tab
 - **Size:** slightly larger than Seaside Skyway (1213 units a lap): about 1500.
 - **Device run:** M9's also covers M8d's, put off until then by the user ("M8d" in `docs/3d-findings.md`; its
   steps can run on the new course with Items on).
+- **Planned 2026-11-05** with the user: the queue (tasks 0 and A to N, every spec, the course's pieces and the fixed
+  interfaces) is in `docs/queue.md`, to be run in another chat as `/loop run the m9 queue in docs/queue.md`.
+  - **Layout approved** from a top-down sketch (`test-results/reference/m9/layout-sketch.png`, not committed), with
+    the references beside it. It is a figure-8 of 1551 units:
+    - the start on the apron by the terminal;
+    - a taxiway;
+    - a cutting and a tunnel under the runway (the crossing);
+    - a jump over a baggage conveyor;
+    - an anti-gravity banked ring with spin posts inside an open-sided hangar;
+    - the runway, then a glide off its end over the bay onto a beach road at -6;
+    - an S-bend climbing back to the apron.
+  - **Decided:**
+    - Palm Bay Airport first in the course list (the existing browser tests pinned to Seaside);
+    - gliding steered with the steering, Brake to dive;
+    - distant rocky islands, after a rock study;
+    - the course never empty beside the road;
+    - at most 1.8 million triangles (Seaside's 1.5 million plus 20%).
+  - Look tasks find their own references (MK8DX sources first) where the spec gives none (the user, now in
+    `.claude/agents/implementer.md`).
 - [ ] Glide ramps: a blue ramp launches the kart into a glide with its glider, steered in the air, as in MK8DX
   (the airport's natural one: off the end of a runway, like a plane taking off)
 - [ ] Spin-boost posts in an anti-gravity section (for example through a hangar or the terminal)

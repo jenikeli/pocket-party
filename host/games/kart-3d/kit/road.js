@@ -1,7 +1,8 @@
 // The kit's road (M7d2), built from the same stations the kart rules drive on, so what is drawn is exactly where
 // karts drive: photo-scanned asphalt with large lighter and darker patches (so its tile does not show), riveted metal
 // in anti-gravity sections, grass shoulders mown in stripes, concrete underneath and down the sides, and on top
-// the paint (kit/road-paint.js), the LED panels (kit/led-panels.js) and the ramp plates (kit/ramp-plate.js).
+// the paint (kit/road-paint.js), the LED panels (kit/led-panels.js), the ramp plates (kit/ramp-plate.js) and the
+// glide ramps' panels (kit/glide-panel.js).
 // Walls are not drawn here: a course's barriers stand on them (kit/barriers.js). Gaps are left empty. The
 // asphalt is the photo-scanned CC0 set (photo-asphalt.js, M7d4b2, chosen on the iPad).
 // Used by a kit-dressed course's scenery (see scenery.js).
@@ -15,6 +16,7 @@ import { createConcreteTexture } from './concrete.js';
 import { buildRoadPaint } from './road-paint.js';
 import { buildLedPanels } from './led-panels.js';
 import { buildRampPlates } from './ramp-plate.js';
+import { buildGlidePanels } from './glide-panel.js';
 
 // The road's thickness, under its surface: what holds it up (kit/supports.js) starts below this.
 export const ROAD_THICKNESS = 0.6;
@@ -73,6 +75,7 @@ export function buildKitRoad(track, theme, photoAsphalt) {
   const paint = buildRoadPaint(track, theme);
   const panels = buildLedPanels(track);
   const plates = buildRampPlates(track);
+  const glidePanels = buildGlidePanels(track);
 
   function dispose() {
     for (const mesh of surfaces) {
@@ -80,10 +83,15 @@ export function buildKitRoad(track, theme, photoAsphalt) {
       mesh.material.dispose();
     }
     Object.values(ownMaps).flatMap((surfaceMaps) => Object.values(surfaceMaps)).forEach((texture) => texture.dispose());
-    [paint, panels, plates].forEach((part) => part.dispose());
+    [paint, panels, plates, glidePanels].forEach((part) => part.dispose());
   }
 
-  return { meshes: [...surfaces, ...paint.meshes, ...panels.meshes, ...plates.meshes], update: panels.update, dispose };
+  function update(dt) {
+    panels.update(dt);
+    glidePanels.update(dt);
+  }
+
+  return { meshes: [...surfaces, ...paint.meshes, ...panels.meshes, ...plates.meshes, ...glidePanels.meshes], update, dispose };
 }
 
 // shadeOf(s, lateral): how much lighter or darker the asphalt is there, about 0.8 to 1.15: big soft patches,

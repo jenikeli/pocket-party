@@ -1,9 +1,9 @@
 // Where the kit's road markings and panels go on a course, worked out from the track's stations: the edge
 // lines, red and white curbs on the inside of corners, a dashed line down the middle of the straights, a
 // bracket in front of each grid place, the checks of the start line, the steel plate on each jump's ramp, the
-// dash panels and a glowing panel where each anti-gravity section starts. Drawing only: none of it changes how
+// glide panel on each glide's ramp, the dash panels and a glowing panel where each anti-gravity section starts. Drawing only: none of it changes how
 // karts drive. Plain maths, no Three.js, unit tested in Node. Used by kit/road-paint.js, kit/led-panels.js and
-// kit/ramp-plate.js.
+// kit/ramp-plate.js and kit/glide-panel.js.
 //
 // Marks laid on the road are rectangles { fromS, toS, fromLateral, toLateral } in road coordinates: from and to
 // distance along the centre line (fromS may be below 0 or toS past the lap's length: they wrap), and from and
@@ -80,7 +80,7 @@ export function curbSpots(track) {
 export function middleDashes(track) {
   const gridBack = gridSpot(track, FIELD_SIZE - 1).s - GRID_CLEARANCE;
   const gridFront = track.startLine + GRID_CLEARANCE;
-  const covered = [...rampSpans(track), ...dashPanelRects(track)];
+  const covered = [...rampSpans(track), ...glidePanelRects(track), ...dashPanelRects(track)];
   const dashes = [];
   for (let fromS = 0; fromS + DASH_LENGTH < track.length; fromS += DASH_SPACING) {
     const toS = fromS + DASH_LENGTH;
@@ -135,13 +135,29 @@ export function startLineChecks(track) {
 }
 
 // Each jump's ramp: [{ fromS, toS, halfWidth }] from where the road starts climbing steeply to the lip, the end
-// of the road before a gap, with the road's half width at the lip.
+// of the road before a gap, with the road's half width at the lip. Ramps that open the glider (a glide lip's)
+// are not here: they get a glide panel instead (glidePanelRects).
 export function rampSpans(track) {
+  return rampsBefore(track, false);
+}
+
+// The glide ramps' panels, as rectangles: each covers the whole road from where the ramp starts to the lip.
+export function glidePanelRects(track) {
+  return rampsBefore(track, true).map((span) => ({
+    fromS: span.fromS,
+    toS: span.toS,
+    fromLateral: -span.halfWidth,
+    toLateral: span.halfWidth,
+  }));
+}
+
+// The ramps before the gaps that do (`glide` true) or do not (false) open the glider.
+function rampsBefore(track, glide) {
   const { stations } = track;
   const spans = [];
   stations.forEach((station, index) => {
     const before = stations[(index - 1 + stations.length) % stations.length];
-    if (!station.gap || before.gap) {
+    if (!station.gap || before.gap || Boolean(station.glide) !== glide) {
       return;
     }
     let first = (index - 1 + stations.length) % stations.length;

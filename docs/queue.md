@@ -14,9 +14,9 @@ folded into "M9" in `docs/history.md` and deleted.
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | merged |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
 | D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | queued |
-| E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | building |
+| E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
-| G | Terminal and control tower | opus | 0 | queued |
+| G | Terminal and control tower | opus | 0 | building |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | queued |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | queued |
 | J | Ground vehicles (props) | sonnet | 0 | queued |
@@ -634,6 +634,11 @@ session merges that line).
   CPUs, swept across by the racing line, hit posts all the time). Easy still gets spun now and then when the pack
   bumps it into a post, so the test checks Hard against Easy (about 25 against 9 spins in a 12-CPU lap) rather than
   Easy at 0. `POST_LOOK`, `POST_CLEAR` and `POST_CLIP` at the top of `cpu-aim.js` tune it.
+- **Usage limit (18:00 UTC):** A and G stopped at the 5-hour limit. A was resumed in its worktree after the reset;
+  G had saved nothing and was spawned again.
+- **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
+  spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
+  materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.
 - **Task F:** each kart's glider is built open so the renderer compiles its shader up front (no stall at the first
   glide), and the first `show()` folds it. From the chase spot the canopy is seen almost edge-on; a higher
   `glideCameraLift` would show more of its top (judge at N's test or the device run). After sheet:

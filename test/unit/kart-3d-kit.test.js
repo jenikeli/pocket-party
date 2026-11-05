@@ -15,6 +15,7 @@ import {
   gridBrackets,
   startLineChecks,
   rampSpans,
+  glidePanelRects,
   dashPanelRects,
   antiGravityPanelRects,
   EDGE_LINE_INSET,
@@ -26,6 +27,7 @@ import { createRace, gridSpot, FIELD_SIZE, RACE_PHASES } from '../../host/games/
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { TEST_TRACK } from '../../host/games/kart-3d/test-track.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
+import { PALM_BAY_AIRPORT } from '../../host/games/kart-3d/palm-bay-airport.js';
 import { DASH_PANEL_LENGTH, DASH_PANEL_WIDTH } from '../../host/games/kart-3d/kart-boosts.js';
 import { checkDecks, checkProps, checkBunting, checkTurnBoards, stationAt, stationsBetween } from '../helpers/kit-layout-checks.js';
 
@@ -116,6 +118,21 @@ test('a ramp plate covers each jump\'s ramp up to its lip, and an anti-gravity p
     assert.deepEqual([rect.toS - rect.fromS, rect.toLateral - rect.fromLateral], [DASH_PANEL_LENGTH, DASH_PANEL_WIDTH]);
     assert.equal((rect.fromS + rect.toS) / 2, spot.s);
   }
+});
+
+test('a glide ramp gets one glide panel over the whole road up to its lip, a plain jump none, and only plain jumps keep the steel plate', () => {
+  assert.equal(glidePanelRects(testTrack).length, 0);
+  assert.equal(glidePanelRects(buildTrack(SEASIDE_SKYWAY)).length, 0);
+  const airport = buildTrack(PALM_BAY_AIRPORT);
+  const [panel] = glidePanelRects(airport);
+  assert.equal(glidePanelRects(airport).length, 1, 'one glide');
+  assert.equal(rampSpans(airport).length, 1, 'the airport\'s other jump keeps its plate');
+  assert.ok(Math.abs(panel.toS - panel.fromS - 14) < 2, 'the 14-long ramp');
+  assert.ok(stationAt(airport, panel.toS + 0.01).glide && !stationAt(airport, panel.toS - 0.5).gap, 'it ends at the glide lip');
+  const lipHalfWidth = stationAt(airport, panel.toS - 0.5).halfWidth;
+  assert.deepEqual([panel.fromLateral, panel.toLateral], [-lipHalfWidth, lipHalfWidth], 'across the whole road');
+  const [plate] = rampSpans(airport);
+  assert.ok(!stationAt(airport, plate.toS + 0.01).glide, 'the plate is the plain jump\'s');
 });
 
 test('the start lights light red one by one with the countdown, all green at GO, then go out', () => {

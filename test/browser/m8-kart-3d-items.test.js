@@ -1,9 +1,10 @@
-// Browser test for M8a, the 3D race's items on real pages: with Items on and only Big allowed, a one-lap race
-// where Ana (an Android phone, auto-accelerate, so no touch is needed to drive) goes through the first row of
-// item boxes; her phone's views show the roulette, then the held item; a press of the Item button gives a running
-// effect on the phone's view and the host's HUD frame and ring; the race keeps running. With Items off the
-// view's item is null. Headless Chromium draws WebGL in software, so the host page is half the usual size and
-// starts at Medium quality on the plain course (test/helpers/kart-3d-host.js).
+// Browser test for M8, the 3D race's items on real pages: with Items on and one item allowed per race (all nine
+// items, one race each), a one-lap race where Ana (an Android phone, auto-accelerate, so no touch is needed to
+// drive) goes through the first row of item boxes; her phone's views show the roulette, then the held item; a
+// press of the Item button shows what the item does (a running effect on the phone's view and a ring in the
+// host's HUD; nothing for the blocker and ramp, which go on the road; the "Teleport!" banner); the race keeps
+// running. With Items off the view's item is null. Headless Chromium draws WebGL in software, so the host page is
+// half the usual size and starts at Medium quality on the plain course (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,7 +19,6 @@ const HOST_SIZE = { width: 960, height: 540 };
 // The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
 const HOST_SCALE = 0.5;
 const RACE_TIMEOUT = { timeoutMs: 90000 };
-const ALLOWED_ITEM = KART_ITEMS.BIG;
 // How long the Item button is held: the host reads the controls once per step and a frame can take seconds.
 const ITEM_PRESS_MS = 400;
 
@@ -92,44 +92,84 @@ describe('M8a items', () => {
     await server?.stop();
   });
 
-  test('the setup screen\'s Items row allows one item; one lap is set', async () => {
+  test('the setup screen\'s Items row has a button for each of the nine items; one lap is set', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('#kart-3d-items-button', 'aria-pressed'), 'true');
     const ids = await hostPage.locator('[data-item-id]').evaluateAll((buttons) => buttons.map((button) => button.dataset.itemId));
-    assert.ok(ids.includes(ALLOWED_ITEM) && ids.length >= 3, `an item button each: ${ids}`);
-    for (const id of ids.filter((each) => each !== ALLOWED_ITEM)) {
-      await clickNow(hostPage, `[data-item-id="${id}"]`);
-    }
-    // The row redraws on the host's next frame, which software drawing makes slow.
-    await waitUntil(async () => (await hostPage.locator('[data-item-id][aria-pressed="true"]').count()) === 1, { ...RACE_TIMEOUT, message: 'one item allowed' });
-    assert.equal(await hostPage.getAttribute(`[data-item-id="${ALLOWED_ITEM}"]`, 'aria-pressed'), 'true');
+    assert.deepEqual([...ids].sort(), Object.values(KART_ITEMS).sort());
     await clickNow(hostPage, '#kart-3d-laps-minus', 5);
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-laps')) === '1', { message: 'one lap' });
     await saveScreenshot(hostPage, 'm8-0-host-setup-items');
   });
 
-  test('through the first row of boxes the phone rolls, then holds the item', async () => {
+  // Allows only `id` on the setup screen (the buttons keep their state from race to race). The row redraws on
+  // the host's next frame, which software drawing makes slow, so each click waits for its button to change.
+  async function allowOnly(id) {
+    for (const each of Object.values(KART_ITEMS)) {
+      const selector = `[data-item-id="${each}"]`;
+      const wanted = String(each === id);
+      if ((await hostPage.getAttribute(selector, 'aria-pressed')) !== wanted) {
+        await clickNow(hostPage, selector);
+        await waitUntil(async () => (await hostPage.getAttribute(selector, 'aria-pressed')) === wanted, { ...RACE_TIMEOUT, message: `${each} set to ${wanted}` });
+      }
+    }
+  }
+
+  // One race for `id`: leave the running race for the setup screen (not the first time), allow only `id`, start,
+  // drive through the first row, press the Item button once. Returns the first view after the press that shows
+  // what the item did (an effect, or the item gone for items that put something on the road).
+  async function useItem(id, firstRace) {
+    if (!firstRace) {
+      await clickNow(hostPage, '#kart-3d-setup-button');
+      await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
+      await ana.page.waitForSelector('#kart-setup:not([hidden])');
+    }
+    await allowOnly(id);
     await startRace();
     const rolling = await nextView((view) => view.phase === 'racing' && view.item?.rolling === true);
-    assert.deepEqual(rolling.item.effects, []);
-    const held = await nextView((view) => view.item?.held);
-    assert.equal(held.item.held, ALLOWED_ITEM);
+    assert.equal(rolling.item.held, null);
+    const held = await nextView((view) => view.item?.held === id);
     assert.equal(held.item.rolling, false);
     assert.equal(await ana.page.isVisible('#kart-item-slot'), true);
-  });
-
-  test('a press of the Item button starts the effect on the phone\'s view and the host\'s HUD', async () => {
     await waitUntil(async () => hostPage.isVisible('.kart-3d-view-hud:not([hidden]) .kart-3d-item-frame'), { ...RACE_TIMEOUT, message: 'the item frame' });
     await pressItemButton();
-    const using = await nextView((view) => view.item?.effects.length > 0);
-    assert.equal(using.item.effects[0].item, ALLOWED_ITEM);
-    assert.equal(using.item.held, null);
-    await hostPage.waitForSelector('.kart-3d-view-hud:not([hidden]) .kart-3d-effect-ring', { timeout: 30000 });
-    assert.equal(await hostPage.locator('.kart-3d-effect-ring').count(), 1);
-    await saveScreenshot(hostPage, 'm8-1-host-effect');
-    await saveScreenshot(ana.page, 'm8-2-phone-effect');
-    assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the game keeps running');
-    assert.equal(await ana.page.isVisible('#kart-controls'), true);
+    return nextView((view) => view.item && view.item.held === null && !view.item.rolling);
+  }
+
+  // The nine items, each used once in a race of its own. `shows` is what the item must show after the press.
+  const TIMED_EFFECT = 'effect on the phone\'s view and a ring in the host\'s HUD';
+  const ITEM_CHECKS = [
+    { id: KART_ITEMS.BIG, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.SMALL, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.BOUNCY, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.MAGNET, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.PUSH, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.STICKY, shows: TIMED_EFFECT },
+    { id: KART_ITEMS.BLOCKER, shows: 'no effect (a blocker stands on the road)' },
+    { id: KART_ITEMS.RAMP, shows: 'no effect (a ramp lies on the road)' },
+    { id: KART_ITEMS.TELEPORT, shows: 'the "Teleport!" banner over the host\'s view' },
+  ];
+
+  ITEM_CHECKS.forEach(({ id, shows }, index) => {
+    test(`${id}: picked up, used once, shows ${shows}; the game keeps running`, async () => {
+      const after = await useItem(id, index === 0);
+      if (shows === TIMED_EFFECT) {
+        assert.ok(after.item.effects.some((effect) => effect.item === id), `${id} running: ${JSON.stringify(after.item.effects)}`);
+        await hostPage.waitForSelector('.kart-3d-view-hud:not([hidden]) .kart-3d-effect-ring', { timeout: 30000 });
+      } else if (id === KART_ITEMS.TELEPORT) {
+        await hostPage.waitForFunction(() => [...document.querySelectorAll('.kart-3d-view-banner')].some((banner) => banner.textContent === 'Teleport!'),
+          null, { timeout: 30000, polling: 'raf' });
+      } else {
+        assert.deepEqual(after.item.effects, []);
+        assert.equal(await hostPage.locator('.kart-3d-effect-ring').count(), 0);
+      }
+      await saveScreenshot(hostPage, `m8-1-host-${id}`);
+      if (index === 0) {
+        await saveScreenshot(ana.page, 'm8-2-phone-effect');
+      }
+      assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the game keeps running');
+      assert.equal(await ana.page.isVisible('#kart-controls'), true);
+    });
   });
 
   test('with Items off the view\'s item is null and the phone has no Item button', async () => {

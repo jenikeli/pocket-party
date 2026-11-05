@@ -2,6 +2,7 @@
 // as in the race, and draws one frame from ?view=near (kart height) or ?view=above (higher up, farther back). Since
 // M7d5 a piece can also be a kart (kart-pieces.js), added after the bake as the race adds its karts, with its own
 // camera.
+// With ?bloom=1 the frame goes through the race's bloom (bloom.js, as on High quality).
 // Sets window.kitShotReady when the frame is drawn, or window.kitShotError with a message. Used by
 // tools/kit-shots.js, which waits for either.
 
@@ -18,6 +19,7 @@ import { buildPlatforms } from '../games/kart-3d/kit/platform.js';
 import { KIT_PARTS } from '../games/kart-3d/kit/layout-rules.js';
 import { stationIndexAt } from '../games/kart-3d/track.js';
 import { edgeLateral } from '../games/kart-3d/kit/frames.js';
+import { createBloom } from '../games/kart-3d/bloom.js';
 import { tuning } from '../games/kart-3d/tuning.js';
 import { dressSea } from '../games/kart-3d/kit/sea.js';
 import { PIECES } from './pieces.js';
@@ -152,7 +154,16 @@ async function showPiece() {
   sun.usePerView(true);
   sun.fitView(camera);
   renderer.shadowMap.needsUpdate = true;
-  renderer.render(scene, camera);
+  if (params.get('bloom') === '1') {
+    const bloom = createBloom(renderer);
+    bloom.setSize(WIDTH, HEIGHT);
+    bloom.render((target) => {
+      renderer.setRenderTarget(target);
+      renderer.render(scene, camera);
+    });
+  } else {
+    renderer.render(scene, camera);
+  }
 }
 
 try {

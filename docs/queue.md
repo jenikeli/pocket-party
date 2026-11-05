@@ -11,7 +11,7 @@ here; folded into "M8" in `docs/history.md` at the handoff and this file deleted
 |---|---|---|---|---|
 | M | Items' list and draws: big, small, bouncy removed; equal chances, drawn at the roulette's end, a new seed each race | sonnet | none | building |
 | N | The trick in the air (any takeoff), CPU tricks to match | sonnet | none | dropped (the user keeps MK8DX's takeoff window) |
-| P | kit-shots `--bloom`: pieces drawn through the race's bloom (High quality) | sonnet | none | building |
+| P | kit-shots `--bloom`: pieces drawn through the race's bloom (High quality) | sonnet | none | merged |
 | O | The jump item replaces the ramp: rules, CPU use, icon, a launch puff; the kicker removed | sonnet | M merged | queued |
 | main | m8 browser test to seven items and the jump; CLAUDE.md's kit-shots line; docs; full browser suite; handoff | main | O, P merged | queued |
 

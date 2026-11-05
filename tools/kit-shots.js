@@ -1,6 +1,7 @@
-// `npm run kit-shots -- [--name <sheet name>] <piece> [<piece> ...]`: a dev-only review tool. Renders each kit piece
+// `npm run kit-shots -- [--bloom] [--name <sheet name>] <piece> [<piece> ...]`: a dev-only review tool. Renders each kit piece
 // on a short straight of road, lit as in the race, from kart height ("near") and from higher up ("above"), and
 // writes one picture sheet, test-results/review/<name>.png, with the single shots in test-results/review/shots/.
+// --bloom draws through the race's bloom (High quality), so glow can be judged.
 // The pieces and their framing live in host/kit-shots/pieces.js; the page that draws them is host/kit-shots/.
 // Implementers run it in their worktrees at the same time, so at most SHOT_SLOTS runs draw at once on the
 // machine (tools/machine-slots.js) and the others wait.
@@ -21,13 +22,17 @@ const SHEET_WIDTH = 1340;
 // Each run is a headless Chromium drawing on the CPU: the dev box (4 threads, 7 GB) takes two at once.
 const SHOT_SLOTS = 2;
 
-// Reads the command line (without node and the script): `--name <name>` and the piece names. The sheet's default
-// name is the pieces joined with '-'. Throws a message that says how to call it when no piece is given.
+// Reads the command line (without node and the script): `--bloom`, `--name <name>` and the piece names. The
+// sheet's default name is the pieces joined with '-', plus '-bloom' with the flag. Throws a message that says how
+// to call it when no piece is given.
 export function parseArguments(args) {
   const pieces = [];
   let name = null;
+  let bloom = false;
   for (let index = 0; index < args.length; index += 1) {
-    if (args[index] === '--name') {
+    if (args[index] === '--bloom') {
+      bloom = true;
+    } else if (args[index] === '--name') {
       index += 1;
       name = args[index];
     } else {
@@ -35,19 +40,19 @@ export function parseArguments(args) {
     }
   }
   if (pieces.length === 0 || name === undefined) {
-    throw new Error('Usage: npm run kit-shots -- [--name <sheet name>] <piece> [<piece> ...]');
+    throw new Error('Usage: npm run kit-shots -- [--bloom] [--name <sheet name>] <piece> [<piece> ...]');
   }
-  return { pieces, name: name ?? pieces.join('-') };
+  return { pieces, bloom, name: name ?? [...pieces, ...(bloom ? ['bloom'] : [])].join('-') };
 }
 
 // Opens one view of one piece and saves its picture. Fails with the page's own message when it reports an
 // error (an unknown piece, or building threw) or throws one.
-async function shootPiece(page, baseUrl, piece, view) {
+async function shootPiece(page, baseUrl, piece, view, bloom) {
   const pageErrors = [];
   const onPageError = (error) => pageErrors.push(error.message);
   page.on('pageerror', onPageError);
   try {
-    await page.goto(`${baseUrl}/host/kit-shots/index.html?piece=${piece}&view=${view}`);
+    await page.goto(`${baseUrl}/host/kit-shots/index.html?piece=${piece}&view=${view}${bloom ? '&bloom=1' : ''}`);
     const outcome = await page.waitForFunction(
       () => window.kitShotReady === true || window.kitShotError || null,
       null,
@@ -56,7 +61,7 @@ async function shootPiece(page, baseUrl, piece, view) {
     if (outcome !== true || pageErrors.length > 0) {
       throw new Error(`${piece} (${view}): ${pageErrors[0] ?? outcome}`);
     }
-    const file = path.join(SHOTS_DIR, `${piece}-${view}.png`);
+    const file = path.join(SHOTS_DIR, `${piece}-${view}${bloom ? '-bloom' : ''}.png`);
     await page.screenshot({ path: file });
     return file;
   } finally {
@@ -85,7 +90,7 @@ async function writeSheet(browser, name, shotFiles) {
 }
 
 async function main() {
-  const { pieces, name } = parseArguments(process.argv.slice(2));
+  const { pieces, bloom, name } = parseArguments(process.argv.slice(2));
   fs.mkdirSync(SHOTS_DIR, { recursive: true });
   const releaseSlot = await takeSlot('pocket-party-kit-shots', SHOT_SLOTS);
   const server = await startServer();
@@ -97,7 +102,7 @@ async function main() {
     for (const piece of pieces) {
       shotFiles[piece] = [];
       for (const view of VIEWS) {
-        shotFiles[piece].push(await shootPiece(page, server.baseUrl, piece, view));
+        shotFiles[piece].push(await shootPiece(page, server.baseUrl, piece, view, bloom));
         console.log(`shot ${piece} ${view}`);
       }
     }

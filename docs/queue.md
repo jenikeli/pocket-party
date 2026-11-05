@@ -23,9 +23,9 @@ plan could foresee was answered while planning (2026-11-04); the answers are wri
 | G | M8b | Road objects' rules: the model, the blocker, the ramp, CPU use and avoiding | sonnet | F | merged |
 | H | M8b | Road objects' looks: sandcastle blocker, kicker ramp | opus | F | merged |
 | I | M8c | Field rules: teleport, magnet, push, sticky walls, CPU use | opus | G, H merged | merged |
-| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | built, in review |
+| J | M8c | Looks: teleport (warning, sparkles, pop) and sticky walls (goo) | sonnet | G, H merged | merged |
 | K | M8c | Looks: magnet field and push shockwave | sonnet | G, H merged | merged |
-| L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | queued |
+| L | M8c | Browser test extended to all nine items, spawned alone | sonnet | I, J, K merged | building |
 
 ## Rules for every task
 
@@ -515,3 +515,11 @@ and where to change it).
   sharing one set of geometries.
 - **J** sent back once after its review and sheet: goo read as lava, blobs as oranges, faint hop sparkles, the
   warning rings blooming where they meet, per-frame allocation, drips growing along world y.
+- **J, looks (after its fix round):** the pop applies to every racing, non-falling kart while hops exist (hops
+  carry no kart id), so a kart that found no spot pops too (rare). The goo is one course-wide mesh (about 10,000
+  triangles on a long lap, one draw call, no shadow) with its back 0.15 outside the road's edge and its top 0.78
+  up, so it hugs both the plain wall and the guardrail (`sticky-guardrail` piece). Drips grow along the road's
+  up. A held kart gets goo blobs squashed toward the wall and 4 goo strings (short, since a held kart stops about
+  1 from the wall). The warning rings are scaled to about 0.45 luma each, and the outer stops outside the inner,
+  so they should not bloom; kit-shots has no High-quality option, so bloom is estimated, not seen: check on the
+  device (High quality, Teleport). `sticky-walls-look.js` is 204 lines.

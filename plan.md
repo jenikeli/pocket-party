@@ -404,6 +404,9 @@ The first step is Seaside Skyway down by the sea (planned as M7f until the M7e d
 - [ ] The floating islands and the backdrop cliffs removed (they look bad and make no sense); mountains on the horizon are fine
 - [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built: the islands' rock was rings of round shapes, which rock is not
 - [ ] Sound effects and music (MP3/M4A, small)
+- [ ] The UI of the whole app improved, not just the kart race: the lobby, the controller pages, every game's phone screen and setup (asked for after the M8 device run)
+- [ ] iPhone: a double tap zooms the page in and it cannot be zoomed back out; stop the zoom everywhere (very annoying for iPhone players)
+- [ ] Every phone layout in portrait only, so players can lock rotation and turn the phone when they need to (simpler to design too); tilt steering checked with the phone turned but the page in portrait
 - [ ] Host "Tap to start" screen (unlocks audio, requests fullscreen where supported)
 - [ ] Loading screen with a progress bar (lazy loading and the ready check already exist from M5a)
 - [ ] Revisit what happens when a player drops mid-race, using the device runs of M5b, M5c and M7 (M5b's choice: the kart keeps its place with neutral input)

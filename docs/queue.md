@@ -10,12 +10,12 @@ folded into "M9" in `docs/history.md` and deleted.
 | Task | What | Model | Waits for | Status |
 |---|---|---|---|---|
 | 0 | Prep (main session): the course file, track-builder flags, tunables, stand-in scenery, browser tests pinned to Seaside | main | none | merged |
-| A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | queued |
+| A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | building |
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | queued |
-| C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | queued |
+| C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
 | D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | queued |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | queued |
-| F | The glider, one per design, opening, folding and banking | opus | 0 | queued |
+| F | The glider, one per design, opening, folding and banking | opus | 0 | building |
 | G | Terminal and control tower | opus | 0 | queued |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | queued |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | queued |

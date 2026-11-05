@@ -3,6 +3,8 @@
 // M7d5 a piece can also be a kart (kart-pieces.js), added after the bake as the race adds its karts, with its own
 // camera.
 // With ?bloom=1 the frame goes through the race's bloom (bloom.js, as on High quality).
+// With ?course=<id> it draws a whole course instead (course-view.js): &view=near|above&s=<distance>, or
+// &view=overview; window.drawCourseView(view, s) then draws another view without building again.
 // Sets window.kitShotReady when the frame is drawn, or window.kitShotError with a message. Used by
 // tools/kit-shots.js, which waits for either.
 
@@ -23,6 +25,7 @@ import { createBloom } from '../games/kart-3d/bloom.js';
 import { tuning } from '../games/kart-3d/tuning.js';
 import { dressSea } from '../games/kart-3d/kit/sea.js';
 import { PIECES } from './pieces.js';
+import { buildCourseView } from './course-view.js';
 import { SEA_DROP } from './landmark-pieces.js';
 
 const WIDTH = 1280;
@@ -166,8 +169,15 @@ async function showPiece() {
   }
 }
 
+async function showCourse(params) {
+  const draw = await buildCourseView(params.get('course'), params.get('bloom') === '1');
+  window.drawCourseView = draw;
+  draw(params.get('view') || 'near', Number(params.get('s') ?? 0));
+}
+
 try {
-  await showPiece();
+  const params = new URLSearchParams(location.search);
+  await (params.has('course') ? showCourse(params) : showPiece());
   window.kitShotReady = true;
 } catch (error) {
   console.error('kit-shots viewer failed:', error);

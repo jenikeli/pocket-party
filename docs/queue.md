@@ -11,7 +11,7 @@ folded into "M9" in `docs/history.md` and deleted.
 |---|---|---|---|---|
 | 0 | Prep (main session): the course file, track-builder flags, tunables, stand-in scenery, browser tests pinned to Seaside | main | none | merged |
 | A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | building |
-| B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | queued |
+| B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | merged |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
 | D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | queued |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | queued |
@@ -630,3 +630,7 @@ session merges that line).
   - **Task A's files** also include `test/unit/kart-3d-racing-line.test.js`, whose jump check expects one jump a
     course (the airport has two).
   - **Stand-in road:** the kit road in a white edge line and orange-white curbs; D replaces it.
+- **Task B:** CPUs that do not mean to clip a post steer at least 3.2 clear of it (beyond the spec: without it Easy
+  CPUs, swept across by the racing line, hit posts all the time). Easy still gets spun now and then when the pack
+  bumps it into a post, so the test checks Hard against Easy (about 25 against 9 spins in a 12-CPU lap) rather than
+  Easy at 0. `POST_LOOK`, `POST_CLEAR` and `POST_CLIP` at the top of `cpu-aim.js` tune it.

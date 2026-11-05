@@ -6,6 +6,7 @@
 
 import { createKart, stepKart } from './kart-physics.js';
 import { bumpKarts } from './kart-bumps.js';
+import { createSpinPosts, stepSpinPosts } from './spin-posts.js';
 import { updateSlipstreams } from './slipstream.js';
 import { startBoost, BOOST_KINDS } from './kart-boosts.js';
 import { cpuControls } from './cpu-driver.js';
@@ -40,8 +41,9 @@ const PLAYER_WEIGHT = 1;
 // CPU_LEVELS, cpu-levels.js) from the setup screen, `allowedItems` the item ids allowed (none: items off) and
 // `itemSeed` where the race's item draws start (items/item-rules.js; the game passes a fresh one each race).
 // As in MK8DX the players start at the back, behind the CPU karts. Returns the race: { phase, time, laps,
-// engineClass, cpuLevel, firstPlayerFinishTime, items, karts }; items is item-rules.js's createItems. time
-// counts from the start of the countdown (GO is at GO_AT); raceClock() gives the race's own clock from GO.
+// engineClass, cpuLevel, firstPlayerFinishTime, items, spinPosts, karts }; items is item-rules.js's createItems,
+// spinPosts spin-posts.js's createSpinPosts. time counts from the start of the countdown (GO is at GO_AT);
+// raceClock() gives the race's own clock from GO.
 // Each kart is a kart from kart-physics.js plus { playerId, cpu, goHeld, goPressedAt, startResult, distance,
 // lapStartedAt, finishTime, place, item }: playerId is null for a CPU kart; cpu is its CPU driver's state when
 // it drives itself (a CPU kart, or a player's once finished; null otherwise; cpu-driver.js); the go
@@ -63,6 +65,7 @@ export function createRace(track, playerIds, laps, engineClass, cpuLevel, allowe
     cpuLevel,
     firstPlayerFinishTime: null,
     items: createItems(track, allowedItems, itemSeed),
+    spinPosts: createSpinPosts(track),
     karts: [],
   };
   for (let gridIndex = 0; gridIndex < cpuCount + playerIds.length; gridIndex += 1) {
@@ -131,6 +134,7 @@ export function stepRace(race, track, controlsFor, dt) {
     kart.item.button = controls.item === true;
   }
   bumpKarts(race.karts);
+  stepSpinPosts(race, track, dt);
   stepItems(race, track, dt);
   updateSlipstreams(race.karts, dt);
   race.time += dt;

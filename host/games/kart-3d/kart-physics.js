@@ -49,7 +49,7 @@ const AIR_STEERING_SHARE = 0.5;
 // driftHeld is the Drift button last step, and lipTiming the last trick timing (kart-techniques.js), both kept
 // when the kart is put back on the road.
 export function createKart(track, s, lateral, weight = 1, engineClassShare = 1) {
-  const kart = { weight, engineClassShare, paceShare: 1, driftHeld: false, lipTiming: null };
+  const kart = { weight, engineClassShare, paceShare: 1, driftHeld: false, lipTiming: null, postCooldown: 0 };
   placeOnRoad(track, kart, s, lateral);
   return kart;
 }

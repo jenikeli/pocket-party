@@ -5,6 +5,8 @@
 
 import { progressBetween } from './track.js';
 import { forwardSpeed } from './kart-physics.js';
+import { createRandom } from './random.js';
+import { CPU_LEVELS } from './cpu-levels.js';
 import { lineLateralAt } from './cpu-road.js';
 
 // Another kart is in the way if it is ahead within this distance (plus PASS_LOOK_SECONDS of driving), within
@@ -31,12 +33,24 @@ const EDGE_KEEP = 1.5;
 // this far to the side of it, so it does not steer into it (two karts touch 2 apart).
 const ALONGSIDE = 3;
 const SIDE_CLEAR = 2.4;
+// A spin post is seen this far ahead, and kept in aim until it is this far behind. A driver that means to hit it
+// aims this far from its middle, on the side toward the road's middle: inside the post's reach (1.8), so the
+// side of the post is clipped, but not dead centre. One that does not keeps its aim at least POST_CLEAR from it
+// (the pass round a slower kart would otherwise push it into a post by accident).
+const POST_LOOK = 45;
+const POST_PASSED = 1;
+const POST_CLIP = 1.2;
+const POST_CLEAR = 3.2;
+// Each post's draw is its own random number, from the driver's seed and the post's number.
+const POST_SEED_STRIDE = 104729;
 
 // The aim fields of a fresh driver: shift how far a pass moves it off its line, passTarget the shift the pass
 // wants and passLeft how much longer; obstacles the standing blockers (items/road-objects.js), stand-in karts
 // that never move, which it passes as it passes a slow kart (the item rules refill them every step); mergeFrom
 // the lateral it is rejoining its line from and mergeShare how far it has got (1 is on its line); clearLeft and
-// clearRight the least and most lateral it may aim at, kept clear of karts alongside (null when none).
+// clearRight the least and most lateral it may aim at, kept clear of karts alongside (null when none); post
+// the spin post it is dealing with, { index, lateral, clip, side } (clip: it means to hit it; side, -1 or 1: the
+// side it passes on, fixed when it first sees the post so it does not cross the post), or null.
 export function freshAim() {
   return {
     obstacles: [],
@@ -47,6 +61,7 @@ export function freshAim() {
     mergeShare: 1,
     clearLeft: null,
     clearRight: null,
+    post: null,
   };
 }
 
@@ -62,13 +77,14 @@ export function aimLateral(track, cpu, s) {
   // Eased, so it leaves where it was gently and settles gently on its line.
   const blend = cpu.mergeShare * cpu.mergeShare * (3 - 2 * cpu.mergeShare);
   const lateral = cpu.mergeFrom + (onLine - cpu.mergeFrom) * blend;
-  return Math.min(Math.max(lateral, cpu.clearLeft ?? -Infinity), cpu.clearRight ?? Infinity);
+  return Math.min(Math.max(aroundPost(cpu.post, lateral), cpu.clearLeft ?? -Infinity), cpu.clearRight ?? Infinity);
 }
 
 // Once a step: the merge goes on, and the pass's shift moves toward where a kart in the way wants it, or back.
 export function updateAim(track, kart, karts, cpu, dt) {
   cpu.mergeShare = Math.min(cpu.mergeShare + dt / MERGE_SECONDS, 1);
   keepClearAlongside(track, kart, karts, cpu);
+  cpu.post = nextPost(track, kart, cpu);
   cpu.passLeft = Math.max(cpu.passLeft - dt, 0);
   const blocker = kartInTheWay(track, kart, [...karts, ...cpu.obstacles], cpu);
   if (blocker) {
@@ -124,4 +140,34 @@ function passingShift(track, cpu, blocker) {
   const side = limit - blocker.lateral > limit + blocker.lateral ? 1 : -1;
   const lateral = Math.min(Math.max(blocker.lateral + side * PASS_CLEAR, -limit), limit);
   return lateral - lineLateralAt(track, blocker.s) - cpu.offset;
+}
+
+// `lateral` moved to clip the post, or out of its way (kept on the side it chose).
+function aroundPost(post, lateral) {
+  if (post === null) {
+    return lateral;
+  }
+  if (post.clip) {
+    return post.lateral - Math.sign(post.lateral) * POST_CLIP;
+  }
+  const nearest = post.lateral + post.side * POST_CLEAR;
+  return post.side < 0 ? Math.min(lateral, nearest) : Math.max(lateral, nearest);
+}
+
+// The next spin post ahead (see freshAim's post), or null. Whether it means to hit it is its level's postChance,
+// drawn per driver and post, so a race replays the same.
+function nextPost(track, kart, cpu) {
+  const { postChance } = CPU_LEVELS[cpu.level];
+  for (const [index, post] of track.spinPosts.entries()) {
+    const gap = progressBetween(track, kart.s, post.s);
+    if (gap > -POST_PASSED && gap < POST_LOOK) {
+      // Chosen once, when the post first comes in sight: whether to clip it, and which side to pass.
+      if (cpu.post?.index === index) {
+        return cpu.post;
+      }
+      const side = Math.sign(kart.lateral - post.lateral) || 1;
+      return { index, lateral: post.lateral, clip: createRandom(cpu.seed * POST_SEED_STRIDE + index)() < postChance, side };
+    }
+  }
+  return null;
 }

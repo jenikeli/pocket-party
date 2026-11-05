@@ -32,14 +32,15 @@ export function pinnedLaterals(track) {
   return pins;
 }
 
-// Every jump on the track: { lipS, landingS }, where the road stops at a gap and where it starts again.
+// Every jump on the track: { lipS, landingS, glide }, where the road stops at a gap and where it starts again,
+// and whether the gap is crossed with the glider open (a glide ramp's, M9).
 export function jumps(track) {
   const { stations } = track;
   const found = [];
   stations.forEach((station, index) => {
     const next = stations[(index + 1) % stations.length];
     if (!station.gap && next.gap) {
-      found.push({ lipS: next.s, landingS: next.s });
+      found.push({ lipS: next.s, landingS: next.s, glide: next.glide });
     }
     if (station.gap && !next.gap && found.length > 0) {
       found.at(-1).landingS = next.s;

@@ -9,7 +9,7 @@ folded into "M9" in `docs/history.md` and deleted.
 
 | Task | What | Model | Waits for | Status |
 |---|---|---|---|---|
-| 0 | Prep (main session): the course file, track-builder flags, tunables, stand-in scenery, browser tests pinned to Seaside | main | none | queued |
+| 0 | Prep (main session): the course file, track-builder flags, tunables, stand-in scenery, browser tests pinned to Seaside | main | none | merged |
 | A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | queued |
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | queued |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | queued |
@@ -268,7 +268,8 @@ normal, 1.8 tall. A kart higher than that above the road passes over it.
 - `racing-line-pins.js`, `cpu-driver.js` and the `cpu-*.js` it needs
 - `courses.js`, `palm-bay-airport.js` (only the glide's pieces: the ramp's and gap's heights, the glide's halfWidth)
 - `tuning.js` (Gliding group only)
-- `test/unit/kart-3d-race.test.js` (the course list), new `test/unit/kart-3d-glide.test.js`
+- `test/unit/kart-3d-race.test.js` (the course list), `test/unit/kart-3d-racing-line.test.js` (its "one jump a
+  course" check: the airport has two), new `test/unit/kart-3d-glide.test.js`
 **Rules:**
 - Crossing a lip whose next station glides opens the glider (`gliding` true). A trick pressed at that lip boosts at
   once (`BOOST_KINDS.JUMP`), not on landing.
@@ -615,3 +616,17 @@ session merges that line).
 ## Decisions made during the run
 
 (The run's main session logs here what it decided for the user, for the review at the end.)
+
+- **Task 0:**
+  - **Distances:** the s values in "The course" are measured from above. The track's own s runs along the 3D
+    centre line, so past the cutting's and the ring's slopes it is a few units longer: the jump's lip is at 614
+    (landing 630), the ring's anti-gravity runs from 654 to 771, the glide ramp starts at 1103, the glide's lip is at
+    1116 and its landing at 1206. The spin posts (685 to 745), dash panels and item rows are given in the track's
+    own s and all land where meant (checked). Use `buildTrack(PALM_BAY_AIRPORT)` for exact distances.
+  - **Pinned to Seaside:** there was no shared helper that starts a 3D race, so `test/helpers/kart-3d-host.js` got
+    `pickCourse(hostPage, courseId)` and `clickStartRace(hostPage, courseId = 'seaside-skyway')`, and every 3D
+    browser file's Start race click now goes through them (m7d2 and m7b's second race pass `'test-track'`; m7d4b
+    picks Seaside before Measure).
+  - **Task A's files** also include `test/unit/kart-3d-racing-line.test.js`, whose jump check expects one jump a
+    course (the airport has two).
+  - **Stand-in road:** the kit road in a white edge line and orange-white curbs; D replaces it.

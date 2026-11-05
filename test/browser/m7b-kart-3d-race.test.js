@@ -17,7 +17,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -151,8 +151,7 @@ describe('M7b 3D race', () => {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
     }
@@ -241,8 +240,7 @@ describe('M7b 3D race', () => {
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
     await cy.page.click('#kart-ready-button');
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage, 'test-track');
     await cy.page.waitForSelector('#kart-controls:not([hidden])');
     await waitUntil(async () => (await hudTexts('lap')).join() === 'Lap 1/3', { ...RACE_TIMEOUT, message: 'Cy\'s view on the Test track' });
     await saveScreenshot(hostPage, 'm7b-6-host-test-track');

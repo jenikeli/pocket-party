@@ -55,6 +55,12 @@ export const TUNABLES = Object.freeze([
   { key: 'slideGrip', group: 'Bumps', label: 'Grip after a bump', unit: 'per s', min: 0, max: 8, step: 0.1, value: 1.5 },
   { key: 'slideSeconds', group: 'Bumps', label: 'Slide after a bump', unit: 's', min: 0, max: 1.5, step: 0.05, value: 0.35 },
 
+  // The spin-boost posts in anti-gravity (M9; spin-posts.js): a kart hitting one bounces back with this share of
+  // its speed into it, and at least the parting speed, and cannot be spun by a post again for the cooldown.
+  { key: 'postBounce', group: 'Spin posts', label: 'Bounce', unit: 'share', min: 0, max: 1, step: 0.01, value: 0.5 },
+  { key: 'postPartingSpeed', group: 'Spin posts', label: 'Least parting speed', unit: 'units/s', min: 0, max: 15, step: 0.1, value: 6 },
+  { key: 'postCooldown', group: 'Spin posts', label: 'Cooldown', unit: 's', min: 0, max: 3, step: 0.05, value: 0.6 },
+
   // The hop on pressing Drift: how high and how long in the air. The M6 hop was 0.23 high and 0.27 s, and
   // MK8DX's is higher; 0.4 was tuned on the M7a device run.
   { key: 'hopHeight', group: 'Hop and body', label: 'Hop height', unit: 'units', min: 0.1, max: 1.5, step: 0.05, value: 0.4 },
@@ -88,6 +94,18 @@ export const TUNABLES = Object.freeze([
   // "Rocket start to" (guesses; M6c gave every rocket start 1 s).
   { key: 'rocketBestSeconds', group: 'Boosts', label: 'Rocket start, best timing', unit: 's', min: 0.2, max: 2, step: 0.05, value: 1 },
   { key: 'rocketWorstSeconds', group: 'Boosts', label: 'Rocket start, latest timing', unit: 's', min: 0.1, max: 2, step: 0.05, value: 0.3 },
+
+  // Gliding off a glide ramp (M9; kart-glide.js). Gravity is gentler while the glider is open (6.5 lands a glide
+  // with no dive at about the start of the landing road) and stronger while Brake dives. The glider flies at
+  // MK8DX's air speed (8.05 against a ground top speed of 7.75), turns at a share of the ground steering and banks
+  // with it. The camera rides higher and further back while gliding.
+  { key: 'glideGravity', group: 'Gliding', label: 'Gravity, floating', unit: 'units/s^2', min: 1, max: 20, step: 0.1, value: 6.5 },
+  { key: 'glideDiveGravity', group: 'Gliding', label: 'Gravity, diving', unit: 'units/s^2', min: 5, max: 50, step: 0.5, value: 22 },
+  { key: 'glideSpeedShare', group: 'Gliding', label: 'Air speed', unit: 'x top', min: 0.8, max: 1.3, step: 0.01, value: 1.04 },
+  { key: 'glideTurnShare', group: 'Gliding', label: 'Turn, share of steering', unit: 'share', min: 0.1, max: 1.5, step: 0.05, value: 0.6 },
+  { key: 'glideBankDegrees', group: 'Gliding', label: 'Bank at full steer', unit: 'deg', min: 0, max: 60, step: 1, value: 25 },
+  { key: 'glideCameraLift', group: 'Gliding', label: 'Camera higher by', unit: 'units', min: 0, max: 6, step: 0.1, value: 1.5 },
+  { key: 'glideCameraPullBack', group: 'Gliding', label: 'Camera further back by', unit: 'units', min: 0, max: 8, step: 0.1, value: 2 },
 
   // The CPU drivers' catch-up (M7e; cpu-pace.js), mild as in MK8DX: a CPU kart behind the leading player gets up
   // to this share more top speed, one ahead up to this share less, in full at the range's distance (guesses; 0

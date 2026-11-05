@@ -13,7 +13,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, pickCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -101,6 +101,7 @@ describe('M6c 3D techniques', () => {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
+    await pickCourse(hostPage, 'seaside-skyway');
     await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
     // The tuned window opens 0.3 s after "2", and a press made when the phone shows "2" can arrive sooner on this
     // slow software-drawn host. This test is about the start being judged and logged, so the window opens at "2"

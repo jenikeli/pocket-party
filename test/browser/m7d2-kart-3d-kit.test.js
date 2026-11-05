@@ -12,7 +12,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -116,8 +116,7 @@ describe('M7d2 3D kit on the Test track', () => {
   // Every screenshot waits for a CPU-drawn frame, so this test gets longer than the usual 60 s.
   test('the start lights light red one by one with the countdown, then green at GO', { timeout: 120000 }, async () => {
     await ana.click('#kart-ready-button');
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage, 'test-track');
     const samples = new Map();
     await waitUntil(
       async () => {

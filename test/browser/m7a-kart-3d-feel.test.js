@@ -11,7 +11,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 import { TUNABLES } from '../../host/games/kart-3d/tuning.js';
 
@@ -107,8 +107,7 @@ describe('M7a 3D feel', () => {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
     }

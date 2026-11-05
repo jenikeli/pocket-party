@@ -14,7 +14,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
-import { GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -122,8 +122,7 @@ describe('M7c 3D look', () => {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
     }
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage);
     const labels = hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-label');
     await waitUntil(async () => (await labels.count()) === 2, { ...RACE_TIMEOUT, message: 'a label on each view' });
     await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, VIEW_GAP)).count === 960 * 4, {

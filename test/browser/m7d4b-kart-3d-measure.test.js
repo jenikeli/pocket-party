@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, pickCourse, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -70,6 +70,7 @@ describe('M7d4b 3D Measure tool', () => {
 
   // Each case draws 11 software frames (about half a second each), so the first look takes about a minute.
   test('Measure runs from the setup screen with a progress line, and Stop gives a report', { timeout: 180000 }, async () => {
+    await pickCourse(hostPage, 'seaside-skyway');
     await clickNow(hostPage, '#kart-3d-measure-button');
     await hostPage.waitForSelector('#kart-3d-measure:not([hidden])');
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).startsWith('Measuring'), { message: 'the progress line' });

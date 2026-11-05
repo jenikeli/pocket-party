@@ -15,7 +15,7 @@ const CLOSING_TOLERANCE = 0.01;
 // across (Seaside Skyway's last corner), a gentle S for a kart at speed.
 const SHOULDER_EASE = 16;
 
-// `definition` is { halfWidth, startLine, pieces, dashPanels, itemBoxRows, scenery }. The track starts at the
+// `definition` is { halfWidth, startLine, pieces, dashPanels, spinPosts, itemBoxRows, scenery }. The track starts at the
 // origin heading along +x, at height 0 with no roll, its road halfWidth either side of the centre line. Each
 // piece is a straight ({ straight: length }) or a turn ({ turn: degrees, radius }, + turns right, - left), and
 // may also have:
@@ -28,15 +28,17 @@ const SHOULDER_EASE = 16;
 //             curve, so the ground's edge and its wall never step sideways
 //   walls     'both' (the default), 'left', 'right' or 'none': which outer edges have a wall
 //   gap       true: no road at all (a jump)
+//   glide     true (only with gap): the gap is crossed in the air with the glider open (M9, kart-glide.js)
 //   antiGravity true: gravity pulls karts toward the road, so they can drive up walls
 // dashPanels (optional) lists { s, lateral }: where each dash panel's centre is (kart-boosts.js has their size).
+// spinPosts (optional) lists { s, lateral }: where each spin-boost post stands on the road (spin-posts.js).
 // itemBoxRows (optional) lists distances along the lap where a row of item boxes stands across the road
 // (items/item-boxes.js spreads each row's boxes).
 // scenery names the course's look (scenery.js): its road and the dressing round it. Every course in courses.js
 // has one; a track built without one (as the rules' unit tests do) can be driven but not drawn.
-// Returns the track: { stations, length, startLine, dashPanels, itemBoxRows, scenery }. Station i describes the
+// Returns the track: { stations, length, startLine, dashPanels, spinPosts, itemBoxRows, scenery }. Station i describes the
 // road from itself to station i + 1 (the last one joins the first): { point, tangent, right, normal, s,
-// segmentLength, halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, antiGravity }, where s is the
+// segmentLength, halfWidth, shoulderLeft, shoulderRight, wallLeft, wallRight, gap, glide, antiGravity }, where s is the
 // distance along the centre line from the start.
 export function buildTrack(definition) {
   const samples = samplePieces(definition.pieces, definition.halfWidth);
@@ -62,6 +64,7 @@ export function buildTrack(definition) {
     length: s,
     startLine: definition.startLine,
     dashPanels: definition.dashPanels ?? [],
+    spinPosts: definition.spinPosts ?? [],
     itemBoxRows: definition.itemBoxRows ?? [],
     scenery: definition.scenery ?? null,
   };
@@ -147,6 +150,7 @@ function pieceFlags(piece) {
     wallLeft: !piece.gap && (walls === 'both' || walls === 'left'),
     wallRight: !piece.gap && (walls === 'both' || walls === 'right'),
     gap: piece.gap === true,
+    glide: piece.gap === true && piece.glide === true,
     antiGravity: piece.antiGravity === true,
   };
 }

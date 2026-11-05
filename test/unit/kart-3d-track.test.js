@@ -156,3 +156,30 @@ test('a shoulder eases in and out in an S curve, so the ground\'s edge never ste
     assert.ok(Math.abs(next.shoulderLeft - station.shoulderLeft) < 0.6, `no step at ${station.s.toFixed(0)}`);
   });
 });
+
+test('a glide gap\'s stations glide, and only a gap can (M9)', () => {
+  const track = buildTrack({
+    halfWidth: 8,
+    startLine: 0,
+    pieces: [
+      { straight: 40 },
+      { straight: 20, gap: true, glide: true },
+      { straight: 40, glide: true },
+      { turn: 180, radius: 20 },
+      { straight: 100 },
+      { turn: 180, radius: 20 },
+    ],
+  });
+  const at = (s) => track.stations.find((station) => station.s >= s);
+  assert.equal(at(10).glide, false);
+  assert.equal(at(50).glide, true);
+  assert.equal(at(50).gap, true);
+  assert.equal(at(80).glide, false, 'glide without gap is ignored');
+});
+
+test('spin posts are passed through, and a track without them has none (M9)', () => {
+  assert.deepEqual(track.spinPosts, []);
+  const posts = [{ s: 30, lateral: -4 }];
+  const withPosts = buildTrack({ ...TEST_TRACK, spinPosts: posts });
+  assert.deepEqual(withPosts.spinPosts, posts);
+});

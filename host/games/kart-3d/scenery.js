@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { buildSeasideRoad, buildSeasideScenery } from './seaside-scenery.js';
 import { buildTestTrackRoad, buildTestTrackScenery } from './test-track-scenery.js';
+import { buildAirportRoad, buildAirportScenery } from './airport-scenery.js';
 import { buildPlainDressing } from './plain-scenery.js';
 import { addSun, SUN_OFFSET } from './sun.js';
 import { splitIntoCells } from './split-meshes.js';
@@ -32,6 +33,7 @@ const CELL_SIZE = 200;
 const SCENERIES = {
   seaside: { seaLevel: -14, buildRoad: buildSeasideRoad, buildDressing: buildSeasideScenery },
   'test-track': { seaLevel: -30, buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
+  airport: { seaLevel: -8, buildRoad: buildAirportRoad, buildDressing: buildAirportScenery },
 };
 
 // Adds everything to `scene`. `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js);

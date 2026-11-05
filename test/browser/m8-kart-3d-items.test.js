@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES, KART_ITEMS } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -43,8 +43,7 @@ describe('M8 items', () => {
   async function startRace() {
     await ana.page.click('#kart-ready-button');
     await ana.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
-    await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
-    await clickNow(hostPage, '#kart-3d-start-button');
+    await clickStartRace(hostPage);
     await ana.page.waitForSelector('#kart-controls:not([hidden])');
   }
 

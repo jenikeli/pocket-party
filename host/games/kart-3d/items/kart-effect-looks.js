@@ -7,8 +7,10 @@
 
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { tuning } from '../tuning.js';
+import { teleportKartScale } from './teleport-look.js';
 
 const ONE = Object.freeze({ x: 1, y: 1, z: 1 });
+const combined = { x: 1, y: 1, z: 1 };
 // The grow's wobble: a spring released at the effect's start, settling in about 0.6 s. Its share of the way to
 // the new size is 1 - e^(-damping t) cos(wobble t), which overshoots by about a third once, then a little less.
 const GROW_DAMPING = 5;
@@ -29,8 +31,21 @@ const PUFF_HEIGHT = 0.6;
 
 // The kart model's scale this frame, { x, y, z } (x across, y up, z along the kart), all 1 with no effect (and for
 // a kart with no `item`: items off, or a kart made by createKart alone). `race` is for effects that come from the
-// race rather than the kart.
+// race rather than the kart: the teleport's flicker and pop (teleport-look.js) multiply the kart's own size.
 export function kartLookScale(race, kart) {
+  const size = effectScale(kart);
+  const teleport = teleportKartScale(race, kart);
+  if (!teleport) {
+    return size;
+  }
+  // One object reused for every kart: the renderer uses the result at once, before the next kart's.
+  combined.x = size.x * teleport.x;
+  combined.y = size.y * teleport.y;
+  combined.z = size.z * teleport.z;
+  return combined;
+}
+
+function effectScale(kart) {
   const effect = kart.item?.effect;
   if (!effect) {
     return ONE;
@@ -55,7 +70,7 @@ export function kartLookScale(race, kart) {
 // otherwise, so bouncy's squash and stretch does not make the camera breathe.
 export function kartCameraSize(race, kart) {
   const item = kart.item?.effect?.item;
-  return item === KART_ITEMS.BIG || item === KART_ITEMS.SMALL ? kartLookScale(race, kart).y : 1;
+  return item === KART_ITEMS.BIG || item === KART_ITEMS.SMALL ? effectScale(kart).y : 1;
 }
 
 // True while the kart wears bouncy's rubber coat (off every other blink in its last second).

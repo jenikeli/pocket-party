@@ -19,7 +19,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | G | Terminal and control tower | opus | 0 | merged |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | building |
-| J | Ground vehicles (props) | sonnet | 0 | queued |
+| J | Ground vehicles (props) | sonnet | 0 | building |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | queued |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | queued |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |

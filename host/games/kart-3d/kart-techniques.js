@@ -6,11 +6,13 @@
 // MK8DX's rules: pressing Drift hops; the steering as the kart lands picks the drift's side; while drifting a
 // counter charges, faster with the stick pushed hard into the turn, through three spark levels; releasing
 // Drift fires a mini-turbo as long as the level reached. Pressing Drift as the kart leaves a ramp does a trick,
-// and the kart boosts when it lands.
+// and the kart boosts when it lands; off a glide ramp the glider opens (kart-glide.js, M9) and a trick boosts at
+// once instead, as the glider opens.
 
 import { addScaled, dot } from './vector.js';
 import { startBoost, miniTurboSeconds, BOOST_KINDS } from './kart-boosts.js';
 import { startTrickRoll } from './kart-body.js';
+import { openGlider, endGlide } from './kart-glide.js';
 import { tuning } from './tuning.js';
 
 // Landing with the stick at least this far over starts a drift (a guess).
@@ -96,34 +98,47 @@ function hop(kart, dt) {
   kart.hopping = true;
 }
 
+// Off a glide ramp the trick boosts at once (MK8DX); tricking still lasts until the landing, so it is one trick.
 function startTrick(kart) {
   if (!kart.tricking) {
     kart.tricking = true;
     startTrickRoll(kart);
+    if (kart.gliding) {
+      startBoost(kart, BOOST_KINDS.JUMP);
+    }
   }
 }
 
 // After the kart moved. `fromIndex` is its station before the move, `wasGrounded` whether it was on the road
-// then (after any hop). A lip is where the road ends at a gap: the jump's ramp.
+// then (after any hop). A lip is where the road ends at a gap: the jump's ramp, or a glide ramp if the gap glides.
 export function afterMove(track, kart, controls, fromIndex, wasGrounded, dt) {
   kart.sinceDriftPress += dt;
   if (kart.sinceLip !== null) {
     kart.sinceLip += dt;
   }
-  if (!track.stations[fromIndex].gap && track.stations[kart.trackIndex].gap) {
-    crossLip(kart);
+  const station = track.stations[kart.trackIndex];
+  if (!track.stations[fromIndex].gap && station.gap) {
+    crossLip(kart, station.glide);
   }
   if (!wasGrounded && kart.grounded) {
     land(kart, controls);
   }
+  if (kart.grounded && kart.gliding) {
+    // Landing folds the glider; so does a teleport (items/teleport.js), which puts the kart on the road at once.
+    endGlide(kart);
+  }
   chargeDrift(kart, controls, dt);
 }
 
-// A hop that goes over the lip becomes a jump, falling at the normal gravity. Also what the jump item's launch
-// does (items/jump.js), so its trick window and timing readout are the course ramp's.
-export function crossLip(kart) {
+// A hop that goes over the lip becomes a jump, falling at the normal gravity, or a glide if `glide` (the gap
+// glides). Also what the jump item's launch does (items/jump.js), so its trick window and timing readout are the
+// course ramp's.
+export function crossLip(kart, glide = false) {
   kart.sinceLip = 0;
   kart.hopping = false;
+  if (glide) {
+    openGlider(kart);
+  }
   const pressedJustBefore = kart.sinceDriftPress <= tuning.trickEarly;
   if (pressedJustBefore) {
     startTrick(kart);
@@ -134,13 +149,16 @@ export function crossLip(kart) {
   kart.lipTiming = { offset: pressedBefore ? -kart.sinceDriftPress : null, trick: pressedJustBefore };
 }
 
-// A trick boosts on landing. Drift still held with the stick over starts a drift, after a hop or any jump.
+// A trick boosts on landing (a glide's boosted already). Drift still held with the stick over starts a drift,
+// after a hop or any jump or glide.
 function land(kart, controls) {
   kart.sinceLip = null;
   kart.hopping = false;
   if (kart.tricking) {
     kart.tricking = false;
-    startBoost(kart, BOOST_KINDS.JUMP);
+    if (!kart.gliding) {
+      startBoost(kart, BOOST_KINDS.JUMP);
+    }
   }
   const speed = dot(kart.velocity, kart.forward);
   const steering = Math.abs(controls.steer) >= DRIFT_START_STEER;

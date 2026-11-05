@@ -1,8 +1,9 @@
 // Hand-written arcade physics for one 3D kart: driving on the road (any slope or roll), flying and landing,
 // gravity toward the road in anti-gravity sections, walls, and falling off and being put back. Each step also
 // runs the Drift button's techniques (kart-techniques.js), the boosts (kart-boosts.js) and the body's animation
-// (kart-body.js). A kart held on a sticky wall (items/sticky-walls.js, M8c) stays still. Plain functions on
-// plain kart objects, unit tested in Node. Used by host/games/kart-3d/race.js, stepped at the fixed 60 Hz.
+// (kart-body.js). A kart off a glide ramp glides (kart-glide.js, M9) until it lands. A kart held on a sticky wall
+// (items/sticky-walls.js, M8c) stays still. Plain functions on plain kart objects, unit tested in Node. Used by
+// host/games/kart-3d/race.js, stepped at the fixed 60 Hz.
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
 // its "up" set to the road's normal and its nose laid flat on the road. So hills, banks and walls rolled up to
@@ -16,6 +17,7 @@ import { nextSpeed, turnAngle, driftTurnAngle, kartTopSpeed } from './kart-drivi
 import { freshTechniques, useDriftButton, afterMove, hopGravity } from './kart-techniques.js';
 import { freshBoosts, stepBoosts } from './kart-boosts.js';
 import { freshBody, moveBody } from './kart-body.js';
+import { freshGlide, glide, keepInCorridor, endGlide } from './kart-glide.js';
 import { tuning } from './tuning.js';
 import { isHeldOnWall } from './items/sticky-walls.js';
 
@@ -42,7 +44,7 @@ const AIR_STEERING_SHARE = 0.5;
 // as a share of 150cc's (kartTopSpeed); `paceShare` (1) is the CPU catch-up share on top of it (cpu-pace.js). The kart is plain data: { position, velocity, forward, up,
 // previousPosition, previousForward, previousUp, previousBodyYaw, previousBodyRoll, grounded, surface,
 // antiGravity, trackIndex, s, lateral, lastGroundIndex, respawnIn, slideLeft, weight, engineClassShare, paceShare,
-// driftHeld, lipTiming }, plus the fields of freshTechniques(), freshBoosts() and freshBody(). forward and up are unit
+// driftHeld, lipTiming }, plus the fields of freshTechniques(), freshBoosts(), freshBody() and freshGlide(). forward and up are unit
 // vectors (the nose, and the road's normal under it); previous* are one step ago, for smooth drawing; surface
 // is a SURFACES value, or null in the air; respawnIn counts down while it falls after leaving the road, and is
 // null otherwise; slideLeft is the seconds of loose grip left after a bump or a wall hit;
@@ -76,6 +78,7 @@ function placeOnRoad(track, kart, s, lateral) {
     ...freshTechniques(),
     ...freshBoosts(),
     ...freshBody(),
+    ...freshGlide(),
   });
   kart.previousBodyYaw = 0;
   kart.previousBodyRoll = 0;
@@ -110,6 +113,8 @@ export function stepKart(track, kart, controls, dt) {
   const wasGrounded = kart.grounded;
   if (kart.grounded) {
     drive(kart, controls, dt);
+  } else if (kart.gliding) {
+    glide(track, kart, controls, dt);
   } else {
     fly(kart, controls, dt);
   }
@@ -117,6 +122,9 @@ export function stepKart(track, kart, controls, dt) {
   let contact = locate(track, kart.position, kart.trackIndex);
   if (hitWall(track, kart, contact, dt)) {
     contact = locate(track, kart.position, contact.index);
+  }
+  if (kart.gliding) {
+    contact = keepInCorridor(track, kart, contact);
   }
   settle(track, kart, contact);
   afterMove(track, kart, controls, fromIndex, wasGrounded, dt);
@@ -166,6 +174,7 @@ function settle(track, kart, contact) {
     kart.surface = null;
     if (contact.height < -FALL_DEPTH) {
       kart.respawnIn = RESPAWN_DELAY;
+      endGlide(kart);
     }
   }
 }

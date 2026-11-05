@@ -1,14 +1,18 @@
 // Where the CPU drivers' racing line (racing-line.js) must run, whatever the corners round it want (M7e): down the
-// middle of the road over each jump, so a kart takes off square and lands with the most road either side, and
-// over each dash panel's middle. Also lists the jumps, for the drivers (cpu-road.js). Plain maths, unit tested in
-// Node through racing-line.js.
+// middle of the road over each jump and glide (M9), so a kart takes off square and lands with the most road either
+// side, and over each dash panel's middle. Also lists the jumps, for the drivers (cpu-road.js). Plain maths, unit
+// tested in Node through racing-line.js.
 
 import { DASH_PANEL_LENGTH } from './kart-boosts.js';
 import { progressBetween } from './track.js';
 
-// The line runs down the middle from this far before a ramp's lip to this far past the gap.
+// The line runs down the middle from this far before a ramp's lip to this far past the gap. A glide comes down
+// further on (a float boosted off the dash panel before Palm Bay Airport's lands 15 to 20 past its gap), so its
+// line stays in the middle a little longer, but not until every float is down: the turn after that landing needs
+// the line to swing out first, and pinned 25 past the gap it sent Hard CPUs drifting into the turn's inside wall.
 const JUMP_RUN_UP = 30;
 const JUMP_RUN_OUT = 8;
+const GLIDE_RUN_OUT = 15;
 // It runs over a dash panel's middle for its whole length and this far either side.
 const PANEL_RUN = 2;
 
@@ -23,7 +27,7 @@ export function pinnedLaterals(track) {
     });
   };
   for (const jump of jumps(track)) {
-    pinAround(jump.lipS - JUMP_RUN_UP, jump.landingS + JUMP_RUN_OUT, 0);
+    pinAround(jump.lipS - JUMP_RUN_UP, jump.landingS + (jump.glide ? GLIDE_RUN_OUT : JUMP_RUN_OUT), 0);
   }
   for (const panel of track.dashPanels) {
     const reach = DASH_PANEL_LENGTH / 2 + PANEL_RUN;

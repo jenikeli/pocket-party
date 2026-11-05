@@ -95,11 +95,14 @@ export const TUNABLES = Object.freeze([
   { key: 'rocketBestSeconds', group: 'Boosts', label: 'Rocket start, best timing', unit: 's', min: 0.2, max: 2, step: 0.05, value: 1 },
   { key: 'rocketWorstSeconds', group: 'Boosts', label: 'Rocket start, latest timing', unit: 's', min: 0.1, max: 2, step: 0.05, value: 0.3 },
 
-  // Gliding off a glide ramp (M9; kart-glide.js). Gravity is gentler while the glider is open (6.5 lands a glide
-  // with no dive at about the start of the landing road) and stronger while Brake dives. The glider flies at
-  // MK8DX's air speed (8.05 against a ground top speed of 7.75), turns at a share of the ground steering and banks
-  // with it. The camera rides higher and further back while gliding.
-  { key: 'glideGravity', group: 'Gliding', label: 'Gravity, floating', unit: 'units/s^2', min: 1, max: 20, step: 0.1, value: 6.5 },
+  // Gliding off a glide ramp (M9; kart-glide.js). Gravity is gentler while the glider is open and stronger while
+  // Brake dives; both are 150cc's, and other engine classes scale them with their speed squared, so every class
+  // comes down in the same place. At 7.5, off Palm Bay Airport's glide ramp at top speed, a glide with no dive comes
+  // down onto the gap's line just before the beach road; boosted off the dash panel before the ramp (as most karts
+  // are), it lands 15 to 20 units down the road, and a trick adds a few more (6.5 sent some floats into the turn
+  // after the landing). The glider flies at MK8DX's air speed (8.05 against a ground top speed of 7.75), turns at
+  // a share of the ground steering and banks with it. The camera rides higher and further back while gliding.
+  { key: 'glideGravity', group: 'Gliding', label: 'Gravity, floating', unit: 'units/s^2', min: 1, max: 20, step: 0.1, value: 7.5 },
   { key: 'glideDiveGravity', group: 'Gliding', label: 'Gravity, diving', unit: 'units/s^2', min: 5, max: 50, step: 0.5, value: 22 },
   { key: 'glideSpeedShare', group: 'Gliding', label: 'Air speed', unit: 'x top', min: 0.8, max: 1.3, step: 0.01, value: 1.04 },
   { key: 'glideTurnShare', group: 'Gliding', label: 'Turn, share of steering', unit: 'share', min: 0.1, max: 1.5, step: 0.05, value: 0.6 },

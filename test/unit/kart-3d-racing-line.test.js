@@ -1,5 +1,5 @@
-// Unit tests for the CPU drivers' racing line (host/games/kart-3d/racing-line.js and racing-line-pins.js) on both
-// courses: inside the road with its margin, straight down the middle over the jump, over the dash panels,
+// Unit tests for the CPU drivers' racing line (host/games/kart-3d/racing-line.js and racing-line-pins.js) on every
+// course: inside the road with its margin, straight down the middle over the jumps and glides, over the dash panels,
 // out-in-out round Seaside Skyway's big sweeper, bending less than the centre line, quick to build and built once
 // per track.
 
@@ -48,12 +48,17 @@ test('the racing line stays on the road, its margin inside each edge, on every c
   }
 });
 
-test('over each jump the line runs straight down the middle, from before the lip to past the landing', () => {
+test('over each jump and glide the line runs straight down the middle, from before the lip to past the landing', () => {
+  // Palm Bay Airport has a jump and a glide (M9), the others one jump each.
+  const jumpCounts = { 'palm-bay-airport': 2, 'seaside-skyway': 1, 'test-track': 1 };
   for (const { course, track } of tracks) {
     const found = jumps(track);
-    assert.equal(found.length, 1, `${course.id} has one jump`);
-    for (const { lipS, landingS } of found) {
-      for (let s = lipS - 25; s <= landingS + 5; s += 1) {
+    assert.equal(found.length, jumpCounts[course.id], `${course.id}'s jumps`);
+    const glides = found.filter((jump) => jump.glide).length;
+    assert.equal(glides, course.id === 'palm-bay-airport' ? 1 : 0, `${course.id}'s glides`);
+    for (const { lipS, landingS, glide } of found) {
+      // A glide comes down further on, so its line stays in the middle longer (racing-line-pins.js).
+      for (let s = lipS - 25; s <= landingS + (glide ? 12 : 5); s += 1) {
         assert.equal(lateralAt(track, s), 0, `${course.id} s ${s}`);
       }
     }

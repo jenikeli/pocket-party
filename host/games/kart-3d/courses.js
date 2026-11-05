@@ -2,7 +2,8 @@
 // definition for track-builder.js, plus an `id` (what the setup screen's buttons send) and a `name` (what they
 // show). Used by host/games/kart-3d/index.js and panels.js.
 
+import { PALM_BAY_AIRPORT } from './palm-bay-airport.js';
 import { SEASIDE_SKYWAY } from './seaside-skyway.js';
 import { TEST_TRACK } from './test-track.js';
 
-export const COURSES = Object.freeze([SEASIDE_SKYWAY, TEST_TRACK]);
+export const COURSES = Object.freeze([PALM_BAY_AIRPORT, SEASIDE_SKYWAY, TEST_TRACK]);

@@ -1,9 +1,9 @@
 // The CPU karts' driver (M7e), also driving a player's kart once they have finished: it follows the course's
 // racing line (racing-line.js) a little to one side of its own and round slower karts (cpu-aim.js), brakes only
 // as much as the corners ahead need, drifts through long corners for mini-turbos (cpu-drift.js) and tricks off
-// jumps (cpu-trick.js), and gets itself going again when turned round or stuck (cpu-recovery.js). It gives the
-// same controls a phone does. Its state is plain data, kept on the kart as kart.cpu. Plain maths, unit tested in
-// Node. Used by host/games/kart-3d/race.js.
+// jumps and glides (cpu-trick.js), and gets itself going again when turned round or stuck (cpu-recovery.js). It
+// gives the same controls a phone does. Its state is plain data, kept on the kart as kart.cpu. Plain maths, unit
+// tested in Node. Used by host/games/kart-3d/race.js.
 
 import { subtract, cross, dot } from './vector.js';
 import { pointAt } from './track.js';
@@ -30,7 +30,8 @@ const SPEED_SAMPLE_STEP = 3;
 const BRAKE_SLACK = 1;
 // The stick in the air when falling or thrown up: neutral. Off a ramp's lip it steers for its line instead (half
 // the steering works in the air, kart-physics.js): a kart boosted over Seaside Skyway's jump lands in the hairpin
-// after it, and flying straight it would land pointing at the wall.
+// after it, and flying straight it would land pointing at the wall. Under a glider (kart-glide.js) it steers for
+// its line the same way, down the middle of the glide, and never holds Brake, so it never dives.
 const IN_AIR = Object.freeze({ steer: 0, accelerate: true, brake: false });
 // Its trick comes this many seconds after the lip, drawn per kart (the trick window is 0.3 s after it).
 const TRICK_DELAY_FROM = 0.03;

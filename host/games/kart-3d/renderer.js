@@ -127,6 +127,7 @@ export function createRenderer(container, track, qualityLevel, photoAsphalt, pla
       name: player ? displayName(player) : 'CPU',
       color: player ? colorText(player) : '#ffffff',
       boosting: kart.boost !== null,
+      gliding: kart.gliding,
       hud: viewHud(race, kart),
     }));
     drawFrame((target) => views.draw(renderer, scene, targets, dt, target, fitShadow), targets.length);

@@ -59,8 +59,8 @@ function runRace(race, controlsFor, seconds, done = () => false) {
 }
 
 test('every course has its own id and a name, and a 1-lap race on it ends with no CPU kart having fallen off', () => {
-  assert.deepEqual(COURSES.map((course) => course.id), ['seaside-skyway', 'test-track']);
-  assert.deepEqual(COURSES.map((course) => course.name), ['Seaside Skyway', 'Test track']);
+  assert.deepEqual(COURSES.map((course) => course.id), ['palm-bay-airport', 'seaside-skyway', 'test-track']);
+  assert.deepEqual(COURSES.map((course) => course.name), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
   for (const course of COURSES) {
     const courseTrack = buildTrack(course);
     const race = createRace(courseTrack, ['p1'], 1, 150, 'normal');

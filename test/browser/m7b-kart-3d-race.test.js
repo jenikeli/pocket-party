@@ -104,12 +104,13 @@ describe('M7b 3D race', () => {
 
   test('the setup screen offers the courses; the host\'s laps and engine class reach the phones', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    assert.deepEqual(await hostPage.locator('[data-course-id]').allTextContents(), ['Seaside Skyway', 'Test track']);
-    assert.equal(await hostPage.getAttribute('[data-course-id="seaside-skyway"]', 'aria-pressed'), 'true');
-    // The overview behind the setup screen changes to the chosen course, and back.
+    // Since M9 Palm Bay Airport is first, and so chosen when a game starts.
+    assert.deepEqual(await hostPage.locator('[data-course-id]').allTextContents(), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
+    assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
+    // The overview behind the setup screen changes to the chosen course, and on.
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
-    assert.equal(await hostPage.getAttribute('[data-course-id="seaside-skyway"]', 'aria-pressed'), 'false');
+    assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'false');
     await saveScreenshot(hostPage, 'm7b-0-host-setup-test-track');
     await clickNow(hostPage, '[data-course-id="seaside-skyway"]');
     await hostPage.waitForSelector('[data-course-id="seaside-skyway"][aria-pressed="true"]');
@@ -236,7 +237,7 @@ describe('M7b 3D race', () => {
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
     await startGame(hostPage, cy.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    assert.equal(await hostPage.getAttribute('[data-course-id="seaside-skyway"]', 'aria-pressed'), 'true', 'a new game starts on the first course');
+    assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true', 'a new game starts on the first course');
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
     await cy.page.click('#kart-ready-button');

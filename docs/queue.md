@@ -10,14 +10,14 @@ folded into "M9" in `docs/history.md` and deleted.
 | Task | What | Model | Waits for | Status |
 |---|---|---|---|---|
 | 0 | Prep (main session): the course file, track-builder flags, tunables, stand-in scenery, browser tests pinned to Seaside | main | none | merged |
-| A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | building |
+| A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | merged |
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | merged |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
 | D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | queued |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
 | G | Terminal and control tower | opus | 0 | building |
-| H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | queued |
+| H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | building |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | queued |
 | J | Ground vehicles (props) | sonnet | 0 | queued |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | queued |
@@ -636,6 +636,25 @@ session merges that line).
   Easy at 0. `POST_LOOK`, `POST_CLEAR` and `POST_CLIP` at the top of `cpu-aim.js` tune it.
 - **Usage limit (18:00 UTC):** A and G stopped at the 5-hour limit. A was resumed in its worktree after the reset;
   G had saved nothing and was spawned again.
+- **Task A:**
+  - **A glide floor instead of the fall rule** (A's choice, accepted): a gliding kart is never let below the gap's
+    straight line (ramp lip down to the landing road); it flares onto it and rides it to the landing. So a glide never
+    falls into the bay, which fits the decision that "a float or a dive never respawns it mid-air" (with the dive at
+    22 a kart would reach -6 about 39 units into the 90-unit gap and go on into the sea). Brake's dive reaches the
+    line sooner and so lands at the gap's end instead of floating long (floats land 1206 to about 1258).
+  - Glide gravity is scaled by the engine class's speed share squared, so every class lands about the same place
+    (200cc floats otherwise landed 150 units past the gap). `glideGravity` 7.5 (not 6.5: dash-boosted floats landed in
+    the turn after the beach straight). The glide is pinned to the middle 15 past the gap (25 put Hard CPUs into the
+    next turn's inside wall). The glider turns at most 60 degrees off the road's way; opening it ends a drift with no
+    mini-turbo; a dive flies 8% faster.
+  - The glide camera's line in `renderer.js` (`gliding: kart.gliding`) was added at merge. `m7b`'s course list
+    changed on purpose (the airport first).
+  - Lap times at 150cc (a lone CPU, third lap, no posts or items): Easy 47.1 s, Normal 45.3 s, Hard 44.65 s.
+  - **For M (drove badly):** the dash panel at 585 throws a kart about 46 units off the jump (616 to about 662), past
+    the 24-long landing straight onto the ring's climbing bank. The beach landing narrows from 12 to 9 over 40 units
+    with walls, and a kart landing near the edge rubs the closing wall hard (31 to 6 units/s in a second): widen the
+    beach road's start or narrow the glide. Boosted floats sometimes land just past 1246, at the start of the turn
+    after the beach straight.
 - **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
   spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
   materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.

@@ -1,17 +1,16 @@
 // Draws the things items leave on the road (M8b), read from race.items.objects (road-objects.js): each blocker
-// as a sandcastle (sandcastle-look.js) and each ramp as a kicker (kicker-look.js), moving as road-object-motion.js
-// says through their lives, with a puff of sand as a castle lands and as it slumps. Every part is one instanced
-// mesh for the whole field (castles, piles, flags, plates, frames: instanced-part-look.js), placed again every
+// as a sandcastle (sandcastle-look.js), moving as road-object-motion.js says through its life, with a puff of
+// sand as a castle lands and as it slumps. Every part is one instanced mesh for the whole field (castles,
+// piles, flags: instanced-part-look.js), placed again every
 // frame without allocating; each object's frame on the road is worked out once, when it is first seen. Used by
 // item-drawing.js.
 
 import * as THREE from 'three';
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { objectFrame } from './road-objects.js';
-import { sandcastleMotion, kickerMotion } from './road-object-motion.js';
+import { sandcastleMotion } from './road-object-motion.js';
 import { buildSandcastle, buildSandPile, buildFlag, createFlagMaterial } from './sandcastle-look.js';
 import { createSandMaps, createSandMaterial } from './sand-look.js';
-import { buildKickerPlate, buildKickerFrame, kickerPlateMaps, createPlateMaterial, createFrameMaterial } from './kicker-look.js';
 import { createInstancedPart } from './instanced-part-look.js';
 
 // Shared by every frame with no race, so update allocates nothing.
@@ -29,17 +28,12 @@ const SLUMP_PUFF = { count: 24, reach: 1.6, height: 1.3 };
 // Returns { update(race, track, poses, dt), dispose() } (item-drawing.js's shape). `bursts` is burst-look.js's.
 export function createRoadObjectDrawing(scene, bursts) {
   const sandMaps = createSandMaps();
-  const plateMaps = kickerPlateMaps();
   const sandMaterial = createSandMaterial(sandMaps);
   const flagMaterial = createFlagMaterial();
-  const plateMaterial = createPlateMaterial(plateMaps);
-  const frameMaterial = createFrameMaterial();
   const castles = createInstancedPart(scene, buildSandcastle(), sandMaterial);
   const piles = createInstancedPart(scene, buildSandPile(), sandMaterial);
   const flags = createInstancedPart(scene, buildFlag(), flagMaterial);
-  const plates = createInstancedPart(scene, buildKickerPlate(), plateMaterial);
-  const frames = createInstancedPart(scene, buildKickerFrame(), frameMaterial);
-  const parts = [castles, piles, flags, plates, frames];
+  const parts = [castles, piles, flags];
   // Each object seen, by id: { frame (its Matrix4 on the road), landed, slumped (its puffs made), seenAt }.
   const records = new Map();
   let shownRace = null;
@@ -73,18 +67,12 @@ export function createRoadObjectDrawing(scene, bursts) {
     castles.begin(blockers);
     piles.begin(blockers);
     flags.begin(blockers);
-    plates.begin(objects.length - blockers);
-    frames.begin(objects.length - blockers);
     let castleIndex = 0;
-    let kickerIndex = 0;
     for (const object of objects) {
       const record = recordOf(track, object);
       if (object.item === KART_ITEMS.BLOCKER) {
         placeCastle(record, object, castleIndex);
         castleIndex += 1;
-      } else {
-        placeKicker(record, object, kickerIndex);
-        kickerIndex += 1;
       }
     }
     // Objects gone from the race are forgotten.
@@ -142,16 +130,6 @@ export function createRoadObjectDrawing(scene, bursts) {
     }
   }
 
-  // The kicker's plate and frame, raised on the hinge (its height scaled, so its far end swings up about the near
-  // one, which stays on the road) and sunk as kickerMotion says.
-  function placeKicker(record, object, index) {
-    kickerMotion(object.left, motion);
-    lift.set(0, -motion.sink, 0);
-    size.set(1, Math.max(motion.raise, 0.001), 1);
-    place(plates, index, record.frame, size, upright);
-    place(frames, index, record.frame, size, upright);
-  }
-
   // Instance `index` of `part` at `frame`, lifted by `lift`, turned by `rotation` and scaled by `scale`.
   function place(part, index, frame, scale, rotation) {
     local.compose(lift, rotation, scale);
@@ -165,8 +143,8 @@ export function createRoadObjectDrawing(scene, bursts) {
 
   function dispose() {
     parts.forEach((part) => part.dispose());
-    [sandMaterial, flagMaterial, plateMaterial, frameMaterial].forEach((material) => material.dispose());
-    [...Object.values(sandMaps), ...Object.values(plateMaps)].forEach((map) => map.dispose());
+    [sandMaterial, flagMaterial].forEach((material) => material.dispose());
+    Object.values(sandMaps).forEach((map) => map.dispose());
   }
 
   return { update, dispose };

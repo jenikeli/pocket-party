@@ -31,7 +31,7 @@ test('effects are passed through while rolling', () => {
 });
 
 test('a held item shows its id', () => {
-  const slot = describeItemSlot({ held: 'ramp', rolling: false, effects: [] });
+  const slot = describeItemSlot({ held: 'jump', rolling: false, effects: [] });
   assert.equal(slot.state, 'held');
-  assert.equal(slot.held, 'ramp');
+  assert.equal(slot.held, 'jump');
 });

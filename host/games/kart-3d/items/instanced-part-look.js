@@ -1,4 +1,4 @@
-// One part of a kind of road object (a sandcastle's body, a kicker's plate) drawn for every object of that kind on
+// One part of a kind of road object (a sandcastle's body, a castle's pile) drawn for every object of that kind on
 // the road (M8b): one instanced mesh, so a field of them is one draw call. Used by road-object-drawing.js, which
 // places every instance again each frame.
 

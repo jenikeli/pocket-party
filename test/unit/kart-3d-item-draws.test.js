@@ -1,6 +1,6 @@
 // Unit tests for how the 3D race draws items (M8d): every allowed item equally likely at every place, the item
 // drawn when the roulette stops (not at the pickup), a different sequence for each seed, and the item list with
-// big, small and bouncy gone. The race is plain data, stepped by hand as in kart-3d-items.test.js.
+// big, small and bouncy gone and the jump in. The race is plain data, stepped by hand as in kart-3d-items.test.js.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -50,8 +50,8 @@ function pickUpAndWait(race) {
   return playerKart(race, 'p1').item.held;
 }
 
-test('big, small and bouncy are gone; the built items are the other six, each with an icon', () => {
-  const six = ['blocker', 'magnet', 'push', 'ramp', 'sticky', 'teleport'];
+test('big, small and bouncy are gone; the built items are the other six, the jump among them, each with an icon', () => {
+  const six = ['blocker', 'jump', 'magnet', 'push', 'sticky', 'teleport'];
   assert.deepEqual([...BUILT_ITEMS].sort(), six);
   assert.deepEqual(Object.keys(ITEM_ICONS).sort(), six);
   assert.deepEqual(Object.values(KART_ITEMS).sort(), six);

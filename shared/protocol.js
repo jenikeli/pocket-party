@@ -172,7 +172,7 @@ export const KART_BUTTONS = Object.freeze({
 // their icons in shared/item-icons.js.
 export const KART_ITEMS = Object.freeze({
   BLOCKER: 'blocker',
-  RAMP: 'ramp',
+  JUMP: 'jump',
   TELEPORT: 'teleport',
   MAGNET: 'magnet',
   PUSH: 'push',

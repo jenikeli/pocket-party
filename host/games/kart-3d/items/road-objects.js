@@ -1,33 +1,26 @@
-// The things items leave on the road (M8b): the blocker (a sandcastle karts bump off) and the ramp (a kicker
-// that launches a kart driving onto it). Where they are placed, how long they last, bumping off a blocker,
-// launching off a ramp, and the standing blockers the CPU drivers steer round. Plain functions on the race's
+// The thing items leave on the road (M8b): the blocker, a sandcastle karts bump off. Where it is placed, how long
+// it lasts, bumping off it, and the standing blockers the CPU drivers steer round. Plain functions on the race's
 // plain data (race.items.objects), unit tested in Node. Used by item-rules.js (every step), item-catalog.js
 // (using the items) and item-drawing.js's road object drawing (it reads race.items.objects).
 //
 // An object is { id, item, s, lateral, left }: its middle's distance along the road and how far right of the
 // centre line, solid while left > 0. It is kept until left <= -OBJECT_VANISH_SECONDS, so the drawing can play
-// its vanishing (the sandcastle slumping, the kicker folding down) while the rules have long ignored it.
+// its vanishing (the sandcastle slumping) while the rules have long ignored it.
 
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { pointAt, stationIndexAt, wrapDistance, progressBetween } from '../track.js';
 import { subtract, scale, addScaled, dot, length, normalize, vec } from '../vector.js';
-import { forwardSpeed } from '../kart-physics.js';
 import { KART_RADIUS, HIT_SPEED, bounceOff } from '../kart-walls.js';
 import { endBoost, BOOST_KINDS } from '../kart-boosts.js';
-import { crossLip } from '../kart-techniques.js';
 import { tuning } from '../tuning.js';
 
 // How long a vanished object stays in the list for the drawing to play its ending.
 export const OBJECT_VANISH_SECONDS = 0.6;
 // The blocker is a round sandcastle (radius, height above the road); a kart flying above the height passes over.
 export const BLOCKER_SIZE = Object.freeze({ radius: 1.4, height: 1.6 });
-// The ramp's footprint on the road (length along it, width across it) and how high its far end stands.
-export const RAMP_SIZE = Object.freeze({ length: 6, width: 6, height: 1 });
-// The blocker is dropped this far behind the kart's middle (clear of its own blocker),
-// the ramp this far ahead of it.
+// The blocker is dropped this far behind the kart's middle (clear of its own blocker).
 const BLOCKER_BEHIND = 3;
 const BLOCKER_CLEARANCE = 0.3;
-const RAMP_AHEAD = 15;
 // An object that would stand on a gap is moved back along the road, by this much each try, at most this far.
 const GAP_SEARCH_STEP = 1;
 const GAP_SEARCH_MAX = 30;
@@ -44,11 +37,6 @@ export function dropBlocker(race, track, kart) {
   const clear = BLOCKER_SIZE.radius + KART_RADIUS + BLOCKER_CLEARANCE;
   const behind = Math.max(BLOCKER_BEHIND, clear);
   addObject(race, track, KART_ITEMS.BLOCKER, kart.s - behind, kart.lateral, BLOCKER_SIZE.radius, 0);
-}
-
-// A ramp appears ahead of the kart at its lane, kept on the road and off gaps.
-export function placeRamp(race, track, kart) {
-  addObject(race, track, KART_ITEMS.RAMP, kart.s + RAMP_AHEAD, kart.lateral, RAMP_SIZE.width / 2, RAMP_SIZE.length / 2);
 }
 
 // Adds an object at `s`, its sideways reach `halfWidth` kept inside the road and its lengthways reach
@@ -74,7 +62,7 @@ function isRoadAround(track, s, halfLength) {
 }
 
 // One step: objects count down and the ended ones are dropped once their vanishing is played; a standing blocker
-// bumps every kart that is low enough, a standing ramp launches every kart driving onto it.
+// bumps every kart that is low enough.
 export function stepObjects(race, track, dt) {
   const objects = race.items.objects;
   for (const object of objects) {
@@ -88,8 +76,6 @@ export function stepObjects(race, track, dt) {
       }
       if (object.item === KART_ITEMS.BLOCKER) {
         bumpOffBlocker(track, object, kart);
-      } else {
-        launchOffRamp(track, object, kart);
       }
     }
   }
@@ -122,23 +108,6 @@ function bumpOffBlocker(track, object, kart) {
     kart.velocity = addScaled(kart.velocity, away, intoBlocker);
   }
   endBoost(kart, BOOST_KINDS.SLIPSTREAM);
-}
-
-// A kart on the ground, driving forward over the ramp's footprint, is thrown up at tuning.rampLaunchSpeed
-// (keeping its speed along the road, so it flies on as far as the course's jump gap) and counts as crossing a
-// lip: it may trick with Drift for the boost on landing, as off the course's ramp. Once per ramp, so a slow
-// kart landing back on the ramp is not thrown again.
-function launchOffRamp(track, object, kart) {
-  const onFootprint = Math.abs(progressBetween(track, object.s, kart.s)) <= RAMP_SIZE.length / 2 &&
-    Math.abs(kart.lateral - object.lateral) <= RAMP_SIZE.width / 2;
-  if (!kart.grounded || !onFootprint || forwardSpeed(kart) <= 0 || kart.item.lastRampId === object.id) {
-    return;
-  }
-  kart.item.lastRampId = object.id;
-  kart.velocity = addScaled(kart.velocity, kart.up, tuning.rampLaunchSpeed);
-  kart.grounded = false;
-  kart.surface = null;
-  crossLip(kart);
 }
 
 // The standing blockers as stand-in karts for cpu-aim.js, which passes them as it passes a kart that is not

@@ -7,11 +7,12 @@ import { createBursts } from './burst-look.js';
 import { createBoxDrawing } from './item-box-look.js';
 import { createRoadObjectDrawing } from './road-object-drawing.js';
 import { createMagnetDrawing } from './magnet-look.js';
+import { createJumpDrawing } from './jump-look.js';
 import { createPushDrawing } from './push-look.js';
 import { createTeleportDrawing } from './teleport-look.js';
 import { createStickyWallsDrawing } from './sticky-walls-look.js';
 
-const DRAWINGS = [createBoxDrawing, createRoadObjectDrawing, createMagnetDrawing,
+const DRAWINGS = [createBoxDrawing, createRoadObjectDrawing, createJumpDrawing, createMagnetDrawing,
   createPushDrawing, createTeleportDrawing, createStickyWallsDrawing];
 
 // Returns { update(race, track, poses, dt), dispose() }: `race` is null on the setup screen (nothing is drawn but

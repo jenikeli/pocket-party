@@ -4,14 +4,16 @@
 
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { startEffect } from './kart-effect.js';
-import { dropBlocker, placeRamp } from './road-objects.js';
+import { dropBlocker } from './road-objects.js';
+import { launchJump } from './jump.js';
 import { startTeleport } from './teleport.js';
 import { makeWallsSticky } from './sticky-walls.js';
 
-// { [id]: { use(race, track, kart) } }: `use` does what the item does when `kart` uses it.
+// { [id]: { use(race, track, kart), needsGround } }: `use` does what the item does when `kart` uses it;
+// a needsGround item waits in the slot while the kart is in the air.
 export const ITEM_CATALOG = Object.freeze({
   [KART_ITEMS.BLOCKER]: { use: (race, track, kart) => dropBlocker(race, track, kart) },
-  [KART_ITEMS.RAMP]: { use: (race, track, kart) => placeRamp(race, track, kart) },
+  [KART_ITEMS.JUMP]: { use: (race, track, kart) => launchJump(race, kart), needsGround: true },
   // The field items (M8c): teleport and sticky walls act on everyone; magnet and push are the kart's own
   // effects, acting on the karts round it (field-forces.js).
   [KART_ITEMS.TELEPORT]: { use: (race) => startTeleport(race) },

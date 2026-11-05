@@ -53,13 +53,13 @@ export function createItems(track, allowedItems, seed) {
   };
 }
 
-// A kart's item state at the start: { held, rollLeft, effect, stuckLeft, landedAt, cpuWait, lastRampId,
+// A kart's item state at the start: { held, rollLeft, effect, stuckLeft, landedAt, cpuWait, jumpedAt,
 // stickAgainIn, stickyWalls, button, buttonBefore }.
 // held is the item ready to use, or null; rollLeft the roulette's seconds left (0 when not rolling); effect the
 // kart's running effect { item, left }, or null; stuckLeft the seconds it is still held on a sticky wall (0 when
 // free; stickAgainIn and stickyWalls are sticky-walls.js's too). The rest are this file's own: landedAt the race
-// time the roulette landed its item and cpuWait how long a CPU kart waits from then; lastRampId the ramp that
-// last launched it, so one ramp throws a kart once (road-objects.js);
+// time the roulette landed its item and cpuWait how long a CPU kart waits from then; jumpedAt the race
+// time it last used a jump, or null (jump.js);
 // button the Item button this step (race.js sets it from the controls) and buttonBefore last step's.
 export function freshItem() {
   return {
@@ -69,7 +69,7 @@ export function freshItem() {
     stuckLeft: 0,
     landedAt: 0,
     cpuWait: 0,
-    lastRampId: null,
+    jumpedAt: null,
     stickAgainIn: 0,
     stickyWalls: false,
     button: false,
@@ -141,9 +141,14 @@ export function drawItem(allowed, random) {
 }
 
 // A player uses the item on the step the Item button goes down (holding it does nothing more); a kart the CPU
-// drives (a CPU kart, a stand-in) when cpu-items.js says so. Not while falling: it keeps its item for after.
+// drives (a CPU kart, a stand-in) when cpu-items.js says so. Not while respawning, and an item that needs the
+// ground (the jump) keeps waiting in the slot while the kart is in the air or held on a sticky wall (whose hold
+// would stop the launch).
 function wantsToUse(race, track, kart, pressed) {
   if (kart.respawnIn !== null) {
+    return false;
+  }
+  if (ITEM_CATALOG[kart.item.held].needsGround && (!kart.grounded || kart.item.stuckLeft > 0)) {
     return false;
   }
   return kart.cpu === null ? pressed : cpuWantsItem(race, track, kart);

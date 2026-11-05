@@ -1,6 +1,5 @@
-// The kit-shots pieces for the road objects' looks (M8b): sandcastle (standing, beside a kart for size),
-// sandcastle-crumbling (one slumping, one sunk to a pile), kicker (standing, beside a kart) and kicker-flipping
-// (one flipping up, one folding down). They draw a made-up race's race.items.objects through the race's own
+// The kit-shots pieces for the road objects' looks (M8b): sandcastle (standing, beside a kart for size) and
+// sandcastle-crumbling (one slumping, one sunk to a pile); and the jump's launch puff (M8d, a kart just lifted). They draw a made-up race's race.items.objects through the race's own
 // drawing (item-pieces.js's itemShowRace and drawItemRace), counted down a few frames as the rules would. Used by
 // pieces.js.
 
@@ -11,9 +10,11 @@ import { PIECE_S } from './landmark-pieces.js';
 
 const FRAME_SECONDS = 1 / 60;
 const FRAMES = 15;
-// Where the shown kart stands across the road, and the kicker's middle along it from the kart.
+// The jump piece: the kart is lifted this high, the launch happening on this frame of FRAMES.
+const JUMP_LIFT = 0.6;
+const JUMP_FRAME = 4;
+// Where the shown kart stands across the road.
 const KART_LATERAL = -4.2;
-const KICKER_AHEAD = 4;
 
 // A piece of `objects` ([{ item, s, lateral, left }], `left` as on the last of the frames drawn), a kart beside
 // them if `withKart`, seen from `cameras` ({ near, above }: [eye, look, fov] each).
@@ -32,20 +33,41 @@ function objectPiece(objects, withKart, cameras) {
 
 const settled = () => tuning.itemEffectSeconds - 2;
 const castle = (lateral, left) => ({ item: KART_ITEMS.BLOCKER, s: PIECE_S, lateral, left });
-const kicker = (lateral, left) => ({ item: KART_ITEMS.RAMP, s: PIECE_S + KICKER_AHEAD, lateral, left });
 
 const CASTLE_CAMERAS = {
   near: [[-1.5, 1.2, -6.5], [0.2, 0.8, 0], 38],
   above: [[-2, 5, -10], [0, 0.5, 0], 36],
 };
-const KICKER_CAMERAS = {
-  near: [[-3, 1.3, -6], [0.5, 0.4, KICKER_AHEAD], 44],
-  above: [[-11, 4.5, -2], [0.5, 0.3, KICKER_AHEAD], 40],
+
+// A kart just launched by the jump: the launch (item.jumpedAt) on frame JUMP_FRAME, the kart rising from then.
+function jumpPiece(cameras) {
+  return {
+    road: 'walled',
+    addAfterBake(scene, track) {
+      const race = itemShowRace(track, { karts: [{ lateral: 0 }] });
+      const [kart] = race.karts;
+      const base = { ...kart.position };
+      const launch = (shown, frame) => {
+        if (frame === JUMP_FRAME) {
+          kart.item.jumpedAt = frame;
+        }
+        const lift = frame >= JUMP_FRAME ? JUMP_LIFT * (frame - JUMP_FRAME) / (FRAMES - JUMP_FRAME) : 0;
+        kart.position = { x: base.x + kart.up.x * lift, y: base.y + kart.up.y * lift, z: base.z + kart.up.z * lift };
+        kart.previousPosition = kart.position;
+      };
+      drawItemRace(scene, track, race, { frames: FRAMES, change: launch });
+    },
+    camera: (track, view) => roadCamera(track, ...cameras[view]),
+  };
+}
+
+const JUMP_CAMERAS = {
+  near: [[-2.8, 0.9, -4.2], [0, 0.5, 0], 44],
+  above: [[-2, 4.5, -6], [0, 0.3, 0], 40],
 };
 
 export const ROAD_OBJECT_PIECES = {
+  jump: jumpPiece(JUMP_CAMERAS),
   sandcastle: objectPiece([castle(1.6, settled())], true, CASTLE_CAMERAS),
   'sandcastle-crumbling': objectPiece([castle(-2.2, -0.18), castle(2.2, -0.4)], false, CASTLE_CAMERAS),
-  kicker: objectPiece([kicker(1.5, settled())], true, KICKER_CAMERAS),
-  'kicker-flipping': objectPiece([kicker(-3.6, tuning.itemEffectSeconds - 0.14), kicker(3.6, -0.15)], false, KICKER_CAMERAS),
 };

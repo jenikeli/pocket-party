@@ -2,9 +2,10 @@
 // items, one race each), a one-lap race where Ana (an Android phone, auto-accelerate, so no touch is needed to
 // drive) goes through the first row of item boxes; her phone's views show the roulette, then the held item; a
 // press of the Item button shows what the item does (a running effect on the phone's view and a ring in the
-// host's HUD; nothing for the blocker and ramp, which go on the road; the "Teleport!" banner); the race keeps
-// running. With Items off the view's item is null. Headless Chromium draws WebGL in software, so the host page is
-// half the usual size and starts at Medium quality on the plain course (test/helpers/kart-3d-host.js).
+// host's HUD; nothing for the blocker, which goes on the road, and the jump, which throws the kart up; the
+// "Teleport!" banner); the race keeps running. With Items off the view's item is null. Headless Chromium draws
+// WebGL in software, so the host page is half the usual size and starts at Medium quality on the plain course
+// (test/helpers/kart-3d-host.js).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -143,7 +144,7 @@ describe('M8 items', () => {
     { id: KART_ITEMS.PUSH, shows: TIMED_EFFECT },
     { id: KART_ITEMS.STICKY, shows: TIMED_EFFECT },
     { id: KART_ITEMS.BLOCKER, shows: 'no effect (a blocker stands on the road)' },
-    { id: KART_ITEMS.RAMP, shows: 'no effect (a ramp lies on the road)' },
+    { id: KART_ITEMS.JUMP, shows: 'no effect (the kart is thrown up)' },
     { id: KART_ITEMS.TELEPORT, shows: 'the "Teleport!" banner over the host\'s view' },
   ];
 
@@ -168,7 +169,7 @@ describe('M8 items', () => {
         await saveScreenshot(ana.page, 'm8-2-phone-effect');
       }
       // The item was used mid-race (not at the results), and the page threw nothing. (A phone's view is sent only
-      // when it changes, so no later view can be waited for: after a ramp nothing changes until the results.)
+      // when it changes, so no later view can be waited for: after a jump nothing changes until the results.)
       assert.equal(viewAfterPress.phase, 'racing');
       assert.deepEqual(pageErrors, []);
       assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the game keeps running');

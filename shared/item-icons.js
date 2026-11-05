@@ -16,9 +16,9 @@ export const ITEM_ICONS = Object.freeze({
     name: 'Sandcastle',
     svg: icon(`<path d="M10 54 L14 30 H50 L54 54 Z" fill="#e8c36a"/><path d="M14 30 V20 H20 V24 H26 V20 H32 V24 H38 V20 H44 V30 Z" fill="#d9ab4a"/><path d="M26 54 V44 A6 6 0 0 1 38 44 V54" fill="#8a6a2a"/><line x1="48" y1="30" x2="48" y2="10"/><polygon points="48,10 58,14 48,18" fill="#e74c3c"/>`),
   },
-  [KART_ITEMS.RAMP]: {
-    name: 'Ramp',
-    svg: icon(`<path d="M6 50 L58 50 L58 28 Z" fill="#f08a24"/><path d="M26 50 L58 50 L58 40 Z" fill="#ffffff"/><path d="M14 22 L22 12 L30 22 M22 12 V30" fill="none" stroke="#ffd84a" stroke-width="5"/>`),
+  [KART_ITEMS.JUMP]: {
+    name: 'Jump',
+    svg: icon(`<path d="M14 56 H50 M18 50 H46 M14 44 H50 M18 38 H46" fill="none" stroke="#8d96a8" stroke-width="5"/><path d="M32 4 L52 26 H40 V34 H24 V26 H12 Z" fill="#43c463"/>`),
   },
   [KART_ITEMS.TELEPORT]: {
     name: 'Teleport',

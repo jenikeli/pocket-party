@@ -1,6 +1,6 @@
-// Unit tests for the 3D race's road objects (M8b, host/games/kart-3d/items/road-objects.js): the blocker and the
-// ramp as items (placing, lasting, vanishing), karts bumping off a blocker, a ramp launching a kart that can
-// trick off it, the CPU karts using the items and passing a blocker, and the objects staying plain data.
+// Unit tests for the 3D race's road objects (M8b, host/games/kart-3d/items/road-objects.js): the blocker as an
+// item (placing, lasting, vanishing), karts bumping off a blocker, the CPU karts using the blocker and passing it,
+// and the objects staying plain data.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,7 +16,6 @@ import { cpuWantsItem } from '../../host/games/kart-3d/items/cpu-items.js';
 import {
   OBJECT_VANISH_SECONDS,
   BLOCKER_SIZE,
-  RAMP_SIZE,
   objectFrame,
   standingBlockers,
 } from '../../host/games/kart-3d/items/road-objects.js';
@@ -27,14 +26,14 @@ import { KART_ITEMS } from '../../shared/protocol.js';
 
 const STEP = 1 / 60;
 const track = buildTrack(SEASIDE_SKYWAY);
-// The start straight of Seaside Skyway: flat, no anti-gravity, no corner for 80 units (so a ramp flight lands flat).
+// The start straight of Seaside Skyway: flat, no anti-gravity, no corner for 80 units .
 const STRAIGHT_S = 20;
 const TOP_SPEED = tuning.topSpeed;
 
-// A race past GO with one player 'p1', items on (blocker and ramp), and its player kart put on the road at
+// A race past GO with one player 'p1', items on (blocker only), and its player kart put on the road at
 // `s`, `lateral`, driving at `speed`. The other karts are parked far away so they do not touch the scene.
 function raceWithKart(s, lateral = 0, speed = 0) {
-  const race = createRace(track, ['p1'], 3, 150, 'normal', [KART_ITEMS.BLOCKER, KART_ITEMS.RAMP]);
+  const race = createRace(track, ['p1'], 3, 150, 'normal', [KART_ITEMS.BLOCKER]);
   race.phase = RACE_PHASES.RACING;
   race.time = GO_AT;
   const kart = race.karts.find((each) => each.playerId === 'p1');
@@ -128,68 +127,7 @@ test('blocker: an ended one is not solid', () => {
   assert.deepEqual(kart.velocity, before);
 });
 
-test('ramp: appears about 15 units ahead at the kart lane, kept on the road', () => {
-  const { race, kart } = raceWithKart(STRAIGHT_S, 1);
-  useItem(race, kart, KART_ITEMS.RAMP);
-  const ramp = race.items.objects[0];
-  assert.equal(ramp.item, KART_ITEMS.RAMP);
-  assert.ok(Math.abs(progressBetween(track, kart.s, ramp.s) - 15) < 1e-9);
-  assert.equal(ramp.lateral, 1);
-  const edge = raceWithKart(STRAIGHT_S, 0);
-  const halfWidth = track.stations[edge.kart.trackIndex].halfWidth;
-  edge.kart.lateral = halfWidth;
-  useItem(edge.race, edge.kart, KART_ITEMS.RAMP);
-  assert.ok(Math.abs(edge.race.items.objects[0].lateral) + RAMP_SIZE.width / 2 <= halfWidth + 1e-9);
-});
-
-// Drives a kart at top speed over a ramp placed ahead, pressing Drift when `drift(kart)` says so; returns the
-// kart once it has landed, how far along the road it flew, and where it took off (null if it never did).
-function flyOffRamp(drift = () => false) {
-  const { race, kart } = raceWithKart(STRAIGHT_S - 20, 0, TOP_SPEED);
-  useItem(race, kart, KART_ITEMS.RAMP);
-  let airStartS = null;
-  let flown = 0;
-  for (let step = 0; step < 240 && flown === 0; step += 1) {
-    stepRace(race, track, () => ({ ...NEUTRAL_CONTROLS, accelerate: true, drift: drift(kart) }), STEP);
-    if (!kart.grounded && airStartS === null) {
-      airStartS = kart.s;
-    }
-    if (kart.grounded && airStartS !== null) {
-      flown = progressBetween(track, airStartS, kart.s);
-    }
-  }
-  return { kart, flown, airStartS };
-}
-
-test('ramp: launches a kart at top speed about as far as the course jump gap', () => {
-  const { flown, airStartS } = flyOffRamp();
-  assert.notEqual(airStartS, null, 'launched');
-  assert.ok(flown >= 14, `flew ${flown.toFixed(1)} units, the jump gap is 14`);
-});
-
-test('ramp: a press of Drift just after take-off tricks and boosts on landing', () => {
-  const { kart } = flyOffRamp((driver) => !driver.grounded && driver.sinceLip !== null && driver.sinceLip < 0.1);
-  assert.equal(kart.boost?.kind, 'jump', 'trick boost after landing');
-});
-
-test('ramp: a kart is launched once per ramp, and not when reversing', () => {
-  const { race, kart } = raceWithKart(STRAIGHT_S, 0, 5);
-  race.items.objects.push({ id: 7, item: KART_ITEMS.RAMP, s: STRAIGHT_S + 1, lateral: 0, left: 5 });
-  stepItems(race, track, STEP);
-  assert.equal(kart.grounded, false);
-  assert.equal(kart.item.lastRampId, 7);
-  // Landing back on the same ramp throws it no more.
-  kart.grounded = true;
-  const before = kart.velocity;
-  stepItems(race, track, STEP);
-  assert.deepEqual(kart.velocity, before);
-  const backward = raceWithKart(STRAIGHT_S, 0, -3);
-  backward.race.items.objects.push({ id: 8, item: KART_ITEMS.RAMP, s: STRAIGHT_S, lateral: 0, left: 5 });
-  stepItems(backward.race, track, STEP);
-  assert.equal(backward.kart.grounded, true);
-});
-
-test('CPU rules: blocker with a kart close behind in line, ramp on a straight on the ground', () => {
+test('CPU rules: blocker with a kart close behind in line', () => {
   const { race, kart } = raceWithKart(STRAIGHT_S, 0, 10);
   const other = race.karts.find((each) => each !== kart);
   kart.cpu = {};
@@ -200,12 +138,6 @@ test('CPU rules: blocker with a kart close behind in line, ramp on a straight on
   assert.equal(cpuWantsItem(race, track, kart), false, 'nobody close behind');
   Object.assign(other, createKart(track, STRAIGHT_S + 6, 0));
   assert.equal(cpuWantsItem(race, track, kart), false, 'a kart ahead is not behind');
-  kart.item.held = KART_ITEMS.RAMP;
-  assert.equal(cpuWantsItem(race, track, kart), true, 'a straight');
-  const bend = raceWithKart(960, 0, 10);
-  bend.kart.cpu = {};
-  Object.assign(bend.kart.item, { held: KART_ITEMS.RAMP, landedAt: 0, cpuWait: 0 });
-  assert.equal(cpuWantsItem(bend.race, track, bend.kart), false, 'a corner ahead');
 });
 
 // A Hard CPU kart set off at 20 units a second down the start straight, with a blocker on `blockerAt` if given
@@ -246,7 +178,8 @@ test('CPU karts drive round a standing blocker on their line as round a slow kar
 test('objects are plain data: they survive a round trip through JSON', () => {
   const { race, kart } = raceWithKart(STRAIGHT_S, 0);
   useItem(race, kart, KART_ITEMS.BLOCKER);
-  useItem(race, kart, KART_ITEMS.RAMP);
+  kart.s += 10;
+  useItem(race, kart, KART_ITEMS.BLOCKER);
   stepItemsFor(race, 0.1);
   assert.deepEqual(JSON.parse(JSON.stringify(race.items.objects)), race.items.objects);
   assert.equal(race.items.nextObjectId, 3);

@@ -1181,3 +1181,106 @@ On the iPad (2026-11-04), one phone:
 - **Step 5:** raced on Normal and Hard. Normal: getting first from 12th is doable. Hard: quite challenging. Easy drives like the old default driver, which the user finds good. "The difficulties do make sense and feel challenging where appropriate", so the levels stay as they are.
 - **Step 6:** the CPU drivers' sliders seemed fine at their defaults, so nothing was tuned. They stay in the Tuning panel for later adjustment.
 - **Step 7:** nothing broken was seen.
+
+## M8: Items (our own)
+
+### What was built
+
+Our own nine items, replacing MK8DX's (`plan.md`; the tasks, interfaces and every decision are in `docs/history.md`):
+- **Item boxes** in rows across the road (Seaside Skyway at s 120 and 805, the Test track at 50 and 455). A box
+  breaks when driven through and comes back after 3 s.
+- **A roulette** (2 s) on the phone and the kart's HUD, then one held item, used with the phone's **Item**
+  button. Odds by place: karts further back get more catch-up items (teleport, magnet, ramp), leaders more
+  defensive ones (blocker, bouncy, push).
+- **The nine items:**
+  - **Kart effects (5 s, a ring counts down on the HUD and seconds on the phone):** bouncy (a rubber coat, squash
+    and stretch, karts bumping it part 3 times as fast), big (1.6 times, 0.8 of top speed, 4 times the mass),
+    small (0.6 times, turns 1.6 times as fast, half the mass).
+  - **Road objects (5 s):** the blocker, a sandcastle dropped just behind the kart that karts bump off as off a
+    wall and that slumps into sand at its end; the ramp, an orange kicker that flips up about 15 ahead and
+    launches any kart driving onto it, with a trick (Drift) and the trick boost.
+  - **Field items:** teleport (a 1 s warning with cyan rings under every kart, then every kart racing hops up to
+    40 along the road, onto a random lane, in sparkles, and pops in), magnet (karts ahead within 30 are pulled
+    back; a horseshoe over the kart, rings, field lines), push (karts within 12 are shoved away; a bubble and
+    shockwaves), sticky walls (5 s for everyone: honey goo on every wall, a kart touching one is held 1.5 s, then
+    pushed off).
+- **CPU karts** pick up and use every item, by a simple rule per item and a short random wait.
+- **Settings** on the setup screen: **Items: On/Off**, then one button per item. Kept from race to race, reset on
+  going back to the lobby. Watch races use them too.
+- **The Tuning panel's "Items" group** holds every number above.
+
+### Measured without a device
+
+In Node on the dev box (the tasks' unit tests and reports):
+- **Pickups:** in a simulated 120 s race on Seaside, the pack broke most boxes in a row within the 3 s return, so
+  about 20 pickups in all.
+- **Small CPU karts:** a Hard kart kept small for two laps on Seaside lapped in 34.8 s (35.7 s normal), never fell,
+  and flipped its stick 15 times a lap (70 normal), so it does not weave.
+- **Ramp:** `rampLaunchSpeed` 6.5 flies a top-speed kart about 16 units (the course's jump gap is 14).
+- **Magnet:** a kart 10 ahead settles at 0.75 of top speed; one at 29 hardly slows; a big kart at 10 stays above
+  0.9. Twelve magnets in one CPU race bunched the finish (77.0-79.4 s, against 74.4-79.4 s without items).
+- **Push:** a kart alongside (3 apart) is shoved 3.9 units in 0.5 s.
+- **Teleport:** 12 hops per teleport in a 12-kart race, never onto a gap (15 teleports near the jump), laps right.
+- **Races with every item:** 2-lap CPU races with the field items, each alone and all nine: no falls, no CPU
+  back-offs.
+- **Looks' budgets:** the sandcastle with pile and flag 1979 triangles, the kicker about 112, one instanced mesh
+  per part for the whole field; the sticky goo one course-wide mesh (about 10,000 triangles, one draw call, no
+  shadow). The teleport rings are scaled to stay under the bloom threshold; kit-shots cannot show bloom, so that
+  is unchecked (step 5).
+- **Browser tests:** the full suite, 124 of 124, about 25 minutes; `m8` drives one race per item ("Handoff tests" in
+  M8 in `docs/history.md`).
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop (`npm run dev` or `npm start`, HTTPS as usual), an iPhone and an
+Android phone for steps 6-8. Seaside Skyway, 150cc, CPU Normal, 3 laps, Look on High, Items On with all nine,
+unless a step says otherwise. Items are all in the Tuning panel's **Items** group.
+
+1. **The setup screen:** below the CPU row, a row "Items: On" and nine item buttons with icons. Turn single items
+   off and on, then Items Off (the item buttons grey out) and On again. The presses stick.
+2. **Watch the items, no phones:** **Watch, no phones: 1**, 3 laps, and watch the view kart and the field:
+   - The two box rows (the start straight at s 120, and the straight after the hairpin at s 805): boxes spin,
+     break in a burst when driven through and come back.
+   - Each item as the CPUs use it (most come up within a race or two): the sandcastle dropping in with a bounce
+     and slumping away; the kicker flipping up and karts launching off it with a trick; the bouncy coat, big
+     and small karts; the teleport's warning rings, then the hop with sparkles and karts popping in; the magnet
+     over a kart with lines to the karts ahead; the push bubble and shockwaves; the honey on the walls and goo on
+     a held kart.
+   - The HUD's item frame (roulette, then the held item) and the effect rings counting down.
+   - Anything that looks wrong: an object floating or sunk in the road, a look left behind after its item ends,
+     a kart stuck, falling or going the wrong way after a teleport.
+3. **One item at a time:** for each of the nine, leave only that item on and Watch 1 for a lap, so every look is
+   seen at least once. Which looks read at a glance, and which need work?
+4. **The frame rate:** **Watch, no phones: 4** on High, all items on. Note the readout's fps over a lap, and
+   compare with Items Off (M7e: 40-60 fps). Note any stall when an item is first used (a first burst, the first
+   goo).
+5. **Bloom:** on High, watch a teleport's warning (only Teleport on): do the cyan rings under the karts glow and
+   bleed into the screen (bloom), or stay crisp? The same for the sticky honey in sunlight.
+6. **The phone's Item button, iPhone then Android:** one phone each, a 2-lap race. Drive through a box row: the
+   phone shows the roulette, then the held item on the Item button. Press it: the item is used, and a running
+   effect shows its seconds counting down. Try each control style (tap, swipe, tilt) once: the Item button is in
+   reach and does not steal steering or drift.
+7. **Feel, with a phone:** race 3 laps with all items on against Normal CPUs. Answer: do the items shake the
+   race up without making it random? Are any items useless or too strong? Which looks are closest to the
+   MK8DX feel?
+8. **Tune** (Tuning panel, **Items** group, during the race; Copy values gives the changed numbers):
+   - **Tune:** *Effect time* (1-15 s, default 5): how long every timed item lasts (kart effects, road objects,
+     magnet, push, sticky walls).
+   - **Tune:** *Roulette time* (0.5-5 s, default 2) and *Box comes back after* (0.5-10 s, default 3): how often
+     karts get items. Too short, and items flood the race; too long, and the second row is always empty.
+   - **Tune:** *Big, size / top speed / mass* (1-2.5 x, default 1.6; 0.5-1 x top, default 0.8; 1-10 x, default
+     4): does a big kart feel like the Mega Mushroom, winning every bump but slower?
+   - **Tune:** *Small, size / turning / mass* (0.3-1 x, default 0.6; 1-2.5 x, default 1.6; 0.1-1 x, default
+     0.5): is a small kart fun to steer, or twitchy? (If small CPU karts weave, note it: the fix is in
+     `cpu-driver.js`, see the decisions in `docs/history.md`.)
+   - **Tune:** *Bouncy, bounce* (1-6 x, default 3): how hard karts part when they bump a bouncy kart.
+   - **Tune:** *Ramp, launch* (2-14 units/s, default 6.5): how high and far the kicker throws a kart; enough
+     time to trick?
+   - **Tune:** *Teleport, reach* (10-80 units, default 40): how far karts hop.
+   - **Tune:** *Magnet, reach* (10-60 units, default 30) and *Magnet, pull* (0-30 units/s², default 7.5): a kart 10
+     ahead should lose about a quarter of its speed; does it feel fair to the kart pulled?
+   - **Tune:** *Push, reach* (4-30 units, default 12) and *Push, strength* (0-150 units/s², default 60): a kart
+     alongside should be shoved about a lane aside in half a second.
+   - **Tune:** *Sticky walls, hold* (0.2-4 s, default 1.5) and *push off* (0-15 units/s, default 6): long enough
+     to hurt, short enough not to annoy. Also check that a held kart is not shoved along the wall by bumps.
+9. **Anything broken:** note what, where on the lap (what is there to recognise it), and which item.

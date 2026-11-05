@@ -377,44 +377,20 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 - **After it:** the 3D race starts from the lobby with no players (`minPlayers: 0` in `host/games/index.js`), for Watch; a race still needs a player.
 - For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
-### M8: Items (our own)
-The part of Mario Kart I want most after the race itself. Decided after the M7e device run (2026-11-04): our own nine items **replace MK8DX's** (no banana, shells or mushrooms, and no coins). Like MK8DX, they come from item boxes on the road and are used with the phone's Item button. Each effect lasts 5 s and is drawn on the kart, so everyone can see it is in effect. Built as one queue of tasks in one session (planned 2026-11-04 in `docs/queue.md`, which holds every task's spec and the fixed interfaces), with one review and one device run at the end of all three parts.
-
-**Getting and using items:**
-- **Item boxes** sit in rows across the road: on Seaside Skyway two rows, on the start straight and on the quiet straight after the hairpin that was kept for them. A box breaks when driven through and comes back after a few seconds.
-- **One item held at a time.** Picking one up runs a short roulette, shown on the kart's host view and on the phone, before the item lands.
-- **The Item button** on the phone (in the place kept free for it since M6c) uses the held item.
-- **Odds by place, MK8DX's idea:** karts further back get more of the catch-up items (teleport, magnet, ramp), leaders more of the defensive ones (blocker, bouncy, push).
-- **On screen:** while an effect lasts, its view shows the item's icon with a ring counting down the 5 s, and the phone shows the held item and the running effect.
-- **Effect length:** 5 s, a slider in the tuning panel, like every tuned number.
-- **CPU drivers (M7e)** pick up and use items, with a simple rule for each (for example, a blocker when a kart is close behind).
-- **Settings:** the host's setup screen gets Items on or off (off races without boxes, as now), and a switch for each item, so any item can be left out. A race setting like the engine class: one set for everyone, kept from race to race, reset on going back to the lobby.
-
-**The nine items** (each look and animation is designed in its chat, with references; "be creative" with the objects):
-1. **Blocker:** an object dropped just behind the kart, on the road, that karts bump off like a wall. It vanishes after 5 s with an animation (for example, a sandcastle that crumbles away in the Seaside theme).
-2. **Ramp:** a ramp that appears a little ahead of the kart (for example, a kicker that flips up out of the road). Any kart driving onto it is launched and can trick with Drift as off the course's ramp, and gets the trick boost. It vanishes after 5 s with an animation.
-3. **Bouncy:** for 5 s the kart is rubbery (a squash-and-stretch wobble, a rubber shine), and karts bumping it bounce off much harder than usual.
-4. **Teleport (everyone):** every kart, the user's too, hops a short random way along the road, up to about 40 units forward or back, onto a random lane, so the pack is shaken up without wrecking the standings.
-   - It flashes a short warning first, and each kart vanishes and reappears in a burst of sparkles.
-   - Never onto a gap or into another kart.
-   - Race distance moves with the hop, so laps stay right.
-5. **Big and slow:** for 5 s the kart grows (about 1.6 times, in a wobble like MK8DX's Mega Mushroom), is slower (about 80% of top speed) and much heavier, so it wins every bump.
-6. **Small and fast-turning:** for 5 s the kart shrinks (about 0.6 times, with a poof), turns much faster (about 1.6 times the steering and drift), and is light in bumps.
-7. **Magnet:** for 5 s other karts within a reach (about 30 units) are pulled toward the kart, more strongly when nearer. A field drawn round it (a magnet over the kart, rings, lines to each kart pulled). Only karts ahead are pulled (decided while planning): a pull would speed up the karts behind.
-8. **Push:** for 5 s other karts within a reach are pushed away from the kart, with shockwave rings or a bubble round it.
-9. **Sticky walls (everyone, the user too):** for 5 s every wall on the course is sticky and drawn so (goo or honey). Any kart touching one is held for about 1.5 s, then let go with a small push off the wall.
-
-**Its three parts** (the tasks of each are in `docs/queue.md`):
-- [ ] **M8a: the item system and the kart's own effects.** Item boxes, the roulette, holding and the Item button, odds by place, the effect timer and HUD, the settings, CPUs using items, and the three items that change only the user's kart: bouncy, big and slow, small and fast-turning.
-- [ ] **M8b: objects on the road.** A model for objects placed on the road (by distance and lane, with a lifetime), and the blocker and the ramp, their looks and their vanishing.
-- [ ] **M8c: effects on the whole field.** Teleport, magnet, push and sticky walls.
-
-Research done while planning (2026-11-04):
-- **Mario Kart's own versions of size effects:** Lightning shrinks the karts it hits (smaller and slower, longest for the leaders), and the Mega Mushroom grows a kart to flatten others ([Mario Wiki: Lightning](https://mariowiki.com/Lightning), [Mega Mushroom](https://mariokart.fandom.com/wiki/Mega_Mushroom)).
-- **Effects must be readable at a glance:** each one needs its own look on the kart and a timer. Item effects players could not read were a common complaint about smaller kart games ([itch.io comment](https://itch.io/post/13870986)), and KartRider scales its collision effects with how hard the hit was ([KartRider dev blog](https://forums.kartrider.nexon.net/discussion/396/dev-blog-revving-up-the-fun-part-1?lang=en)).
-- **Crash Team Racing's items** ([TheGamer's guide](https://www.thegamer.com/definitive-guide-how-to-use-every-item-ctr-nitro-fueled/)), as another kart game's take on items like these:
-  - its shield fades on its own if never hit;
-  - its bomb can be thrown either way and set off early.
+### M8: Items (our own) (built, device run pending)
+Our own nine items replace MK8DX's (no coins). Everything in detail, with the queue's interfaces and decisions, is in
+"M8" in `docs/history.md`; the device run in "M8" in `docs/3d-findings.md`.
+- **The system:** item boxes in rows (`track.itemBoxRows`), a roulette, one held item used with the phone's Item
+  button (`KART_BUTTONS.ITEM`), odds by place by each item's role (catch-up, defend, even), CPU karts using items
+  (`items/cpu-items.js`), Items On/Off and one switch per item on the setup screen (Watch races too). Every number
+  is in the Tuning panel's Items group (`items/item-tuning.js`).
+- **The code:** all in `host/games/kart-3d/items/`: rules are plain files (`item-rules.js` steps everything once a
+  race step; `item-catalog.js` has one entry per item, `{ role, use }`), drawings end in `-look.js`/`-drawing.js`
+  and are listed in `item-drawing.js`'s `DRAWINGS`. Icons for phone and host in `shared/item-icons.js`.
+- **The items:** bouncy, big, small (kart effects, 5 s); blocker (sandcastle) and ramp (kicker), road objects with
+  a lifetime (`race.items.objects`); teleport, magnet, push, sticky walls (field items).
+- **Split candidates for M10:** `renderer.js` (260 lines), `kart-physics.js` (222), `createRoadObjectDrawing` (about
+  140 lines in one closure), `sticky-walls-look.js` (204).
 
 ### M9: Glide ramps and spin-boost posts
 Both need new rules (gliding in the air; a post that gives a spin boost when hit), so each is designed in that chat before building.

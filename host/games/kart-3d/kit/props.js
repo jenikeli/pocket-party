@@ -23,6 +23,10 @@ import { buildRoundTree } from './round-tree.js';
 import { buildHedge } from './hedge.js';
 import { buildPlanter } from './planter.js';
 import { buildStairTruck, buildBeltLoader, buildFuelTruck } from './airport-trucks.js';
+import { buildRunwayLight } from './airfield-runway-light.js';
+import { buildTaxiwaySign } from './airfield-taxiway-sign.js';
+import { buildWindsock } from './airfield-windsock.js';
+import { buildAirfieldFloodlight } from './airfield-floodlight.js';
 import { buildBaggageTrain, buildUldDolly, buildFollowMeCar } from './airport-carts.js';
 
 // Each instanced prop's builder, by its name in PROP_REACH (kit/layout-rules.js). Only the props a course uses are
@@ -51,6 +55,10 @@ export const PROP_BUILDERS = {
   'belt-loader': buildBeltLoader,
   'fuel-truck': buildFuelTruck,
   'follow-me-car': buildFollowMeCar,
+  'runway-light': buildRunwayLight,
+  'taxiway-sign': buildTaxiwaySign,
+  windsock: buildWindsock,
+  'airport-floodlight': buildAirfieldFloodlight,
 };
 
 // Adds the props; `kit` is the course's (kit/kit.js). `spots` lists

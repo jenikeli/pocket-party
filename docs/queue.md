@@ -20,7 +20,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | merged |
 | J | Ground vehicles (props) | sonnet | 0 | merged |
-| K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | building |
+| K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | building |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |
 | N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
@@ -705,6 +705,13 @@ session merges that line).
     the hangars' `AIRLINES` colours.
   - Airliner about 13,000 triangles, prop plane about 4,000 (high wing, open wheels). After sheet:
     `test-results/review/I-after.png`.
+- **Task K:** `buildBaggageConveyor(kit, { length })` takes no `s` (M places it with `placeLandmark`, its z across the
+  road under the jump's gap; belt top at 0.84, housings 3.4 tall, so they stand outside the road). The windsock does not
+  sway (props have no update). The two airport barrier styles and four props are left out of the Test track's "every
+  style and prop" check (as J's vehicles). `apron-rail` (about 1 tall) and `padded-barrier` (0.8) are low: M adds them to
+  `LOW_BARRIERS` if turn boards should stand behind them. At merge the three maps over 512 wide (taxiway boards 768,
+  floodlight ribbon 768, the conveyor's sign 1024) were cut to 512 (checked on `test-results/review/K-merge.png`). After
+  sheet: `test-results/review/K-after.png`.
 - **Task J:** the first round's vehicles were sharp boxes; sent back once for bevelled bodies, fat tyres, cabs and a
   "FOLLOW ME" roof board (the car is two parts: its board is a canvas map made once per course). 1,224 to 3,436
   triangles each. Vehicles stand centred on their middle (M: `out` at least the reach; `turn: 90` lies them along the

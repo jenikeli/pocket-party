@@ -23,6 +23,8 @@ import { createStripedRail } from './striped-rail.js';
 import { createRailFence } from './rail-fence.js';
 import { createBlockCurbs } from './block-curbs.js';
 import { createPromenadeRail } from './promenade-rail.js';
+import { createApronRail } from './apron-rail.js';
+import { createPaddedBarrier } from './padded-barrier.js';
 
 const STYLE_BUILDERS = {
   [BARRIER_STYLES.WALL]: createPlainWall,
@@ -33,6 +35,8 @@ const STYLE_BUILDERS = {
   [BARRIER_STYLES.RAIL_FENCE]: createRailFence,
   [BARRIER_STYLES.BLOCK_CURBS]: createBlockCurbs,
   [BARRIER_STYLES.PROMENADE_RAIL]: createPromenadeRail,
+  [BARRIER_STYLES.APRON_RAIL]: createApronRail,
+  [BARRIER_STYLES.PADDED_BARRIER]: createPaddedBarrier,
 };
 
 // The ledge is this wide away from the turn boards: wide enough for the widest barrier (the plain wall's foot

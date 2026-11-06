@@ -25,6 +25,7 @@ import { AIRPORT_G_PIECES } from './airport-g-pieces.js';
 import { AIRPORT_H_PIECES } from './airport-h-pieces.js';
 import { AIRPORT_J_PIECES } from './airport-j-pieces.js';
 import { AIRPORT_I_PIECES } from './airport-i-pieces.js';
+import { AIRPORT_K_PIECES } from './airport-k-pieces.js';
 
 // Props stand this far past their own reach from the edge of the ground, so none touches the road's edge.
 const PROP_CLEARANCE = 0.5;
@@ -144,4 +145,5 @@ export const PIECES = {
   ...AIRPORT_H_PIECES,
   ...AIRPORT_J_PIECES,
   ...AIRPORT_I_PIECES,
+  ...AIRPORT_K_PIECES,
 };

@@ -56,8 +56,9 @@ function fakeKit() {
 
 // How many parts each prop has: the MKTV van, the lantern lamp, the floodlight, the palm, and since M7d4c5 the
 // round tree and hedge have two, the triple lamp three (its stone pedestal, M7d4c4), and since M9 the follow-me car
-// two (its lettered board), the rest one.
-const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2, 'follow-me-car': 2 };
+// two (its lettered board), the runway light and taxiway sign two (glass, faces), the airport floodlight three (glass,
+// ribbon), the rest one.
+const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2, 'follow-me-car': 2, 'runway-light': 2, 'taxiway-sign': 2, 'airport-floodlight': 3 };
 
 function assertParts(parts, label) {
   assert.ok(Array.isArray(parts) && parts.length > 0, `${label} returns parts`);

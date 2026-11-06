@@ -170,9 +170,11 @@ test('the Test track shows every barrier style and every prop', () => {
       }
     }
   });
-  assert.deepEqual([...shown].sort(), Object.values(BARRIER_STYLES).sort());
+  // The airport's own barrier styles (M9) belong to its apron too.
+  const airportStyles = [BARRIER_STYLES.APRON_RAIL, BARRIER_STYLES.PADDED_BARRIER];
+  assert.deepEqual([...shown].sort(), Object.values(BARRIER_STYLES).filter((style) => !airportStyles.includes(style)).sort());
   // The airport's ground vehicles (M9) belong to its apron, not the Test track.
-  const airportOnly = ['baggage-train', 'uld-dolly', 'stair-truck', 'belt-loader', 'fuel-truck', 'follow-me-car'];
+  const airportOnly = ['baggage-train', 'uld-dolly', 'stair-truck', 'belt-loader', 'fuel-truck', 'follow-me-car', 'runway-light', 'taxiway-sign', 'windsock', 'airport-floodlight'];
   const testTrackProps = Object.keys(PROP_REACH).filter((name) => !airportOnly.includes(name));
   assert.deepEqual([...new Set(PROPS.map((spot) => spot.piece))].sort(), testTrackProps.sort());
 });

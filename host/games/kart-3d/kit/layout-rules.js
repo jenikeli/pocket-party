@@ -29,6 +29,9 @@ export const BARRIER_STYLES = Object.freeze({
   BLOCK_CURBS: 'block-curbs',
   // M7d4's, as on Daisy Circuit's seafront.
   PROMENADE_RAIL: 'promenade-rail',
+  // M9's, the airport's: post-and-rail with chevron boards, and a fat yellow pillow.
+  APRON_RAIL: 'apron-rail',
+  PADDED_BARRIER: 'padded-barrier',
 });
 
 // Each prop's name, and how far it reaches from its spot seen from above, so a layout can be checked to keep
@@ -62,6 +65,11 @@ export const PROP_REACH = Object.freeze({
   'belt-loader': 2.8,
   'fuel-truck': 3.5,
   'follow-me-car': 1.4,
+  // The airfield's fittings (M9): a windsock counts its sock, a floodlight its railing and ribbon.
+  'runway-light': 0.45,
+  'taxiway-sign': 2.4,
+  windsock: 3,
+  'airport-floodlight': 3.1,
 });
 
 // A side's name in a layout ('left' or 'right') as -1 or 1.

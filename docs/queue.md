@@ -20,8 +20,8 @@ folded into "M9" in `docs/history.md` and deleted.
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | building |
 | J | Ground vehicles (props) | sonnet | 0 | merged |
-| K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | queued |
-| L | Rock study, then the rocky islands in the bay | opus | 0 | queued |
+| K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | building |
+| L | Rock study, then the rocky islands in the bay | opus | 0 | building |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |
 | N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
 

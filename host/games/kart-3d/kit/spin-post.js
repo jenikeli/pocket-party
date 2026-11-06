@@ -2,7 +2,7 @@
 // a glowing cyan band (our anti-gravity colour) and a red dome light on top, after MK8DX's. Each stands where
 // track.spinPosts says, on the road's surface along its normal, as wide and tall as the rules' post (spin-posts.js).
 // Every part is one geometry drawn once per post (instanced). A post flashes white for SPIN_POST_FLASH seconds
-// when a kart bounces off it (race.spinPosts[i].sinceHit). The caller adds `object` to the world. Used by the
+// when a kart touches it (race.spinPosts[i].sinceHit). The caller adds `object` to the world. Used by the
 // airport's dressing (airport-scenery.js).
 
 import * as THREE from 'three';

@@ -55,10 +55,8 @@ export const TUNABLES = Object.freeze([
   { key: 'slideGrip', group: 'Bumps', label: 'Grip after a bump', unit: 'per s', min: 0, max: 8, step: 0.1, value: 1.5 },
   { key: 'slideSeconds', group: 'Bumps', label: 'Slide after a bump', unit: 's', min: 0, max: 1.5, step: 0.05, value: 0.35 },
 
-  // The spin-boost posts in anti-gravity (M9; spin-posts.js): a kart hitting one bounces back with this share of
-  // its speed into it, and at least the parting speed, and cannot be spun by a post again for the cooldown.
-  { key: 'postBounce', group: 'Spin posts', label: 'Bounce', unit: 'share', min: 0, max: 1, step: 0.01, value: 0.5 },
-  { key: 'postPartingSpeed', group: 'Spin posts', label: 'Least parting speed', unit: 'units/s', min: 0, max: 15, step: 0.1, value: 6 },
+  // The spin-boost posts in anti-gravity (M9; spin-posts.js): a kart touching one is slid round it and spin-boosted,
+  // and cannot be spun by a post again for the cooldown. Their bounce was removed after the M9 device run.
   { key: 'postCooldown', group: 'Spin posts', label: 'Cooldown', unit: 's', min: 0, max: 3, step: 0.05, value: 0.6 },
 
   // The hop on pressing Drift: how high and how long in the air. The M6 hop was 0.23 high and 0.27 s, and

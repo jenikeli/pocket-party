@@ -13,8 +13,8 @@
 // the spark level it drifts for (1 blue, 2 orange, 3 purple): once there it lets go as the corner ends.
 // overshootDegrees: if a corner ends before that level, it may turn in this much further than its line (still
 // drifting) to reach it, room allowing. pumpsDrift: it pumps the stick in a drift to charge faster
-// (cpu-drift.js). trickChance: the share of jumps it tricks off. postChance: the share of spin posts it steers
-// to clip (cpu-aim.js).
+// (cpu-drift.js). trickChance: the share of jumps it tricks off. postChance: the share of spin posts it means
+// to clip (cpu-aim.js; one it would reach before its spin cooldown ends it passes clear).
 export const CPU_LEVELS = Object.freeze({
   easy: Object.freeze({
     label: 'Easy',

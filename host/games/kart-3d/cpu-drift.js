@@ -15,7 +15,7 @@
 import { forwardSpeed } from './kart-physics.js';
 import { MIN_DRIFT_SPEED, sparkLevel } from './kart-techniques.js';
 import { driftTurnAngle, steeringRate } from './kart-driving.js';
-import { lineCurvatureAhead, lineTurnAhead, lipAhead, headingToLine } from './cpu-road.js';
+import { lineCurvatureAhead, lineTurnAhead, lipAhead, postAhead, headingToLine } from './cpu-road.js';
 import { trickPress, landed } from './cpu-trick.js';
 
 const DEGREES = Math.PI / 180;
@@ -46,6 +46,11 @@ const REACTION_SECONDS = 0.15;
 // No drift starts within this many seconds of a ramp's lip (it must take off straight), and a drift is let go
 // as one comes near.
 const LIP_CLEAR_SECONDS = 1.2;
+// Nor where a spin post (spin-posts.js) stands in the corner ahead, and a drift is let go this many seconds
+// before one: the airport's ring is banked to 60 degrees, so in the road's own surface it bends only about as much
+// as the widest drift turns, and a kart drifting there cannot turn out wider than the road. It is carried to the
+// inside whatever its aim (cpu-aim.js), and so could neither steer round a post nor steer to clip one.
+const POST_CLEAR_SECONDS = 1;
 // After a drift ends, it waits this long before the next hop.
 const DRIFT_COOLDOWN = 0.4;
 
@@ -115,8 +120,8 @@ function letGo(cpu) {
 }
 
 // The side (1 right, -1 left) to hop into a drift now, or 0: where the line bends just ahead nearly as much as
-// the widest drift turns, and goes on turning that way at least the level's driftTurnDegrees, with no jump
-// coming before it ends.
+// the widest drift turns, and goes on turning that way at least the level's driftTurnDegrees, with no jump or spin
+// post coming before it ends.
 function startSide(track, kart, cpu, level) {
   const speed = forwardSpeed(kart);
   if (!kart.grounded || cpu.driftCooldown > 0 || speed < DRIFT_FROM_SPEED) {
@@ -129,7 +134,10 @@ function startSide(track, kart, cpu, level) {
     return 0;
   }
   const cornerLength = speed * CORNER_LOOK_SECONDS;
-  if (lipAhead(track, kart.s, lead + cornerLength) || lineTurnAhead(track, kart, lead, cornerLength, side) < level.driftTurnDegrees * DEGREES) {
+  if (lipAhead(track, kart.s, lead + cornerLength) || postAhead(track, kart.s, lead + cornerLength)) {
+    return 0;
+  }
+  if (lineTurnAhead(track, kart, lead, cornerLength, side) < level.driftTurnDegrees * DEGREES) {
     return 0;
   }
   return side;
@@ -137,11 +145,14 @@ function startSide(track, kart, cpu, level) {
 
 // Keep drifting while the corner goes on; as it ends, let go once at the level's sparks, or push on and turn
 // further than the line (up to the level's overshoot) to reach them. Always let go before running into the
-// inside of the road, before a jump, or when too slow to keep the drift.
+// inside of the road, before a jump or a spin post, or when too slow to keep the drift.
 function holdDrift(track, kart, cpu, level) {
   const side = kart.driftDirection;
   const speed = forwardSpeed(kart);
   if (speed < MIN_DRIFT_SPEED + 1 || lipAhead(track, kart.s, speed * LIP_CLEAR_SECONDS) || nearInside(track, kart, side, speed)) {
+    return false;
+  }
+  if (postAhead(track, kart.s, speed * POST_CLEAR_SECONDS)) {
     return false;
   }
   const remaining = lineTurnAhead(track, kart, 0, speed * ENDING_LOOK_SECONDS, side);

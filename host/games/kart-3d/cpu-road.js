@@ -1,7 +1,7 @@
 // What a CPU driver reads off the road and its racing line (M7e): where the line runs at a distance along the
-// road, how sharply it bends a little ahead, how far it turns over a stretch ahead, where the jumps' lips are,
-// and which way a kart points against the road and against the line. Every question is a handful of lookups,
-// cheap enough for 11 karts every step. Plain maths, unit tested in Node through cpu-driver.js. Used by
+// road, how sharply it bends a little ahead, how far it turns over a stretch ahead, where the jumps' lips and the
+// spin posts are, and which way a kart points against the road and against the line. Every question is a handful
+// of lookups, cheap enough for 11 karts every step. Plain maths, unit tested in Node through cpu-driver.js. Used by
 // cpu-driver.js, cpu-aim.js, cpu-drift.js and cpu-recovery.js.
 
 import { cross, dot } from './vector.js';
@@ -85,10 +85,17 @@ function headingAtIndex(road, count, index) {
 
 // True if a jump's lip is between `s` and `distance` further on.
 export function lipAhead(track, s, distance) {
-  return roadFor(track).lipS.some((lipS) => {
-    const gap = progressBetween(track, s, lipS);
-    return gap >= 0 && gap <= distance;
-  });
+  return roadFor(track).lipS.some((lipS) => isAhead(track, s, lipS, distance));
+}
+
+// True if a spin post (spin-posts.js) stands between `s` and `distance` further on.
+export function postAhead(track, s, distance) {
+  return track.spinPosts.some((post) => isAhead(track, s, post.s, distance));
+}
+
+function isAhead(track, s, targetS, distance) {
+  const gap = progressBetween(track, s, targetS);
+  return gap >= 0 && gap <= distance;
 }
 
 // The angle from the road's direction at the kart to its nose, about the road's normal, in radians: positive

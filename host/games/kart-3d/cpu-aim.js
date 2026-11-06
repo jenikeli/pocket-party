@@ -34,12 +34,14 @@ const EDGE_KEEP = 1.5;
 const ALONGSIDE = 3;
 const SIDE_CLEAR = 2.4;
 // A spin post is seen this far ahead, and kept in aim until it is this far behind. A driver that means to hit it
-// aims this far from its middle, on the side toward the road's middle: inside the post's reach (1.8), so the
-// side of the post is clipped, but not dead centre. One that does not keeps its aim at least POST_CLEAR from it
-// (the pass round a slower kart would otherwise push it into a post by accident).
+// aims this far from its middle, on the side toward the road's middle: well inside the post's reach (1.8), since
+// a kart swinging across from the last post still lags its aim by most of a unit as it gets there (a kart touching
+// a post only slides round it, so even dead centre costs nothing, spin-posts.js). One that does not keeps its aim
+// at least POST_CLEAR from it (the pass round a slower kart would otherwise push it into a post by accident).
+// Where a kart passes a post follows this aim only because CPUs do not drift past posts (cpu-drift.js).
 const POST_LOOK = 45;
 const POST_PASSED = 1;
-const POST_CLIP = 1.2;
+const POST_CLIP = 0.6;
 const POST_CLEAR = 3.2;
 // Each post's draw is its own random number, from the driver's seed and the post's number.
 const POST_SEED_STRIDE = 104729;
@@ -49,8 +51,9 @@ const POST_SEED_STRIDE = 104729;
 // that never move, which it passes as it passes a slow kart (the item rules refill them every step); mergeFrom
 // the lateral it is rejoining its line from and mergeShare how far it has got (1 is on its line); clearLeft and
 // clearRight the least and most lateral it may aim at, kept clear of karts alongside (null when none); post
-// the spin post it is dealing with, { index, lateral, clip, side } (clip: it means to hit it; side, -1 or 1: the
-// side it passes on, fixed when it first sees the post so it does not cross the post), or null.
+// the spin post it is dealing with, { index, lateral, wantsClip, clip, side }, or null: wantsClip whether its
+// level's draw says to hit it; clip whether it steers to hit it now (see nextPost); side, -1 or 1, the side it
+// passes on, fixed when it first sees the post so it does not cross the post.
 export function freshAim() {
   return {
     obstacles: [],
@@ -154,19 +157,24 @@ function aroundPost(post, lateral) {
   return post.side < 0 ? Math.min(lateral, nearest) : Math.max(lateral, nearest);
 }
 
-// The next spin post ahead (see freshAim's post), or null. Whether it means to hit it is its level's postChance,
-// drawn per driver and post, so a race replays the same.
+// The next spin post ahead (see freshAim's post), or null. Whether it wants to hit it is its level's postChance,
+// drawn per driver and post, so a race replays the same. It only steers for it while its spin cooldown
+// (spin-posts.js) will have run out by the time it gets there: the posts stand closer than a cooldown's driving,
+// so after one spin it passes the next post clear and lines up for the one after, on the same side.
 function nextPost(track, kart, cpu) {
   const { postChance } = CPU_LEVELS[cpu.level];
   for (const [index, post] of track.spinPosts.entries()) {
     const gap = progressBetween(track, kart.s, post.s);
     if (gap > -POST_PASSED && gap < POST_LOOK) {
-      // Chosen once, when the post first comes in sight: whether to clip it, and which side to pass.
-      if (cpu.post?.index === index) {
-        return cpu.post;
-      }
-      const side = Math.sign(kart.lateral - post.lateral) || 1;
-      return { index, lateral: post.lateral, clip: createRandom(cpu.seed * POST_SEED_STRIDE + index)() < postChance, side };
+      // Chosen once, when the post first comes in sight: whether it wants to clip it, and which side to pass.
+      const seen = cpu.post?.index === index ? cpu.post : {
+        index,
+        lateral: post.lateral,
+        wantsClip: createRandom(cpu.seed * POST_SEED_STRIDE + index)() < postChance,
+        side: Math.sign(kart.lateral - post.lateral) || 1,
+      };
+      seen.clip = seen.wantsClip && kart.postCooldown <= gap / Math.max(forwardSpeed(kart), 1);
+      return seen;
     }
   }
   return null;

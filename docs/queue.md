@@ -23,7 +23,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | merged |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | merged |
-| N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
+| N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | building |
 
 Suggested order (at most 3 subagents at once, reviewers included): 0, then A, C and F; then B, E, and G as places free up;
 D as soon as A and C are merged; then H, I, J, K and L; M; N. Browser tests run when no implementer is drawing

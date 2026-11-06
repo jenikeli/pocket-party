@@ -170,7 +170,7 @@ function describeSurface(kart) {
     return 'fell off';
   }
   if (!kart.grounded) {
-    return 'in the air';
+    return kart.gliding ? 'gliding' : 'in the air';
   }
   const ground = kart.surface === SURFACES.OFF_ROAD ? 'off-road' : 'road';
   return kart.antiGravity ? `${ground}, anti-gravity` : ground;

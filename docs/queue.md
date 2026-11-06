@@ -23,7 +23,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | merged |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | merged |
-| N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | building |
+| N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | merged |
 
 Suggested order (at most 3 subagents at once, reviewers included): 0, then A, C and F; then B, E, and G as places free up;
 D as soon as A and C are merged; then H, I, J, K and L; M; N. Browser tests run when no implementer is drawing
@@ -716,6 +716,14 @@ session merges that line).
   `LOW_BARRIERS` if turn boards should stand behind them. At merge the three maps over 512 wide (taxiway boards 768,
   floodlight ribbon 768, the conveyor's sign 1024) were cut to 512 (checked on `test-results/review/K-merge.png`). After
   sheet: `test-results/review/K-after.png`.
+- **Task N:** a player's phone cannot steer to the glide or a post in software WebGL, so the race test watches Watch's
+  four self-driving stand-ins (CPU drivers) on the plain course and reads the Tuning readout every 250 ms: a view
+  "gliding" at the glide's share of the lap (72 to 78%), back on the road past it, never "fell off" there, some view
+  with a "spin boost", and the results. At merge the readout learned to say "gliding" (`race-views.js`'s
+  `describeKart`, unit tested) instead of "in the air" while the glider is open, so the test checks the glide itself.
+  "Spin boost" can also come from a bump in the ring, so the post is not proven alone (its rules are unit tested).
+  The look test checks the full course's start view has many colours (terminal, plane, tower and gate drawn).
+  About 6.5 minutes alone; `m9` added to CLAUDE.md's Testing map rows for the 3D look and rules.
 - **Task M:**
   - **Course changes:** the dash panel before the jump moved from 585 to 645, on the jump's landing straight, firing
     into the ring (at 585 it threw karts onto the ring's bank; landings at 150cc are now 637 to 649). The beach landing

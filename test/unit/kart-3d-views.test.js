@@ -170,6 +170,10 @@ test('poses between steps and the readout line', () => {
   assert.deepEqual(kartPose(kart, 0.25).position, vec(0.25, 0, 0));
   kart.velocity = addScaled(vec(0, 0, 0), kart.forward, 12);
   assert.match(describeKart(kart, track), /^12\.0 units\/s \(6\.0 kart lengths\/s\), road, \d+% round$/);
+  kart.grounded = false;
+  assert.match(describeKart(kart, track), /, in the air, /);
+  kart.gliding = true;
+  assert.match(describeKart(kart, track), /, gliding, /, 'the glider open (M9)');
   kart.respawnIn = 1;
   assert.match(describeKart(kart, track), /fell off/);
 });

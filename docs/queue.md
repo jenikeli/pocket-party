@@ -19,7 +19,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | G | Terminal and control tower | opus | 0 | merged |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | building |
-| J | Ground vehicles (props) | sonnet | 0 | building |
+| J | Ground vehicles (props) | sonnet | 0 | merged |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | queued |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | queued |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |
@@ -675,6 +675,12 @@ session merges that line).
   for I's prop plane). `buildHangar` takes an `airline` option ('Palm Air', 'Coral Wings', 'Skipjack Air'); I's
   liveries should use the same colours. At merge the small hangars' signs were cut to 512x128 (the 512 rule). Big
   about 39,000 triangles, small about 3,900. After sheet: `test-results/review/H-after.png`.
+- **Task J:** the first round's vehicles were sharp boxes; sent back once for bevelled bodies, fat tyres, cabs and a
+  "FOLLOW ME" roof board (the car is two parts: its board is a canvas map made once per course). 1,224 to 3,436
+  triangles each. Vehicles stand centred on their middle (M: `out` at least the reach; `turn: 90` lies them along the
+  road). Two test edits outside its list, accepted: the Test track's "every prop" check leaves out the six airport
+  vehicles, and the parts test's stand-in canvas ignores drawing calls it lacks. After sheet:
+  `test-results/review/J-after.png`.
 - **Task F:** each kart's glider is built open so the renderer compiles its shader up front (no stall at the first
   glide), and the first `show()` folds it. From the chase spot the canopy is seen almost edge-on; a higher
   `glideCameraLift` would show more of its top (judge at N's test or the device run). After sheet:

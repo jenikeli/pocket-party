@@ -23,9 +23,11 @@ registerHooks({
   },
 });
 
-// The round tree and hedge draw their maps on a canvas; a stand-in document gives them one that holds nothing.
+// The round tree and hedge draw their maps on a canvas, and the follow-me car's board draws text on one; a
+// stand-in document gives them a canvas that holds nothing (any drawing call it is not given does nothing).
+const drawing = { createImageData: (width, height) => ({ data: new Uint8ClampedArray(width * height * 4) }), putImageData() {} };
 globalThis.document = {
-  createElement: () => ({ getContext: () => ({ createImageData: (width, height) => ({ data: new Uint8ClampedArray(width * height * 4) }), putImageData() {} }) }),
+  createElement: () => ({ getContext: () => new Proxy(drawing, { get: (target, name) => (name in target ? target[name] : () => {}) }) }),
 };
 
 const THREE = await import('three');
@@ -53,8 +55,9 @@ function fakeKit() {
 }
 
 // How many parts each prop has: the MKTV van, the lantern lamp, the floodlight, the palm, and since M7d4c5 the
-// round tree and hedge have two, the triple lamp three (its stone pedestal, M7d4c4), the rest one.
-const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2 };
+// round tree and hedge have two, the triple lamp three (its stone pedestal, M7d4c4), and since M9 the follow-me car
+// two (its lettered board), the rest one.
+const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2, 'follow-me-car': 2 };
 
 function assertParts(parts, label) {
   assert.ok(Array.isArray(parts) && parts.length > 0, `${label} returns parts`);

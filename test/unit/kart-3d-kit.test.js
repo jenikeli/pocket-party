@@ -171,7 +171,10 @@ test('the Test track shows every barrier style and every prop', () => {
     }
   });
   assert.deepEqual([...shown].sort(), Object.values(BARRIER_STYLES).sort());
-  assert.deepEqual([...new Set(PROPS.map((spot) => spot.piece))].sort(), Object.keys(PROP_REACH).sort());
+  // The airport's ground vehicles (M9) belong to its apron, not the Test track.
+  const airportOnly = ['baggage-train', 'uld-dolly', 'stair-truck', 'belt-loader', 'fuel-truck', 'follow-me-car'];
+  const testTrackProps = Object.keys(PROP_REACH).filter((name) => !airportOnly.includes(name));
+  assert.deepEqual([...new Set(PROPS.map((spot) => spot.piece))].sort(), testTrackProps.sort());
 });
 
 test('a deck tapers to nothing at a free end in an S curve, and runs on at full depth where it joins another', () => {

@@ -22,6 +22,8 @@ import { buildParasol, buildLounger, buildSurfboards, buildLifebuoyPost, buildBa
 import { buildRoundTree } from './round-tree.js';
 import { buildHedge } from './hedge.js';
 import { buildPlanter } from './planter.js';
+import { buildStairTruck, buildBeltLoader, buildFuelTruck } from './airport-trucks.js';
+import { buildBaggageTrain, buildUldDolly, buildFollowMeCar } from './airport-carts.js';
 
 // Each instanced prop's builder, by its name in PROP_REACH (kit/layout-rules.js). Only the props a course uses are
 // built. The sponsor stand is not here: its stands are merged (kit/sponsor-stand.js).
@@ -43,6 +45,12 @@ export const PROP_BUILDERS = {
   'round-tree': buildRoundTree,
   hedge: buildHedge,
   planter: buildPlanter,
+  'baggage-train': buildBaggageTrain,
+  'uld-dolly': buildUldDolly,
+  'stair-truck': buildStairTruck,
+  'belt-loader': buildBeltLoader,
+  'fuel-truck': buildFuelTruck,
+  'follow-me-car': buildFollowMeCar,
 };
 
 // Adds the props; `kit` is the course's (kit/kit.js). `spots` lists

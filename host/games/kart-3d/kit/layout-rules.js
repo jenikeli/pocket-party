@@ -55,6 +55,13 @@ export const PROP_REACH = Object.freeze({
   'round-tree': 2.2,
   hedge: 1.25,
   planter: 0.95,
+  // The apron's ground vehicles (M9): half their length, about their middle.
+  'baggage-train': 5.5,
+  'uld-dolly': 3.5,
+  'stair-truck': 3.1,
+  'belt-loader': 2.8,
+  'fuel-truck': 3.5,
+  'follow-me-car': 1.4,
 });
 
 // A side's name in a layout ('left' or 'right') as -1 or 1.

@@ -1,8 +1,7 @@
 // The kit pieces the kit-shots page can show, by name: every barrier style, every prop and the start gate. Each
 // entry says how to build the piece into a kit, which road to stand it on, and where the camera looks (its
 // `focus`). Later parts of M7d4c add the pieces they rebuild here, so they get before-and-after picture sheets.
-// M7d4c2's spike adds the palm made in Blender, alone and beside ours; M7d4c3 adds the decks, supports and the sea and
-// sky objects (landmark-pieces.js); M7d5 the karts (kart-pieces.js). Used by viewer.js.
+// M7d4c3 adds the decks, supports and the sea and sky objects (landmark-pieces.js); M7d5 the karts (kart-pieces.js). Used by viewer.js.
 
 import { buildBarriers } from '../games/kart-3d/kit/barriers.js';
 import { buildProps } from '../games/kart-3d/kit/props.js';
@@ -13,7 +12,6 @@ import { spotFrame } from '../games/kart-3d/kit/props.js';
 import { kitPart } from '../games/kart-3d/kit/kit.js';
 import { GATE_THEME } from '../games/kart-3d/seaside-scenery.js';
 import { BARRIER_STYLES, KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layout-rules.js';
-import { addBlenderPalms, loadBlenderPalm } from './blender-palm.js';
 import { LANDMARK_PIECES, PIECE_S } from './landmark-pieces.js';
 import { KART_PIECES } from './kart-pieces.js';
 import { ITEM_PIECES } from './item-pieces.js';
@@ -100,30 +98,8 @@ const BUNTING = {
   focus: { s: PIECE_S, side: 0, out: 0, height: 5, size: 8 },
 };
 
-// The palm made in Blender (blender-palm.js), where propPiece would stand ours.
-const BLENDER_PALM = {
-  road: 'decked',
-  build: async (kit) => addBlenderPalms(kitPart(kit, KIT_PARTS.PROPS), await loadBlenderPalm(), [palmSpot(PIECE_S)]),
-  focus: propPiece('palm', PROP_SIZES.palm).focus,
-};
-
-// Ours and Blender's side by side, the same way round: ours nearer the camera, Blender's farther along the road.
-const PALM_GAP = 10;
-const PALMS_SIDE_BY_SIDE = {
-  road: 'decked',
-  async build(kit) {
-    buildProps(kitPart(kit, KIT_PARTS.PROPS), [palmSpot(PIECE_S - PALM_GAP / 2)]);
-    addBlenderPalms(kitPart(kit, KIT_PARTS.PROPS), await loadBlenderPalm(), [palmSpot(PIECE_S + PALM_GAP / 2)]);
-  },
-  focus: { ...propPiece('palm', PROP_SIZES.palm).focus, size: PROP_SIZES.palm + PALM_GAP / 2 },
-};
-
 // Close up, the camera on the trunk's middle, to judge the detail a passing kart sees at a few metres.
 const PALM_CLOSE_FOCUS = { ...propPiece('palm', PROP_SIZES.palm).focus, height: 3, size: 3 };
-
-function palmSpot(s) {
-  return { piece: 'palm', s, side: 'right', out: PROP_REACH.palm + PROP_CLEARANCE };
-}
 
 export const PIECES = {
   ...Object.fromEntries(Object.values(BARRIER_STYLES).map((style) => [style, barrierPiece(style)])),
@@ -131,10 +107,7 @@ export const PIECES = {
   'start-gate': START_GATE,
   grandstand: GRANDSTAND,
   bunting: BUNTING,
-  'palm-blender': BLENDER_PALM,
-  'palms-side-by-side': PALMS_SIDE_BY_SIDE,
   'palm-close': { ...propPiece('palm', PROP_SIZES.palm), focus: PALM_CLOSE_FOCUS },
-  'palm-blender-close': { ...BLENDER_PALM, focus: PALM_CLOSE_FOCUS },
   ...LANDMARK_PIECES,
   ...KART_PIECES,
   ...ITEM_PIECES,

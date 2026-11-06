@@ -31,14 +31,6 @@
       "source": "https://ambientcg.com/a/Asphalt023S",
       "licence": "CC0 1.0",
       "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
-    },
-    {
-      "path": "models/palm.glb",
-      "sha256": "2bdb999d1ed85d2ac7ab08a75fa5e559e34daf3482f5d69f4dfa1bf18de3fa0b",
-      "bytes": 929188,
-      "source": "tools/blender/palm.py",
-      "licence": "own work",
-      "usedBy": "host/kit-shots (M7d4c2 spike)"
     }
   ]
 }

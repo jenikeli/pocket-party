@@ -1,5 +1,5 @@
 // The kit's palm (M7d3; rebuilt in M7d4c2 to the study of MK8DX's Daisy Circuit palms, and in M7d4c4 brought
-// close to the palm made in Blender, tools/blender/palm.py): a trunk of scalloped scales that curves as it rises
+// close to the palm made in Blender in M7d4c2, since removed): a trunk of scalloped scales that curves as it rises
 // (kit/palm-trunk.js), a crown with coconuts, and drooping fronds, each a folded card (kit/palm-frond.js) whose
 // broad blades are cut out of a texture. Detail is in textures with relief (kit/palm-textures.js). Two geometries
 // (trunk and crown, fronds) so a whole grove draws as two instanced meshes. Stands on y = 0 and leans toward +x;

@@ -1,4 +1,4 @@
-// The kit's palm trunk, crown knob and coconuts (M7d4c4, after the Blender palm of tools/blender/palm.py): a
+// The kit's palm trunk, crown knob and coconuts (M7d4c4, after M7d4c2's Blender palm, since removed): a
 // stack of 12 scales, each a plump shell whose lip flares out over the scale below and hangs in 8 rounded teeth,
 // its top tucked in under the next lip, as on MK8DX's Daisy Circuit palms. Vertex colours shade it (light at the
 // lip, dark in the crease under the next one) and tint the crown's balls; texture coordinates point into

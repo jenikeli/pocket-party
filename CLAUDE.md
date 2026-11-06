@@ -4,7 +4,7 @@ Project context for Claude Code. Read this first every session, then read `plan.
 
 `docs/spike-findings.md` holds the results of tests I ran on my real devices before writing any game code (a throwaway `spike.js`), to check viability and pin down parameters: HTTPS requirements, latency, socket survival when the screen locks, tilt rates. Treat its numbers as measured facts that override general assumptions, and note that they come from single runs on a few devices.
 
-`docs/unused.md` lists the code, assets and tools that are kept but not used by the game (such as the Blender pipeline), with what to delete for each, so a cleanup is quick. Keep it up to date (the `handoff` skill).
+`docs/unused.md` lists the code, assets and tools that are kept but not used by the game, with what to delete for each, so a cleanup is quick. Keep it up to date (the `handoff` skill).
 
 ## What this is
 
@@ -66,7 +66,7 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 ## Conventions
 
-- Language: JavaScript (ES modules), no TypeScript for now. The one exception is Python for Blender's scripts in `tools/blender/` (dev only, run by Blender's own Python, nothing installed with pip), held to the same readability rules.
+- Language: JavaScript (ES modules), no TypeScript for now.
 - Keep files small and single-purpose. Prefer plain functions over class hierarchies.
 - Games (the 2D and 3D kart races) are self-contained modules in `host/games/<id>/` with a matching controller UI in `controller/games/<id>/`, implementing the "Game module interface" in `plan.md`. The shell never imports a game directly, only through the registry `host/games/index.js`.
 - Comment the *why* for anything non-obvious, especially networking, reconnection, and sensor logic.
@@ -114,7 +114,6 @@ The main session (Opus) plans each milestone into tasks with fixed interfaces be
 - Playwright MCP (`.mcp.json`, for Claude): two browsers driven by Playwright's own MCP server (`npx playwright mcp`, from the repo's Playwright, so no extra install): `playwright` is a desktop Chromium for the host page, with the browser tests' WebGL flags (`.claude/playwright-mcp.json`), and `playwright-phone` an emulated Pixel 7 for a controller. Two browsers because tabs of one share `localStorage`, where a phone keeps its player id and token. Start the server (`npm run dev`) first; screenshots land in `test-results/playwright-mcp/`
 - `npm run kit-shots -- [--bloom] [--name <sheet>] <pieces...>`: picture sheets of single kit pieces (any barrier style, prop, or `start-gate`; the list is `host/kit-shots/pieces.js`) on a short straight, lit as in the race, at kart height and from above, into `test-results/review/<name>.png` (default name: the pieces). `--bloom` draws through the race's bloom, as High quality does, to judge what glows (M8d). Starts its own server and headless Chromium, about 7 s a shot. Dev box only. The page can also be opened by hand under `npm run dev`: `/host/kit-shots/index.html?piece=guardrail&view=near` (or `view=above`)
 - `npm run kit-shots -- --course <course id> [--bloom] [--name <sheet>] [<s> ...]` (M9): the whole dressed course instead of a piece, built as the race builds it (photo asphalt, baked shade, course light, no karts). For each distance s along the road a near view from the chase camera's spot and a view from 60 above, then one overview of the whole course. Courses come from `COURSES`. The build and bake come first, so a 4-distance sheet of Seaside Skyway takes about 2.5 minutes in software. By hand under `npm run dev`: `/host/kit-shots/index.html?course=seaside-skyway&s=300&view=near` (or `above`, or `overview`)
-- `npm run blender -- <model> [--preview]`: builds `assets/models/<model>.glb` from `tools/blender/<model>.py` in Blender run headless (bakes with Cycles, about 50 s for the palm, 110 s with previews into `test-results/blender/`) and updates its manifest entry. Blender is found from `BLENDER` (dev box: `BLENDER=~/opt/blender-5.2.3-linux-x64/blender`), else `blender` on the PATH. Dev box only; the built `.glb` is committed. Optional: Blender Lab's MCP server is registered for Claude at local scope (not in the repo); it needs a Blender running with `blender --background --online-mode --command blender_mcp`
 - `npm run dev`: like `npm start`, plus it watches `controller/`, `host/`, `shared/` and `assets/` and tells host pages to reload when a file changes (restart it yourself after editing `server/`)
 
 ## Testing
@@ -128,7 +127,7 @@ Every behaviour that has been built must stay working as the code changes. Autom
 
     | Area changed | Browser test files |
     |---|---|
-    | 3D look (`renderer.js`, `scenery.js` and the courses' dressings, the kit (`kit/`), kart models, effects, quality, views, the sun and cells, the Measure tool, the course light, baked shade and photo asphalt, the plain course, the items' looks (`items/*-look.js`, `items/item-drawing.js`); `host/kit-shots/` and `tools/blender/` have no browser test, run `npm run kit-shots` on a piece instead) | `m7c`, `m7b`, `m7d2`, `m7d4b`, `m8`, `m9` |
+    | 3D look (`renderer.js`, `scenery.js` and the courses' dressings, the kit (`kit/`), kart models, effects, quality, views, the sun and cells, the Measure tool, the course light, baked shade and photo asphalt, the plain course, the items' looks (`items/*-look.js`, `items/item-drawing.js`); `host/kit-shots/` has no browser test, run `npm run kit-shots` on a piece instead) | `m7c`, `m7b`, `m7d2`, `m7d4b`, `m8`, `m9` |
     | 3D rules (kart physics, techniques, boosts, race, the CPU drivers and racing line, tuning, `index.js`, panels, the item rules, views and settings in `items/`) | `m6b`, `m6c`, `m7a`, `m7b`, `m8`, `m9` |
     | Shared kart phone controls and setup (`controller/kart/`, `host/kart/`, the Item button, `shared/item-icons.js`) | `m5b`, `m5c`, `m6b`, `m6c`, `m7a`, `m8` |
     | 2D race (`host/games/kart-2d/`, `controller/games/kart-2d/`) | `m5b`, `m5c` |

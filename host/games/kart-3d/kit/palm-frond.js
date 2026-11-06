@@ -1,4 +1,4 @@
-// The shape of the kit's palm fronds (M7d4c4, after the Blender palm of tools/blender/palm.py): a frond is a
+// The shape of the kit's palm fronds (M7d4c4, after M7d4c2's Blender palm, since removed): a frond is a
 // midrib that rises from the crown and droops past it, with blades on both sides angled toward the tip. The
 // blades are drawn into one texture (kit/palm-textures.js) and shown on a folded card, the same for every frond,
 // so the card and the texture share these measures. Used by kit/palm.js and kit/palm-textures.js.

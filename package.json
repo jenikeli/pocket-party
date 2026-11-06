@@ -13,7 +13,6 @@
     "check": "node server/check.js",
     "gen-cert": "node server/gen-cert.js",
     "kit-shots": "node tools/kit-shots.js",
-    "blender": "node tools/blender.js",
     "test": "node --test --test-timeout=30000 \"test/unit/*.test.js\" \"test/server/*.test.js\"",
     "test:browser": "node --test --test-timeout=60000 --test-concurrency=1 \"test/browser/*.test.js\""
   },

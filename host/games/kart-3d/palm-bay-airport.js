@@ -15,8 +15,9 @@
 //   s 259-321   left onto the taxiway (radius 40)
 //   s 321-381   the taxiway, past its hangars and baggage carts
 //   s 381-452   right toward the runway (radius 45)
-//   s 452-596   down into the cutting (to -8), under the runway, and up out of it, with a dash panel
-//   s 596-628   the jump: a ramp up to 2.5 and a 16-long gap over the baggage conveyor (press Drift at the lip)
+//   s 452-596   down into the cutting (to -8), under the runway, and up out of it
+//   s 596-628   the jump: a ramp up to 2.5 and a 16-long gap over the baggage conveyor (press Drift at the lip),
+//               then a dash panel into the hangar
 //   s 652-765   the hangar's anti-gravity ring: a left half circle (radius 36) banked to 60 degrees and raised to
 //               10, with four spin posts on it
 //   s 765-850   a straight out of the hangar
@@ -24,7 +25,7 @@
 //   s 913-1095  the runway, heading west, with a row of item boxes and a dash panel before its end
 //   s 1095-1109 the glide ramp at the runway's end, over the seawall
 //   s 1109-1199 the glide over the bay: the glider opens and floats down to the beach road
-//   s 1199-1374 the beach road at -6, a right turn with sand on its inside
+//   s 1199-1374 the beach road at -6, wide where the glide lands, then a right turn with sand on its inside
 //   s 1374-1461 the S-bend, climbing back up to the apron
 //   s 1481-1551 the last corner, 90 degrees right with grass on its inside to cut
 
@@ -35,9 +36,11 @@ export const PALM_BAY_AIRPORT = Object.freeze({
   startLine: 45,
   // Its look: the airfield's ground and road and the airport's dressing (airport-scenery.js).
   scenery: 'airport',
-  // One before each ramp, in the middle, where the racing line is pinned anyway.
+  // In the middle, where the racing line is pinned anyway: one on the jump's landing, into the hangar's ring (one
+  // before the jump's ramp threw karts past the 24-long landing onto the ring's climbing bank), and one before the
+  // glide ramp.
   dashPanels: [
-    { s: 585, lateral: 0 },
+    { s: 645, lateral: 0 },
     { s: 1080, lateral: 0 },
   ],
   // Rows of item boxes, on the start straight past the grid and on the runway.
@@ -71,8 +74,10 @@ export const PALM_BAY_AIRPORT = Object.freeze({
     { straight: 182.28 },
     { straight: 14, height: 2.5, linear: true },
     { straight: 90, height: -6, linear: true, gap: true, glide: true, halfWidth: 12 },
-    { straight: 40, height: -6, halfWidth: 9 },
-    { turn: 90, radius: 55, shoulderLeft: 6 },
+    // Wide where the glide lands, narrowing round the turn (from 12 to 9 in 40 units with walls, a kart landing near
+    // an edge rubbed the closing wall hard).
+    { straight: 40, height: -6, halfWidth: 11 },
+    { turn: 90, radius: 55, halfWidth: 9, shoulderRight: 8 },
     { straight: 48.39, halfWidth: 8 },
     { turn: -50, radius: 50, height: -3 },
     { turn: 50, radius: 50, height: 0 },

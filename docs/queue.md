@@ -22,7 +22,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | J | Ground vehicles (props) | sonnet | 0 | merged |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | merged |
-| M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | building |
+| M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | merged |
 | N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
 
 Suggested order (at most 3 subagents at once, reviewers included): 0, then A, C and F; then B, E, and G as places free up;
@@ -716,6 +716,32 @@ session merges that line).
   `LOW_BARRIERS` if turn boards should stand behind them. At merge the three maps over 512 wide (taxiway boards 768,
   floodlight ribbon 768, the conveyor's sign 1024) were cut to 512 (checked on `test-results/review/K-merge.png`). After
   sheet: `test-results/review/K-after.png`.
+- **Task M:**
+  - **Course changes:** the dash panel before the jump moved from 585 to 645, on the jump's landing straight, firing
+    into the ring (at 585 it threw karts onto the ring's bank; landings at 150cc are now 637 to 649). The beach landing
+    is 11 wide, narrowing to 9 through the beach turn. The beach turn's sand moved to its inside (`shoulderLeft: 6`
+    on the outside became `shoulderRight: 8`), the shortcut the spec asked for. The pieces' geometry is unchanged.
+  - **Layout:** apron rails, padded barriers (cutting, tunnel, ramps, runway) and a wooden rail fence on the beach;
+    `APRON_RAIL` added to `LOW_BARRIERS` (one line outside the list, accepted) so chevron turn boards stand round the
+    apron corners. The terminal north of the start (length 160), 3 airliners at its gates plus 2 more, 3 prop planes,
+    the tower inside the first corner, 6 small hangars, the big hangar, the conveyor at s 620 (nearer the lip), the
+    take-off plane (lifts off east of the road, about 8 high where the road turns onto the runway), 5 islands in the
+    open sea south and west (the bay is too narrow to keep them 20 from the road), 6 boats; about 190 props. Start
+    gate in the airport's colours (its sign still reads as on every course).
+  - **Drive it:** 12-CPU fields, 3 laps, at 50cc, 150cc (Easy, Normal, Hard) and 200cc with items: every kart finished,
+    no falls; laps about 49 to 50 s at 150cc. Task A's glide test (12 CPUs of all levels, 3 laps, every class) and the
+    race test's lap on every course run on the course as changed. At 200cc jump landings reach 648 to 666, a little
+    onto the ring's bank (the jump's fixed geometry).
+  - **Cost** (M7d4d's census, Seaside's reproduced exactly): 1,222,019 triangles (Seaside 1,515,626; budget 1.8M),
+    398 meshes (422), maps 61.9 MB (81.2), build 8.4 s in software before the bake (13.2 s). By part: props 507k,
+    barriers 407k, surroundings 223k, road 53k.
+  - **Still empty or off:** the runway's south side and the start lobe's middle are plain grass (every view still has
+    a middle distance); the islands read small from the glide; the overview is washed out by fog (every course).
+    The take-off plane and the conveyor's cargo are not on the sheets (kit-shots never updates): N's test and the
+    device run see them moving.
+  - Boats rock through a copy of `seaside-surroundings.js`'s private `addBoats` (about 30 lines); exporting it would
+    remove the copy (left for later). At merge: the landmarks' update loop and a comment tidied.
+  - After sheet: `test-results/review/M9-M-after.png` (every 100 round the lap); round 2: `M9-M-r2.png`.
 - **Task L:** `buildRockIsland(kit, { seed, size })`: origin at the island's middle with y 0 at the sea's surface (place
   at -8.2); `seed % 3` picks the kind (stack, mesa, karst); `size` is the radius at the waterline; the beach (if any)
   faces +x. `rockIslandFootprint` gives `{ radius, height }` (radius about 1.7 to 1.95 x size: the shallows reach 15+).

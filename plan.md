@@ -397,50 +397,34 @@ item equally likely (M8d's own device run is put off until after M9, the user's 
 - **Split candidates for M10:** `renderer.js` (259 lines), `kart-physics.js` (220), `createRoadObjectDrawing` (one long closure),
   `sticky-walls-look.js` (204 lines).
 
-### M9: Palm Bay Airport (working name), a new course with glide ramps and spin-boost posts
-Decided after the M8 device run (2026-11-05): a new course, built around one consistent theme, replaces the idea
-of adding M9's features to Seaside Skyway (which has no single theme and floats high over the sea). Planned as one
-queue (`docs/queue.md`, the `milestone-plan` skill's "Queue") in a planning chat with the user, then run in one
-session like M8, left running unattended and resumed from the queue's Status table after any stop.
-- **Theme: a sunny seaside airport**, our own course, with MK8DX's Sunshine Airport as the style reference for how
-  the theme is kept consistent (references collected while planning, under `test-results/reference/m9/`): a
-  runway, a terminal, hangars, a control tower, parked planes, baggage carts, a windsock, runway lights, taxiway
-  signs, palm trees, beaches and the sea. Reuses the seaside pieces where they fit (sea, sand, palms, decks,
-  barriers, item boxes).
-- **On the ground, not in the air** (the user): the road runs at ground level on terrain, with parts going
-  underground (a tunnel, an underpass) and parts above ground (a bridge or ramp), but the course never floats
-  high over open space as Seaside Skyway and the Test track do. New ground the track builder does not have yet
-  (terrain round the road, tunnels) is part of the plan.
-- **Size:** slightly larger than Seaside Skyway (1213 units a lap): about 1500.
-- **Device run:** M9's also covers M8d's, put off until then by the user ("M8d" in `docs/3d-findings.md`; its
-  steps can run on the new course with Items on).
-- **Planned 2026-11-05** with the user: the queue (tasks 0 and A to N, every spec, the course's pieces and the fixed
-  interfaces) is in `docs/queue.md`, to be run in another chat as `/loop run the m9 queue in docs/queue.md`.
-  - **Layout approved** from a top-down sketch (`test-results/reference/m9/layout-sketch.png`, not committed), with
-    the references beside it. It is a figure-8 of 1551 units:
-    - the start on the apron by the terminal;
-    - a taxiway;
-    - a cutting and a tunnel under the runway (the crossing);
-    - a jump over a baggage conveyor;
-    - an anti-gravity banked ring with spin posts inside an open-sided hangar;
-    - the runway, then a glide off its end over the bay onto a beach road at -6;
-    - an S-bend climbing back to the apron.
-  - **Decided:**
-    - Palm Bay Airport first in the course list (the existing browser tests pinned to Seaside);
-    - gliding steered with the steering, Brake to dive;
-    - distant rocky islands, after a rock study;
-    - the course never empty beside the road;
-    - at most 1.8 million triangles (Seaside's 1.5 million plus 20%).
-  - Look tasks find their own references (MK8DX sources first) where the spec gives none (the user, now in
-    `.claude/agents/implementer.md`).
-- [ ] Glide ramps: a blue ramp launches the kart into a glide with its glider, steered in the air, as in MK8DX
-  (the airport's natural one: off the end of a runway, like a plane taking off)
-- [ ] Spin-boost posts in an anti-gravity section (for example through a hangar or the terminal)
-- [ ] The course's layout designed with a top-down sketch, approved by the user while planning
-- [ ] Item boxes, the racing line for the CPU drivers, the jump with a trick, dash panels
-- [ ] The theme's new pieces and props, built from the references, judged on kit-shots sheets
-- [ ] A study of real rock formations (and MK8DX's rock) before any new rock is built (moved from M10: the
-  Seaside islands' rock was rings of round shapes, which rock is not)
+### M9: Palm Bay Airport (built, device run pending)
+A new course, a sunny seaside airport on the ground, with MK8DX's Sunshine Airport as the style reference (our own
+designs, airlines and emblem). Built as one queue (tasks 0, A to N); everything in detail, with every interface and
+decision, is in "M9" in `docs/history.md`; what was built and measured, and the device-run procedure (which also
+covers M8d's), in "M9" in `docs/3d-findings.md`, beside the "M9: rock study".
+- **The course** (`palm-bay-airport.js`): first in `courses.js`, so the default. A figure-8 of 1551 units, about
+  50 s a lap at 150cc: the apron and terminal, the taxiway, a cutting and tunnel under the runway, a jump over a
+  baggage conveyor, an anti-gravity banked ring with four spin posts in an open-sided hangar, the runway, a glide off
+  its end over the bay onto a beach road at -6, an S-bend back up. Its distances in the comments are seen from above;
+  the track's own s runs a few units longer past slopes (the glide's lip at 1116, landing 1206).
+- **Gliding** (`kart-glide.js`): a piece with `glide: true` (only with `gap`) opens the glider at its lip
+  (`kart.gliding`, `kart.glideTime`); steering turns and banks, Brake dives; a trick at the lip boosts at once. A
+  glide never falls: an air wall at the gap's sides, and a floor along the gap's straight line that it flares onto.
+  Glide gravity scales with the engine class, so every class lands about the same place. Sliders: Tuning panel,
+  Gliding group. The glider look is `karts/glider.js` (each design's colours and emblem); the camera rides higher.
+- **Spin posts** (`spin-posts.js`): `track.spinPosts`, round bumpers that give a spin boost in anti-gravity, with a
+  cooldown (Spin posts group); CPUs clip them by level (`postChance`). Drawn by `kit/spin-post.js`, flashing on a hit.
+- **The look:** the airfield's ground (`airport-ground.js`, `kit/terrain*.js`; sea at -8.2), the dressing
+  (`airport-layout.js`, `airport-props.js`, `airport-landmarks.js`, all placed in `airport-scenery.js`), and new kit
+  pieces: terminal, control tower, hangars, airliners, a prop plane and a plane taking off every 45 s, ground
+  vehicles, airfield fittings, two barrier styles (`apron-rail`, `padded-barrier`), the conveyor, rocky islands.
+  1.22 million triangles (Seaside 1.52), 62 MB of maps (81), 8.4 s to build in software (13.2).
+- **Tools:** `npm run kit-shots -- --course <id> <s...>` shoots a whole dressed course. The Tuning readout says
+  "gliding". The 3D browser tests pick their course on the setup screen (`clickStartRace`, `pickCourse` in
+  `test/helpers/kart-3d-host.js`); `m9-kart-3d-airport.test.js` covers the airport.
+- **Left for later:** the runway's south side and the start lobe's middle are plain grass; the islands read small
+  from the glide; boats rock through a copy of Seaside's private `addBoats`; `kart-physics.js` is 231 lines (split
+  in M10); the start gate's sign still reads as on every course.
 
 ### M10: Polish
 Probably more than one chat: its first chat proposes a split. (Seaside Skyway's rework, down by the sea, was dropped after the M8 device run: the new M9 course is built on the ground instead.)

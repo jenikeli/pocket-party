@@ -1411,3 +1411,81 @@ Built as `kit/rock-island*.js` (how each part is made is in those files' headers
   The two rings where strata meet must differ only by a uniform step (a unit test checks the winding).
 - **Cost:** 14,000 to 34,000 triangles an island at sizes 15 to 40, palms included (budget 40,000). Draw calls: 4 an
   island (3 for a stack, which has no beach), plus 2 for its palms. One set of 512 rock maps per course.
+
+## M9: Palm Bay Airport
+
+### What was built
+
+- **A course on the ground:** Palm Bay Airport (`palm-bay-airport.js`), first in the course list. 1551 units, a
+  figure-8 whose two lobes cross where a tunnel runs under the runway. The airfield is at 0, the sea at -8.2, the
+  beach road at -6. The ground is a mesh round the whole course that meets the road's edges flush and follows it in
+  embankments where it climbs (`kit/terrain.js`, `kit/terrain-ribbons.js`); concrete retaining walls in the cutting,
+  a lit tunnel, seawalls, beaches with see-through shallows and foam, runway and taxiway paint.
+- **Gliding:** off the glide ramp at the runway's end (a cyan panel with white glider arrows scrolling up it) every
+  kart opens a glider in its design's colours and floats over the bay to the beach road. Steering turns and banks
+  it, Brake dives; a trick at the lip boosts at once. The glide is held inside air walls and above a floor, so it
+  never falls into the bay. The camera rides higher and further back.
+- **Spin posts:** four orange bollards with a cyan band and a red light in the hangar's anti-gravity ring; hitting
+  one in anti-gravity gives a spin boost (and a white flash), then a 0.6 s cooldown.
+- **The dressing:** a terminal with jet bridges and our sign, a control tower, the big open-sided hangar over the
+  ring (half its roof glass, so the sun reaches the road), six small hangars, five airliners in three liveries of our
+  own (Palm Air, Coral Wings, Skipjack Air), three prop planes, a jet that rolls down the runway and takes off low
+  over the karts every 45 s, ground vehicles, runway lights, taxiway signs, windsocks, floodlight masts with
+  banners, apron rails with chevron boards, padded barriers, a baggage conveyor under the jump, palms and parasols
+  on the beach, five rocky islands (after the "M9: rock study" above) and six boats.
+
+### Measured without a device
+
+- **Cost** (M7d4d's census in headless Chromium, which reproduces Seaside's numbers exactly): 1,222,019 triangles
+  (Seaside Skyway 1,515,626; budget 1.8 million), 398 meshes (422), maps 61.9 MB (81.2), 8.4 s to build in software
+  before the bake (13.2 s). By part: props 507k, barriers 407k, surroundings 223k, road 53k.
+- **Driving:** fields of 12 CPU karts, 3 laps, at 50cc, 150cc (Easy, Normal, Hard) and 200cc with items: every kart
+  finished, none fell. A lap is about 49-50 s at 150cc; a lone CPU's third lap: Easy 47.1 s, Normal 45.3 s, Hard
+  44.65 s (no posts or items). Glide landings 1206-1268 (the beach road starts at 1206). At 200cc the jump's
+  landings reach 648-666, a little onto the ring's bank.
+- **Browser test** (`m9`): Palm Bay Airport is first and chosen; four self-driving karts glide across the bay and
+  land, one gets a spin boost, the lap finishes; the full course's start view is drawn.
+
+### Device run procedure
+
+On the iPad (host), with the server on the laptop as usual and one phone (iPhone or Android). Palm Bay Airport,
+150cc, CPU Normal, Look on High, Items Off, unless a step says otherwise. This run also covers M8d's (step 9).
+
+1. **The setup screen:** Palm Bay Airport is the first course and chosen. Note how long the course takes to appear
+   behind the setup screen after Start game (Seaside took about 7 s).
+2. **The look, Watch, no phones: 1:** a lap with one view. Look for anything empty, floating, sunk or broken on the
+   way round, and note where (by what is there: the terminal, the tunnel, the hangar, the runway, the beach):
+   - the start straight (terminal, airliners at the jet bridges, stair trucks, the tower in the first corner);
+   - the cutting and tunnel under the runway (s 450-600): lit strips inside, chevron bands on the portals;
+   - the jump over the baggage conveyor (s 614): the suitcases ride the belt;
+   - the hangar's ring (s 654-771): is the road lit by the sun through the glass roof, or too dark?
+   - the runway (s 913-1095): a jet waits, rolls and takes off low over the road every 45 s. Is it seen?
+     The runway number at the west end reads "09" upside down from a kart (painted for planes landing east):
+     keep, or turn it to read from the kart?
+   - the glide over the bay: the islands and boats. Do the islands read too small?
+   - the beach road and the S-bend back up.
+   - Is the edge of the road ever empty for long? Where?
+3. **Frame rates:** Watch, no phones: 1, then 2, then 4 views, a lap each; note the fps from the Tuning readout. Then
+   Measure from the setup screen and Copy its report.
+4. **The glide, with the phone (stick):** a race. Off the cyan ramp at the runway's end the glider opens behind
+   the seat; steering turns and banks it, Brake dives (nose down, lands sooner); Go does nothing. Press Drift at the
+   lip: the trick boosts at once.
+   - **Tune:** Tuning panel, **Gliding** group, *Gravity, floating* (1-20 units/s², default 7.5): a float with no
+     dive should land at the start of the beach road, not far down it.
+   - **Tune:** Gliding group, *Turn, share of steering* (0.1-1.5, default 0.6) and *Bank at full steer* (0-60°,
+     default 25): how it steers and leans in the air.
+   - **Tune:** Gliding group, *Camera higher by* (0-6 units, default 1.5) and *Camera further back by* (0-8, default
+     2): does the view show the canopy's top and the bay ahead?
+5. **The glide with tilt:** the same with tilt steering: turning and Brake work the same way.
+6. **Spin posts, with the phone:** in the hangar's ring drive into a post: the kart bounces off, spins and boosts,
+   and the post flashes white. Drive into it again at once: only a bounce (the cooldown).
+   - **Tune:** Tuning panel, **Spin posts** group, *Bounce* (0-1, default 0.5), *Least parting speed* (0-15 units/s,
+     default 6) and *Cooldown* (0-3 s, default 0.6): a hit should feel like a firm bump that pays off, not a wall.
+7. **CPU karts:** Watch, no phones: 4, a lap at 150cc on Hard: they glide and land, clip posts now and then, and
+   none falls or sticks.
+8. **The lap's play:** a 3-lap race with the phone. The jump's landing (a dash panel there fires you into the ring),
+   the grass inside the last corner and the sand inside the beach turn as shortcuts, the item rows on the start
+   straight and the runway (Items On for the third lap). Anything too tight, unfair or dull?
+9. **M8d's run on this course, Items On with all six:** M8d's steps 1 to 5 (in "M8d" above), on Palm Bay Airport
+   instead of Seaside Skyway (the jump item near the course's own jump: the gap is at s 614-630).
+10. **Anything broken:** note what, where on the lap, and with which view count.

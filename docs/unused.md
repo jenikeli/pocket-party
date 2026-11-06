@@ -2,7 +2,7 @@
 
 Code, assets and tools that the game itself does not use, kept on purpose. Each entry lists what to delete, so a
 cleanup is quick when it is wanted. Add an entry whenever something is kept but unused; remove it once it is
-deleted or used again. Last checked 2026-11-04 (end of M7e).
+deleted or used again. Last checked 2026-11-06 (end of M9).
 
 ## The Blender pipeline (dev only; kept for a future course)
 

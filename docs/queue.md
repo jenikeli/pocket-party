@@ -638,6 +638,7 @@ session merges that line).
   G had saved nothing and was spawned again.
 - **Usage limit (about 21:00 UTC):** D, I and J stopped at the limit with work saved in their worktrees; all three
   were resumed after the 23:30 reset.
+- **Usage limit (about 02:00 UTC, 2026-11-06):** M stopped with work saved; resumed after the 05:10 reset.
 - **Task A:**
   - **A glide floor instead of the fall rule** (A's choice, accepted): a gliding kart is never let below the gap's
     straight line (ramp lip down to the landing road); it flares onto it and rides it to the landing. So a glide never

@@ -120,7 +120,7 @@ test('teleport: never onto a gap, and the same race hops the same way', () => {
   assert.deepEqual(teleportsNearTheGap(15), spots);
 });
 
-test('field targets: a magnet pulls karts ahead in reach only; a push acts all round in its reach', () => {
+test('field targets: a magnet pulls karts ahead in reach only; a push acts beside and behind in its reach', () => {
   const race = racingRace();
   const [holder, ahead, behind, far, beside] = race.karts;
   place(holder, 60, 0);
@@ -132,7 +132,10 @@ test('field targets: a magnet pulls karts ahead in reach only; a push acts all r
   startEffect(holder, KART_ITEMS.MAGNET);
   assert.deepEqual(fieldTargets(race, holder), [ahead]);
   startEffect(holder, KART_ITEMS.PUSH);
-  assert.deepEqual(fieldTargets(race, holder), [ahead, behind, beside]);
+  // Not the kart in front (the M9 device run): only those beside and behind.
+  assert.deepEqual(fieldTargets(race, holder), [behind, beside]);
+  place(ahead, 61.5, 3);
+  assert.deepEqual(fieldTargets(race, holder), [ahead, behind, beside], 'a kart half a length ahead is beside');
 });
 
 // A kart driving at top speed down the start straight with a kart running `item` kept `ahead` behind it (or
@@ -241,7 +244,11 @@ test('CPU rules: teleport from the back half, magnet with a kart ahead in reach,
   place(other, 70, 0);
   assert.deepEqual([wants(KART_ITEMS.MAGNET), wants(KART_ITEMS.PUSH)], [true, false], 'a kart 10 ahead');
   place(other, 61, 3);
-  assert.equal(wants(KART_ITEMS.PUSH), true);
+  assert.equal(wants(KART_ITEMS.PUSH), true, 'a kart beside');
+  place(other, 64, 0);
+  assert.equal(wants(KART_ITEMS.PUSH), false, 'a kart close in front is not pushed');
+  place(other, 57, 1);
+  assert.equal(wants(KART_ITEMS.PUSH), true, 'a kart close behind');
   assert.deepEqual([wants(KART_ITEMS.STICKY, 1), wants(KART_ITEMS.STICKY, 3.5)], [false, true]);
 });
 

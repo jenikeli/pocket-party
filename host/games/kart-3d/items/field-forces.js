@@ -1,5 +1,5 @@
 // The magnet and the push (M8c): for its effect's time a kart's magnet pulls the karts ahead of it back toward
-// it, and its push shoves the karts round it away. Both are an acceleration on the other karts' velocities,
+// it, and its push shoves the karts beside and behind it away (the magnet's inverse, since M9's device run). Both are an acceleration on the other karts' velocities,
 // strongest close to the kart and fading to nothing at the reach's edge, less the heavier the kart acted on;
 // the karts' own driving then pulls their speed back up (kart-driving.js), so a pull slows a kart by as much as
 // it beats its acceleration. Plain functions on the race's plain data, unit tested in Node. Used by
@@ -10,6 +10,9 @@ import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { subtract, length, scale, addScaled, flatten, cross } from '../vector.js';
 import { runningEffect } from './effect-rules.js';
 import { tuning } from '../tuning.js';
+
+// A kart whose middle is at most this far ahead along the race (a kart is 2 long) is beside, not in front.
+export const PUSH_BESIDE = 2;
 
 // The karts `kart`'s running magnet or push acts on this step: [] with neither running.
 export function fieldTargets(race, kart) {
@@ -32,12 +35,15 @@ export function magnetTargets(race, kart) {
   });
 }
 
-// The karts a push on `kart` would push: those within tuning.pushReach, any way round it.
+// The karts a push on `kart` would push: those beside it (no more than PUSH_BESIDE ahead in the race) or behind
+// it, within tuning.pushReach along the race and in a straight line. Karts in front are never pushed (the user,
+// after M9's device run): a push from behind would shove them on ahead, out of reach of an overtake.
 export function pushTargets(race, kart) {
   const reach = tuning.pushReach;
-  return actedOn(race, kart).filter(
-    (other) => Math.abs(other.distance - kart.distance) <= reach && straightDistance(kart, other) <= reach,
-  );
+  return actedOn(race, kart).filter((other) => {
+    const ahead = other.distance - kart.distance;
+    return ahead <= PUSH_BESIDE && ahead >= -reach && straightDistance(kart, other) <= reach;
+  });
 }
 
 // Every running magnet and push acts on its targets for `dt` seconds.

@@ -1351,6 +1351,11 @@ On the iPad (host), with the server on the laptop as usual and one phone (iPhone
    anything feels off in a race with all six items.
 6. **Anything broken:** note what, where on the lap, and which item.
 
+### Device run (2026-11-06, with M9's, on Palm Bay Airport)
+
+All fine: varied items, different each race; the jump works (just before the glide gap the glider opens and carries
+the kart over); CPU karts jump and trick and never into the gap or a wall. Details in "M9" below.
+
 ## M9: rock study
 
 Done before building the bay's rocky islands (queue task L), since the Seaside islands' and cliffs' rock was rings of
@@ -1503,7 +1508,13 @@ On the iPad (host), with the server on the laptop as usual and one phone (iPhone
 - **Spin posts:** fine, but the karts bounced off too much, often into a wall or other karts, which made a hit
   cost speed. In MK8DX there is no bounce: the kart spins and boosts forward. Changed in M9d (below).
 - **The lap:** feels fine apart from the posts.
-- **Not yet reported:** tilt in the glide; M8d's steps on this course.
+- **Tilt in the glide:** works, as the stick does.
+- **M8d's steps on this course (Items On):** the six item buttons show; the items now come up varied, and
+  different from race to race; the jump item works, and used just before the glide gap the glider opens and
+  carries the kart over; CPU karts jump and trick off it and never jump into the gap or a wall; the rest looks fine
+  (the jump's height stays a tuning slider); nothing broken noticed.
+- **The push** (asked for after the run): it should push the karts beside and behind, never the one in front, since
+  pushing that one on stops the user overtaking it: the magnet's inverse. Changed in M9d (below).
 
 ### M9d: spin posts without the bounce
 
@@ -1520,3 +1531,8 @@ start no drift with a post within the corner they look at and let go 1 s of driv
 to clip a post only when its cooldown will have run out by then. Lone CPUs passing the 4 posts (12 seeds, 48
 passes): Easy 0, Normal 12, Hard 19 spins (before: 11, 10, 11). CPUs no longer drift in the ring (no mini-turbo
 there); Normal and Hard make it up with spin boosts.
+
+The push (`items/field-forces.js`'s `pushTargets`) acts only on karts beside the holder (at most `PUSH_BESIDE`, 2,
+ahead in the race: a kart's length) or behind it, within its reach; CPU karts use it with a kart close beside or
+behind (`items/cpu-items.js`).
+

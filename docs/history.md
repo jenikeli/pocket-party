@@ -2304,3 +2304,11 @@ at the posts: Easy 0, Normal 12, Hard 19 spins of 48 passes. Tests changed on pu
 m8 and m9 (the 3D rules area and the airport) 36 of 36 pass, 855 s. Review note: a kart hitting a post dead-centre
 is moved round it in a frame or two; watch for a visible jump on the next device run.
 
+
+### M9d: the push acts beside and behind (after the device run)
+
+Asked for after the device run: the push shoved every kart round the holder, so a kart just in front was pushed on
+ahead, out of reach of the overtake. Now `pushTargets` (`items/field-forces.js`) takes only karts beside (at most
+`PUSH_BESIDE`, 2, ahead in the race) or behind, within `pushReach`: the magnet's inverse. CPU karts use the push
+with a kart within 5 that it would act on (`items/cpu-items.js`). Tests changed on purpose: the field targets and
+CPU rule tests in `kart-3d-field-items`.

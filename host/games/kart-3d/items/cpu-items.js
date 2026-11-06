@@ -5,7 +5,7 @@
 import { KART_ITEMS } from '../../../../shared/protocol.js';
 import { turnAhead, wrapIndex, pointAt } from '../track.js';
 import { subtract, length, dot } from '../vector.js';
-import { magnetTargets } from './field-forces.js';
+import { magnetTargets, pushTargets } from './field-forces.js';
 
 // Blocker: a kart this close behind, about in line, to bump into it.
 const BLOCKER_BEHIND_REACH = 12;
@@ -17,7 +17,7 @@ const JUMP_STRAIGHT = 0.25;
 const CORNER_LOOKS = [0, 10, 20, 30, 40];
 const JUMP_ROAD_AHEAD = 30;
 const GAP_LOOK_STEP = 5;
-// Push: a kart this close, any way round, to shove aside (the push is strongest close up).
+// Push: a kart this close, beside or behind (the karts a push acts on), to shove aside (strongest close up).
 const PUSH_CLOSE = 5;
 // Sticky walls: once it has held the item this long, so not every CPU kart uses it the moment it lands.
 const STICKY_AFTER_SECONDS = 3;
@@ -31,7 +31,8 @@ const CPU_RULES = Object.freeze({
   // Teleport: only from the back half of the field, where a shake-up can only help.
   [KART_ITEMS.TELEPORT]: (race, track, kart) => kart.place > race.karts.length / 2,
   [KART_ITEMS.MAGNET]: (race, track, kart) => magnetTargets(race, kart).length > 0,
-  [KART_ITEMS.PUSH]: (race, track, kart) => otherKarts(race, kart).some(({ distance }) => distance <= PUSH_CLOSE),
+  [KART_ITEMS.PUSH]: (race, track, kart) =>
+    pushTargets(race, kart).some((other) => length(subtract(other.position, kart.position)) <= PUSH_CLOSE),
   [KART_ITEMS.STICKY]: (race, track, kart, heldFor) => heldFor >= STICKY_AFTER_SECONDS,
 });
 
@@ -41,8 +42,8 @@ export function cpuWantsItem(race, track, kart) {
   return heldFor >= kart.item.cpuWait && CPU_RULES[kart.item.held](race, track, kart, heldFor);
 }
 
-// Every other kart seen from `kart`: [{ ahead, sideways, distance }], ahead how far in front along its nose
-// (negative behind), sideways how far off that line either way, distance how far in all.
+// Every other kart seen from `kart`: [{ ahead, sideways }], ahead how far in front along its nose (negative
+// behind), sideways how far off that line either way.
 function otherKarts(race, kart) {
   return race.karts
     .filter((other) => other !== kart)
@@ -50,7 +51,7 @@ function otherKarts(race, kart) {
       const offset = subtract(other.position, kart.position);
       const distance = length(offset);
       const ahead = dot(offset, kart.forward);
-      return { ahead, sideways: Math.sqrt(Math.max(distance * distance - ahead * ahead, 0)), distance };
+      return { ahead, sideways: Math.sqrt(Math.max(distance * distance - ahead * ahead, 0)) };
     });
 }
 

@@ -377,11 +377,12 @@ Built 2026-11-03; the details are in "M7e" in `docs/history.md`, the numbers and
 - **After it:** the 3D race starts from the lobby with no players (`minPlayers: 0` in `host/games/index.js`), for Watch; a race still needs a player.
 - For M8: CPUs will need to pick up and use items; the driver's aim (`cpu-aim.js`) is where steering toward item boxes would go.
 
-### M8: Items (our own) (built, device run pending)
+### M8: Items (our own) (done)
 Our own six items replace MK8DX's (no coins). Everything in detail, with the queues' interfaces and decisions, is in
 "M8" in `docs/history.md`; the device runs in "M8" and "M8d" in `docs/3d-findings.md`. M8's device run (iPad, 4
 players) went well apart from what M8d changed: big, small and bouncy removed, the ramp replaced by the jump, every
-item equally likely (M8d's own device run is put off until after M9, the user's choice: do it with M9's).
+item equally likely. M8d's device run was done with M9's (2026-11-06, on Palm Bay Airport): all fine. After it the
+push acts only on karts beside and behind (M9d).
 - **The system:** item boxes in rows (`track.itemBoxRows`), a roulette, one held item used with the phone's Item
   button (`KART_BUTTONS.ITEM`), every allowed item equally likely, drawn when the roulette stops from the race's
   own seeded numbers (a fresh seed each race, `freshItemSeed`; the tests a fixed one), CPU karts using items
@@ -393,11 +394,12 @@ item equally likely (M8d's own device run is put off until after M9, the user's 
   `shared/item-icons.js`.
 - **The items:** blocker (a sandcastle on the road with a lifetime, `race.items.objects`); jump (throws the kart
   straight up, a takeoff for the trick, `items/jump.js`); teleport, magnet, push, sticky walls (field items).
-  Magnet and push are timed effects on the kart (`kart-effect.js`).
+  Magnet and push are timed effects on the kart (`kart-effect.js`): the magnet pulls karts ahead back, the push
+  shoves karts beside and behind away (never the one in front).
 - **Split candidates for M10:** `renderer.js` (259 lines), `kart-physics.js` (220), `createRoadObjectDrawing` (one long closure),
   `sticky-walls-look.js` (204 lines).
 
-### M9: Palm Bay Airport (built, device run partly done)
+### M9: Palm Bay Airport (done)
 A new course, a sunny seaside airport on the ground, with MK8DX's Sunshine Airport as the style reference (our own
 designs, airlines and emblem). Built as one queue (tasks 0, A to N); everything in detail, with every interface and
 decision, is in "M9" in `docs/history.md`; what was built and measured, and the device-run procedure (which also
@@ -424,9 +426,9 @@ covers M8d's), in "M9" in `docs/3d-findings.md`, beside the "M9: rock study".
 - **Tools:** `npm run kit-shots -- --course <id> <s...>` shoots a whole dressed course. The Tuning readout says
   "gliding". The 3D browser tests pick their course on the setup screen (`clickStartRace`, `pickCourse` in
   `test/helpers/kart-3d-host.js`); `m9-kart-3d-airport.test.js` covers the airport.
-- **Device run (2026-11-06):** about 6 s to appear, 60 fps with 4 views, the glide and the look fine; the posts'
-  bounce removed (M9d). Still to report: tilt in the glide, and M8d's steps on this course ("M9" in
-  `docs/3d-findings.md`).
+- **Device run (2026-11-06, with M8d's):** about 6 s to appear, 60 fps with 4 views, the glide (stick and tilt)
+  and the look fine, M8d's items fine. After it (M9d): the posts' bounce removed, and the push acts only on karts
+  beside and behind (the magnet's inverse). Results in "M9" in `docs/3d-findings.md`.
 - **Left for later:** the runway's south side and the start lobe's middle are plain grass; the islands read small
   from the glide; boats rock through a copy of Seaside's private `addBoats`; `kart-physics.js` is 231 lines (split
   in M10); the start gate's sign still reads as on every course.

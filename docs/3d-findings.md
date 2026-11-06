@@ -1350,3 +1350,64 @@ On the iPad (host), with the server on the laptop as usual and one phone (iPhone
 5. **The rest of M8's Tune steps** (M8's step 8 above, without Big, Small, Bouncy and Ramp) still stand if
    anything feels off in a race with all six items.
 6. **Anything broken:** note what, where on the lap, and which item.
+
+## M9: rock study
+
+Done before building the bay's rocky islands (queue task L), since the Seaside islands' and cliffs' rock was rings of
+round shapes, which rock is not (the device run after M7d4c3 to M7d4d). The pictures are under
+`test-results/reference/m9/rock/` (not committed).
+
+### What was looked at
+
+- **Photographs** (Wikimedia Commons): limestone karst islands in Phang Nga Bay and Ha Long Bay, Ko Tapu, El Nido's
+  limestone cliffs; the chalk stacks of Old Harry Rocks; the sandstone stacks of the Twelve Apostles and North
+  Gaulton Castle; the basalt columns of the Giant's Causeway; the granite boulders of La Digue; a tidal notch in
+  limestone (Bahamas).
+- **MK8DX** (Super Mario Wiki): Dolphin Shoals (grey-green cliffs, rock pinnacles, rock arches), Koopa Cape (orange
+  cliffs), Sunshine Airport's distant islands (`Sunshine_Airport_Gliding.png`, `Sunshine_Airport_MK8_Luigi.png`).
+
+### What makes rock read as rock
+
+- **Planes and edges, not blobs.** Rock breaks along bedding planes and joints, so it is made of flat faces meeting
+  at fairly sharp edges. Walls stand near upright, tops are flat (a mesa, a stack) or a wooded hump (karst), and the
+  outline is angular and stepped. Only boulders the sea rolls are round, and even La Digue's granite has flat sides.
+- **Strata.** Level bands of differing tone and hardness (North Gaulton Castle, the Twelve Apostles). A hard band
+  stands out as a ledge, a soft one is worn back into a groove, and each band has fine lines (laminae) in it.
+- **Joints.** Upright cracks cut the bands into blocks and columns (Old Harry, the basalt). Cliffs fall away along
+  them, so a wall is several upright faces turned different ways, with a cleft here and there down a big joint.
+- **Two scales.** From far off the big shape reads (the stack, the strata as steps, light and dark facets). Close up
+  the texture reads (laminae, cracks, grit, stains).
+- **The foot.** A dark, wet band at the waterline, greenish where weed grows. A notch the waves wear in, with the
+  rock overhanging it (Phang Nga, Ko Tapu, the Bahamas notch). Fallen angular blocks round the foot (the Twelve
+  Apostles, Old Harry).
+- **Vegetation only where it can hold:** on tops and ledges, and on slopes gentler than about 60 degrees. A grass mat
+  with an overhanging lip on a flat top (Old Harry), forest on karst tops (Phang Nga, El Nido), and bare rock on the
+  upright walls. The green hangs over the lip in tongues.
+- **Colour.** Paler on the weathered upper faces, with dark streaks down the walls below ledges where water runs.
+  Each facet is a little lighter or darker, as it faces the sun its own way.
+- **Kinds in a bay:** tall stacks (the Twelve Apostles, Ko Tapu), flat-topped mesas with cliffs all round (Old
+  Harry), and karst peaks huddled together (Phang Nga, Ha Long), with a beach in the lee.
+
+### How MK8DX does it
+
+- **Koopa Cape:** orange rock in big flat planar facets with sharp edges, a painted texture on them, and a thick grass
+  slab on top with a rounded lip.
+- **Dolphin Shoals:** grey-green blocky cliffs of stacked angular blocks with seams between, moss and grass mats
+  draped over the tops and ledges, and thin rock pinnacles in the water.
+- **Sunshine Airport:** low, green distant islands, rock showing at the waterline, a few palms. Seen small.
+
+So MK8DX keeps rock planar and blocky and puts the fine detail in the texture. Only the grass and bushes are rounded.
+
+### What worked, and what it costs
+
+Built as `kit/rock-island*.js` (how each part is made is in those files' headers). The Seaside rock is unchanged.
+
+- **Flat facets stacked in strata read as rock** from the road and from the glide: stacks, mesas and karst peaks
+  with angular outlines, ledges and overhangs, a notched wet foot and fallen blocks. The fine detail is in one drawn
+  limestone tile, as MK8DX does it.
+- **Seams on every band read as planks of wood.** Seams on a third of the band edges, short blocks between joints,
+  and edges that wander read as stone.
+- **Rings that cross twist the faces between them,** and the inward half is culled, showing sky through the rock.
+  The two rings where strata meet must differ only by a uniform step (a unit test checks the winding).
+- **Cost:** 14,000 to 34,000 triangles an island at sizes 15 to 40, palms included (budget 40,000). Draw calls: 4 an
+  island (3 for a stack, which has no beach), plus 2 for its palms. One set of 512 rock maps per course.

@@ -21,7 +21,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | merged |
 | J | Ground vehicles (props) | sonnet | 0 | merged |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
-| L | Rock study, then the rocky islands in the bay | opus | 0 | building |
+| L | Rock study, then the rocky islands in the bay | opus | 0 | merged |
 | M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |
 | N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
 
@@ -712,6 +712,13 @@ session merges that line).
   `LOW_BARRIERS` if turn boards should stand behind them. At merge the three maps over 512 wide (taxiway boards 768,
   floodlight ribbon 768, the conveyor's sign 1024) were cut to 512 (checked on `test-results/review/K-merge.png`). After
   sheet: `test-results/review/K-after.png`.
+- **Task L:** `buildRockIsland(kit, { seed, size })`: origin at the island's middle with y 0 at the sea's surface (place
+  at -8.2); `seed % 3` picks the kind (stack, mesa, karst); `size` is the radius at the waterline; the beach (if any)
+  faces +x. `rockIslandFootprint` gives `{ radius, height }` (radius about 1.7 to 1.95 x size: the shallows reach 15+).
+  Keep islands well out in the bay, away from the course's shade bake (it darkens anything within about 20 of the road).
+  14,000 to 32,000 triangles each. Pale warm limestone with grey strata. The study is "M9: rock study" in
+  `docs/3d-findings.md`. Sent back once to split its long files and draw its map with typed arrays (look unchanged).
+  After sheets: `test-results/review/L-after.png`, `L-after-bay.png`.
 - **Task J:** the first round's vehicles were sharp boxes; sent back once for bevelled bodies, fat tyres, cabs and a
   "FOLLOW ME" roof board (the car is two parts: its board is a canvas map made once per course). 1,224 to 3,436
   triangles each. Vehicles stand centred on their middle (M: `out` at least the reach; `turn: 90` lies them along the

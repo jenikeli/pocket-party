@@ -1489,3 +1489,34 @@ On the iPad (host), with the server on the laptop as usual and one phone (iPhone
 9. **M8d's run on this course, Items On with all six:** M8d's steps 1 to 5 (in "M8d" above), on Palm Bay Airport
    instead of Seaside Skyway (the jump item near the course's own jump: the gap is at s 614-630).
 10. **Anything broken:** note what, where on the lap, and with which view count.
+
+### Device run (2026-11-06, iPad host, one phone)
+
+- **Start:** the course appears behind the setup screen in about 6 s (Seaside: about 7 s).
+- **Look:** fine end to end.
+- **Frame rates:** Watch with 4 views holds 60 fps quite consistently, clearly easier than Seaside Skyway. The
+  Measure report (iPad, Safari 27.2, Apple GPU, 1366x892 CSS px at 2x), ms per frame with the GPU made to finish,
+  1 view / 4 views: High 11.4 / 17.9, Medium 8.9 / 14.5, Low 9.1 / 13.9, Medium with no shadows 6.9 / 12.8.
+  1585k triangles and 528 calls in 1 view on High (shadow passes included); with no karts 1038k and 290 calls.
+  Hiding the barriers saves the most of the course's parts (1.0-1.9 ms), then the props (0.1-1.4 ms).
+- **The glide:** works fine.
+- **Spin posts:** fine, but the karts bounced off too much, often into a wall or other karts, which made a hit
+  cost speed. In MK8DX there is no bounce: the kart spins and boosts forward. Changed in M9d (below).
+- **The lap:** feels fine apart from the posts.
+- **Not yet reported:** tilt in the glide; M8d's steps on this course.
+
+### M9d: spin posts without the bounce
+
+After the device run. A kart touching a post is slid sideways round it (never back), keeping its speed along the
+road, only its sideways speed toward the post removed, with no loose grip; in anti-gravity it spins and gets the
+spin boost forward, once per cooldown (0.6 s). The Spin posts group keeps only *Cooldown* (the bounce sliders are
+gone). The Super Mario Wiki says only that a racer driving into a Spin Boost Pillar "perform[s] a Spin Boost
+(spinning and gaining a short speed boost)"; its slight push apart is for two karts colliding.
+
+Without the bounce's repeat hits, a measure showed the CPU drivers' aim at posts had no effect: every CPU held a
+drift through the ring, and on a road banked 60 degrees the corner bends only half as much in the road's own
+surface, so the widest drift still turned inside the road and the karts slid wherever the drift took them. CPUs now
+start no drift with a post within the corner they look at and let go 1 s of driving before a post; a Hard CPU aims
+to clip a post only when its cooldown will have run out by then. Lone CPUs passing the 4 posts (12 seeds, 48
+passes): Easy 0, Normal 12, Hard 19 spins (before: 11, 10, 11). CPUs no longer drift in the ring (no mini-turbo
+there); Normal and Hard make it up with spin boosts.

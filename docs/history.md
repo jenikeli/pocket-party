@@ -2289,3 +2289,18 @@ session merges that line).
   glide), and the first `show()` folds it. From the chase spot the canopy is seen almost edge-on; a higher
   `glideCameraLift` would show more of its top (judge at N's test or the device run). After sheet:
   `test-results/review/F-after.png` (kept for the handoff).
+
+### M9d: spin posts without the bounce (after the device run)
+
+The device run (2026-11-06; results in "M9" in `docs/3d-findings.md`) found the posts bounced karts into walls and
+other karts; MK8DX's pillars only spin and boost. Commit `be29608`, one implementer working in the main checkout:
+`spin-posts.js` slides a touching kart round the post (`slideRound`: sideways only, its speed along the road kept,
+no loose grip), so the Spin posts group lost `postBounce` and `postPartingSpeed`. The CPU aim at posts turned out
+to be ignored (every CPU drifted through the 60-degree ring and could not steer wider than the road), so
+`cpu-drift.js` starts no drift with a post in the corner ahead and lets go 1 s before one (`postAhead` in
+`cpu-road.js`), `POST_CLIP` is 0.6 and `cpu-aim.js` recomputes `clip` each step from the kart's cooldown. Lone CPUs
+at the posts: Easy 0, Normal 12, Hard 19 spins of 48 passes. Tests changed on purpose: the spin-post unit tests
+(no bounce; lone karts per level; no CPU drift between the posts). `npm test` 638 pass; browser m6b, m6c, m7a, m7b,
+m8 and m9 (the 3D rules area and the airport) 36 of 36 pass, 855 s. Review note: a kart hitting a post dead-centre
+is moved round it in a frame or two; watch for a visible jump on the next device run.
+

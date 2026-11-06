@@ -397,7 +397,7 @@ item equally likely (M8d's own device run is put off until after M9, the user's 
 - **Split candidates for M10:** `renderer.js` (259 lines), `kart-physics.js` (220), `createRoadObjectDrawing` (one long closure),
   `sticky-walls-look.js` (204 lines).
 
-### M9: Palm Bay Airport (built, device run pending)
+### M9: Palm Bay Airport (built, device run partly done)
 A new course, a sunny seaside airport on the ground, with MK8DX's Sunshine Airport as the style reference (our own
 designs, airlines and emblem). Built as one queue (tasks 0, A to N); everything in detail, with every interface and
 decision, is in "M9" in `docs/history.md`; what was built and measured, and the device-run procedure (which also
@@ -412,8 +412,10 @@ covers M8d's), in "M9" in `docs/3d-findings.md`, beside the "M9: rock study".
   glide never falls: an air wall at the gap's sides, and a floor along the gap's straight line that it flares onto.
   Glide gravity scales with the engine class, so every class lands about the same place. Sliders: Tuning panel,
   Gliding group. The glider look is `karts/glider.js` (each design's colours and emblem); the camera rides higher.
-- **Spin posts** (`spin-posts.js`): `track.spinPosts`, round bumpers that give a spin boost in anti-gravity, with a
-  cooldown (Spin posts group); CPUs clip them by level (`postChance`). Drawn by `kit/spin-post.js`, flashing on a hit.
+- **Spin posts** (`spin-posts.js`): `track.spinPosts`, round posts; a kart touching one is slid round it with no
+  bounce (M9d, after the device run) and in anti-gravity spins and boosts forward, with a cooldown (Spin posts
+  group). CPUs clip them by level (`postChance`) and drift in no corner with a post in it. Drawn by
+  `kit/spin-post.js`, flashing on a hit.
 - **The look:** the airfield's ground (`airport-ground.js`, `kit/terrain*.js`; sea at -8.2), the dressing
   (`airport-layout.js`, `airport-props.js`, `airport-landmarks.js`, all placed in `airport-scenery.js`), and new kit
   pieces: terminal, control tower, hangars, airliners, a prop plane and a plane taking off every 45 s, ground
@@ -422,6 +424,9 @@ covers M8d's), in "M9" in `docs/3d-findings.md`, beside the "M9: rock study".
 - **Tools:** `npm run kit-shots -- --course <id> <s...>` shoots a whole dressed course. The Tuning readout says
   "gliding". The 3D browser tests pick their course on the setup screen (`clickStartRace`, `pickCourse` in
   `test/helpers/kart-3d-host.js`); `m9-kart-3d-airport.test.js` covers the airport.
+- **Device run (2026-11-06):** about 6 s to appear, 60 fps with 4 views, the glide and the look fine; the posts'
+  bounce removed (M9d). Still to report: tilt in the glide, and M8d's steps on this course ("M9" in
+  `docs/3d-findings.md`).
 - **Left for later:** the runway's south side and the start lobe's middle are plain grass; the islands read small
   from the glide; boats rock through a copy of Seaside's private `addBoats`; `kart-physics.js` is 231 lines (split
   in M10); the start gate's sign still reads as on every course.

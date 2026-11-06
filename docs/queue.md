@@ -636,6 +636,8 @@ session merges that line).
   Easy at 0. `POST_LOOK`, `POST_CLEAR` and `POST_CLIP` at the top of `cpu-aim.js` tune it.
 - **Usage limit (18:00 UTC):** A and G stopped at the 5-hour limit. A was resumed in its worktree after the reset;
   G had saved nothing and was spawned again.
+- **Usage limit (about 21:00 UTC):** D, I and J stopped at the limit with work saved in their worktrees; all three
+  were resumed after the 23:30 reset.
 - **Task A:**
   - **A glide floor instead of the fall rule** (A's choice, accepted): a gliding kart is never let below the gap's
     straight line (ramp lip down to the landing road); it flares onto it and rides it to the landing. So a glide never

@@ -1535,4 +1535,5 @@ there); Normal and Hard make it up with spin boosts.
 The push (`items/field-forces.js`'s `pushTargets`) acts only on karts beside the holder (at most `PUSH_BESIDE`, 2,
 ahead in the race: a kart's length) or behind it, within its reach; CPU karts use it with a kart close beside or
 behind (`items/cpu-items.js`).
+Checked on the iPad with the phone (2026-11-06): works as wanted; `PUSH_BESIDE` stays 2.
 

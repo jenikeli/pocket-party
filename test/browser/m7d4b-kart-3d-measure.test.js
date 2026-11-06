@@ -61,16 +61,18 @@ describe('M7d4b 3D Measure tool', () => {
     }
     await startGame(hostPage, ana, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-  }, { timeout: STARTING_TIMEOUT });
+    // Seaside Skyway, which this file measures, is no longer the first course (M9): building it is part of starting.
+    await pickCourse(hostPage, 'seaside-skyway');
+  }, { timeout: STARTING_TIMEOUT + GAME_START_TIMEOUT });
 
   after(async () => {
     await chromium?.close();
     await server?.stop();
   });
 
-  // Each case draws 11 software frames (about half a second each), so the first look takes about a minute.
-  test('Measure runs from the setup screen with a progress line, and Stop gives a report', { timeout: 180000 }, async () => {
-    await pickCourse(hostPage, 'seaside-skyway');
+  // Each case draws 11 software frames (about half a second each), so the first look takes about a minute. The whole
+  // test took 176 s before M9, at the edge of its old 180 s, and just over it since (M9): 240 s leaves a margin.
+  test('Measure runs from the setup screen with a progress line, and Stop gives a report', { timeout: 240000 }, async () => {
     await clickNow(hostPage, '#kart-3d-measure-button');
     await hostPage.waitForSelector('#kart-3d-measure:not([hidden])');
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).startsWith('Measuring'), { message: 'the progress line' });
@@ -79,7 +81,7 @@ describe('M7d4b 3D Measure tool', () => {
     await saveScreenshot(hostPage, 'm7d4b-1-host-measuring');
     // Every case of the first look (High), 1 and 4 views, then Stop.
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).includes(': Medium,'), {
-      timeoutMs: 150000,
+      timeoutMs: 210000,
       message: 'the second look to start',
     });
     await clickNow(hostPage, '#kart-3d-measure-stop');

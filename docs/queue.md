@@ -675,6 +675,9 @@ session merges that line).
     `test-results/review/D-after.png`, `D-water.png`.
   - For M: the runway's slab beyond the barriers, the apron and the tarmac are empty for props; the cutting's barriers
     stand on ledges in front of the retaining walls (a low style shows more wall).
+- **Look browser tests after D to L** (nothing drawing): m7c and m7d2 passed. m7d4b's Measure test timed out at 182 s
+  of its 180 s; at the pre-M9 commit it took 176 s, so it was already at the edge. Its timeout was raised to 240 s (the
+  behaviour is unchanged; said in the handoff), and its pick of Seaside moved into the setup hook. It then passed.
 - **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
   spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
   materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.

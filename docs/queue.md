@@ -13,7 +13,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | A | Glide rules, glide camera, CPUs gliding; the airport joins the course list (first) | opus | 0 | merged |
 | B | Spin-post rules, CPUs aiming at posts | sonnet | 0 | merged |
 | C | Tool: kit-shots `--course`, a whole dressed course at chosen distances | sonnet | 0 | merged |
-| D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | building |
+| D | The airport's ground: terrain, cutting, tunnel, runway, seawall, beach, sea | opus | A, C merged | merged |
 | E | Looks: the glide-ramp panel and the spin-boost posts | sonnet | 0 | merged |
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
 | G | Terminal and control tower | opus | 0 | merged |
@@ -659,6 +659,22 @@ session merges that line).
     after the beach straight.
 - **Browser tests after A** (while G, H and D drew): m6b, m7a, m7b and m8 passed; m6c's drift test timed out once
   under the load and passed alone. The look files (m7c, m7d2, m7d4b) wait for a quiet moment or the end's full suite.
+- **Task D:**
+  - The sea is at -8.2, not -8 (the cutting's floor is at -8 and the sea plane fought it). The tunnel is 43 long (more
+    than the slab's 30); the runway road and the ground strips beside it are its roof; it clears the road by 6.2.
+  - **Runway number, for the user's review:** the west end's "09" is painted the real way round (for planes landing
+    eastward), so karts heading west read it upside down ("60"). Kept as built; easy to turn.
+  - The red-white chevrons on corner curbs were not done (they need `kit/road-paint.js`; the references' chevrons are
+    barrier boards, for K and M). The kit road's verge is grass everywhere (reads as dune grass on the beach turn).
+  - No `airport-d-pieces.js`: the ground was judged on `--course` sheets (accepted). Two kit files beyond the list
+    (`terrain-ribbons.js`, `shore-water.js`), split for size.
+  - Review fixes before merge: the shore water carries its tint in its own attribute, so the baked shade no longer
+    greys the foam; the terrain's corridor lookup runs once per corner (build time). The course's build and bake time
+    are still to be measured (M, the browser tests, the device run).
+  - About 95,000 triangles for terrain, walls and tunnel (budget 250,000) and 18,000 for the shore water. Sheets:
+    `test-results/review/D-after.png`, `D-water.png`.
+  - For M: the runway's slab beyond the barriers, the apron and the tarmac are empty for props; the cutting's barriers
+    stand on ledges in front of the retaining walls (a low style shows more wall).
 - **Task E:** the spin posts are wired into the stand-in `airport-scenery.js` (in the props part) at merge, as the
   spec said; M keeps that call. The posts' instanced meshes have no `dispose` of their own (their geometries and
   materials go through `kit.keep`, as the grandstand's do). After sheet: `test-results/review/E-after.png`.

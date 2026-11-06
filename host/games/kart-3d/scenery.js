@@ -33,7 +33,8 @@ const CELL_SIZE = 200;
 const SCENERIES = {
   seaside: { seaLevel: -14, buildRoad: buildSeasideRoad, buildDressing: buildSeasideScenery },
   'test-track': { seaLevel: -30, buildRoad: buildTestTrackRoad, buildDressing: buildTestTrackScenery },
-  airport: { seaLevel: -8, buildRoad: buildAirportRoad, buildDressing: buildAirportScenery },
+  // A little under the cutting's floor (-8), so the sea's plane never shows through the road there.
+  airport: { seaLevel: -8.2, buildRoad: buildAirportRoad, buildDressing: buildAirportScenery },
 };
 
 // Adds everything to `scene`. `photoAsphalt` is the photo-scanned asphalt's textures (photo-asphalt.js);

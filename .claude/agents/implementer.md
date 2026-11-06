@@ -14,6 +14,7 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 
 ## While you build
 
+- **Never write outside the project directory** (CLAUDE.md, "How to work with me"): no installs, no MCP servers, nothing under `~`. If the task seems to need it, stop and report it. Scratch files go in the session's scratchpad.
 - **Stay inside the files the task gives you.** You may read any file, but edit or create only the files your task owns. If you find you need to change a file outside it, stop and report why instead of changing it: another implementer may own it.
 - Build exactly what the task says, to the interfaces it names (function names, arguments, data shapes), since other tasks are built against them at the same time.
 - Follow `CLAUDE.md`'s Readability and Conventions sections: a header comment on every file, files under about 200 lines, functions under about 40, the *why* commented, no dead code or debug logging, existing patterns reused.

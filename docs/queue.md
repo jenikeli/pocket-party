@@ -22,7 +22,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | J | Ground vehicles (props) | sonnet | 0 | merged |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | merged |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | merged |
-| M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | queued |
+| M | The whole course's dressing and layout, its cost measured | opus | D, E, G, H, I, J, K, L merged | building |
 | N | Browser test `m9-kart-3d-airport`, spawned alone | sonnet | A, B, M merged | queued |
 
 Suggested order (at most 3 subagents at once, reviewers included): 0, then A, C and F; then B, E, and G as places free up;

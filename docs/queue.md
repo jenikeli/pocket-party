@@ -18,7 +18,7 @@ folded into "M9" in `docs/history.md` and deleted.
 | F | The glider, one per design, opening, folding and banking | opus | 0 | merged |
 | G | Terminal and control tower | opus | 0 | merged |
 | H | The big hangar over the anti-gravity ring; the taxiway's hangars | opus | 0 | merged |
-| I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | building |
+| I | Planes: parked airliners, a small prop plane, the plane taking off each lap | opus | 0 | merged |
 | J | Ground vehicles (props) | sonnet | 0 | merged |
 | K | Airfield fittings, the airport's barrier styles, the baggage conveyor | sonnet | 0 | building |
 | L | Rock study, then the rocky islands in the bay | opus | 0 | building |
@@ -691,6 +691,20 @@ session merges that line).
   for I's prop plane). `buildHangar` takes an `airline` option ('Palm Air', 'Coral Wings', 'Skipjack Air'); I's
   liveries should use the same colours. At merge the small hangars' signs were cut to 512x128 (the 512 rule). Big
   about 39,000 triangles, small about 3,900. After sheet: `test-results/review/H-after.png`.
+- **Task I:**
+  - **At a gate:** `AIRLINER_DOOR` is `{ x: 13.5, y: 3.2, z: -2.86 }` (the front left door's sill, facing -z). To meet
+    a jet bridge (cab facing +x), turn the plane by pi/2 about y (its named right side then faces the road) and put it
+    at `gate - door.applyAxisAngle(y, pi/2)`, i.e. `(21.2 + 2.86, 0, gate.z + 13.5)` in the terminal's frame
+    (`buildGate` in `host/kit-shots/airport-i-pieces.js` does it).
+  - **Take-off cycle** (`buildTakeOffPlane(kit, { from, to, height })`, `update(dt)` only): it waits at `from`, rolls
+    to `to` and lifts off at 46 units/s, holds `height` from 140 to 380 past `to`, climbs 140 higher by 900 past and
+    at 1000 past jumps back to wait at `from`; a 45 s cycle. Hidden until its first update (no bake patch); meshes
+    `keepWhole`. Gear folds 2 to 5 s after lift-off.
+  - Review fix before merge: each plane has its own copy of its vertex-coloured parts (wings, engines, gear), so
+    the bake shades each plane where it stands. NAVY is imported from `kit/hangar-maps.js` at merge; the liveries copy
+    the hangars' `AIRLINES` colours.
+  - Airliner about 13,000 triangles, prop plane about 4,000 (high wing, open wheels). After sheet:
+    `test-results/review/I-after.png`.
 - **Task J:** the first round's vehicles were sharp boxes; sent back once for bevelled bodies, fat tyres, cabs and a
   "FOLLOW ME" roof board (the car is two parts: its board is a canvas map made once per course). 1,224 to 3,436
   triangles each. Vehicles stand centred on their middle (M: `out` at least the reach; `turn: 90` lies them along the

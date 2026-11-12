@@ -1,8 +1,10 @@
 // Room settings: a small panel under the lobby's "Room settings" button, with how long a dropped player's slot is
-// held. The button opens and closes it; a click anywhere else in the lobby closes it too. Used by host/lobby.js.
+// held and the music and effects volumes. The button opens and closes it; a click anywhere else in the lobby
+// closes it too. Used by host/lobby.js.
 
 import { formatMinutes } from '/host/roster.js';
 import { stepGraceSeconds } from '/host/lobby-rules.js';
+import { getVolume, setVolume } from '/host/audio/audio.js';
 
 const panel = document.getElementById('room-settings');
 const button = document.getElementById('room-settings-button');
@@ -23,6 +25,13 @@ export function setUpRoomSettings(room) {
   function setOpen(open) {
     panel.hidden = !open;
     button.setAttribute('aria-pressed', String(open));
+  }
+
+  // The sliders hold 0 to 100; audio.js keeps each volume as 0 to 1 and remembers it between visits.
+  for (const kind of ['music', 'effects']) {
+    const slider = document.getElementById(`${kind}-volume`);
+    slider.value = Math.round(getVolume(kind) * 100);
+    slider.addEventListener('input', () => setVolume(kind, slider.value / 100));
   }
 
   button.addEventListener('click', () => setOpen(panel.hidden));

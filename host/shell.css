@@ -203,3 +203,15 @@ p {
   color: #5c6680;
   pointer-events: none;
 }
+
+/* The volume sliders in the lobby's room settings (host/room-settings.js): a label over a slider in the accent. */
+.room-settings-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.room-settings-slider input {
+  width: 100%;
+  accent-color: var(--pp-accent);
+}

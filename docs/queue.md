@@ -15,7 +15,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | building |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | queued |
-| I | Audio core: unlock, volumes, synth helpers | sonnet | A | building |
+| I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | queued |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |
 | P | Bloom's clamp folded into its first pass | sonnet | | queued |
@@ -480,6 +480,10 @@ world frees), unit tests.
   over in the grass colour. D's diff (two SVG nudges and a JPEG) was reviewed by the main session, no reviewer.
 - Order: H and T1 both own `test/helpers/host-buttons.js`, so they do not run together: I builds beside E and M,
   T1 starts when E and M have stopped drawing, H after T1.
+- I: `synth.js` also has `voice` (a held, steerable tone for the engines of J and K) and `tone` takes `sustain`,
+  `release` and `filterFrequency` (L's held notes and bass). Gain is the slider's volume squared; defaults music
+  0.7, effects 0.8. Both outputs go through one peak limiter. The context is resumed when the page shows again
+  (iOS). J and K must `stop()` every voice when a race ends.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

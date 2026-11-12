@@ -3,6 +3,7 @@
 // after it. Used by host/main.js.
 
 import { keepScreenAwake } from '/shared/wake-lock.js';
+import { unlockAudio } from '/host/audio/audio.js';
 
 const screen = document.getElementById('tap-to-start');
 const button = document.getElementById('tap-to-start-button');
@@ -17,6 +18,8 @@ export function showTapToStart(onStart) {
       button.textContent = 'Starting...';
       // Called before anything else, while the browser still counts this as the tap.
       goFullScreen();
+      // A Web Audio context starts only from a tap too; the game sounds and the music play through it.
+      unlockAudio();
       // Nobody touches the host during a game, so without this it would dim and lock part way through. Asked for
       // here, inside the tap, because some browsers grant the lock only during one; the wake-lock module asks
       // again whenever the page comes back into view.

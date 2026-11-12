@@ -501,3 +501,19 @@ world frees), unit tests.
 ## Parked for the user
 
 (Tasks or parts stopped because only the user can decide. Each: what, why, what is needed to go on.)
+
+## Sound tables (for the handoff; nobody could listen during the run)
+
+### K: 2D race and shell (volumes before the effects slider)
+
+| Sound | When | Made of | Length | Volume |
+|---|---|---|---|---|
+| Countdown beep | 3, 2, 1 | square tone, 440 Hz | 0.18 s | 0.22 |
+| GO | the number 0 | square tone, 880 Hz, held | 0.5 s plus release | 0.25 |
+| Finish, first kart home | first `finishTime` set | four triangle tones C5 E5 G5 (0.12 s each), then C6 held | about 1.1 s | 0.28 to 0.30 |
+| Finish, other karts | each later `finishTime` | two triangle tones, C5 then E5 | about 0.35 s | 0.2 |
+| Engine, one per kart | countdown through the race, silent after finishing | sawtooth voice through a lowpass; pitch 80 to 200 Hz and lowpass 250 to 1300 Hz with speed; each kart detuned up to 10.5% | held | 0.11 / sqrt(karts), times 0.4 (idle) to 1.0 (top speed) |
+| Player joins | a new id in the room | sine slide 600 to 950 Hz | 0.14 s | 0.22 |
+| Player leaves | an id removed from the room (not a disconnect) | sine slide 700 to 430 Hz | 0.18 s | 0.20 |
+| Game chosen | click on another game's thumbnail | square 1200 Hz tick | 0.035 s | 0.10 |
+| Play | Play accepted | triangle slide 260 to 1100 Hz | 0.3 s | 0.25 |

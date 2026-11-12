@@ -1,7 +1,8 @@
 // The phone side shared by both kart races: the setup screen (control style and ready), then the controls
 // (steering on the left, held brake and accelerate buttons on the right, plus Drift in the 3D race) and a
-// status in the middle that each race words itself. Used by controller/games/kart-2d/index.js and
-// controller/games/kart-3d/index.js, which pass their own describeStatus and say whether they have Drift.
+// status in the middle that each race words itself. On a portrait page the controls are drawn turned round
+// (controller/kart/turned-layout.js). Used by controller/games/kart-2d/index.js and
+// controller/games/kart-3d/index.js, which pass their own title and describeStatus and say whether they have Drift.
 
 import { MESSAGE_TYPES, INPUT_KINDS, KART_STEERING } from '/shared/protocol.js';
 import * as buttonInput from '/controller/inputs/button.js';
@@ -10,6 +11,7 @@ import * as setupScreen from '/controller/kart/setup-screen.js';
 import { MARKUP } from '/controller/kart/markup.js';
 import { ITEM_ICONS } from '/shared/item-icons.js';
 import { createItemSlot } from '/controller/kart/item-slot.js';
+import { PORTRAIT_QUERY } from '/controller/kart/turned-layout.js';
 
 // The page elements, looked up by start() once MARKUP is in place.
 let setup, controls, accelerateButton, driftButton, bigText, lineText;
@@ -17,9 +19,12 @@ let sendMessage = null; // set by start
 let itemSlot = null; // the Item button's display in the 3D race, else null. Set by start
 // (view) -> { big, line }: what the middle of the controls says for a race view. Set by start.
 let describeStatus = null;
+let portrait = null; // the MediaQueryList for PORTRAIT_QUERY, set by start
+let previousPhase = null; // the newest view's phase, to see the countdown end
 
-// `race` is { describeStatus, drift, items }: describeStatus(view) -> { big, line }, drift true to show the Drift
-// button and items true to show the Item button (the 3D race).
+// `race` is { title, describeStatus, drift, items }: title is the race's name for the setup screen,
+// describeStatus(view) -> { big, line }, drift true to show the Drift button and items true to show the Item
+// button (the 3D race).
 export function start(container, send, race) {
   container.innerHTML = MARKUP;
   const byId = (id) => document.getElementById(id);
@@ -31,7 +36,7 @@ export function start(container, send, race) {
   lineText = byId('kart-line');
   sendMessage = send;
   describeStatus = race.describeStatus;
-  // With Drift the buttons join the controls' grid (controller/kart/style.css), the Item button's place too.
+  // With Drift the buttons join the controls' grid (controller/kart/controls.css), the Item button's place too.
   controls.classList.toggle('with-drift', race.drift);
   driftButton.hidden = !race.drift;
   itemSlot = race.items ? createItemSlot(byId('kart-item-slot'), ITEM_ICONS) : null;
@@ -54,7 +59,20 @@ export function start(container, send, race) {
     note: byId('kart-steering-note'),
   };
   steering.start(steeringElements, { sendChoice, sendInput });
-  setupScreen.start({ setup, laps: byId('kart-setup-laps'), readyButton: byId('kart-ready-button') }, sendChoice);
+  const setupElements = {
+    setup,
+    game: byId('kart-setup-game'),
+    title: byId('kart-setup-title'),
+    laps: byId('kart-setup-laps'),
+    readyButton: byId('kart-ready-button'),
+  };
+  setupScreen.start(setupElements, race.title, sendChoice);
+  previousPhase = null;
+  // The page turns between portrait and landscape when the phone turns with rotation lock off; the drawing
+  // follows by itself (CSS), the inputs through updateTurn.
+  portrait = window.matchMedia(PORTRAIT_QUERY);
+  portrait.addEventListener('change', updateTurn);
+  updateTurn();
 }
 
 // `view` is what the race's host side made for this player: a setup view (phase 'setup') or a race view (any
@@ -64,6 +82,13 @@ export function showView(view) {
   const onSetup = view?.phase === 'setup';
   setup.hidden = !onSetup;
   controls.hidden = onSetup;
+  updateTurn();
+  // GO: the countdown is over (both races name the phase 'countdown'), and the player is holding the phone
+  // the way they mean as straight ahead (steering.recenterTilt).
+  if (previousPhase === 'countdown' && view?.phase !== 'countdown') {
+    steering.recenterTilt();
+  }
+  previousPhase = view?.phase ?? null;
   if (!view) {
     bigText.textContent = '';
     lineText.textContent = 'Waiting for the next race';
@@ -90,9 +115,15 @@ export function showView(view) {
 
 // The shell empties the container afterwards, which takes the elements and their listeners with it.
 export function stop() {
+  portrait.removeEventListener('change', updateTurn);
   steering.stop();
   buttonInput.stop();
   itemSlot?.stop();
+}
+
+// The controls are drawn turned round while they show on a portrait page (controller/kart/controls.css).
+function updateTurn() {
+  steering.setTurned(portrait.matches && !controls.hidden);
 }
 
 function sendInput(input) {

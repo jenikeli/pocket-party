@@ -1,0 +1,122 @@
+/* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift with
+   its spark colours, and its Item button with the running effects. Where they sit is controller/kart/controls.css.
+   Each kart game's style.css imports this file. The --pp- tokens come from controller/style.css; the fallbacks
+   are the same values. */
+
+/* Flex, not a grid, so Brake takes the whole side when auto-accelerate hides Go. */
+#kart-pedals {
+  display: flex;
+  gap: 12px;
+}
+
+/* Border and padding are reset because the shell's rule for every button (controller/style.css) would give the
+   driving buttons an outline and inner space they never had. */
+.kart-pedal,
+#kart-drift {
+  border: none;
+  padding: 0;
+}
+
+.kart-pedal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--pp-radius, 0.45em) * 2);
+  font-size: 26px;
+  font-weight: 800;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#kart-brake {
+  flex: 2;
+  background: #a5302a;
+}
+
+#kart-accelerate {
+  flex: 3;
+  background: #1f8f4f;
+}
+
+.kart-pedal.held {
+  filter: brightness(1.4);
+}
+
+#kart-drift {
+  grid-area: drift;
+  background: var(--pp-panel-2, #2a3145);
+}
+
+/* The drift's spark level, from the host's view: blue, orange, then purple, as in MK8DX. */
+#kart-drift[data-spark="blue"] {
+  background: #2f80ed;
+  box-shadow: 0 0 24px #4fb3ff;
+}
+
+#kart-drift[data-spark="orange"] {
+  background: #e67e22;
+  box-shadow: 0 0 24px #ff9a1f;
+}
+
+#kart-drift[data-spark="purple"] {
+  background: #9b51e0;
+  box-shadow: 0 0 24px #d04dff;
+}
+
+/* The Item button (a kart-pedal): a dashed outline, as in the chosen design, with the held item's icon large in
+   it, or "Item" dimmed when empty; the running effects as small icons in rings along its bottom edge.
+   Position: relative holds the effects. */
+#kart-item-slot {
+  grid-area: item;
+  position: relative;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 3px dashed var(--pp-line, #343d57);
+  overflow: hidden;
+}
+
+#kart-item-slot.empty {
+  color: var(--pp-muted, #9aa4bf);
+  opacity: 0.6;
+}
+
+#kart-item-icon {
+  width: 60%;
+  height: 60%;
+  pointer-events: none;
+}
+
+#kart-item-icon svg,
+.kart-effect svg {
+  width: 100%;
+  height: 100%;
+}
+
+#kart-item-slot:not(.empty) #kart-item-label,
+#kart-item-slot.empty #kart-item-icon {
+  display: none;
+}
+
+#kart-item-effects {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* The ring is a conic gradient: --left (0 to 1, set from item-slot.js) is the share still lit. The icon sits in
+   a dark disc inside it. */
+.kart-effect {
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: conic-gradient(#ffd23f calc(var(--left, 1) * 360deg), var(--pp-panel, #1c2130) 0);
+}
+
+.kart-effect svg {
+  background: var(--pp-panel-2, #2a3145);
+  border-radius: 50%;
+}

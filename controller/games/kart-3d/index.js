@@ -9,7 +9,7 @@ import * as kartControls from '/controller/kart/controls.js';
 const START_TEXT = { rocket: 'Rocket start!', stall: 'Too early: stalled' };
 
 export function start(container, send) {
-  kartControls.start(container, send, { describeStatus, drift: true, items: true });
+  kartControls.start(container, send, { title: 'Kart race 3D', describeStatus, drift: true, items: true });
 }
 
 // `view` is what host/games/kart-3d/race-views.js made for this player (see kartControls.showView).

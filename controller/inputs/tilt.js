@@ -1,7 +1,7 @@
 // Tilt input: turns how the phone is tilted into a stick value { kind: 'tilt', x, y }, each from -1 to 1.
-// Used by controller/games/input-lab/index.js (portrait) and controller/games/kart-2d/ (landscape, as a wheel).
-// Same shape as every input module (start, stop, onInput), plus requestAccess() and calibrate(), which only
-// tilt needs.
+// Used by controller/games/input-lab/index.js (portrait) and controller/kart/steering.js (sideways, as a wheel).
+// Same shape as every input module (start, stop, onInput), plus requestAccess(), calibrate() and
+// setHeldAngle(), which only tilt needs.
 //
 // Think of a ball on the screen as the player sees it: tilt the right edge down and x goes positive; tip the
 // top edge away from you and y goes negative (up the screen). Angles come from deviceorientation and are always
@@ -12,6 +12,10 @@
 //   sign depends on which way the phone was turned. That is turning the phone like a steering wheel. y is
 //   always 0: nothing uses it, and gamma sits at the end of its range when a landscape phone is held upright,
 //   where browsers make it jump.
+// Which of these applies comes from the screen's angle, how far the page is turned round from portrait. Under
+// rotation lock the page never turns, so the angle stays 0 even with the phone held sideways. The kart races
+// then draw their controls turned round on the portrait page and say how the phone is held (setHeldAngle(90):
+// its top end on the left), which this file then uses in place of the screen's angle.
 
 import { INPUT_KINDS, INPUT_FALLBACK_REASONS } from '../../shared/protocol.js';
 import { createThrottle } from './throttle.js';
@@ -28,8 +32,10 @@ const SEND_INTERVAL_MS = 33;
 const FIRST_READING_TIMEOUT_MS = 2000;
 
 let inputCallback = null;
-// The calibrated pose: the angles that count as "stick centered", and the screen angle they were taken at.
-let zero = { beta: 0, gamma: 0, screenAngle: 0 };
+// How the phone is held, as a screen angle, when the page says so (setHeldAngle); null follows the screen.
+let heldAngle = null;
+// The calibrated pose: the angles that count as "stick centered", and the hold angle they were taken at.
+let zero = { beta: 0, gamma: 0, angle: 0 };
 let lastRaw = null; // { beta, gamma } of the newest real reading
 let smoothed = { x: 0, y: 0 }; // in degrees away from the zero pose
 let firstReading = null; // { resolve, timer } while start() is waiting
@@ -84,9 +90,16 @@ export function calibrate() {
   if (!lastRaw) {
     return;
   }
-  zero = { ...lastRaw, screenAngle: screenAngle() };
+  zero = { ...lastRaw, angle: holdAngle() };
   smoothed = { x: 0, y: 0 };
   throttle.queue({ kind: INPUT_KINDS.TILT, x: 0, y: 0 });
+}
+
+// Tells tilt how the phone is held when the page draws its content turned round from the screen: 90 for its top
+// end on the left (and 270 for the right), or null to follow the screen's own angle again. A page that sets it
+// must set null when it stops, since the input lab shares this module and expects the screen's angle.
+export function setHeldAngle(angle) {
+  heldAngle = angle;
 }
 
 function handleOrientation(event) {
@@ -99,9 +112,10 @@ function handleOrientation(event) {
     finishWaiting(true);
     return;
   }
-  // The phone was turned (portrait to landscape, or round to the other landscape): the old zero meant a
-  // different axis or the opposite sign, so the pose now becomes zero, as if the player had recalibrated.
-  if (screenAngle() !== zero.screenAngle) {
+  // The phone was turned (portrait to landscape, or round to the other landscape), or the page now says it is
+  // held another way: the old zero meant a different axis or the opposite sign, so the pose now becomes zero, as
+  // if the player had recalibrated.
+  if (holdAngle() !== zero.angle) {
     calibrate();
     return;
   }
@@ -128,13 +142,18 @@ function finishWaiting(gotReading) {
 
 // How far `raw` is from the zero pose in degrees, along the screen's x and y (see the top of this file).
 function offsetFromZero(raw) {
-  if (zero.screenAngle === 90 || zero.screenAngle === 270) {
+  if (zero.angle === 90 || zero.angle === 270) {
     // At 90 the phone's top is on the left, so raising it tips the screen's right edge down: x goes positive.
     // At 270 the top is on the right and the sign flips.
-    const sign = zero.screenAngle === 90 ? 1 : -1;
+    const sign = zero.angle === 90 ? 1 : -1;
     return { x: sign * (foldBeta(raw.beta) - foldBeta(zero.beta)), y: 0 };
   }
   return { x: wrapDegrees(raw.gamma - zero.gamma), y: wrapDegrees(raw.beta - zero.beta) };
+}
+
+// How the phone is held, in screen-angle terms: what the page said (setHeldAngle), else the screen's angle.
+function holdAngle() {
+  return heldAngle ?? screenAngle();
 }
 
 // Which way the screen is turned: 0 portrait, 90 landscape with the phone's top on the left, 270 with it on the

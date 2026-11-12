@@ -7,11 +7,11 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
-| A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | building |
+| A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | built, in review (branch worktree-agent-adec756ef97806779, 7ae6f2a) |
 | B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
-| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | built, in review (branch worktree-agent-ac0e0fe1ce2cfddb0, 5b5a364) |
+| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | merged |
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | building |
-| E | Course pictures: the tool and the saved previews | sonnet | | queued |
+| E | Course pictures: the tool and the saved previews | sonnet | | building |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | queued |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | queued |
@@ -468,6 +468,13 @@ world frees), unit tests.
   included (reachable on the setup screen). `controller/kart/style.css` split into `setup.css`, `controls.css`,
   `buttons.css` (plan.md names the old file). Breaks `m5b`'s "Turn your phone sideways" test and `m6c`'s Drift
   colour check (now `--pp-panel-2`): T1/T2 fix them and add a portrait (turned) driving test.
+- A: the registry's order is now kart-3d, kart-2d, input-lab (the 3D race is the lobby's default, as in
+  `lobby.png`). `#join-url` shows the origin only (the QR holds the full link with the code). The room closes at
+  Play, before the load, and reopens if the load fails. The join window closes when a game closes the room. The
+  wake lock is first asked for in the Tap to start tap. The room is created only when the lobby's pictures are
+  in (or failed). Host zoom: `touch-action: pan-x pan-y`, `user-scalable=no`, `gesturestart` stopped.
+  `.pp-dot` takes its colour from `--pp-dot-color` (F and H need the name). Extra files beside the spec's:
+  `host/shell.css`, `host/lobby.css`, `host/pictures.js`, `host/confirm-click.js`.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

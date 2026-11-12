@@ -1,10 +1,12 @@
 // The phone's steering for both kart races: the on-screen stick or the phone turned like a wheel (tilt),
 // whichever the host's view says this player chose. Owns the tilt flow (permission, first reading, falling back
-// to the stick) and the tilt panel (Enable tilt, Recenter). Used by controller/kart/controls.js.
+// to the stick) and the tilt panel (Enable tilt, Recenter), and turns both inputs to match the controls'
+// turned layout (controller/kart/turned-layout.js). Used by controller/kart/controls.js.
 
 import { KART_CHOICES, KART_STEERING, INPUT_FALLBACK_REASONS } from '/shared/protocol.js';
 import * as dragInput from '/controller/inputs/drag.js';
 import * as tiltInput from '/controller/inputs/tilt.js';
+import { stickFromDrag, TURNED_HELD_ANGLE } from '/controller/kart/turned-layout.js';
 
 const TILT_PROBLEM_TEXT = {
   [INPUT_FALLBACK_REASONS.UNSUPPORTED]: 'not supported (is the page on https?)',
@@ -23,6 +25,7 @@ let sendInput = null; // (input), set by start
 let steering = KART_STEERING.STICK; // what this phone steers with now
 let tiltRunning = false;
 let tiltStarting = false;
+let turned = false; // whether the controls are drawn turned round now (setTurned)
 // The steering this phone just asked the host for, until a view confirms it. Views the host sent before it
 // saw the choice can still arrive, and must not switch the steering back.
 let requestedSteering = null;
@@ -103,9 +106,27 @@ export function chooseStick() {
   request(KART_STEERING.STICK);
 }
 
+// Whether the controls are drawn turned round (a portrait page). The stick then maps the thumb's movement to
+// the player's directions, and tilt is told the phone is held sideways, top end left: under rotation lock the
+// screen's own angle stays at portrait, so tilt could not tell otherwise.
+export function setTurned(isTurned) {
+  turned = isTurned;
+  tiltInput.setHeldAngle(turned ? TURNED_HELD_ANGLE : null);
+}
+
+// Makes the phone's pose now the tilt's centre, as Recenter does. controls.js calls it at GO: the setup screen
+// is held upright, so the player turns the phone during the countdown, and the pose they settle in is the one
+// they mean as straight ahead.
+export function recenterTilt() {
+  if (tiltRunning) {
+    tiltInput.calibrate();
+  }
+}
+
 export function stop() {
   dragInput.stop();
   stopTilt();
+  setTurned(false);
   elements = null;
 }
 
@@ -142,9 +163,11 @@ function showNote(text) {
 }
 
 function onStickInput(input) {
-  sendInput(input);
-  // Only left and right steer, so the knob only moves sideways.
-  elements.stickKnob.style.transform = `translateX(${input.x * KNOB_TRAVEL_PX}px)`;
+  const stick = stickFromDrag(input, turned);
+  sendInput(stick);
+  // Only left and right steer, so the knob only moves sideways (the player's sideways: the knob is inside the
+  // turned controls, so its own x is theirs).
+  elements.stickKnob.style.transform = `translateX(${stick.x * KNOB_TRAVEL_PX}px)`;
 }
 
 function onTiltInput(input) {

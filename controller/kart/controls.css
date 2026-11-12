@@ -1,0 +1,186 @@
+/* The kart races' driving controls (controller/kart/markup.js), held sideways like a Switch controller: steering
+   on the left, the status in the middle, the buttons on the right (controller/kart/buttons.css), and the 3D
+   race's grid for them. On a portrait page the whole block is drawn a quarter turn round. Each kart game's
+   style.css imports this file. The --pp- tokens come from controller/style.css; the fallbacks are the same. */
+
+#kart-controls {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* The turned layout. A page cannot tell how the phone is held without the motion sensor, and with rotation lock
+   on it stays in portrait, so in portrait the controls cover the page drawn a quarter turn clockwise: held with
+   its top end in the left hand, the phone shows them upright, the stick at the top end and the buttons at the
+   bottom end. The box is as wide as the page is tall and as tall as the page is wide; rotate(90deg) about its
+   top left corner swings it to the left of the page, and translateY(-100%) (along the turned box's own up)
+   brings it back over the page. The padding follows the turn: the box's left edge is the page's top, its top
+   edge the page's right, and so on round, for the notch and the home bar. The shell's top line stays under it.
+   controller/kart/turned-layout.js makes the stick and tilt match. */
+@media (orientation: portrait) {
+  #kart-controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: 100dvh;
+    height: 100vw;
+    padding: max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-top));
+    background: var(--pp-bg, #10131c);
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-100%);
+  }
+}
+
+#kart-stick-zone,
+#kart-tilt-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: calc(var(--pp-radius, 0.45em) * 2);
+  background: var(--pp-panel, #1c2130);
+  font-size: 16px;
+}
+
+#kart-stick-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 3px solid var(--pp-line, #343d57);
+  border-radius: 50%;
+}
+
+#kart-stick-knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--pp-accent, #f39c12);
+}
+
+#kart-tilt-zone button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--pp-radius, 0.45em);
+  background: var(--pp-panel-2, #2a3145);
+  color: var(--pp-ink, #ffffff);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* A wheel seen from the front: the bar turns as the phone does. */
+#kart-wheel {
+  display: flex;
+  align-items: center;
+  width: 110px;
+  height: 110px;
+  border: 6px solid var(--pp-line, #343d57);
+  border-radius: 50%;
+}
+
+#kart-wheel-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--pp-accent, #f39c12);
+}
+
+.kart-hint {
+  margin: 0;
+  color: var(--pp-muted, #9aa4bf);
+}
+
+#kart-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  text-align: center;
+}
+
+#kart-status p {
+  margin: 0;
+}
+
+#kart-big {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+#kart-line {
+  font-size: 20px;
+  color: var(--pp-muted, #9aa4bf);
+}
+
+/* The 3D race (with-drift): the buttons sit in the controls' own grid (the pedals box steps aside with
+   display: contents), so tilt can move Drift to the left. Steering takes 5 parts, the buttons 2 and 3.
+   With the stick: Drift above Go under the right thumb, Brake beside Go, the Item button top left of Drift;
+   with auto-accelerate there is no Go, so Drift takes the whole right column. */
+#kart-controls.with-drift {
+  grid-template-columns: 5fr auto 2fr 3fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "steer status item drift"
+    "steer status brake go";
+}
+
+#kart-controls.with-drift #kart-pedals {
+  display: contents;
+}
+
+#kart-controls.with-drift.auto-accelerate {
+  grid-template-areas:
+    "steer status item drift"
+    "steer status brake drift";
+}
+
+/* With tilt the left thumb is free, so Drift moves under it, below the tilt panel; on the right Brake stands
+   left of Go, with the Item button above Go. With auto-accelerate the Item button and Brake share the right. */
+#kart-controls.with-drift.tilt {
+  grid-template-areas:
+    "steer status brake item"
+    "drift status brake go";
+}
+
+#kart-controls.with-drift.tilt.auto-accelerate {
+  grid-template-areas:
+    "steer status item item"
+    "drift status brake brake";
+}
+
+#kart-controls.with-drift #kart-stick-zone,
+#kart-controls.with-drift #kart-tilt-zone {
+  grid-area: steer;
+  min-height: 0;
+}
+
+/* Half the height is left for the tilt panel, so it lays out in a row and its wheel shrinks. */
+#kart-controls.with-drift.tilt #kart-tilt-zone {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+#kart-controls.with-drift.tilt #kart-wheel {
+  width: 70px;
+  height: 70px;
+}
+
+#kart-controls.with-drift #kart-status {
+  grid-area: status;
+}
+
+#kart-controls.with-drift #kart-brake {
+  grid-area: brake;
+}
+
+#kart-controls.with-drift #kart-accelerate {
+  grid-area: go;
+}

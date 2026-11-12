@@ -1,5 +1,5 @@
-// Unit tests for controller/inputs/tilt.js: the permission flow, calibration, smoothing, clamping and the
-// no-sensor timeout. Node has no window, so the tests give it a fake one that they fire orientation events on.
+// Unit tests for controller/inputs/tilt.js: the permission flow, calibration, smoothing, clamping, the
+// no-sensor timeout, and the held angle a page with turned-round content sets. Node has no window, so the tests give it a fake one that they fire orientation events on.
 
 import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,6 +25,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   tiltInput.stop();
+  tiltInput.setHeldAngle(null);
   delete globalThis.window;
   delete globalThis.DeviceOrientationEvent;
   await wait(40); // let the send throttle window pass
@@ -192,4 +193,46 @@ test('without window.orientation, screen.orientation.angle says which way the ph
   }
   await wait(40);
   assert.deepEqual(sent.at(-1), { kind: 'tilt', x: -1, y: 0 });
+});
+
+// Rotation lock: the page stays in portrait (screen angle 0) and the kart races draw their controls turned round,
+// so they tell tilt the phone is held with its top end on the left (setHeldAngle(90)).
+test('held angle 90 on a portrait page: tilt reads like landscape with the top on the left', async () => {
+  window.orientation = 0;
+  tiltInput.setHeldAngle(90);
+  const started = tiltInput.start();
+  orientation(5, 80);
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(17.5, 80); // the top end 12.5 degrees higher: right, as in landscape at 90
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0.5, y: 0 });
+});
+
+test('held angle unset (null): the screen angle applies again, so a portrait page reads gamma for x', async () => {
+  window.orientation = 0;
+  tiltInput.setHeldAngle(90);
+  tiltInput.setHeldAngle(null);
+  const started = tiltInput.start();
+  orientation(0, 0);
+  await started;
+  for (let i = 0; i < 30; i += 1) {
+    orientation(0, 12.5); // the right edge 12.5 degrees down
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0.5, y: 0 });
+});
+
+test('setting the held angle while tilt runs makes the next pose zero, as turning the screen does', async () => {
+  window.orientation = 0;
+  const started = tiltInput.start();
+  orientation(70, 0); // upright in portrait, on the setup screen
+  await started;
+  tiltInput.setHeldAngle(90); // the turned controls show
+  for (let i = 0; i < 30; i += 1) {
+    orientation(70, 0); // still the same pose: it is the new zero, not a 70 degree turn
+  }
+  await wait(40);
+  assert.deepEqual(sent.at(-1), { kind: 'tilt', x: 0, y: 0 });
 });

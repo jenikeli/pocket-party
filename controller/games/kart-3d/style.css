@@ -1,4 +1,6 @@
-/* 3D race's phone screens: the shared kart controls' styles. Loaded by controller/game-screen.js before the
-   game starts; a link's load event waits for its @import, so the controls never show unstyled. */
+/* 3D race's phone screens: the shared kart screens' styles. Loaded by controller/game-screen.js before the
+   game starts; a link's load event waits for its @imports, so the controls never show unstyled. */
 
-@import url('/controller/kart/style.css');
+@import url('/controller/kart/setup.css');
+@import url('/controller/kart/controls.css');
+@import url('/controller/kart/buttons.css');

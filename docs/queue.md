@@ -10,7 +10,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | building |
 | B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
 | C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | building |
-| D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | queued |
+| D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | building |
 | E | Course pictures: the tool and the saved previews | sonnet | | queued |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | queued |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |

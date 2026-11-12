@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#141a2a"/><path d="M20 0 H0 V20" fill="none" stroke="#1f2940" stroke-width="1"/></pattern>
+    <clipPath id="frame"><rect width="400" height="300"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)" stroke="#0c0f18" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <rect width="400" height="300" fill="url(#grid)" stroke="none"/>
+    <g transform="translate(136 150) rotate(-14)">
+      <path d="M-58 -116 Q0 -146 58 -116" fill="none" stroke="#ffd21f" stroke-width="6"/>
+      <path d="M-72 -110 L-52 -128 L-50 -104 Z" fill="#ffd21f" stroke="none"/>
+      <path d="M72 -110 L52 -128 L50 -104 Z" fill="#ffd21f" stroke="none"/>
+      <rect x="-54" y="-98" width="108" height="196" rx="18" fill="#e9eef6"/>
+      <rect x="-45" y="-84" width="90" height="168" rx="9" fill="#1c2130" stroke-width="2"/>
+      <path d="M-26 -56 H22" fill="none" stroke="#f39c12" stroke-width="6"/>
+      <path d="M32 -56 L16 -67 V-45 Z" fill="#f39c12" stroke="none"/>
+      <circle cx="2" cy="22" r="36" fill="none" stroke="#2ec4d6" stroke-width="3" opacity="0.5"/>
+      <circle cx="2" cy="22" r="23" fill="none" stroke="#2ec4d6" stroke-width="4"/>
+      <circle cx="2" cy="22" r="10" fill="#2ec4d6" stroke="none"/>
+    </g>
+    <rect x="236" y="84" width="144" height="118" rx="10" fill="#1c2538" stroke="#343d57" stroke-width="2"/>
+    <path d="M248 186 H368 M248 162 H368 M248 138 H368" stroke="#2a3348" stroke-width="1"/>
+    <polyline points="248,178 266,166 284,172 302,144 320,160 338,136 366,152" fill="none" stroke="#2ecc71" stroke-width="4"/>
+    <g fill="#2ecc71" stroke="none"><circle cx="266" cy="166" r="4"/><circle cx="302" cy="144" r="4"/><circle cx="338" cy="136" r="4"/><circle cx="366" cy="152" r="4"/></g>
+    <text x="248" y="116" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="22" font-weight="700" fill="#ffffff" stroke="none">18 ms</text>
+    <g stroke="#343d57" stroke-width="2"><path d="M368 28 h14 M375 21 v14 M18 28 h14 M25 21 v14 M368 272 h14 M375 265 v14"/></g>
+    <rect x="236" y="222" width="144" height="30" rx="15" fill="#2ec4d6" stroke="none"/>
+    <text x="308" y="243" text-anchor="middle" font-family="system-ui, 'Segoe UI', Arial, sans-serif" font-size="15" font-weight="800" letter-spacing="3" fill="#10131c" stroke="none">INPUT LAB</text>
+  </g>
+</svg>

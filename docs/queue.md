@@ -7,9 +7,9 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
-| A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | queued |
-| B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | queued |
-| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | queued |
+| A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | building |
+| B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | building |
+| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | building |
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | queued |
 | E | Course pictures: the tool and the saved previews | sonnet | | queued |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | queued |
@@ -457,6 +457,8 @@ world frees), unit tests.
 ## Decisions made during the run
 
 (The main session logs here what it decided without the user, for the review at the end.)
+
+- D: no changes to the cover drafts were recorded when the user saw them, so D finishes them as drawn.
 
 ## Parked for the user
 

@@ -443,7 +443,9 @@ Probably more than one chat: its first chat proposes a split. (Seaside Skyway's 
 - [ ] Host "Tap to start" screen (unlocks audio, requests fullscreen where supported)
 - [ ] Loading screen with a progress bar (lazy loading and the ready check already exist from M5a)
 - [ ] Revisit what happens when a player drops mid-race, using the device runs of M5b, M5c and M7 (M5b's choice: the kart keeps its place with neutral input)
-- [ ] The 3D race back to a steady 60 fps on the iPad with 4 views on High (M7d5's Measure: 17.5 ms a frame, drops to about 40 fps): the karts' shadows from a simple one-mesh stand-in per kart (each kart's 10 draw calls are drawn again in every view's shadow pass) and bloom's clamp folded into its first pass (bloom went from 1.4 to 3.5 ms with 4 views after the flicker fix); measure each with Measure (decided after the M7e device run)
+- [ ] The 3D race back to a steady 60 fps on the iPad with 4 views on High (Palm Bay Airport already holds 60 with 4 views, M9's device run; Seaside Skyway does not. M7d5's Measure: 17.5 ms a frame, drops to about 40 fps): the karts' shadows from a simple one-mesh stand-in per kart (each kart's 10 draw calls are drawn again in every view's shadow pass) and bloom's clamp folded into its first pass (bloom went from 1.4 to 3.5 ms with 4 views after the flicker fix); measure each with Measure (decided after the M7e device run)
+- [ ] Palm Bay Airport's leftovers (M9): the plain grass south of the runway and in the start lobe's middle; the islands read small from the glide; the boats rock through a copy of Seaside's private `addBoats` (export one and use it in both); the runway's west number reads upside down from a kart (kept as built, the user's call)
+- [ ] Split the long files: `kart-physics.js` (231 lines), `renderer.js` (259), `createRoadObjectDrawing` (one long closure), `sticky-walls-look.js` (204)
 - [ ] Optional: Seaside Skyway takes almost 7 s to appear on the iPad (M7d4d: about 4 s): drawing the kit's maps once per game instead of at every build would win most of it back (M7d4d's note)
 
 ### M11: Deploy to Termux

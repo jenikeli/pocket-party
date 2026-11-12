@@ -8,14 +8,20 @@ import { playersInSlotOrder } from '/host/roster.js';
 import { createRace, stepRace, removeKart } from './race.js';
 import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from '/host/kart/setup.js';
 import { createControlsTable } from '/host/kart/kart-controls.js';
-import { controllerView, setupView } from './race-views.js';
+import { controllerView, setupView, roomIsOpen } from './race-views.js';
 import { createRenderer } from './renderer.js';
+import { loadStylesheet } from './panel-parts.js';
 
 // Returns a fresh race game that follows the game module interface in plan.md.
 export function createGame() {
   let players = null;
   let setControllerView = null;
+  let setRoomOpen = null;
   let renderer = null;
+  // The panels' stylesheet, loaded with the game and removed when it stops.
+  let stylesheet = null;
+  // Whether the shell has been told the room is open; null until the first time.
+  let roomOpen = null;
   // Laps and control styles, kept from race to race until the game goes back to the lobby.
   const setup = createSetup();
   // null while the setup screen shows.
@@ -25,12 +31,16 @@ export function createGame() {
   const sentViews = new Map();
   let wantsLobby = false;
 
-  // Everything is drawn from code; Phaser loads with the renderer (host/hand-driven-phaser.js).
-  async function load() {}
+  // Everything is drawn from code and the panels are HTML; Phaser loads with the renderer
+  // (host/hand-driven-phaser.js). Only the panels' stylesheet is fetched here.
+  async function load() {
+    stylesheet = await loadStylesheet('/host/games/kart-2d/kart-2d.css');
+  }
 
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
+    setRoomOpen = shell.setRoomOpen;
     renderer = createRenderer(shell.container, {
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onStartRace: startRace,
@@ -44,6 +54,18 @@ export function createGame() {
   function showSetup() {
     race = null;
     clearReady(setup);
+    syncRoomOpen();
+  }
+
+  // The room is open to new players on the setup and results screens and closed while karts race. A player
+  // who comes in is in `players` at once, so the setup shows them and the next race gives them a kart. The
+  // shell is told only when this changes.
+  function syncRoomOpen() {
+    const open = roomIsOpen(race);
+    if (open !== roomOpen) {
+      roomOpen = open;
+      setRoomOpen(open);
+    }
   }
 
   // Everyone in the roster gets a kart, on the grid in slot order. Inputs held from the last race are dropped.
@@ -56,6 +78,7 @@ export function createGame() {
     }
     race = createRace(grid.map((player) => player.playerId), setup.laps);
     controls = createControlsTable();
+    syncRoomOpen();
   }
 
   function onMessage(playerId, message) {
@@ -75,6 +98,7 @@ export function createGame() {
     if (race) {
       const controlsFor = (playerId) => controls.controlsFor(players.get(playerId), playerSetup(setup, playerId).autoAccelerate);
       stepRace(race, controlsFor, dt);
+      syncRoomOpen();
     }
     sendChangedViews();
   }
@@ -111,6 +135,8 @@ export function createGame() {
   }
 
   function stop() {
+    // The stylesheet first, so it goes even if tearing down the renderer throws.
+    stylesheet?.remove();
     renderer.destroy();
   }
 

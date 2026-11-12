@@ -1,83 +1,63 @@
-// The 2D race's results, drawn over the track when the race is over: places, names and finish times, and the
-// "Race again" and "Back to lobby" buttons. Used by host/games/kart-2d/renderer.js.
+// The 2D race's results, shown over the dimmed track when the race is over: places, names and finish times, and
+// the "Race again" and "Back to lobby" buttons. HTML in the race's stage. Used by host/games/kart-2d/renderer.js.
 
-import { drawButton } from '/host/buttons.js';
 import { standingRows } from './race-views.js';
 import { formatRaceTime } from '/host/kart/race-time.js';
 import { ordinal } from '/shared/ordinal.js';
-import { displayName, colorText } from '/host/roster.js';
+import { createPlayerChip, fillPlayerChip } from './panel-parts.js';
 
-const TEXT_STYLE = { fontFamily: 'sans-serif', color: '#ffffff' };
-// Above the karts and the live readout.
-const DEPTH = 2;
-const FIRST_ROW_Y = 260;
-const ROW_HEIGHT = 58;
-// Button centres at 1:1 scale; the browser tests click them.
-export const RACE_AGAIN_BUTTON = { x: 760, y: 880 };
-export const BACK_TO_LOBBY_BUTTON = { x: 1160, y: 880 };
+// Adds the screen to `stage` (a .pp-stage). `onRaceAgain()` and `onBackToLobby()` run on a click. Returns
+// { show(race, players), hide() }.
+export function createResultsPanel(stage, { onRaceAgain, onBackToLobby }) {
+  const screen = document.createElement('section');
+  screen.id = 'kart-2d-results';
+  screen.className = 'k2d-screen';
+  screen.hidden = true;
+  screen.innerHTML = `
+    <div class="pp-panel k2d-panel">
+      <h1 class="pp-title k2d-heading">Results</h1>
+      <ol id="kart-2d-results-rows" class="k2d-list"></ol>
+      <div class="k2d-buttons">
+        <button type="button" id="kart-2d-race-again-button" class="pp-button pp-primary pp-big">Race again</button>
+        <button type="button" id="kart-2d-lobby-button" class="pp-button pp-big">Back to lobby</button>
+      </div>
+    </div>`;
+  stage.append(screen);
+  const rows = screen.querySelector('#kart-2d-results-rows');
+  screen.querySelector('#kart-2d-race-again-button').addEventListener('click', onRaceAgain);
+  screen.querySelector('#kart-2d-lobby-button').addEventListener('click', onBackToLobby);
 
-// Returns { show(race, players), hide() }. `onRaceAgain()` and `onBackToLobby()` run on a click.
-export function createResultsPanel(scene, { onRaceAgain, onBackToLobby }) {
-  // Dims the whole track and catches clicks, so nothing behind the panel reacts.
-  const shade = scene.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.6).setInteractive();
-  const panel = scene.add.rectangle(960, 540, 1000, 820, 0x1c2130).setStrokeStyle(4, 0x3a4258);
-  const title = scene.add.text(960, 180, 'Results', { ...TEXT_STYLE, fontSize: '64px', fontStyle: 'bold' }).setOrigin(0.5);
-  const raceAgain = drawButton(scene, RACE_AGAIN_BUTTON.x, RACE_AGAIN_BUTTON.y, {
-    width: 340,
-    height: 90,
-    label: 'Race again',
-    onClick: onRaceAgain,
-  });
-  const backToLobby = drawButton(scene, BACK_TO_LOBBY_BUTTON.x, BACK_TO_LOBBY_BUTTON.y, {
-    width: 340,
-    height: 90,
-    label: 'Back to lobby',
-    onClick: onBackToLobby,
-  });
-  const fixedObjects = [shade, panel, title, ...raceAgain.objects, ...backToLobby.objects];
-  // The rows are drawn fresh for each race's results.
-  let rowObjects = [];
-
+  // Called once per race, so the rows are built fresh each time.
   function show(race, players) {
-    destroyRows();
-    standingRows(race).forEach((standing, index) => {
+    const items = [];
+    for (const standing of standingRows(race)) {
       const player = players.get(standing.playerId);
       if (player) {
-        rowObjects.push(...drawRow(scene, FIRST_ROW_Y + index * ROW_HEIGHT, standing, player));
+        items.push(createRow(standing, player));
       }
-    });
-    setVisible(true);
+    }
+    rows.replaceChildren(...items);
+    screen.hidden = false;
   }
 
   function hide() {
-    destroyRows();
-    setVisible(false);
+    rows.replaceChildren();
+    screen.hidden = true;
   }
 
-  function destroyRows() {
-    for (const object of rowObjects) {
-      object.destroy();
-    }
-    rowObjects = [];
-  }
-
-  function setVisible(visible) {
-    for (const object of [...fixedObjects, ...rowObjects]) {
-      object.setVisible(visible).setDepth(DEPTH);
-    }
-  }
-
-  hide();
   return { show, hide };
 }
 
-function drawRow(scene, y, standing, player) {
-  const time = standing.finishTime === null ? 'Did not finish' : formatRaceTime(standing.finishTime);
-  return [
-    scene.add.text(560, y, ordinal(standing.place), { ...TEXT_STYLE, fontSize: '38px', color: '#9aa4bf' }).setOrigin(0, 0.5),
-    scene.add
-      .text(680, y, displayName(player), { ...TEXT_STYLE, fontSize: '38px', fontStyle: 'bold', color: colorText(player) })
-      .setOrigin(0, 0.5),
-    scene.add.text(1360, y, time, { ...TEXT_STYLE, fontSize: '38px' }).setOrigin(1, 0.5),
-  ];
+function createRow(standing, player) {
+  const row = document.createElement('li');
+  row.className = 'k2d-result';
+  const place = document.createElement('span');
+  place.className = 'pp-muted';
+  place.textContent = ordinal(standing.place);
+  const chip = createPlayerChip();
+  fillPlayerChip(chip, player);
+  const time = document.createElement('span');
+  time.textContent = standing.finishTime === null ? 'Did not finish' : formatRaceTime(standing.finishTime);
+  row.append(place, chip, time);
+  return row;
 }

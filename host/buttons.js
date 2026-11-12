@@ -1,5 +1,5 @@
 // Buttons drawn on a game's Phaser canvas: a plain one, and one that asks "Sure?" before doing something that
-// cannot be undone. Used by the input lab and the 2D race.
+// cannot be undone. Used by the input lab.
 
 const NORMAL_COLOR = 0x2a3145;
 const HOVER_COLOR = 0x3a4258;

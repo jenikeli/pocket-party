@@ -1,12 +1,36 @@
 // What the 2D race shows, worked out from the setup and race state: each phone's view (sent with
-// setControllerView) and the rows of the standings and results (times as text are host/kart/race-time.js's).
+// setControllerView), the rows of the host's setup screen, standings and results (times as text are
+// host/kart/race-time.js's), and when the room is open to new players.
 // Plain functions, unit tested in Node. Used by index.js and the renderer.
 
-import { kartsInPlaceOrder, currentLap, countdownNumber } from './race.js';
+import { kartsInPlaceOrder, currentLap, countdownNumber, RACE_PHASES } from './race.js';
 import { playerSetup } from '../../kart/setup.js';
+import { playersInSlotOrder } from '../../roster.js';
+import { KART_STEERING } from '../../../shared/protocol.js';
 
 // The phase a phone's view has on the setup screen, before every race; the race's own are RACE_PHASES.
 export const SETUP_PHASE = 'setup';
+
+// One row per player on the host's setup screen, in slot order: { player, controlsText, stateText, ready }. A
+// player who joined while the screen was up is in `players`, so they get a row (and a kart) like the rest.
+export function setupRows(setup, players) {
+  return playersInSlotOrder(players).map((player) => {
+    const { steering, autoAccelerate, ready } = playerSetup(setup, player.playerId);
+    const steeringText = steering === KART_STEERING.TILT ? 'Tilt' : 'Stick';
+    const stateText = !player.connected ? '(away)' : ready ? 'Ready' : 'Choosing...';
+    return {
+      player,
+      controlsText: `${steeringText}, ${autoAccelerate ? 'auto-accelerate' : 'Go button'}`,
+      stateText,
+      ready: player.connected && ready,
+    };
+  });
+}
+
+// Whether new players may join: on the setup screen (no race) and the results, not while karts are racing.
+export function roomIsOpen(race) {
+  return race === null || race.phase === RACE_PHASES.RESULTS;
+}
 
 // The view for one player's phone on the setup screen: { phase: 'setup', laps, steering, autoAccelerate, ready }.
 export function setupView(setup, playerId) {

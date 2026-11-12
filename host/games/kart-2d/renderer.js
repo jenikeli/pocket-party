@@ -1,5 +1,6 @@
-// Draws the 2D race with its own Phaser game inside the game's container: the track, the setup screen, a sprite
-// per kart, the live readout and the results. It only reads the game state; the rules never see Phaser.
+// Draws the 2D race inside the game's container: a Phaser canvas with the track and a sprite per kart, and over
+// it a .pp-stage of HTML panels (the live readout, the setup screen and the results, in the host's look). It only
+// reads the game state; the rules never see Phaser.
 // Used by host/games/kart-2d/index.js, which calls draw() from render().
 
 import { startHandDrivenPhaser } from '/host/hand-driven-phaser.js';
@@ -14,10 +15,14 @@ import { createSetupPanel } from './setup-panel.js';
 // `onLapsStep(step)` (-1 or 1) and `onStartRace()` are the setup panel's buttons, `onRaceAgain()` and
 // `onBackToLobby()` the results panel's. Returns { draw(setup, race, players, alpha), destroy() }.
 export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain, onBackToLobby }) {
+  // The panels are HTML, so they exist at once. The stage is positioned, so it paints above Phaser's canvas.
+  const stage = document.createElement('div');
+  stage.className = 'pp-stage';
+  container.append(stage);
+  const hud = createRaceHud(stage);
+  const setupPanel = createSetupPanel(stage, { onLapsStep, onStartRace });
+  const resultsPanel = createResultsPanel(stage, { onRaceAgain, onBackToLobby });
   // Set once Phaser has made the scene, a frame or two after start.
-  let hud = null;
-  let setupPanel = null;
-  let resultsPanel = null;
   let scene = null;
   // playerId -> kart sprite.
   const sprites = new Map();
@@ -30,9 +35,6 @@ export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain
     create(newScene) {
       scene = newScene;
       drawTrack(scene);
-      hud = createRaceHud(scene);
-      setupPanel = createSetupPanel(scene, { onLapsStep, onStartRace });
-      resultsPanel = createResultsPanel(scene, { onRaceAgain, onBackToLobby });
     },
   });
 
@@ -40,10 +42,10 @@ export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain
   function draw(setup, race, players, alpha) {
     if (scene) {
       showKarts(race, players, alpha);
-      setupPanel.show(race ? null : setup, players);
-      hud.show(race, players);
-      showResults(race, players);
     }
+    setupPanel.show(race ? null : setup, players);
+    hud.show(race, players);
+    showResults(race, players);
     phaser.drawFrame();
   }
 
@@ -83,5 +85,10 @@ export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain
     }
   }
 
-  return { draw, destroy: () => phaser.destroy() };
+  function destroy() {
+    stage.remove();
+    phaser.destroy();
+  }
+
+  return { draw, destroy };
 }

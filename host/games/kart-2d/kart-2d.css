@@ -1,0 +1,140 @@
+/* The 2D race's panels in the host's look (host/ui.css): the setup and results screens over the dimmed track, and
+   the live readout in the infield. Sizes are in em of the race's .pp-stage. Loaded with the game by
+   host/games/kart-2d/index.js. */
+
+/* A full-stage dim with one panel in the middle. It stops clicks reaching the track under it. */
+.k2d-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.k2d-panel {
+  width: 42em;
+  padding: 1.4em 2em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  border: 0.1em solid var(--pp-line);
+}
+
+.k2d-heading {
+  font-size: 2.4em;
+  text-align: center;
+}
+
+.k2d-laps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8em;
+  font-size: 1.4em;
+}
+
+.k2d-laps .pp-button {
+  min-width: 2.2em;
+}
+
+.k2d-laps-value {
+  min-width: 1.5em;
+  text-align: center;
+  font-weight: 800;
+}
+
+.k2d-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.k2d-player,
+.k2d-result {
+  display: grid;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.2em 0.5em;
+  border-radius: var(--pp-radius);
+  background: var(--pp-panel-2);
+  font-size: 0.8em;
+}
+
+.k2d-player {
+  grid-template-columns: 11em 1fr auto;
+}
+
+.k2d-result {
+  grid-template-columns: 2.5em 1fr auto;
+  font-size: 1.1em;
+}
+
+.k2d-ready {
+  color: var(--pp-ok);
+  font-weight: 600;
+}
+
+.k2d-status {
+  text-align: center;
+}
+
+.k2d-panel .pp-big {
+  align-self: center;
+}
+
+.k2d-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+/* The readout in the infield, left clear of the road (the infield is 860 x 500 design pixels round the middle of
+   the screen, see track.js). Not clickable: it overrides the stage's "children take clicks". */
+.pp-stage > .k2d-hud {
+  position: absolute;
+  left: 27.5em;
+  top: 13em;
+  width: 25em;
+  pointer-events: none;
+}
+
+.k2d-hud-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.4em;
+}
+
+.k2d-clock {
+  font-size: 1.7em;
+  font-weight: 800;
+}
+
+.k2d-time-left {
+  color: #f1c40f;
+  font-size: 1.25em;
+}
+
+.k2d-standing {
+  display: grid;
+  grid-template-columns: 2.4em 1fr auto;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85em;
+}
+
+.pp-stage > .k2d-countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10em;
+  font-weight: 800;
+  text-shadow: 0 0 0.1em #000, 0 0 0.05em #000;
+  pointer-events: none;
+}

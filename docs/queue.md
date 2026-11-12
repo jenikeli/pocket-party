@@ -14,7 +14,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | E | Course pictures: the tool and the saved previews | sonnet | | building |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | building |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |
-| H | 2D race: setup and results as HTML in the look | sonnet | A | building |
+| H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | queued |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |

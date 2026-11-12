@@ -9,7 +9,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 |---|---|---|---|---|
 | A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | building |
 | B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
-| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | building |
+| C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | built, in review (branch worktree-agent-ac0e0fe1ce2cfddb0, 5b5a364) |
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | building |
 | E | Course pictures: the tool and the saved previews | sonnet | | queued |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | queued |
@@ -463,6 +463,13 @@ world frees), unit tests.
   (A's protocol). The main session adds it after A merges (`others: [names]`, sent by `host/room.js`, shown by
   `controller/lobby-screen.js`), as a small fix.
 - B: `controller/no-zoom.js` added beside the spec's files (main.js was at 191 lines); accepted.
+- C: tilt is recentred when the phase leaves the countdown (the phone is turned during it, so the first reading
+  after the turn would be mid-turn). In portrait the turned controls cover the whole page, the shell's Leave
+  included (reachable on the setup screen). `controller/kart/style.css` split into `setup.css`, `controls.css`,
+  `buttons.css` (plan.md names the old file). Breaks `m5b`'s "Turn your phone sideways" test and `m6c`'s Drift
+  colour check (now `--pp-panel-2`): T1/T2 fix them and add a portrait (turned) driving test.
+- Interrupted 2026-11-12 by the usage limit: A and D were still building in their worktrees, C's reviewer was
+  running. On resume follow the skill's "After an interruption" (git worktree list).
 
 ## Parked for the user
 

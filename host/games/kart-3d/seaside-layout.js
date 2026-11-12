@@ -3,7 +3,7 @@
 // instead of piers. The lap has two halves, themed on the course's name: the seaside (the last straight, the
 // start and the first corners, s 1075-1213 and 0-340: a harbour with a boardwalk and a promenade, beaches,
 // palms and fences of wood and stone) and the sky (the climb to the hairpin and on round the anti-gravity
-// wall, s 340-1075: steel guardrails and trusses among floating islands). Distances along the lap (s) follow
+// wall, s 340-1075: steel guardrails and trusses over the open sea). Distances along the lap (s) follow
 // the pieces in seaside-skyway.js. Plain data, unit tested in Node. Drawn by host/games/kart-3d/seaside-scenery.js.
 
 import { BARRIER_STYLES } from './kit/layout-rules.js';

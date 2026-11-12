@@ -49,7 +49,7 @@ export function buildSeasideScenery({ world, track, sea, keep }) {
   grandstand.object.matrix.copy(spotFrame(track, GRANDSTAND));
   props.world.add(grandstand.object);
   const surroundings = buildSeasideSurroundings(kitPart(kit, KIT_PARTS.SURROUNDINGS), sea);
-  const sky = buildSeasideSky(kitPart(kit, KIT_PARTS.SKY), seaLevel, middleOf(track));
+  const sky = buildSeasideSky(kitPart(kit, KIT_PARTS.SKY), middleOf(track));
   return {
     update(dt, race) {
       startLights.update(race);

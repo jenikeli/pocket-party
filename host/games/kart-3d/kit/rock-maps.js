@@ -1,8 +1,8 @@
 // The kit's rock (M7d4d): big rounded slabs in rough courses with dark seams between them, as on Mario Circuit's
 // and Toad Circuit's cliffs (docs/mk8dx-reference.md), drawn as colour, relief, shade and roughness maps in a tile
-// that repeats without a seam, and the one rock material made from them, drawn once per course and shared by the
-// floating islands, the backdrop cliffs and the beach islands' rocks. Pale, so each part's vertex colour (warm tan
-// to orange) tints it. Used by kit/floating-island.js and kit/beach-island.js.
+// that repeats without a seam, and the one rock material made from them, drawn once per course and used by the
+// beach islands' rocks (the floating islands and backdrop cliffs it was made for went in M10). Pale, so each
+// part's vertex colour (warm tan to orange) tints it. Used by kit/beach-island.js.
 
 import * as THREE from 'three';
 import { createSurface } from './surface-maps.js';

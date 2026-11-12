@@ -2,7 +2,7 @@
 // shelf of pale sand under the water round it, turquoise shallows over that shelf fading into the deep blue, and
 // white foam where the water meets the beach. Every island's land, shallows, foam and rocks are merged into one
 // geometry each; their outline and height come from seaside-landmarks.js. Since M7d4c3 it also makes their
-// materials; since M7d4d the rocks are rounded slabs of the cliffs' rock (kit/rock-maps.js). Used by the seaside
+// materials; since M7d4d the rocks are rounded slabs of the kit's rock (kit/rock-maps.js). Used by the seaside
 // surroundings.
 
 import * as THREE from 'three';
@@ -114,7 +114,7 @@ function buildRings(island, y, stops, patchy = false) {
   }, true);
 }
 
-// Rocks half sunk round the shore, of the cliffs' rock (kit/floating-island.js): each a big rounded slab with a
+// Rocks half sunk round the shore, of the kit's rock (kit/rock-maps.js): each a big rounded slab with a
 // smaller one lying on it, warm tan, darker and wet low down. Where each stands and how big it is come from
 // `random` (five draws a rock, as the palms and huts drawn after them expect); its lumps from a random of its own.
 // No wider or taller than the flat-faceted rocks it replaced (M7d3).
@@ -140,7 +140,7 @@ function buildRocks(island, seaLevel, random) {
 // A rounded slab reaching `size` out (`stretch` times that the other way) and `flat` times as tall: a ball with
 // lumps pushed in and out, its top pressed flatter than its sides, so it lies like a slab with a rounded edge
 // rather than a pebble. Lighter on top and darker underneath, where it sits in a crease. Its texture coordinates
-// lay the rock's tile on ROCK_TILE units wide and half as tall, as on the cliffs.
+// lay the rock's tile on ROCK_TILE units wide and half as tall.
 function rockSlab(size, stretch, flat, lumps) {
   const slab = new THREE.SphereGeometry(1, 10, 7);
   const phases = [0, 1, 2].map(() => between(lumps, 0, 2 * Math.PI));

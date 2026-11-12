@@ -1,6 +1,6 @@
 // The kit-shots pieces for the seaside course's decks, supports and what stands in its sea and sky (M7d4c3):
-// the four decks, trusses and piers, the lighthouse, stilt hut, Koopa shell, beach island, floating island,
-// backdrop cliff, sailboat, motor yacht (M7d4d), cloud, balloon and airship. Same shape as pieces.js's entries, plus `sea: true` for the
+// the four decks, trusses and piers, the lighthouse, stilt hut, Koopa shell, beach island, sailboat, motor yacht
+// (M7d4d), cloud, balloon and airship. Same shape as pieces.js's entries, plus `sea: true` for the
 // pieces that need the race's sea under them (viewer.js adds it, SEA_DROP below the road) and build(kit,
 // seaLevel). Sea and sky pieces stand beside the road, `out` past its edge (the road is 'walled', so no ground
 // beside it), facing the road. Used by pieces.js.
@@ -18,8 +18,6 @@ import { buildKoopaShell } from '../games/kart-3d/kit/koopa-shell.js';
 import { buildSailboat } from '../games/kart-3d/kit/sailboat.js';
 import { buildMotorYacht } from '../games/kart-3d/kit/motor-yacht.js';
 import { buildBeachIslands } from '../games/kart-3d/kit/beach-island.js';
-import { buildFloatingIslands, buildBackdropCliffs } from '../games/kart-3d/kit/floating-island.js';
-import { buildRoundTree } from '../games/kart-3d/kit/round-tree.js';
 import { buildCloud } from '../games/kart-3d/kit/clouds.js';
 import { buildBalloon } from '../games/kart-3d/kit/balloon.js';
 import { buildAirship } from '../games/kart-3d/kit/airship.js';
@@ -98,21 +96,6 @@ function buildBeachIslandPiece(kit, seaLevel) {
   addInstances(kit, buildPalmParts(kit), islands.palms);
 }
 
-// A floating island at the road's height with round trees on its top.
-function buildFloatingIslandPiece(kit) {
-  const { x, z } = groundOf(standAt(kit, 20, 0));
-  const island = { x, z, y: -2, radius: 11 };
-  addIslands(kit, buildFloatingIslands(kit, [island]));
-  const trees = [[0, 0], [4, 1], [-3, 3], [1, -4]].map(([dx, dz], index) => ({ x: x + dx, y: island.y + 0.04 * island.radius, z: z + dz, turn: index * 1.7, size: 1 }));
-  addInstances(kit, buildRoundTree(kit), trees);
-}
-
-// A cliff off the horizon's size, at half the distance.
-function buildBackdropCliffPiece(kit, seaLevel) {
-  const { x, z } = groundOf(standAt(kit, 60, seaLevel));
-  addIslands(kit, buildBackdropCliffs(kit, [{ x, z, radius: 50, height: 36 }], seaLevel));
-}
-
 // The giant shell, half sunk and tipped over as the race has it.
 function buildKoopaShellPiece(kit, seaLevel) {
   const [{ geometry, material }] = buildKoopaShell(kit);
@@ -140,8 +123,6 @@ export const LANDMARK_PIECES = {
   'stilt-hut': landmark((kit, seaLevel) => addParts(kit, buildStiltHut(kit), standAt(kit, 14, seaLevel)), 14, -SEA_DROP + 3, 6, { eye: NEAR_WATER }),
   'koopa-shell': landmark(buildKoopaShellPiece, 30, -SEA_DROP + 3, 12, { eye: NEAR_WATER }),
   'beach-island': landmark(buildBeachIslandPiece, 34, -SEA_DROP + 4, 24, { eye: NEAR_WATER }),
-  'floating-island': landmark(buildFloatingIslandPiece, 20, -6, 28, { sea: false }),
-  'backdrop-cliff': landmark(buildBackdropCliffPiece, 60, -SEA_DROP + 18, 100),
   sailboat: landmark((kit, seaLevel) => addParts(kit, buildSailboat(kit), standAt(kit, 12, seaLevel, 70)), 12, -SEA_DROP + 3, 5, { eye: NEAR_WATER }),
   'motor-yacht': landmark((kit, seaLevel) => addParts(kit, buildMotorYacht(kit), standAt(kit, 12, seaLevel, 70)), 12, -SEA_DROP + 3, 8, { eye: NEAR_WATER }),
   cloud: landmark((kit) => addParts(kit, buildCloud(kit), standAt(kit, 24, 3)), 24, 6, 30, { sea: false }),

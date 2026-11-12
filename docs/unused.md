@@ -15,12 +15,6 @@ deleted or used again. Last checked 2026-11-06 (end of M9).
   2026-11-04 without merging, since the JS karts were chosen. Its last commit, `94726dd`, can be recovered from the
   reflog for about 90 days (`git branch blender-blaze 94726dd`).
 
-## To go in M10 Polish
-
-Still drawn in the race, but planned for removal when Seaside Skyway is brought down by the sea (M10's first step):
-- the floating islands and the backdrop cliffs (`kit/floating-island.js`, the cliffs in `seaside-sky.js` and
-  `seaside-landmarks.js`), which looked bad on the M7d4c3-d device run.
-
 ## Small things in the code
 
 - `isOnRoad` in `host/games/kart-2d/track.js`: used only by its unit test (`test/unit/kart-track.test.js`); the

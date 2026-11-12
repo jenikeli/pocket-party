@@ -1,10 +1,9 @@
 // Where Seaside Skyway's surroundings stand (M7d3), in the course's own coordinates (x right, z down the plan in
 // seaside-skyway.js; the road runs from x -40 to 224 and z 0 to 291, at heights 0 to 10, over a sea at -14).
 // Round the seaside half: beach islands with palms and huts on stilts, a stone lighthouse ahead of the start
-// straight, a giant Koopa shell half sunk off the first corner, sailboats. Round the sky half: islands floating
-// at the road's height and above, clouds beside and under the high road, hot-air balloons, an airship circling.
-// Far out: cliffs on the horizon. Plain data and maths, unit tested in Node (nothing reaches the road). Drawn by
-// host/games/kart-3d/seaside-surroundings.js.
+// straight, a giant Koopa shell half sunk off the first corner, sailboats. Round the sky half: clouds beside and
+// under the high road, hot-air balloons, an airship circling. Plain data and maths, unit tested in Node (nothing
+// reaches the road). Drawn by seaside-surroundings.js (the sea) and seaside-sky.js (the sky).
 
 // Each beach island: its middle (x, z), its radius at the waterline, its height above the sea, how many palms
 // grow on it and how many huts on stilts stand in its shallows.
@@ -37,32 +36,6 @@ export const BOATS = Object.freeze([
   { kind: 'sailboat', x: -150, z: 20, heading: 2.8 },
   { kind: 'motor-yacht', x: 40, z: 140, heading: -1.9 },
   { kind: 'sailboat', x: 300, z: 140, heading: 0.9 },
-]);
-
-// Islands floating in the sky round the high road: middle (x, z), the height of their grassy top (y), radius
-// and how many round trees grow on it. The last four are big and farther out, high over the sea.
-export const FLOATING_ISLANDS = Object.freeze([
-  { x: 270, z: 200, y: 6, radius: 14, trees: 4 },
-  { x: 280, z: 268, y: 22, radius: 15, trees: 4 },
-  { x: 180, z: 350, y: 14, radius: 18, trees: 6 },
-  // In the hairpin's U, between the paddock and the landing.
-  { x: 113, z: 156, y: -3, radius: 7, trees: 3 },
-  // Inside the sweeper, a little below the road, so it shows past the inside guardrail.
-  { x: 179, z: 238, y: 2, radius: 17, trees: 6 },
-  { x: 45, z: 300, y: 18, radius: 15, trees: 4 },
-  { x: -25, z: 250, y: 7, radius: 11, trees: 3 },
-  { x: 370, z: 130, y: 42, radius: 30, trees: 8 },
-  { x: -190, z: 320, y: 48, radius: 32, trees: 8 },
-  { x: 120, z: -190, y: 36, radius: 30, trees: 8 },
-  { x: -230, z: -40, y: 30, radius: 26, trees: 6 },
-]);
-
-// Cliffs on the horizon rising from the sea, with grass on top: middle, radius and height above the sea.
-export const BACKDROP_CLIFFS = Object.freeze([
-  { x: -330, z: 150, radius: 80, height: 48 },
-  { x: 480, z: 270, radius: 90, height: 58 },
-  { x: 170, z: -360, radius: 95, height: 42 },
-  { x: 60, z: 540, radius: 100, height: 52 },
 ]);
 
 // Clouds round the sky half's high road, at its height and below it, as on MK8DX's Cloudtop Cruise: middle

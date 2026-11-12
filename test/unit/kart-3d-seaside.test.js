@@ -12,8 +12,6 @@ import {
   LIGHTHOUSE,
   KOOPA_SHELL,
   BOATS,
-  FLOATING_ISLANDS,
-  BACKDROP_CLIFFS,
   NEAR_CLOUDS,
   BALLOONS,
   AIRSHIP_PATH,
@@ -29,16 +27,15 @@ import { checkDecks, checkProps, checkBunting, checkDeckJoins, checkTurnBoards }
 const seaside = buildTrack(SEASIDE_SKYWAY);
 // scenery.js's sea level for the seaside scenery.
 const SEA_LEVEL = -14;
-// An outline wobbles out to at most 1.19 times its radius (shoreRadius; the floating islands' lathe is the same).
+// An outline wobbles out to at most 1.19 times its radius (shoreRadius).
 const WOBBLE = 1.19;
 // What karts and their cameras need above the road, and what hangs under it (the road, a deck, a girder).
 const ABOVE_ROAD = 5;
 const BELOW_ROAD = 3;
 // How far beside the edge of the ground the road's own things reach where no deck is: the barriers' ledge.
 const LEDGE = 1;
-// The tallest palm (size 1.15) and round tree (size 1.25).
+// The tallest palm (size 1.15).
 const PALM_HEIGHT = 10.5;
-const TREE_HEIGHT = 7.2;
 
 // Points across the road, its sides and any deck beside it at every station, every unit: wherever the road
 // is, rolled or not.
@@ -128,13 +125,6 @@ test('nothing round Seaside Skyway reaches the road or the room above it', () =>
   // A boat reaches 4.3 from its middle: the motor yacht (M7d4d) is 8.1 long with its swim platform.
   for (const boat of BOATS) {
     assert.ok(clearOfRoad({ x: boat.x, z: boat.z, reach: 4.3, bottom: SEA_LEVEL, top: SEA_LEVEL + 7.5 }), `the boat at ${boat.x}, ${boat.z}`);
-  }
-  for (const island of FLOATING_ISLANDS) {
-    const spot = { x: island.x, z: island.z, reach: island.radius * WOBBLE * 1.03, bottom: island.y - 1.2 * island.radius, top: island.y + TREE_HEIGHT };
-    assert.ok(clearOfRoad(spot), `the floating island at ${island.x}, ${island.z}`);
-  }
-  for (const cliff of BACKDROP_CLIFFS) {
-    assert.ok(clearOfRoad({ x: cliff.x, z: cliff.z, reach: cliff.radius * WOBBLE * 1.08 + 60, bottom: SEA_LEVEL, top: SEA_LEVEL + cliff.height * 1.05 }), 'a backdrop cliff, far off');
   }
   for (const cloud of NEAR_CLOUDS) {
     assert.ok(clearOfRoad({ x: cloud.x, z: cloud.z, reach: 16.5 * cloud.size, bottom: cloud.y, top: cloud.y + 7.5 * cloud.size }), `the cloud at ${cloud.x}, ${cloud.z}`);

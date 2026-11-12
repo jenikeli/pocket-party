@@ -14,6 +14,7 @@ import { hideTapToStart } from '/host/tap-to-start.js';
 import { confirmButton } from '/host/confirm-click.js';
 import { showPicture } from '/host/pictures.js';
 import { playGame } from '/host/game-session.js';
+import { playRosterSounds, forgetRoster, playShellSound } from '/host/shell-sounds.js';
 
 // Often enough for the "back in 0:24" countdowns to tick smoothly.
 const REFRESH_MS = 250;
@@ -27,7 +28,7 @@ export function createLobby(room) {
   const playerChips = createPlayerChips(document.getElementById('lobby-players'), {
     onRemove: (playerId) => room.kickPlayer(playerId),
   });
-  const gameTiles = drawGameTiles(chooseGame);
+  const gameTiles = drawGameTiles(chooseByClick);
   // True from Play until the game is loaded and running (or failed to load).
   let isStarting = false;
   // Why the last game did not load or stopped; cleared by the next Play.
@@ -60,6 +61,8 @@ export function createLobby(room) {
     returnFromGame(problemText) {
       room.setScreen(CONTROLLER_SCREENS.LOBBY);
       openRoomToEveryone();
+      // Joins and leaves during the game were not watched here; they should not all blip at once now.
+      forgetRoster();
       problem = problemText ?? '';
       screen.hidden = false;
       refresh();
@@ -81,6 +84,15 @@ export function createLobby(room) {
     room.setRoomOpen(true);
   }
 
+  // A click on a thumbnail clicks, unless it is the game already chosen. Choosing by code (the first showing)
+  // is silent.
+  function chooseByClick(gameId) {
+    if (!isStarting && gameId !== room.settings.gameId) {
+      playShellSound('click');
+    }
+    chooseGame(gameId);
+  }
+
   function chooseGame(gameId) {
     if (isStarting) {
       return;
@@ -96,6 +108,7 @@ export function createLobby(room) {
     }
     const game = findGame(room.settings.gameId);
     playerChips.show(room.players, Date.now());
+    playRosterSounds(room.players);
     for (const tile of gameTiles) {
       tile.setAttribute('aria-pressed', String(tile.dataset.gameId === game.id));
     }
@@ -115,6 +128,7 @@ export function createLobby(room) {
       return;
     }
     isStarting = true;
+    playShellSound('play');
     problem = '';
     closeJoinWindow();
     refresh();

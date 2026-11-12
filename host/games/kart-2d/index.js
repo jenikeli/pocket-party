@@ -11,6 +11,7 @@ import { createControlsTable } from '/host/kart/kart-controls.js';
 import { controllerView, setupView, roomIsOpen } from './race-views.js';
 import { createRenderer } from './renderer.js';
 import { loadStylesheet } from './panel-parts.js';
+import { createRaceSounds } from './race-sounds.js';
 
 // Returns a fresh race game that follows the game module interface in plan.md.
 export function createGame() {
@@ -18,6 +19,7 @@ export function createGame() {
   let setControllerView = null;
   let setRoomOpen = null;
   let renderer = null;
+  const raceSounds = createRaceSounds();
   // The panels' stylesheet, loaded with the game and removed when it stops.
   let stylesheet = null;
   // Whether the shell has been told the room is open; null until the first time.
@@ -100,6 +102,7 @@ export function createGame() {
       stepRace(race, controlsFor, dt);
       syncRoomOpen();
     }
+    raceSounds.update(race);
     sendChangedViews();
   }
 
@@ -137,6 +140,8 @@ export function createGame() {
   function stop() {
     // The stylesheet first, so it goes even if tearing down the renderer throws.
     stylesheet?.remove();
+    // Engines are held voices: they would drone on after the game if not stopped.
+    raceSounds.stop();
     renderer.destroy();
   }
 

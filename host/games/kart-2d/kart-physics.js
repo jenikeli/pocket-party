@@ -8,7 +8,7 @@ import { wallContact } from './track.js';
 export const KART_RADIUS = 18;
 
 // Speeds in px/s and px/s per second, on the 1920x1080 design.
-const MAX_SPEED = 420;
+export const MAX_SPEED = 420;
 const ACCELERATION = 520;
 const BRAKING = 900;
 const MAX_REVERSE_SPEED = 140;

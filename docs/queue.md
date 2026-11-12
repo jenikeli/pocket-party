@@ -22,7 +22,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | N | Palm Bay Airport's leftovers | sonnet | M | queued |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | queued |
 | J | 3D race sounds | opus | F I | queued |
-| K | 2D race and shell sounds | sonnet | H I | building |
+| K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | queued |
 | R | Long files split | sonnet | F G J O Q | queued |
@@ -495,6 +495,9 @@ world frees), unit tests.
   lettering, the alternative is s=1300, the beach road), Seaside s=600, test track s=100. Seaside's picture
   still shows a floating island until Z re-shoots (after M and N). `tools/course-previews.js` repeats
   kit-shots' small load-and-wait block: Z moves it to a shared helper and gives the course wait more than 180 s.
+- K: `host/shell-sounds.js` added beside the spec's files. Join and leave blips come from watching the roster on
+  the lobby's and the join window's refresh (a leave is a player removed, not a disconnect; joins during a game
+  with the join window shut are silent). `MAX_SPEED` exported from the 2D physics for the engine's pitch.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

@@ -5,6 +5,7 @@
 
 import { qrCodeSvg, joinUrl } from '/host/qr-code.js';
 import { createPlayerChips } from '/host/lobby-players.js';
+import { playRosterSounds, forgetRoster } from '/host/shell-sounds.js';
 
 // Often enough for the "back in 0:24" countdowns to tick smoothly.
 const REFRESH_MS = 250;
@@ -37,6 +38,8 @@ export function setRoomCode(roomCode) {
 
 export function openJoinWindow(room) {
   shownRoom = room;
+  // Over a running game nobody watched the players, so what changed before now is not news.
+  forgetRoster();
   joinWindow.hidden = false;
   refresh();
   clearInterval(refreshTimer);
@@ -52,4 +55,5 @@ export function closeJoinWindow() {
 
 function refresh() {
   playerChips.show(shownRoom.players, Date.now());
+  playRosterSounds(shownRoom.players);
 }

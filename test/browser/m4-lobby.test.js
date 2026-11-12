@@ -1,19 +1,22 @@
 // Browser tests for M4, the lobby and reconnection: the real host page (desktop Chromium) and real controller
 // pages on an emulated Android phone (Chromium) and iPhone (WebKit). Dead and unreachable sockets are faked by
 // routing the controller's WebSocket through Playwright (page.routeWebSocket), which can stop passing frames.
+// Since M10 the host's lobby is HTML (its player chips are read from the page, not from screenshot pixels), there
+// is no ready step (Play depends on the player count alone), and the phone's lobby has a Change name button. The
+// join window, room settings and late joiners are in m10-shell.test.js.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import {
-  START_BUTTON,
-  CLOSE_ROOM_BUTTON,
+  LOBBY_CLOSE_ROOM_BUTTON,
   GAME_CLOSE_ROOM_BUTTON,
-  lobbyRemoveButton,
+  lobbyChip,
   cardRemoveButton,
+  chooseGame,
+  closeJoinWindow,
   startGame,
   confirmClick,
 } from '../helpers/host-buttons.js';
@@ -24,13 +27,8 @@ const CONTROLLER_DEVICES = [
   { name: 'iphone', engine: 'webkit', device: devices['iPhone 13'] },
 ];
 
-// From host/lobby-player-list.js and host/settings-panel.js, at 1:1 scale (1920x1080 viewport).
-const LIST_DOT_X = 110;
-const LIST_FIRST_ROW_Y = 230;
-const LIST_ROW_HEIGHT = 72;
-const MAX_PLAYERS_MINUS = { x: 700, y: 900 };
-const FIRST_COLOR = 0xe74c3c;
-const SECOND_COLOR = 0x3498db;
+const FIRST_COLOR = '#e74c3c';
+const SECOND_COLOR = '#3498db';
 
 // Routes the page's game socket through Playwright. Returns { routes, setBlocked(flag) }: routes[i].cut = true
 // makes socket i drop every frame both ways (a half-open socket); while blocked, new sockets are closed at once
@@ -57,7 +55,6 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     let server;
     let hostBrowser;
     let controllerBrowser;
-    let pixelReader;
     let hostPage;
     let hostMessages;
     let roomCode;
@@ -91,12 +88,22 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       }
     }
 
-    // A dot of `color` in the lobby list's row `index`.
-    async function listDot(index, color) {
-      const y = LIST_FIRST_ROW_Y + index * LIST_ROW_HEIGHT;
-      const area = { left: LIST_DOT_X - 30, top: y - 30, right: LIST_DOT_X + 30, bottom: y + 30 };
-      const dot = await findColor(pixelReader, await hostPage.screenshot(), color, area);
-      return dot.count > 0;
+    // What the host's lobby shows for a player's chip: the name, the status text ("back in 0:24", "Remove?"),
+    // the color of its dot, and whether it is dimmed as away.
+    function readChip(playerId) {
+      return hostPage.$eval(lobbyChip(playerId), (chip) => ({
+        name: chip.children[1].textContent,
+        status: chip.children[2].textContent,
+        color: chip.children[0].style.getPropertyValue('--pp-dot-color'),
+        away: chip.classList.contains('away'),
+      }));
+    }
+
+    // Waits for the host's chip of this player to show `name`.
+    function waitForChipName(playerId, name) {
+      return waitUntil(async () => (await readChip(playerId)).name === name, {
+        message: `the host's lobby to show ${name}`,
+      });
     }
 
     // Our handler only reads document.visibilityState, which stays 'visible' in a headless page.
@@ -108,11 +115,9 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       server = await startServer();
       hostBrowser = await launchBrowser('chromium');
       controllerBrowser = engine === 'chromium' ? hostBrowser : await launchBrowser(engine);
-      pixelReader = await openPixelReader(hostBrowser);
       hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 } });
       hostMessages = watchServerMessages(hostPage);
-      await hostPage.goto(`${server.baseUrl}/host`);
-      roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+      roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     });
 
     after(async () => {
@@ -121,24 +126,57 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await server?.stop();
     });
 
-    test('players join with a name; each phone says who it is and the host lists them in their colors', async () => {
+    test('a player joins with a name; the phone shows it in its color and the host lists it as a chip', async () => {
       ana = await joinAs('Ana');
-      bo = await joinAs('Bo');
-      // The first state names them "Player N"; the host's next one uses the name the phone sent after joining.
-      for (const [player, playerName] of [[ana, 'Ana'], [bo, 'Bo']]) {
-        await waitUntil(async () => (await player.page.textContent('#player-label')) === `Connected as ${playerName}`, {
-          message: `${playerName}'s phone to show the name from the host`,
-        });
-      }
+      await waitUntil(async () => (await ana.page.textContent('#player-label')) === 'Ana', {
+        message: 'the phone to show the name from the host',
+      });
       const swatch = await ana.page.$eval('#player-swatch', (element) => getComputedStyle(element).backgroundColor);
       assert.equal(swatch, 'rgb(231, 76, 60)');
       assert.equal(await ana.page.textContent('#lobby-room'), `Room ${roomCode}`);
-
-      await waitUntil(async () => (await listDot(0, FIRST_COLOR)) && (await listDot(1, SECOND_COLOR)), {
-        message: 'both players in the host\'s list',
-      });
+      assert.equal(await ana.page.locator('#ready-button').count(), 0, 'the phone lobby has no ready button');
+      assert.equal(await ana.page.textContent('#lobby-others'), '');
+      assert.deepEqual(await readChip(ana.playerId), { name: 'Ana', status: '', color: FIRST_COLOR, away: false });
       await saveScreenshot(ana.page, `${name}-m4-1-controller-lobby`);
+    });
+
+    test('Play depends on the player count alone: Kart race 2D needs two players, and a second one makes it playable', async () => {
+      // The default game takes any count from 0, so one player is enough.
+      assert.equal(await hostPage.getAttribute('[data-game-id="kart-3d"]', 'aria-pressed'), 'true');
+      assert.equal(await hostPage.isDisabled('#play-button'), false);
+      await chooseGame(hostPage, 'kart-2d');
+      await waitUntil(() => hostPage.isDisabled('#play-button'), { message: 'Play to be off with one player' });
+      assert.equal(await hostPage.textContent('#lobby-status'), 'Kart race 2D needs at least 2 players');
+
+      bo = await joinAs('Bo');
+      await waitUntil(async () => (await bo.page.textContent('#player-label')) === 'Bo', {
+        message: 'Bo\'s phone to show the name from the host',
+      });
+      await waitUntil(async () => !(await hostPage.isDisabled('#play-button')), { message: 'Play to turn on with two players' });
+      assert.equal(await hostPage.textContent('#lobby-status'), '');
+      assert.deepEqual(await readChip(bo.playerId), { name: 'Bo', status: '', color: SECOND_COLOR, away: false });
+      // Each phone names the other.
+      await waitUntil(async () => (await ana.page.textContent('#lobby-others')) === 'Also here: Bo', {
+        message: 'Ana\'s phone to name Bo',
+      });
+      assert.equal(await bo.page.textContent('#lobby-others'), 'Also here: Ana');
       await saveScreenshot(hostPage, `${name}-m4-1-host-lobby`);
+    });
+
+    test('Change name on the phone renames the player on the host and on the other phone', async () => {
+      await bo.page.click('#change-name-button');
+      await bo.page.fill('#change-name-input', 'Bobby');
+      await bo.page.click('#change-name-form button[type="submit"]');
+      await waitUntil(async () => (await bo.page.textContent('#player-label')) === 'Bobby', {
+        message: 'the phone to show the new name',
+      });
+      assert.equal(await bo.page.isVisible('#change-name-form'), false);
+      assert.equal(await bo.page.isVisible('#change-name-button'), true);
+      await waitForChipName(bo.playerId, 'Bobby');
+      await waitUntil(async () => (await ana.page.textContent('#lobby-others')) === 'Also here: Bobby', {
+        message: 'Ana\'s phone to show the new name',
+      });
+      await saveScreenshot(bo.page, `${name}-m4-2-controller-renamed`);
     });
 
     test('a code typed by hand goes into the address bar, and Leave frees the slot without reconnecting', async () => {
@@ -166,58 +204,30 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
 
     test('the host removes a player from the lobby with two clicks, and the phone is told', async () => {
       const cy = await joinAs('Cy');
-      // A single click only arms the button.
-      await hostPage.mouse.click(lobbyRemoveButton(2).x, lobbyRemoveButton(2).y);
+      await waitForChipName(cy.playerId, 'Cy');
+      // A single click only arms the chip.
+      await hostPage.click(lobbyChip(cy.playerId));
+      assert.equal((await readChip(cy.playerId)).status, 'Remove?');
       await hostPage.waitForTimeout(300);
       assert.equal(await cy.page.isVisible('#lobby-screen'), true);
-      await saveScreenshot(hostPage, `${name}-m4-2-host-remove-armed`);
-      await hostPage.mouse.click(lobbyRemoveButton(2).x, lobbyRemoveButton(2).y);
+      await saveScreenshot(hostPage, `${name}-m4-3-host-remove-armed`);
+      await hostPage.click(lobbyChip(cy.playerId));
 
       await nextAbout(MESSAGE_TYPES.PLAYER_LEFT, cy.playerId);
       await cy.page.waitForSelector('#join-screen:not([hidden])');
       assert.equal(await cy.page.textContent('#join-status'), 'The host removed you from the game.');
+      assert.equal(await hostPage.locator(lobbyChip(cy.playerId)).count(), 0);
       await cy.context.close();
     });
 
-    test('the host\'s max players setting refuses joins beyond it', async () => {
-      // 6 -> 2. It cannot go lower, because two players are in.
-      for (let i = 0; i < 5; i += 1) {
-        await hostPage.mouse.click(MAX_PLAYERS_MINUS.x, MAX_PLAYERS_MINUS.y);
+    test('with no ready step, Play starts the game for the players who are in', async () => {
+      for (const player of [ana, bo]) {
+        assert.equal(await player.page.locator('#ready-button').count(), 0);
       }
-      // Phaser handles clicks on its next frame, so wait until the server has the new limit.
-      await waitUntil(() => server.output().includes(`Room ${roomCode} now takes up to 2 players`), {
-        message: 'the server to get the player limit',
-      });
-      const context = await controllerBrowser.newContext(device);
-      const page = await openPlayer(context);
-      await page.click('#join-button');
-      await page.waitForFunction(() => document.getElementById('join-status').textContent !== 'Joining...');
-      assert.equal(await page.textContent('#join-status'), 'That room is full.');
-      await saveScreenshot(hostPage, `${name}-m4-2-host-settings`);
-      await context.close();
-    });
-
-    test('ready goes through the host, and the host starts the game only once everyone is ready', async () => {
-      await ana.page.click('#ready-button');
-      await ana.page.waitForSelector('#ready-button[aria-pressed="true"]');
-      assert.equal(await ana.page.textContent('#ready-button'), 'Not ready');
-      await ana.page.click('#ready-button');
-      await ana.page.waitForSelector('#ready-button[aria-pressed="false"]');
-
-      // With Bo not ready, Start does nothing.
-      await ana.page.click('#ready-button');
-      await ana.page.waitForSelector('#ready-button[aria-pressed="true"]');
-      await hostPage.mouse.click(START_BUTTON.x, START_BUTTON.y);
-      await ana.page.waitForTimeout(500);
-      assert.equal(await ana.page.isVisible('#lobby-screen'), true);
-
-      await bo.page.click('#ready-button');
-      await bo.page.waitForSelector('#ready-button[aria-pressed="true"]');
-      await saveScreenshot(hostPage, `${name}-m4-3-host-all-ready`);
       await startGame(hostPage, ana.page);
       await bo.page.waitForSelector('#pad-screen:not([hidden])');
       assert.equal(await ana.page.textContent('#game-status'), `In room ${roomCode}`);
-      await saveScreenshot(hostPage, `${name}-m4-3-host-lab`);
+      await saveScreenshot(hostPage, `${name}-m4-4-host-lab`);
     });
 
     test('while the game runs, a new player is refused', async () => {
@@ -232,7 +242,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     test('closing the tab and opening the link again rejoins as the same player, straight into the lab', async () => {
       await ana.page.close();
       await nextAbout(MESSAGE_TYPES.PLAYER_DISCONNECTED, ana.playerId);
-      await saveScreenshot(hostPage, `${name}-m4-4-host-waiting`);
+      await saveScreenshot(hostPage, `${name}-m4-5-host-waiting`);
 
       ana.page = await openPlayer(ana.context);
       await ana.page.waitForSelector('#pad-screen:not([hidden])');
@@ -276,7 +286,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await ana.page.isVisible('#overlay-leave-button'), true);
       // The first socket plus three automatic attempts.
       assert.equal(sockets.routes.length, 4);
-      await saveScreenshot(ana.page, `${name}-m4-5-controller-tap-to-reconnect`);
+      await saveScreenshot(ana.page, `${name}-m4-6-controller-tap-to-reconnect`);
 
       sockets.setBlocked(false);
       await ana.page.click('#reconnect-button');
@@ -298,7 +308,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       });
       assert.equal(await bo.page.isVisible('#join-screen'), true);
       assert.equal(await bo.page.isVisible('#pad-screen'), false);
-      await saveScreenshot(hostPage, `${name}-m4-6-host-after-remove`);
+      await saveScreenshot(hostPage, `${name}-m4-7-host-after-remove`);
     });
 
     test('Close room during the game sends every phone back to the join screen, with the old code cleared', async () => {
@@ -307,7 +317,10 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       assert.equal(await ana.page.textContent('#join-status'), 'The host left the game.');
       assert.equal(await ana.page.inputValue('#room-code'), '');
       assert.equal(new URL(ana.page.url()).searchParams.has('room'), false);
-      await saveScreenshot(hostPage, `${name}-m4-7-host-room-closed`);
+      // The host shows why, and a way to start again.
+      assert.equal(await hostPage.isVisible('#connection-lost'), true);
+      assert.equal(await hostPage.textContent('#connection-lost-message'), 'Room closed.');
+      await saveScreenshot(hostPage, `${name}-m4-8-host-room-closed`);
     });
   });
 }
@@ -326,8 +339,9 @@ describe('M4 grace period and closing from the lobby', () => {
     browser = await launchBrowser('chromium');
     hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    // The join window opened by itself and covers the lobby.
+    await closeJoinWindow(hostPage);
   });
 
   after(async () => {
@@ -358,7 +372,7 @@ describe('M4 grace period and closing from the lobby', () => {
     });
     assert.equal(await back.isVisible('#join-screen'), true);
     assert.equal(await back.evaluate(() => localStorage.getItem('pocket-party:session')), null);
-    await saveScreenshot(back, 'android-m4-8-controller-slot-gone');
+    await saveScreenshot(back, 'android-m4-9-controller-slot-gone');
     await context.close();
   });
 
@@ -387,10 +401,15 @@ describe('M4 grace period and closing from the lobby', () => {
     await context.close();
   });
 
-  test('Close room in the lobby sends the phones back to the join screen', async () => {
+  test('Close room in the lobby sends the phones back to the join screen, and the host can open a new room', async () => {
     const { page } = await joinLobby(await browser.newContext(devices['Pixel 7']));
-    await confirmClick(hostPage, CLOSE_ROOM_BUTTON);
+    await confirmClick(hostPage, LOBBY_CLOSE_ROOM_BUTTON);
     await page.waitForSelector('#join-screen:not([hidden])');
     assert.equal(await page.textContent('#join-status'), 'The host left the game.');
+    assert.equal(await hostPage.textContent('#connection-lost-message'), 'Room closed.');
+    // The room is gone with its socket, so a new room is a page reload, which starts at Tap to start again.
+    await hostPage.click('#new-room-button');
+    await hostPage.waitForSelector('#tap-to-start:not([hidden])');
+    assert.equal(await hostPage.isVisible('#connection-lost'), false);
   });
 });

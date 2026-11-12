@@ -1,7 +1,7 @@
 // Browser tests for M3, the input lab: the real controller page on an emulated Android phone (Chromium) and
 // iPhone (WebKit) against the real host page. Headless browsers have no motion sensor, so the tilt tests stub
 // DeviceOrientationEvent.requestPermission and fire deviceorientation events by hand.
-// Since M4 the host starts the lab from the lobby once two players are ready. The tested phone joins first (so it has
+// Since M4 the host starts the lab from the lobby (since M10 with Play, once two players are in). The tested phone joins first (so it has
 // the first card), a helper phone joins second, and each test then reopens the tested phone's tab, which
 // rejoins as the same player straight into the lab.
 
@@ -9,7 +9,7 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { startGame } from '../helpers/host-buttons.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
@@ -111,15 +111,12 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       pixelReader = await openPixelReader(hostBrowser);
       hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 } });
       hostMessages = watchServerMessages(hostPage);
-      await hostPage.goto(`${server.baseUrl}/host`);
-      roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+      roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
 
       controllerContext = await controllerBrowser.newContext(device);
       const tested = await joinLobby(controllerContext);
       testedPlayerId = tested.playerId;
-      const helper = await joinLobby(await hostBrowser.newContext(devices['Pixel 7']));
-      await tested.page.click('#ready-button');
-      await helper.page.click('#ready-button');
+      await joinLobby(await hostBrowser.newContext(devices['Pixel 7']));
       await startGame(hostPage, tested.page);
       await leave(tested.page);
     });

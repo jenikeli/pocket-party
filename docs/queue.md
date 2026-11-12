@@ -13,10 +13,10 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | merged |
 | E | Course pictures: the tool and the saved previews | sonnet | | merged |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | merged |
-| T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | building |
+| T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | merged |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
-| F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | queued |
+| F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | building |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |
 | P | Bloom's clamp folded into its first pass | sonnet | | queued |
 | N | Palm Bay Airport's leftovers | sonnet | M | queued |
@@ -498,6 +498,11 @@ world frees), unit tests.
 - K: `host/shell-sounds.js` added beside the spec's files. Join and leave blips come from watching the roster on
   the lobby's and the join window's refresh (a leave is a player removed, not a disconnect; joins during a game
   with the join window shut are silent). `MAX_SPEED` exported from the 2D physics for the engine's pitch.
+- T1: two new browser files, `m10-shell` and `m10-turned-controls` (the latter replaces m5b's "phone held
+  upright" test). The max-players setting test is dropped with the setting. host-buttons.js is all selectors
+  now, the 2D entries included; `startGame(hostPage, controllerPage, { gameId, controlsSelector, timeoutMs })`.
+  Merged on its passing runs (m1 12, m3 14, m4 27, m5a 6, https 4, m10-shell 8, m10-turned-controls 3), its
+  reviewer reading the merged commit afterwards, so F could start.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

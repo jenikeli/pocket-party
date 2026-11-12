@@ -1,15 +1,18 @@
 // Browser tests for M1 end to end: the real host page (desktop Chromium) and the real controller page on an
 // emulated Android phone (Chromium) and iPhone (WebKit, Safari's engine). Screenshots go to test-results/screenshots/.
 // Since M3 the host shows the input lab, so "the player's square" is the stick dot on that player's card.
-// Since M4 players join a lobby first, and the host starts the lab once two players are ready, so a second phone helps.
+// Since M4 players join a lobby first, and the host starts the lab from it once two players are in, so a second
+// phone helps. Since M10 the host page starts with Tap to start, the lobby and the join window are HTML (read by
+// id, and the QR code read from its drawn pixels), and there is no ready step.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor, readDarkPoints } from '../helpers/screenshot-pixels.js';
 import { startGame } from '../helpers/host-buttons.js';
+import { QUIET_ZONE_MODULES } from '../../host/qr-code.js';
 import { qrcode } from '../../host/vendor/qrcode-generator-2.0.4.mjs';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -18,31 +21,30 @@ const CONTROLLER_DEVICES = [
   { name: 'iphone', engine: 'webkit', device: devices['iPhone 13'] },
 ];
 
-// Layout from host/join-panel.js, host/qr-code.js and host/games/input-lab/player-card.js, at 1:1 scale (1920x1080 viewport).
-const QR_CENTER = { x: 1650, y: 390 };
-const QR_SIZE_PX = 420;
-const QR_QUIET_ZONE_MODULES = 4;
+// Layout from host/games/input-lab/player-card.js, at 1:1 scale (1920x1080 viewport).
 const FIRST_PLAYER_COLOR = 0xe74c3c;
 // The first card's top-left corner is (15, 15); its stick ring is centered 105, 195 inside it, radius 75.
 const FIRST_DOT_START = { x: 120, y: 210 };
 const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };
 
-// The center of every QR module, as [x, y] screen points, plus the dark/light pattern the code should have.
-function expectedQrModules(text) {
+// The center of every QR module in the join window, as [x, y] page points, plus the dark/light pattern the code
+// should have. The QR is an SVG whose viewBox counts modules (the quiet zone included), so a module is the
+// svg's width over that count.
+function expectedQrModules(text, svgBox) {
   const qr = qrcode(0, 'M');
   qr.addData(text);
   qr.make();
   const count = qr.getModuleCount();
-  const moduleSize = Math.floor(QR_SIZE_PX / (count + QR_QUIET_ZONE_MODULES * 2));
-  const drawnSize = moduleSize * (count + QR_QUIET_ZONE_MODULES * 2);
-  const left = Math.round(QR_CENTER.x - drawnSize / 2) + QR_QUIET_ZONE_MODULES * moduleSize;
-  const top = Math.round(QR_CENTER.y - drawnSize / 2) + QR_QUIET_ZONE_MODULES * moduleSize;
+  const moduleSize = svgBox.width / (count + QUIET_ZONE_MODULES * 2);
 
   const points = [];
   const dark = [];
   for (let row = 0; row < count; row += 1) {
     for (let column = 0; column < count; column += 1) {
-      points.push([left + (column + 0.5) * moduleSize, top + (row + 0.5) * moduleSize]);
+      points.push([
+        svgBox.x + (QUIET_ZONE_MODULES + column + 0.5) * moduleSize,
+        svgBox.y + (QUIET_ZONE_MODULES + row + 0.5) * moduleSize,
+      ]);
       dark.push(qr.isDark(row, column));
     }
   }
@@ -90,12 +92,22 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await server?.stop();
     });
 
-    test('host shows a room code and a QR code for the join link', async () => {
+    test('Tap to start opens the room; the join window shows its code, the address and a QR code for the join link', async () => {
       hostMessages = watchServerMessages(hostPage);
       await hostPage.goto(`${server.baseUrl}/host`);
-      roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+      // Nothing is created before the tap: the room (and its code) comes after it.
+      assert.equal(await hostPage.isVisible('#tap-to-start'), true);
+      assert.equal(await hostPage.isVisible('#lobby'), false);
+      await saveScreenshot(hostPage, `${name}-1-host-tap-to-start`);
+      roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
 
-      const { points, dark } = expectedQrModules(`${server.baseUrl}/?room=${roomCode}`);
+      assert.equal(await hostPage.isVisible('#tap-to-start'), false);
+      assert.equal(await hostPage.isVisible('#lobby'), true);
+      assert.equal(await hostPage.textContent('#join-code'), roomCode);
+      assert.equal(await hostPage.textContent('#join-url'), server.baseUrl);
+
+      const svgBox = await hostPage.locator('#join-qr svg').boundingBox();
+      const { points, dark } = expectedQrModules(`${server.baseUrl}/?room=${roomCode}`, svgBox);
       await waitUntil(
         async () => {
           const drawn = await readDarkPoints(pixelReader, await hostPage.screenshot(), points);
@@ -103,7 +115,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
         },
         { message: 'the QR code on the host to encode the join link' },
       );
-      await saveScreenshot(hostPage, `${name}-1-host-lobby`);
+      await saveScreenshot(hostPage, `${name}-1-host-join-window`);
     });
 
     test('controller fills in the code from the ?room= link and joins', async () => {
@@ -116,14 +128,11 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     });
 
-    test('once a second player joins and both are ready, the lab shows the first player\'s dot', async () => {
+    test('once a second player has joined, Play starts the lab and shows the first player\'s dot', async () => {
       const helperPage = await helperContext.newPage();
       await helperPage.goto(`${server.baseUrl}/?room=${roomCode}`);
       await helperPage.click('#join-button');
       await helperPage.waitForSelector('#lobby-screen:not([hidden])');
-      for (const page of [controllerPage, helperPage]) {
-        await page.click('#ready-button');
-      }
       await startGame(hostPage, controllerPage);
       assert.equal(await controllerPage.textContent('#game-status'), `In room ${roomCode}`);
 

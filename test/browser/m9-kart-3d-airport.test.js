@@ -11,17 +11,15 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader } from '../helpers/screenshot-pixels.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, pickCourse, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { PALM_BAY_AIRPORT } from '../../host/games/kart-3d/palm-bay-airport.js';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 // The glide runs from its lip (s 1116) to its landing (1206); the readout shows a kart's place in whole percent
 // of the lap. The jump before the ring (614 to 630) is at 40 to 41 percent, well clear.
 const track = buildTrack(PALM_BAY_AIRPORT);
@@ -34,22 +32,15 @@ async function startAtSetup(server, chromium, prepare) {
   const hostPage = await chromium.newPage({ viewport: HOST_SIZE });
   const hostMessages = watchServerMessages(hostPage);
   await prepare(hostPage);
-  await hostPage.goto(`${server.baseUrl}/host`);
-  const roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+  const roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
   const context = await chromium.newContext(devices['Pixel 7 landscape']);
   const anaPage = await context.newPage();
   await anaPage.goto(`${server.baseUrl}/?room=${roomCode}`);
   await anaPage.fill('#player-name', 'Ana');
   await anaPage.click('#join-button');
-  await anaPage.click('#ready-button');
-  await anaPage.waitForSelector('#ready-button[aria-pressed="true"]');
+  await anaPage.waitForSelector('#lobby-screen:not([hidden])');
   await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-  // Input lab, Kart race 2D, then Kart race 3D.
-  for (let i = 0; i < 2; i += 1) {
-    await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-    await hostPage.waitForTimeout(300);
-  }
-  await startGame(hostPage, anaPage, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+  await startGame(hostPage, anaPage, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
   await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
   return hostPage;
 }

@@ -15,14 +15,12 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 const RACE_TIMEOUT = { timeoutMs: 60000 };
 
 describe('M7b 3D race', () => {
@@ -44,8 +42,7 @@ describe('M7b 3D race', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.click('#ready-button');
-    await page.waitForSelector('#ready-button[aria-pressed="true"]');
+    await page.waitForSelector('#lobby-screen:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return player;
   }
@@ -70,14 +67,6 @@ describe('M7b 3D race', () => {
     await player.page.waitForSelector('#join-screen:not([hidden])');
   }
 
-  async function chooseKartRace3d() {
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
-  }
-
   before(async () => {
     server = await startServer();
     chromium = await launchBrowser('chromium');
@@ -87,12 +76,10 @@ describe('M7b 3D race', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    await chooseKartRace3d();
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
   });
 
@@ -205,8 +192,8 @@ describe('M7b 3D race', () => {
     rows.forEach((row, index) => assert.equal(row, `${['1st', '2nd', '3rd'][index] ?? `${index + 1}th`}CPU--`));
     await saveScreenshot(hostPage, 'm7b-5-host-results');
     await clickNow(hostPage, '#kart-3d-lobby-button');
-    await hostPage.waitForSelector('#shell:not([hidden])', { timeout: 20000 });
-    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 1, 'the race\'s canvas is gone');
+    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
+    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0, 'the race\'s canvas is gone');
   });
 
   test('the results panel lists players in their colours with their times, and Race again works', async () => {
@@ -235,7 +222,7 @@ describe('M7b 3D race', () => {
   test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', async () => {
     // The room reopened after the game; a new player joins so the race can start again.
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
-    await startGame(hostPage, cy.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, cy.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true', 'a new game starts on the first course');
     await clickNow(hostPage, '[data-course-id="test-track"]');
@@ -251,7 +238,7 @@ describe('M7b 3D race', () => {
       document.querySelector('#game-container canvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext();
     });
     await stopped;
-    await hostPage.waitForSelector('#shell:not([hidden])');
+    await hostPage.waitForSelector('#lobby:not([hidden])');
     await cy.page.waitForSelector('#lobby-screen:not([hidden])');
     assert.deepEqual(pageErrors, []);
   });

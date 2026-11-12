@@ -1,5 +1,5 @@
 // Browser tests for M5b, the 2D kart race: picking it in the lobby, starting from the setup screen (M5c) with
-// the default controls, the landscape controls and the portrait hint, real touches driving a kart, a dropped player's kart stopping and driving on after the rejoin, whole
+// the default controls, the landscape controls (the portrait phone's turned layout is in m10-turned-controls.test.js), real touches driving a kart, a dropped player's kart stopping and driving on after the rejoin, whole
 // races to the results, Race again and Back to lobby. Two Android (Chromium) phones held sideways; fingers come
 // from test/helpers/touch.js, because a kart needs the stick and a pedal held at once.
 //
@@ -11,10 +11,10 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, startRace, NEXT_GAME_BUTTON, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON, LAPS_MINUS_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, startRace, clickNow, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON, LAPS_MINUS_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -125,8 +125,7 @@ describe('M5b 2D kart race', () => {
     pixelReader = await openPixelReader(browser);
     hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs('Ana');
     bo = await joinAs('Bo');
   });
@@ -137,12 +136,7 @@ describe('M5b 2D kart race', () => {
   });
 
   test('picked in the lobby, the race puts both phones on the kart controls with the countdown', async () => {
-    await hostPage.mouse.click(NEXT_GAME_BUTTON.x, NEXT_GAME_BUTTON.y);
-    for (const player of [ana, bo]) {
-      await player.page.click('#ready-button');
-      await player.page.waitForSelector('#ready-button[aria-pressed="true"]');
-    }
-    await startGame(hostPage, ana.page, '#kart-screen');
+    await startGame(hostPage, ana.page, { gameId: 'kart-2d', controlsSelector: '#kart-screen' });
     await startRace(hostPage, [ana.page, bo.page]);
     const state = await nextView(bo, (view) => view.phase === 'countdown');
     assert.equal(state.gameId, 'kart-2d');
@@ -151,19 +145,8 @@ describe('M5b 2D kart race', () => {
       { phase: 'countdown', countdown: 0, lap: 1, laps: 3, place: 2, finished: false, steering: 'stick', autoAccelerate: false },
     );
     assert.equal(await bo.page.textContent('#kart-line'), 'Get ready!');
-    assert.equal(await bo.page.isVisible('#kart-turn-hint'), false);
     await saveScreenshot(bo.page, 'm5b-1-phone-countdown');
     await saveScreenshot(hostPage, 'm5b-2-host-countdown');
-  });
-
-  test('a phone held upright shows "Turn your phone sideways" instead of the controls', async () => {
-    const landscape = ana.page.viewportSize();
-    await ana.page.setViewportSize({ width: landscape.height, height: landscape.width });
-    assert.equal(await ana.page.isVisible('#kart-turn-hint'), true);
-    assert.equal(await ana.page.isVisible('#kart-controls'), false);
-    await saveScreenshot(ana.page, 'm5b-3-phone-portrait');
-    await ana.page.setViewportSize(landscape);
-    assert.equal(await ana.page.isVisible('#kart-controls'), true);
   });
 
   test('holding Go drives the kart forward, and the phone shows its lap and place', async () => {
@@ -229,12 +212,10 @@ describe('M5b 2D kart race', () => {
   });
 
   test('Race again goes to the setup screen, then puts everyone back on the grid with a new countdown', async () => {
-    await hostPage.mouse.click(RACE_AGAIN_BUTTON.x, RACE_AGAIN_BUTTON.y);
+    await clickNow(hostPage, RACE_AGAIN_BUTTON);
     await ana.page.waitForSelector('#kart-setup:not([hidden])');
-    // 3 laps down to 1, so the second race is short; the pause lets Phaser see two separate clicks.
-    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
-    await hostPage.waitForTimeout(150);
-    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
+    // 3 laps down to 1, so the second race is short.
+    await clickNow(hostPage, LAPS_MINUS_BUTTON, 2);
     await nextView(ana, (view) => view.laps === 1);
     await startRace(hostPage, [ana.page, bo.page]);
     for (const player of [ana, bo]) {
@@ -251,11 +232,11 @@ describe('M5b 2D kart race', () => {
   test('after the second race (1 lap), Back to lobby returns everyone to the lobby', RACE_TIMEOUT, async () => {
     const views = await driveRaceToResults();
     assert.ok(views.every((view) => view.finished && view.lap === 1));
-    await hostPage.mouse.click(BACK_TO_LOBBY_BUTTON.x, BACK_TO_LOBBY_BUTTON.y);
+    await clickNow(hostPage, BACK_TO_LOBBY_BUTTON);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#lobby-screen:not([hidden])');
     }
-    assert.equal(await hostPage.isVisible('#shell'), true);
-    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 1);
+    assert.equal(await hostPage.isVisible('#lobby'), true);
+    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0);
   });
 });

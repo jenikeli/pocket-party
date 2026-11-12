@@ -9,10 +9,10 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, startRace, NEXT_GAME_BUTTON, LAPS_MINUS_BUTTON, START_RACE_BUTTON, RACE_AGAIN_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, startRace, clickNow, LAPS_MINUS_BUTTON, START_RACE_BUTTON, RACE_AGAIN_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -120,8 +120,7 @@ describe('M5c 2D race setup screen and control styles', () => {
     pixelReader = await openPixelReader(chromium);
     hostPage = await chromium.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo', 'granted');
@@ -134,12 +133,7 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('Start game opens the setup screen: phones show the defaults, the host shows the setup panel', async () => {
-    await hostPage.mouse.click(NEXT_GAME_BUTTON.x, NEXT_GAME_BUTTON.y);
-    for (const player of [ana, bo]) {
-      await player.page.click('#ready-button');
-      await player.page.waitForSelector('#ready-button[aria-pressed="true"]');
-    }
-    await startGame(hostPage, ana.page, '#kart-setup');
+    await startGame(hostPage, ana.page, { gameId: 'kart-2d', controlsSelector: '#kart-setup' });
     const view = await nextView(bo, (each) => each.phase === 'setup');
     assert.deepEqual(view, { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
@@ -150,9 +144,7 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('the host sets the laps; the phones show them', async () => {
-    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
-    await hostPage.waitForTimeout(150);
-    await hostPage.mouse.click(LAPS_MINUS_BUTTON.x, LAPS_MINUS_BUTTON.y);
+    await clickNow(hostPage, LAPS_MINUS_BUTTON, 2);
     await nextView(ana, (view) => view.laps === 1);
     await waitUntil(async () => (await ana.page.textContent('#kart-setup-laps')) === '1 lap', { message: '"1 lap" on the phone' });
   });
@@ -175,7 +167,7 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('Start race does nothing until everyone is ready, then starts the countdown with their styles', async () => {
-    await hostPage.mouse.click(START_RACE_BUTTON.x, START_RACE_BUTTON.y);
+    await clickNow(hostPage, START_RACE_BUTTON);
     await hostPage.waitForTimeout(500);
     assert.equal(await ana.page.isVisible('#kart-setup'), true, 'still on the setup screen');
 
@@ -257,7 +249,7 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('Race again returns to the setup screen with the laps and styles kept and nobody ready', async () => {
-    await hostPage.mouse.click(RACE_AGAIN_BUTTON.x, RACE_AGAIN_BUTTON.y);
+    await clickNow(hostPage, RACE_AGAIN_BUTTON);
     const anaView = await nextView(ana, (view) => view.phase === 'setup');
     assert.deepEqual(anaView, { phase: 'setup', laps: 1, steering: 'stick', autoAccelerate: true, ready: false });
     const boView = await nextView(bo, (view) => view.phase === 'setup');

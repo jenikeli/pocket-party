@@ -10,15 +10,13 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, pickCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 const DRIVE_TIMEOUT = { timeoutMs: 30000 };
 // The stick is all the way over 80 px from where the finger lands (controller/inputs/drag.js).
 const STICK_FULL_PX = 80;
@@ -46,8 +44,7 @@ describe('M6c 3D techniques', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.click('#ready-button');
-    await page.waitForSelector('#ready-button[aria-pressed="true"]');
+    await page.waitForSelector('#lobby-screen:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return player;
   }
@@ -83,17 +80,11 @@ describe('M6c 3D techniques', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');

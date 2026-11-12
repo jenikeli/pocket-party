@@ -10,16 +10,14 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, GAME_END_BUTTON } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 // From host/games/kart-3d/view-layout.js at 960x540: two views stacked, with a 4 px gap (rows 268-271).
 const VIEW_GAP = { left: 0, top: 268, right: 960, bottom: 272 };
 const DRIVE_TIMEOUT = { timeoutMs: 30000 };
@@ -42,8 +40,7 @@ describe('M6b 3D driving', () => {
     await openPlayerPage(player);
     await player.page.fill('#player-name', playerName);
     await player.page.click('#join-button');
-    await player.page.click('#ready-button');
-    await player.page.waitForSelector('#ready-button[aria-pressed="true"]');
+    await player.page.waitForSelector('#lobby-screen:not([hidden])');
     player.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
     return player;
   }
@@ -86,16 +83,10 @@ describe('M6b 3D driving', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
   });
 
   after(async () => {
@@ -105,7 +96,7 @@ describe('M6b 3D driving', () => {
   });
 
   test('Start game opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     const view = await nextView(bo, (each) => each.phase === 'setup');
     assert.deepEqual(view, { phase: 'setup', laps: 3, engineClass: 150, steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
@@ -186,8 +177,8 @@ describe('M6b 3D driving', () => {
   test('End game frees the WebGL canvas and returns everyone to the lobby', async () => {
     // Twice in a row: the first click arms the button, the second ends the game.
     await clickNow(hostPage, GAME_END_BUTTON, 2);
-    await hostPage.waitForSelector('#shell:not([hidden])', { timeout: 20000 });
-    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 1);
+    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
+    assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#lobby-screen:not([hidden])');
     }

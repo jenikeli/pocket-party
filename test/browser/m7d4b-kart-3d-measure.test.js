@@ -11,14 +11,11 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, pickCourse, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
-import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 
 describe('M7d4b 3D Measure tool', () => {
   let server;
@@ -44,22 +41,17 @@ describe('M7d4b 3D Measure tool', () => {
     });
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
-    await hostPage.goto(`${server.baseUrl}/host`);
-    const { roomCode } = await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000);
+    const roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     const context = await chromium.newContext(devices['Pixel 7 landscape']);
     const ana = await context.newPage();
     ana.on('pageerror', (error) => pageErrors.push(error));
     await ana.goto(`${server.baseUrl}/?room=${roomCode}`);
     await ana.fill('#player-name', 'Ana');
     await ana.click('#join-button');
-    await ana.click('#ready-button');
-    await ana.waitForSelector('#ready-button[aria-pressed="true"]');
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
-    await startGame(hostPage, ana, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await ana.waitForSelector('#lobby-screen:not([hidden])');
+    // The host lists the player before Play, so the game starts with them in the room.
+    await hostPage.waitForSelector('#lobby-players [data-player-id]');
+    await startGame(hostPage, ana, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     // Seaside Skyway, which this file measures, is no longer the first course (M9): building it is part of starting.
     await pickCourse(hostPage, 'seaside-skyway');

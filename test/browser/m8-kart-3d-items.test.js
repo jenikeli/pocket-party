@@ -11,14 +11,12 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON } from '../helpers/host-buttons.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES, KART_ITEMS } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 const RACE_TIMEOUT = { timeoutMs: 90000 };
 
 describe('M8 items', () => {
@@ -70,8 +68,7 @@ describe('M8 items', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     const context = await chromium.newContext(devices['Pixel 7 landscape']);
     const page = await context.newPage();
     page.on('pageerror', (error) => pageErrors.push(error));
@@ -79,15 +76,9 @@ describe('M8 items', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', 'Ana');
     await page.click('#join-button');
-    await page.click('#ready-button');
-    await page.waitForSelector('#ready-button[aria-pressed="true"]');
+    await page.waitForSelector('#lobby-screen:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
-    await startGame(hostPage, page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
   });

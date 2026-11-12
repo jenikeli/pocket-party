@@ -1,11 +1,12 @@
-// Shared setup for the browser tests: launching browsers, watching a page's WebSocket messages,
-// polling until something shows up, and saving screenshots to test-results/screenshots/.
+// Shared setup for the browser tests: launching browsers, watching a page's WebSocket messages, opening the host
+// page, polling until something shows up, and saving screenshots to test-results/screenshots/.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, webkit } from 'playwright';
 import { ROOT_DIR } from './start-server.js';
 import { createMessageQueue } from './message-queue.js';
+import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const SCREENSHOT_DIR = path.join(ROOT_DIR, 'test-results', 'screenshots');
 const ENGINES = { chromium, webkit };
@@ -37,6 +38,18 @@ export function watchServerMessages(page) {
     socket.on('framereceived', ({ payload }) => queue.push(JSON.parse(payload)));
   });
   return queue;
+}
+
+// Opens the host page, taps Tap to start (the room is created only after the tap) and resolves with the room code
+// once the lobby shows. The join window opens by itself on an empty room and is left open, for the tests that
+// look at it; startGame and chooseGame in host-buttons.js close it. `hostMessages` comes from
+// watchServerMessages(hostPage), called before this.
+export async function openHost(hostPage, baseUrl, hostMessages) {
+  await hostPage.goto(`${baseUrl}/host`);
+  await hostPage.click('#tap-to-start-button');
+  const { roomCode } = await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000);
+  await hostPage.waitForSelector('#join-window:not([hidden])');
+  return roomCode;
 }
 
 // Calls `check` until it returns something truthy, and returns that. Rendering happens on the next

@@ -11,16 +11,14 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
-import { startGame, clickNow, NEXT_GAME_BUTTON, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, GAME_END_BUTTON } from '../helpers/host-buttons.js';
 import { clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// The lobby is drawn at 1920x1080 and scaled to fit the half-size page.
-const HOST_SCALE = 0.5;
 // From host/games/kart-3d/view-layout.js at 960x540: two views stacked, with a 4 px gap (rows 268-271).
 const VIEW_GAP = { left: 0, top: 268, right: 960, bottom: 272 };
 const RACE_TIMEOUT = { timeoutMs: 60000 };
@@ -49,13 +47,9 @@ describe('M7c 3D look', () => {
     return { page, name: playerName };
   }
 
-  // Both phones tap Ready in the lobby, then the host starts the 3D race's setup screen.
+  // The host picks the 3D race in the lobby and starts its setup screen.
   async function startTheGame() {
-    for (const player of [ana, cy]) {
-      await player.page.click('#ready-button');
-      await player.page.waitForSelector('#ready-button[aria-pressed="true"]');
-    }
-    await startGame(hostPage, ana.page, '#kart-setup', HOST_SCALE, GAME_START_TIMEOUT);
+    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
   }
 
@@ -81,15 +75,9 @@ describe('M7c 3D look', () => {
       }
     });
     hostMessages = watchServerMessages(hostPage);
-    await hostPage.goto(`${server.baseUrl}/host`);
-    roomCode = (await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000)).roomCode;
+    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
     ana = await joinAs('Ana');
     cy = await joinAs('Cy');
-    // Input lab, Kart race 2D, then Kart race 3D.
-    for (let i = 0; i < 2; i += 1) {
-      await hostPage.mouse.click(NEXT_GAME_BUTTON.x * HOST_SCALE, NEXT_GAME_BUTTON.y * HOST_SCALE);
-      await hostPage.waitForTimeout(300);
-    }
     await startTheGame();
   }, { timeout: STARTING_TIMEOUT });
 
@@ -138,7 +126,7 @@ describe('M7c 3D look', () => {
     await chooseQuality('low');
     await saveScreenshot(hostPage, 'm7c-3-host-setup-low');
     await clickNow(hostPage, GAME_END_BUTTON, 2);
-    await hostPage.waitForSelector('#shell:not([hidden])', { timeout: 20000 });
+    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
     for (const player of [ana, cy]) {
       await player.page.waitForSelector('#lobby-screen:not([hidden])');
     }

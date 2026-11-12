@@ -14,7 +14,6 @@ import {
   lobbyChip,
   chooseGame,
   closeJoinWindow,
-  startGame,
   startRace,
   clickNow,
   confirmClick,

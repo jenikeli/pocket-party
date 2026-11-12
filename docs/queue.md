@@ -447,6 +447,10 @@ world frees), unit tests.
   shows a course's picture and builds nothing until Start race; the loading bar shows and goes; a phone that
   joins on the setup screen gets a kart, one that tries during the race is refused.
 - Runs the files it changes, one at a time, when nothing draws.
+- From T1's review: m1 loads the host twice (`goto`, then `openHost`'s own) and never asserts that no
+  `ROOM_CREATED` arrives before the tap: fix in `test/helpers/browser.js` and m1. No browser test proves a room
+  refuses a fifth player while the 3D race's setup is open (the game's own cap): add it. T1 already moved the
+  2D entries of host-buttons.js to selectors, and m5b and m5c pass on main.
 
 ### Z. The end (main session)
 

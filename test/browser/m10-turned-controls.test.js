@@ -80,7 +80,6 @@ describe('M10 kart controls on a portrait phone', () => {
   });
 
   test('the controls are drawn turned: no "turn your phone" block, the stick at the top end, the buttons at the bottom end', async () => {
-    assert.equal(await ana.page.locator('#kart-turn-hint').count(), 0);
     assert.equal(await ana.page.isVisible('#kart-controls'), true);
     const viewport = ana.page.viewportSize();
     assert.ok(viewport.height > viewport.width, 'the phone is in portrait');

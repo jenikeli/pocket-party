@@ -167,7 +167,14 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('Start race does nothing until everyone is ready, then starts the countdown with their styles', async () => {
-    await clickNow(hostPage, START_RACE_BUTTON);
+    assert.equal(await hostPage.isDisabled(START_RACE_BUTTON), true, 'Start race is off until everyone is ready');
+    // A disabled button swallows clicks, so to prove the game itself refuses to start (not only the button), the
+    // button is enabled by hand and clicked in the same breath, before the panel's next refresh turns it off again.
+    await hostPage.evaluate((selector) => {
+      const button = document.querySelector(selector);
+      button.disabled = false;
+      button.click();
+    }, START_RACE_BUTTON);
     await hostPage.waitForTimeout(500);
     assert.equal(await ana.page.isVisible('#kart-setup'), true, 'still on the setup screen');
 

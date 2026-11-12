@@ -468,8 +468,8 @@ world frees), unit tests.
   included (reachable on the setup screen). `controller/kart/style.css` split into `setup.css`, `controls.css`,
   `buttons.css` (plan.md names the old file). Breaks `m5b`'s "Turn your phone sideways" test and `m6c`'s Drift
   colour check (now `--pp-panel-2`): T1/T2 fix them and add a portrait (turned) driving test.
-- Interrupted 2026-11-12 by the usage limit: A and D were still building in their worktrees, C's reviewer was
-  running. On resume follow the skill's "After an interruption" (git worktree list).
+- Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
+  sent on from where they stopped (their worktrees held the work, nothing lost).
 
 ## Parked for the user
 

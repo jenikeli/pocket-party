@@ -14,7 +14,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | E | Course pictures: the tool and the saved previews | sonnet | | building |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | building |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |
-| H | 2D race: setup and results as HTML in the look | sonnet | A | queued |
+| H | 2D race: setup and results as HTML in the look | sonnet | A | building |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | queued |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |
@@ -478,8 +478,9 @@ world frees), unit tests.
 - D: the 3D cover's kart moved up and the input lab's pill moved up, so the lobby's name bar does not hide them;
   nothing else redrawn. The 2D wide picture is a real race shot with the infield's clock and standings painted
   over in the grass colour. D's diff (two SVG nudges and a JPEG) was reviewed by the main session, no reviewer.
-- Order: H and T1 both own `test/helpers/host-buttons.js`, so they do not run together: I builds beside E and M,
-  T1 starts when E and M have stopped drawing, H after T1.
+- Order: H and T1 both owned `test/helpers/host-buttons.js`. H no longer touches it (T2 moves the 2D entries
+  to selectors, with the m5b and m5c tests it already owns), so H builds now beside E and M, and T1 starts when
+  E and M have stopped drawing.
 - I: `synth.js` also has `voice` (a held, steerable tone for the engines of J and K) and `tone` takes `sustain`,
   `release` and `filterFrequency` (L's held notes and bass). Gain is the slider's volume squared; defaults music
   0.7, effects 0.8. Both outputs go through one peak limiter. The context is resumed when the page shows again

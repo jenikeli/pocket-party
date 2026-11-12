@@ -11,7 +11,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
 | C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | merged |
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | merged |
-| E | Course pictures: the tool and the saved previews | sonnet | | built, in review (branch worktree-agent-aab05f06a4f1c9bed, 564e111) |
+| E | Course pictures: the tool and the saved previews | sonnet | | merged |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | merged |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | building |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
@@ -491,6 +491,10 @@ world frees), unit tests.
 - M: Seaside had no horizon mountains to keep. Its high clouds sit in new places (they shared a random stream
   with the removed trees); left so. `tools/kit-shots.js` waits a fixed 180 s for a course, which fails when other
   runs share the CPU: course shots are run alone.
+- E: preview spots: airport s=20 (start gate, apron, terminal, tower; the gate carries the "MARIO KART"
+  lettering, the alternative is s=1300, the beach road), Seaside s=600, test track s=100. Seaside's picture
+  still shows a floating island until Z re-shoots (after M and N). `tools/course-previews.js` repeats
+  kit-shots' small load-and-wait block: Z moves it to a shared helper and gives the course wait more than 180 s.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

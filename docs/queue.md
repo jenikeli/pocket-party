@@ -17,7 +17,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | building |
-| O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |
+| O | Kart shadows from one stand-in mesh per kart | sonnet | | building |
 | P | Bloom's clamp folded into its first pass | sonnet | | queued |
 | N | Palm Bay Airport's leftovers | sonnet | M | queued |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | queued |

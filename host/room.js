@@ -1,6 +1,7 @@
-// The host's link to the server plus its player roster, shared by every scene for the life of the page.
-// It keeps the roster in step with joins, drops and rejoins, runs each dropped player's grace period, and
-// tells controllers what to show. Created by host/main.js; the active scene hears every message after it.
+// The host's link to the server plus its player roster, shared by the lobby and every game for the life of the
+// page. It keeps the roster in step with joins, drops and rejoins, runs each dropped player's grace period, and
+// tells controllers what to show. Created by host/main.js; the listener (the lobby, or the game session while a
+// game runs) hears every message after it.
 
 import { MESSAGE_TYPES, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
@@ -8,8 +9,8 @@ import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
 import { DEFAULT_SETTINGS } from '/host/lobby-rules.js';
 import { GAMES } from '/host/games/index.js';
 
-// Returns the room object. Call connect() once the page has loaded, and setListener(scene) from each scene's
-// create() (host/game-session.js takes over while a game runs). The listener needs
+// Returns the room object. Call setListener(lobby) and then connect() once, after Tap to start
+// (host/game-session.js takes over the listener while a game runs). The listener needs
 // handleMessage(message, player) and handleConnectionLost(closedByHost).
 export function createRoom() {
   let socket = null;
@@ -36,7 +37,8 @@ export function createRoom() {
     sendControllerState,
     setScreen,
     setControllerView,
-    setMaxPlayers,
+    setRoomOpen,
+    setPlayerLimit,
     kickPlayer,
     close,
   };
@@ -61,13 +63,12 @@ export function createRoom() {
     socket.send({ type: MESSAGE_TYPES.KICK_PLAYER, playerId });
   }
 
-  // The room updates the roster first, so the scene that hears the message next already sees the change.
+  // The room updates the roster first, so the listener that hears the message next already sees the change.
   function handleMessage(message) {
     const player = room.players.get(message.playerId);
     switch (message.type) {
       case MESSAGE_TYPES.ROOM_CREATED:
         room.roomCode = message.roomCode;
-        socket.send({ type: MESSAGE_TYPES.SET_PLAYER_LIMIT, maxPlayers: room.settings.maxPlayers });
         break;
       case MESSAGE_TYPES.PLAYER_JOINED:
         sendControllerState(addPlayer(room.players, message.playerId));
@@ -106,10 +107,10 @@ export function createRoom() {
         location.reload();
         return;
       default:
-        // Everything else is for the scene.
+        // Everything else is for the listener.
         break;
     }
-    // `player` is still passed after PLAYER_LEFT, so the scene can tidy up what it drew for them.
+    // `player` is still passed after PLAYER_LEFT, so the listener can tidy up what it drew for them.
     listener?.handleMessage(message, player);
   }
 
@@ -141,21 +142,19 @@ export function createRoom() {
       screen: room.screen,
       name: displayName(player),
       color: colorText(player),
-      ready: player.ready,
       gameId: room.gameId,
       view: controllerViews.get(player.playerId) ?? null,
     });
   }
 
-  // Disconnected players are skipped: they get the current screen when they rejoin. The room takes new players
-  // only in the lobby: someone joining mid-game would have no place in it, so the server turns them away.
-  // `gameId` is the running game on the GAME screen, null for the lobby. Views belong to one game run, so a
-  // new screen starts with none.
+  // Disconnected players are skipped: they get the current screen when they rejoin. A player who joins later
+  // gets it on PLAYER_JOINED, so a game that opened the room just finds them in `players`. `gameId` is the
+  // running game on the GAME screen, null for the lobby. Views belong to one game run, so a new screen starts
+  // with none.
   function setScreen(screen, gameId = null) {
     room.screen = screen;
     room.gameId = gameId;
     controllerViews.clear();
-    socket.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open: screen === CONTROLLER_SCREENS.LOBBY });
     for (const player of room.players.values()) {
       if (player.connected) {
         sendControllerState(player);
@@ -176,8 +175,14 @@ export function createRoom() {
     }
   }
 
-  function setMaxPlayers(maxPlayers) {
-    room.settings.maxPlayers = maxPlayers;
+  // Whether the server lets new players in. Someone joining in the middle of a race would have no kart, so the
+  // shell closes the room when a game starts and the game opens it on its setup and results screens.
+  function setRoomOpen(open) {
+    socket.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open });
+  }
+
+  // The server refuses joins beyond this: MAX_PLAYERS in the lobby, the game's own maximum while it runs.
+  function setPlayerLimit(maxPlayers) {
     socket.send({ type: MESSAGE_TYPES.SET_PLAYER_LIMIT, maxPlayers });
   }
 

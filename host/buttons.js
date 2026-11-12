@@ -1,5 +1,5 @@
-// Buttons drawn on the host's canvas: a plain one, one that asks "Sure?" before doing something that cannot
-// be undone, and the Close room button. Used by the lobby, its settings panel and the input lab.
+// Buttons drawn on a game's Phaser canvas: a plain one, and one that asks "Sure?" before doing something that
+// cannot be undone. Used by the input lab and the 2D race.
 
 const NORMAL_COLOR = 0x2a3145;
 const HOVER_COLOR = 0x3a4258;
@@ -72,16 +72,4 @@ export function drawConfirmButton(scene, x, y, { label, confirmLabel = 'Sure?', 
   // A destroyed button cannot be relabelled, so its timer goes with it.
   button.background.once('destroy', () => clearTimeout(disarmTimer));
   return button;
-}
-
-// "Close room", in the lobby and during the game, so the host never has to reload the page to end it.
-export function drawCloseRoomButton(scene, room, x, y) {
-  return drawConfirmButton(scene, x, y, {
-    width: 260,
-    height: 70,
-    fontSize: 32,
-    label: 'Close room',
-    confirmLabel: 'Close it?',
-    onConfirm: () => room.close(),
-  });
 }

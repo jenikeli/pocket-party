@@ -274,15 +274,26 @@ describe('player limit', () => {
 });
 
 describe('lobby messages', () => {
-  test('player_name and set_ready reach the host with the server-added playerId', async () => {
+  test('player_name reaches the host with the server-added playerId', async () => {
     const { host, roomCode } = await createHost(port);
     const { controller, reply } = await joinRoom(port, roomCode);
     await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
 
     controller.send({ type: MESSAGE_TYPES.PLAYER_NAME, name: 'Ana', playerId: 'fake' });
-    controller.send({ type: MESSAGE_TYPES.SET_READY, ready: true });
     assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.PLAYER_NAME, name: 'Ana', playerId: reply.playerId });
-    assert.deepEqual(await host.next(), { type: MESSAGE_TYPES.SET_READY, ready: true, playerId: reply.playerId });
+    controller.close();
+    host.close();
+  });
+
+  // M10 took the ready step out of the lobby, so a ready tap from an old phone page goes nowhere.
+  test('set_ready is no longer passed on to the host', async () => {
+    const { host, roomCode } = await createHost(port);
+    const { controller } = await joinRoom(port, roomCode);
+    await host.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
+
+    assert.equal('SET_READY' in MESSAGE_TYPES, false);
+    controller.send({ type: 'set_ready', ready: true });
+    assert.deepEqual(await host.collectFor(150), []);
     controller.close();
     host.close();
   });
@@ -292,7 +303,7 @@ describe('lobby messages', () => {
     const target = await joinRoom(port, roomCode);
     const other = await joinRoom(port, roomCode);
 
-    const state = { screen: 'lobby', name: 'Ana', color: '#e74c3c', ready: false };
+    const state = { screen: 'lobby', name: 'Ana', color: '#e74c3c', gameId: null, view: null };
     host.send({ type: MESSAGE_TYPES.CONTROLLER_STATE, playerId: target.reply.playerId, ...state });
     assert.deepEqual(await target.controller.next(), { type: MESSAGE_TYPES.CONTROLLER_STATE, ...state });
     assert.deepEqual(await other.controller.collectFor(150), []);

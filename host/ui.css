@@ -1,0 +1,170 @@
+/* The host's shared look ("Night"): colour tokens and the classes every host screen uses, the shell's and the
+   games' panels alike. Loaded by host/index.html; the phone has the same names in controller/style.css.
+   Sizes are in em inside a .pp-stage, so one design fits every screen (see host/stage.js). */
+
+:root {
+  --pp-bg: #10131c;
+  --pp-panel: #1c2130;
+  --pp-panel-2: #2a3145;
+  --pp-line: #343d57;
+  --pp-ink: #ffffff;
+  --pp-muted: #9aa4bf;
+  --pp-accent: #f39c12;
+  --pp-accent-ink: #1c2130;
+  --pp-ok: #2ecc71;
+  --pp-danger: #8e2b22;
+  --pp-radius: 0.45em;
+  /* host/stage.js sets this from the window's size as soon as it runs; until then this CSS guess holds
+     (vh is the tallest viewport on phones, which is why the script measures it instead). */
+  --pp-em: min(1.25vw, 2.2222vh);
+}
+
+/* A 16:9 box centred on the screen, 80 em wide. Its empty parts let clicks through to what is under it (a
+   game's canvas, the lobby's picture); its children take them. */
+.pp-stage {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: calc(80 * var(--pp-em));
+  height: calc(45 * var(--pp-em));
+  box-sizing: border-box;
+  font: var(--pp-em) / 1.2 system-ui, sans-serif;
+  color: var(--pp-ink);
+  pointer-events: none;
+}
+
+.pp-stage > * {
+  pointer-events: auto;
+}
+
+.pp-stage *,
+.pp-stage *::before,
+.pp-stage *::after {
+  box-sizing: border-box;
+}
+
+.pp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin: 0;
+  padding: 0.45em 0.95em;
+  border: 0;
+  border-radius: var(--pp-radius);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--pp-panel-2);
+  color: var(--pp-ink);
+  cursor: pointer;
+}
+
+.pp-button.pp-primary,
+.pp-button[aria-pressed="true"] {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+}
+
+.pp-button.pp-small {
+  font-size: 0.9em;
+}
+
+.pp-button.pp-big {
+  font-size: 1.35em;
+  padding: 0.55em 1.6em;
+}
+
+.pp-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* A confirm button after its first click (host/confirm-click.js). */
+.pp-button.armed,
+.pp-chip.armed {
+  background: var(--pp-danger);
+  color: var(--pp-ink);
+}
+
+.pp-button:focus-visible,
+.pp-chip:focus-visible {
+  outline: 0.15em solid var(--pp-accent);
+  outline-offset: 0.1em;
+}
+
+.pp-panel {
+  background: var(--pp-panel);
+  border-radius: calc(var(--pp-radius) * 1.7);
+}
+
+/* A player: colour dot and name. The dot's colour comes from --pp-dot-color on the .pp-dot. */
+.pp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  margin: 0;
+  padding: 0.28em 0.85em 0.28em 0.3em;
+  border: 0;
+  border-radius: 9em;
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--pp-panel);
+  color: var(--pp-ink);
+}
+
+button.pp-chip {
+  cursor: pointer;
+}
+
+.pp-chip .pp-muted {
+  font-weight: 400;
+  font-size: 0.8em;
+}
+
+.pp-chip .pp-muted:empty {
+  display: none;
+}
+
+.pp-chip.away {
+  opacity: 0.6;
+}
+
+.pp-dot {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: var(--pp-dot-color);
+}
+
+.pp-title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pp-muted {
+  color: var(--pp-muted);
+}
+
+.pp-segment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+
+/* The dark fade over a picture: darker at the top (the chips) and the bottom (the title), light between. */
+.pp-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(8, 12, 22, 0.55), rgba(8, 12, 22, 0.05) 30%, rgba(8, 12, 22, 0.1) 50%,
+      rgba(8, 12, 22, 0.82));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pp-button {
+    transition: background-color 0.12s;
+  }
+}

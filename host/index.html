@@ -1,74 +1,103 @@
-<!-- Host display page (/host): runs the authoritative game. The shell (lobby) draws with Phaser in #shell;
-     a running game draws in its own container, created by host/game-session.js. -->
+<!-- Host display page (/host): runs the authoritative game. The shell's screens (Tap to start, the lobby, the
+     join window, room settings, loading, connection lost) are the HTML below, run by host/main.js; a running game
+     draws in its own container, created by host/game-session.js. -->
 <!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- maximum-scale and user-scalable stop pinch zoom on Android; iOS ignores them (host/main.js handles it). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Pocket Party - Host</title>
-  <style>
-    html,
-    body {
-      margin: 0;
-      height: 100%;
-      background: #10131c;
-      overflow: hidden;
-    }
-
-    /* Our display rules below would otherwise beat the browser's default for the hidden attribute. */
-    [hidden] {
-      display: none !important;
-    }
-
-    #shell,
-    #game-container {
-      width: 100vw;
-      height: 100dvh;
-    }
-
-    /* A small line over the canvas (an HTML element, so every scene shows it without drawing it). */
-    #wake-status {
-      position: fixed;
-      left: 8px;
-      bottom: 4px;
-      margin: 0;
-      font: 12px sans-serif;
-      color: #5c6680;
-      pointer-events: none;
-    }
-
-    /* The shell's buttons over a running game, bottom right, where games keep clear. */
-    #game-bar {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      display: flex;
-      gap: 12px;
-    }
-
-    #game-bar button {
-      font: 22px sans-serif;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #2a3145;
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    #game-bar button.armed {
-      background: #8e2b22;
-    }
-  </style>
+  <link rel="stylesheet" href="/host/ui.css">
+  <link rel="stylesheet" href="/host/shell.css">
+  <link rel="stylesheet" href="/host/lobby.css">
 </head>
 
 <body>
-  <div id="shell"></div>
-  <div id="game-bar" hidden>
-    <button type="button" id="end-game-button">End game</button>
-    <button type="button" id="close-room-button">Close room</button>
+  <section id="tap-to-start" class="shell-screen">
+    <div class="pp-stage tap-stage">
+      <h1 class="pp-title tap-title">Pocket Party</h1>
+      <button type="button" id="tap-to-start-button" class="pp-button pp-primary pp-big">Tap to start</button>
+      <p class="pp-muted">Turns the sound on and goes full screen</p>
+    </div>
+  </section>
+
+  <section id="lobby" class="shell-screen" hidden>
+    <div class="lobby-picture">
+      <img id="lobby-background" alt="" hidden>
+      <div class="pp-scrim"></div>
+    </div>
+    <div class="pp-stage lobby-stage">
+      <div class="lobby-top">
+        <div id="lobby-players" class="player-chips"></div>
+        <button type="button" id="add-players-button" class="pp-button pp-primary pp-small">Add players</button>
+        <button type="button" id="room-settings-button" class="pp-button pp-small" aria-pressed="false">Room settings</button>
+        <button type="button" id="lobby-close-room-button" class="pp-button pp-small">Close room</button>
+      </div>
+      <div id="room-settings" class="pp-panel room-settings" hidden>
+        <p class="pp-muted">Hold a dropped player for</p>
+        <div class="room-settings-row">
+          <button type="button" id="grace-minus" class="pp-button" aria-label="Hold for less time">-</button>
+          <span id="grace-value" class="room-settings-value"></span>
+          <button type="button" id="grace-plus" class="pp-button" aria-label="Hold for more time">+</button>
+        </div>
+      </div>
+      <div class="lobby-bottom">
+        <div class="lobby-game on-picture">
+          <p class="lobby-kicker">Pocket Party</p>
+          <h1 id="lobby-game-title" class="pp-title lobby-game-title"></h1>
+          <p id="lobby-game-blurb"></p>
+          <button type="button" id="play-button" class="pp-button pp-primary pp-big">Play</button>
+          <p id="lobby-status" class="lobby-note"></p>
+          <p id="lobby-problem" class="lobby-note lobby-problem"></p>
+        </div>
+        <div id="lobby-games" class="lobby-games"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="game-bar" class="game-bar" hidden>
+    <button type="button" id="game-add-players-button" class="pp-button pp-primary pp-small" hidden>Add players</button>
+    <button type="button" id="end-game-button" class="pp-button pp-small">End game</button>
+    <button type="button" id="close-room-button" class="pp-button pp-small">Close room</button>
   </div>
+
+  <section id="join-window" class="shell-overlay join-window" hidden>
+    <div class="pp-stage">
+      <div class="pp-panel join-panel">
+        <div id="join-qr" class="join-qr"></div>
+        <div class="join-text">
+          <h2 class="pp-title join-title">Join the party</h2>
+          <p class="pp-muted">Scan the code, or open the link and type the room code</p>
+          <p id="join-code" class="pp-title join-code"></p>
+          <p id="join-url" class="join-url"></p>
+          <p id="join-lan-warning" class="join-warning" hidden>Phones cannot reach "localhost". Open /host using
+            the LAN IP instead.</p>
+          <div id="join-players" class="player-chips"></div>
+          <button type="button" id="join-done-button" class="pp-button pp-primary pp-big join-done">Done</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="loading-screen" class="shell-overlay loading-screen" hidden>
+    <img id="loading-picture" alt="" hidden>
+    <div class="loading-scrim"></div>
+    <div class="pp-stage loading-stage on-picture">
+      <h1 id="loading-title" class="pp-title loading-title"></h1>
+      <div class="loading-track"><div id="loading-bar" class="loading-bar"></div></div>
+      <p id="loading-label"></p>
+    </div>
+  </section>
+
+  <section id="connection-lost" class="shell-overlay connection-lost" hidden>
+    <div class="pp-stage connection-lost-stage">
+      <h1 id="connection-lost-message" class="pp-title connection-lost-message"></h1>
+      <button type="button" id="new-room-button" class="pp-button pp-primary pp-big">Open a new room</button>
+    </div>
+  </section>
+
   <p id="wake-status"></p>
   <!-- Three.js (used by the 3D games) and its add-ons import the bare name "three"; the import map tells the
        browser which file that is. It must come before any module script. -->

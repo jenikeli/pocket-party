@@ -7,7 +7,7 @@
 // URL path the WebSocket server listens on. Pages connect to ws(s)://<same host>/ws.
 export const SOCKET_PATH = '/ws';
 
-// Most controllers one room accepts, whatever the host's lobby setting says (see SET_PLAYER_LIMIT).
+// Most controllers one room accepts, and the limit the host sets in the lobby (see SET_PLAYER_LIMIT).
 // The Android hotspot accepts 10 clients and the host display is one of them, which leaves 9 phones.
 export const MAX_PLAYERS = 9;
 
@@ -18,13 +18,14 @@ export const MESSAGE_TYPES = Object.freeze({
   // server -> host: { roomCode }. The code players type (or scan) to join.
   ROOM_CREATED: 'room_created',
 
-  // host -> server: { maxPlayers }. The lobby's player limit. The server clamps it to 1..MAX_PLAYERS and
-  // refuses joins beyond it (rejoins always get in: their slot is still held). Until the host sends this,
-  // a room takes MAX_PLAYERS.
+  // host -> server: { maxPlayers }. The room's player limit: MAX_PLAYERS in the lobby, the running game's own
+  // maximum while a game runs. The server clamps it to 1..MAX_PLAYERS and refuses joins beyond it (rejoins
+  // always get in: their slot is still held). Until the host sends this, a room takes MAX_PLAYERS.
   SET_PLAYER_LIMIT: 'set_player_limit',
 
-  // host -> server: { open } (true or false). When the game starts the host closes the room, so new players
-  // are refused with GAME_IN_PROGRESS; rejoins still get in. Rooms start open.
+  // host -> server: { open } (true or false). The host closes the room when a game starts, so new players are
+  // refused with GAME_IN_PROGRESS (rejoins still get in); a game opens it again on screens where a new player
+  // can come in (its setup and results), and the lobby always has it open. Rooms start open.
   SET_ROOM_OPEN: 'set_room_open',
 
   // controller -> server: { roomCode }. First join; the server answers with JOINED or JOIN_FAILED.
@@ -84,11 +85,7 @@ export const MESSAGE_TYPES = Object.freeze({
   // server -> host: the same plus { playerId }, added by the server as for INPUT.
   PLAYER_NAME: 'player_name',
 
-  // controller -> server: { ready } (true or false), when the player taps the ready button in the lobby.
-  // server -> host: the same plus { playerId }. The host decides, and answers with CONTROLLER_STATE.
-  SET_READY: 'set_ready',
-
-  // host -> server: { playerId, screen, name, color, ready, gameId, view }. Everything that player's controller
+  // host -> server: { playerId, screen, name, color, gameId, view }. Everything that player's controller
   // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c'.
   // On the GAME screen, gameId names the game (the controller loads controller/games/<gameId>/index.js) and
   // view is whatever small object that game set for this player (null until it sets one); both are null in

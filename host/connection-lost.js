@@ -1,28 +1,15 @@
-// The overlay drawn over whichever scene is running once the host's socket has closed: "Room closed" after
-// the host pressed Close room, "Lost connection" otherwise. Used by the scenes' handleConnectionLost().
+// The cover over everything once the host's socket has closed: "Room closed." after the host pressed Close room,
+// "Lost connection to the server." otherwise, and a button that opens a new room. Used by host/lobby.js, which
+// hears the closed socket from the room (through the game session while a game runs).
 
-import { drawButton } from '/host/buttons.js';
+const cover = document.getElementById('connection-lost');
 
-const GAME_WIDTH = 1920;
-const GAME_HEIGHT = 1080;
+document.getElementById('new-room-button').addEventListener('click', () => location.reload());
 
 // The room is gone with the socket (the server deletes it when the host leaves), so a new room means reloading.
-export function drawConnectionLost(scene, closedByHost) {
+// The cover takes every click, so nothing underneath can be pressed any more.
+export function showConnectionLost(closedByHost) {
   const message = closedByHost ? 'Room closed.' : 'Lost connection to the server.';
-  // Covers the whole screen and takes the clicks, so nothing underneath can be pressed any more.
-  scene.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.85).setOrigin(0).setInteractive();
-  drawButton(scene, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 120, {
-    width: 460,
-    height: 90,
-    label: 'Open a new room',
-    onClick: () => location.reload(),
-  });
-  scene.add
-    .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, message, {
-      fontFamily: 'sans-serif',
-      color: '#ffffff',
-      fontSize: '56px',
-      align: 'center',
-    })
-    .setOrigin(0.5);
+  document.getElementById('connection-lost-message').textContent = message;
+  cover.hidden = false;
 }

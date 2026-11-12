@@ -1,29 +1,44 @@
-// Runs one game for the shell, from loading it to handing back to the lobby: puts the shell's Phaser to sleep,
-// gives the game an empty full-screen container, passes it the messages that belong to it, and drives it with
-// the game runner. Used by host/scenes/lobby-scene.js.
+// Runs one game for the shell, from loading it to handing back to the lobby: closes the room to newcomers, shows
+// the loading screen while the game's code loads, gives the game an empty full-screen container, passes it the
+// messages that belong to it, and drives it with the game runner. Used by host/lobby.js.
 
 import { MESSAGE_TYPES, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { loadGame } from '/host/games/index.js';
 import { startGameRunner } from '/host/game-runner.js';
-import { showGameBar, hideGameBar } from '/host/game-bar.js';
+import { showGameBar, hideGameBar, showAddPlayersButton } from '/host/game-bar.js';
+import { openJoinWindow, closeJoinWindow } from '/host/join-window.js';
+import { showLoading } from '/host/loading-screen.js';
 
 // Messages from a player's controller that belong to the running game. The shell keeps the rest (names,
 // phones, joins and drops) in the roster, which the game reads.
 const GAME_MESSAGE_TYPES = new Set([MESSAGE_TYPES.INPUT, MESSAGE_TYPES.INPUT_MODE, MESSAGE_TYPES.PONG]);
 
-// `gameInfo` is the game's registry entry. `lobby` is the lobby scene: the game hands back to it with
+// `gameInfo` is the game's registry entry. `lobby` is the lobby (host/lobby.js): the game hands back to it with
 // lobby.returnFromGame(problem), where problem is null or a sentence to show, or lobby.handleConnectionLost()
-// if the socket closed. Rejects, with the lobby still showing, if the game could not be loaded.
+// if the socket closed. Resolves once the game runs; rejects, with the lobby still showing, if it could not be
+// loaded (the lobby then opens the room again).
 export async function playGame({ room, lobby, gameInfo }) {
-  const game = await loadGame(gameInfo.id);
-  const shellGame = lobby.game;
-  const shellElement = document.getElementById('shell');
+  // Closed from Play: someone joining now would have no place in a race. The limit is the game's own, so a game
+  // that opens the room later (its setup screen) never gets more players than it takes.
+  room.setRoomOpen(false);
+  room.setPlayerLimit(gameInfo.maxPlayers);
+  const loading = showLoading({ title: gameInfo.title, picture: gameInfo.background });
+  let game;
+  try {
+    game = await loadGame(gameInfo.id, (fraction) => loading.setProgress(fraction));
+  } finally {
+    // Hidden before start(), which may show the loading screen again for its own slow part (the 3D race's
+    // course). start() runs without yielding, so the page is not drawn in between and the screen stays up
+    // until the game has started.
+    loading.hide();
+  }
+
   const container = document.createElement('div');
   container.id = 'game-container';
   let runner = null;
   let isOver = false;
 
-  // While the game runs it is the room's listener, in the lobby scene's place.
+  // While the game runs it is the room's listener, in the lobby's place.
   const session = {
     handleMessage(message, player) {
       if (message.type === MESSAGE_TYPES.PLAYER_LEFT) {
@@ -38,8 +53,17 @@ export async function playGame({ room, lobby, gameInfo }) {
     },
   };
 
-  // Frees everything the game holds and shows the shell again. Safe to call twice (End game while the
-  // runner is also finishing).
+  // What the game calls to let new players in (its setup and results screens) or keep them out (a race). The
+  // join window goes with a closed room, so it never covers a race.
+  function setRoomOpen(open) {
+    room.setRoomOpen(open);
+    showAddPlayersButton(open);
+    if (!open) {
+      closeJoinWindow();
+    }
+  }
+
+  // Frees everything the game holds. Safe to call twice (End game while the runner is also finishing).
   function tearDown() {
     if (isOver) {
       return false;
@@ -47,16 +71,13 @@ export async function playGame({ room, lobby, gameInfo }) {
     isOver = true;
     runner?.stop();
     hideGameBar();
+    closeJoinWindow();
     try {
       game.stop();
     } catch (error) {
       console.error(`${gameInfo.title}: stop() failed`, error);
     }
     container.remove();
-    shellElement.hidden = false;
-    shellGame.loop.wake();
-    // The shell's canvas was hidden, so let Phaser measure the screen again in case it changed meanwhile.
-    shellGame.scale.refresh();
     room.setListener(lobby);
     return true;
   }
@@ -73,14 +94,17 @@ export async function playGame({ room, lobby, gameInfo }) {
     lobby.returnFromGame(problem);
   }
 
-  // Only one render loop and one busy WebGL context at a time: an iPad struggles with two.
-  shellGame.loop.sleep();
-  shellElement.hidden = true;
+  // Hidden, so only the game draws: an iPad struggles with more than one busy page at a time.
+  lobby.hide();
   document.body.append(container);
   // Before start(), because a new screen clears every controller view and start() may already set some.
   room.setScreen(CONTROLLER_SCREENS.GAME, gameInfo.id);
   room.setListener(session);
-  showGameBar({ onEndGame: () => endGame(null), onCloseRoom: () => room.close() });
+  showGameBar({
+    onAddPlayers: () => openJoinWindow(room),
+    onEndGame: () => endGame(null),
+    onCloseRoom: () => room.close(),
+  });
   try {
     game.start({
       container,
@@ -89,6 +113,7 @@ export async function playGame({ room, lobby, gameInfo }) {
       removePlayer: room.kickPlayer,
       // The PONG comes back to the game's onMessage with the same sentAt.
       pingPlayer: (playerId, sentAt) => room.send({ type: MESSAGE_TYPES.PING, playerId, sentAt }),
+      setRoomOpen,
     });
   } catch (error) {
     endGame(error);

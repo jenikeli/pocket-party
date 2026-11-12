@@ -1,18 +1,45 @@
-// The game registry: every game the lobby can start, with its player range, and loading a game's code on
-// demand. Used by the lobby (host/scenes/lobby-scene.js) and host/game-session.js. The shell never imports a
-// game directly, only through here.
+// The game registry: every game the lobby can start, with what the lobby shows of it and its player range, and
+// loading a game's code on demand. Used by the lobby (host/lobby.js), host/room.js and host/game-session.js.
+// The shell never imports a game directly, only through here.
 
 import { MAX_PLAYERS } from '/shared/protocol.js';
 
 // In the order the lobby offers them; the first is the default. `id` is also the folder name, under
-// host/games/ and controller/games/.
+// host/games/ and controller/games/. `blurb` is the line under the title in the lobby, `cover` the thumbnail
+// (assets/covers/), `background` the wide picture that fills the lobby while the game is chosen (null: a plain
+// dark fade).
 export const GAMES = Object.freeze([
-  Object.freeze({ id: 'input-lab', title: 'Input lab', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
-  Object.freeze({ id: 'kart-2d', title: 'Kart race 2D', minPlayers: 2, maxPlayers: MAX_PLAYERS }),
   // Split screen, one view per player, so at most 4 (M6). CPU karts fill the field, so one player can race alone,
   // as in MK8DX. It starts with no players too, for the setup screen's Watch (self-driving karts, no phones);
-  // a race itself still needs a player (canStartRace in host/kart/setup.js).
-  Object.freeze({ id: 'kart-3d', title: 'Kart race 3D', minPlayers: 0, maxPlayers: 4 }),
+  // a race itself still needs a player (canStartRace in host/kart/setup.js). The picture is the saved preview
+  // of its first course (host/games/kart-3d/course-previews.js).
+  Object.freeze({
+    id: 'kart-3d',
+    title: 'Kart race 3D',
+    blurb: 'Up to 4 players, split screen. CPU karts fill the grid.',
+    minPlayers: 0,
+    maxPlayers: 4,
+    cover: '/assets/covers/kart-3d.svg',
+    background: '/assets/kart-3d/previews/palm-bay-airport.jpg',
+  }),
+  Object.freeze({
+    id: 'kart-2d',
+    title: 'Kart race 2D',
+    blurb: `2 to ${MAX_PLAYERS} players on one screen.`,
+    minPlayers: 2,
+    maxPlayers: MAX_PLAYERS,
+    cover: '/assets/covers/kart-2d.svg',
+    background: '/assets/covers/kart-2d-wide.jpg',
+  }),
+  Object.freeze({
+    id: 'input-lab',
+    title: 'Input lab',
+    blurb: 'Try tap, swipe and tilt, and see how long each input takes to arrive.',
+    minPlayers: 2,
+    maxPlayers: MAX_PLAYERS,
+    cover: '/assets/covers/input-lab.svg',
+    background: null,
+  }),
 ]);
 
 export function findGame(gameId) {
@@ -21,10 +48,11 @@ export function findGame(gameId) {
 
 // Fetches the game's code with a dynamic import(), the browser's own module loading, so a game's files are
 // downloaded only when it is first played. Each game module exports createGame(), which returns a fresh game
-// (see "Game module interface" in plan.md); its load() fetches the assets. Resolves to the loaded game.
-export async function loadGame(gameId) {
+// (see "Game module interface" in plan.md); its load(onProgress) fetches the assets and may report how far it
+// has got as a fraction 0..1. Resolves to the loaded game.
+export async function loadGame(gameId, onProgress) {
   const module = await import(`/host/games/${gameId}/index.js`);
   const game = module.createGame();
-  await game.load();
+  await game.load(onProgress);
   return game;
 }

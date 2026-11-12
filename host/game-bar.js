@@ -1,13 +1,20 @@
-// The shell's two buttons over a running game: "End game" and "Close room". They are HTML, not canvas,
-// because the shell's canvas is hidden while a game runs. Like the canvas confirm buttons (host/buttons.js),
-// the first click only arms a button and a second click within 3 s does it. Used by host/game-session.js.
+// The shell's buttons over a running game, bottom right: "Add players" (only while the game has the room open),
+// "End game" and "Close room". End game and Close room ask first: the first click arms the button and a second
+// click within 3 s does it (host/confirm-click.js). Used by host/game-session.js.
 
-const CONFIRM_WINDOW_MS = 3000;
+import { confirmButton } from '/host/confirm-click.js';
 
 const bar = document.getElementById('game-bar');
-let handlers = { onEndGame: () => {}, onCloseRoom: () => {} };
+const addPlayersButton = document.getElementById('game-add-players-button');
+let handlers = { onAddPlayers: () => {}, onEndGame: () => {}, onCloseRoom: () => {} };
 
-// `onEndGame()` and `onCloseRoom()` run on a confirmed click.
+addPlayersButton.addEventListener('click', () => handlers.onAddPlayers());
+const endButton = confirmButton(document.getElementById('end-game-button'), 'End it?', () => handlers.onEndGame());
+const closeButton = confirmButton(document.getElementById('close-room-button'), 'Close it?', () =>
+  handlers.onCloseRoom(),
+);
+
+// `onAddPlayers()` runs on a click, `onEndGame()` and `onCloseRoom()` on a confirmed click.
 export function showGameBar(newHandlers) {
   handlers = newHandlers;
   bar.hidden = false;
@@ -15,35 +22,12 @@ export function showGameBar(newHandlers) {
 
 export function hideGameBar() {
   bar.hidden = true;
-  disarmEndButton();
-  disarmCloseButton();
+  addPlayersButton.hidden = true;
+  endButton.disarm();
+  closeButton.disarm();
 }
 
-// Returns the button's disarm function.
-function makeConfirmButton(id, confirmLabel, onConfirm) {
-  const button = document.getElementById(id);
-  const label = button.textContent;
-  let disarmTimer = null;
-
-  function disarm() {
-    clearTimeout(disarmTimer);
-    disarmTimer = null;
-    button.textContent = label;
-    button.classList.remove('armed');
-  }
-
-  button.addEventListener('click', () => {
-    if (disarmTimer === null) {
-      button.textContent = confirmLabel;
-      button.classList.add('armed');
-      disarmTimer = setTimeout(disarm, CONFIRM_WINDOW_MS);
-      return;
-    }
-    disarm();
-    onConfirm();
-  });
-  return disarm;
+// Shown while the room is open to new players (a game's setup and results screens), hidden during a race.
+export function showAddPlayersButton(shown) {
+  addPlayersButton.hidden = !shown;
 }
-
-const disarmEndButton = makeConfirmButton('end-game-button', 'End it?', () => handlers.onEndGame());
-const disarmCloseButton = makeConfirmButton('close-room-button', 'Close it?', () => handlers.onCloseRoom());

@@ -1,5 +1,5 @@
 // Unit tests for the host's lobby logic: the roster (host/roster.js) and the lobby rules (host/lobby-rules.js).
-// Both are plain modules, so they run in Node without Phaser or a browser.
+// Both are plain modules, so they run in Node without a browser.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,22 +13,15 @@ import {
   secondsUntilFreed,
   formatMinutes,
 } from '../../host/roster.js';
-import {
-  MIN_PLAYERS,
-  DEFAULT_SETTINGS,
-  stepMaxPlayers,
-  stepGraceSeconds,
-  canStartGame,
-  describeWaitingFor,
-} from '../../host/lobby-rules.js';
+import { DEFAULT_SETTINGS, stepGraceSeconds, canPickGame } from '../../host/lobby-rules.js';
 import { MAX_PLAYERS } from '../../shared/protocol.js';
 
-// A roster with `count` connected players, each ready or not as given.
-function rosterOf(...readyFlags) {
+// A roster of `count` connected players.
+function rosterOf(count) {
   const players = new Map();
-  readyFlags.forEach((ready, index) => {
-    addPlayer(players, `p${index}`).ready = ready;
-  });
+  for (let index = 0; index < count; index += 1) {
+    addPlayer(players, `p${index}`);
+  }
   return players;
 }
 
@@ -82,17 +75,10 @@ test('the grace countdown rounds up, stops at 0, and shows as minutes', () => {
   assert.equal(formatMinutes(0), '0:00');
 });
 
-// Changed on purpose after the M4 device run: the grace period default went from 2 minutes to 30 seconds.
-test('the defaults are 6 players and a 30 second grace period', () => {
-  assert.deepEqual(DEFAULT_SETTINGS, { maxPlayers: 6, graceSeconds: 30 });
-});
-
-test(`max players steps by one between ${MIN_PLAYERS} and ${MAX_PLAYERS}, and not below the players present`, () => {
-  assert.equal(stepMaxPlayers(6, 1, 0), 7);
-  assert.equal(stepMaxPlayers(6, -1, 0), 5);
-  assert.equal(stepMaxPlayers(MAX_PLAYERS, 1, 0), MAX_PLAYERS);
-  assert.equal(stepMaxPlayers(MIN_PLAYERS, -1, 0), MIN_PLAYERS);
-  assert.equal(stepMaxPlayers(4, -1, 4), 4);
+// Changed on purpose after the M4 device run: the grace period default went from 2 minutes to 30 seconds. The max
+// players setting went in M10: each game's own limit applies.
+test('the only room setting is a 30 second grace period', () => {
+  assert.deepEqual(DEFAULT_SETTINGS, { graceSeconds: 30 });
 });
 
 test('the grace period steps by 30 seconds between 30 seconds and 10 minutes', () => {
@@ -102,34 +88,40 @@ test('the grace period steps by 30 seconds between 30 seconds and 10 minutes', (
   assert.equal(stepGraceSeconds(600, 1), 600);
 });
 
-// A registry entry like those in host/games/index.js, which the unit tests cannot import (it uses browser paths).
+// Registry entries like those in host/games/index.js, which the unit tests cannot import (it uses browser paths).
 const TWO_TO_THREE = { id: 'test-game', title: 'Test game', minPlayers: 2, maxPlayers: 3 };
+const NONE_TO_FOUR = { id: 'test-race', title: 'Test race', minPlayers: 0, maxPlayers: 4 };
+const ONE_TO_NINE = { id: 'test-solo', title: 'Test solo', minPlayers: 1, maxPlayers: MAX_PLAYERS };
 
-test('the game starts only with a player count in the game\'s range, all connected and ready', () => {
-  assert.equal(canStartGame(rosterOf(), TWO_TO_THREE), false);
-  assert.equal(canStartGame(rosterOf(true), TWO_TO_THREE), false);
-  assert.equal(canStartGame(rosterOf(true, false), TWO_TO_THREE), false);
-  assert.equal(canStartGame(rosterOf(true, true), TWO_TO_THREE), true);
-  assert.equal(canStartGame(rosterOf(true, true, true), TWO_TO_THREE), true);
-  assert.equal(canStartGame(rosterOf(true, true, true, true), TWO_TO_THREE), false);
-
-  const withDropped = rosterOf(true, true);
-  withDropped.get('p1').connected = false;
-  assert.equal(canStartGame(withDropped, TWO_TO_THREE), false);
+test('a game can be picked with a player count in its range, edges included', () => {
+  assert.deepEqual(canPickGame(rosterOf(1), TWO_TO_THREE), {
+    ok: false,
+    reason: 'Test game needs at least 2 players',
+  });
+  assert.deepEqual(canPickGame(rosterOf(2), TWO_TO_THREE), { ok: true, reason: '' });
+  assert.deepEqual(canPickGame(rosterOf(3), TWO_TO_THREE), { ok: true, reason: '' });
+  assert.deepEqual(canPickGame(rosterOf(4), TWO_TO_THREE), {
+    ok: false,
+    reason: 'Test game takes at most 3 players',
+  });
 });
 
-test('a game that takes no players (the 3D race, for Watch) starts with an empty room', () => {
-  const noneToFour = { id: 'test-game', title: 'Test game', minPlayers: 0, maxPlayers: 4 };
-  assert.equal(canStartGame(rosterOf(), noneToFour), true);
-  assert.equal(canStartGame(rosterOf(false), noneToFour), false, 'a player in the room must still be ready');
+test('a game that takes no players (the 3D race, for Watch) can be picked in an empty room', () => {
+  assert.equal(canPickGame(rosterOf(0), NONE_TO_FOUR).ok, true);
+  assert.equal(canPickGame(rosterOf(4), NONE_TO_FOUR).ok, true);
+  assert.equal(canPickGame(rosterOf(5), NONE_TO_FOUR).reason, 'Test race takes at most 4 players');
 });
 
-test('the lobby says what it is waiting for', () => {
-  assert.equal(describeWaitingFor(rosterOf(true), TWO_TO_THREE), 'Waiting for players (at least 2)');
-  assert.equal(describeWaitingFor(rosterOf(true, false), TWO_TO_THREE), 'Waiting for 1 player to be ready');
-  assert.equal(describeWaitingFor(rosterOf(false, false, true), TWO_TO_THREE), 'Waiting for 2 players to be ready');
-  assert.equal(describeWaitingFor(rosterOf(true, true, true, true), TWO_TO_THREE), 'Test game takes at most 3 players');
-  const withDropped = rosterOf(true, true);
-  withDropped.get('p0').connected = false;
-  assert.equal(describeWaitingFor(withDropped, TWO_TO_THREE), 'Waiting for a player to reconnect');
+test('a game for one player or more says "player", not "players"', () => {
+  assert.equal(canPickGame(rosterOf(0), ONE_TO_NINE).reason, 'Test solo needs at least 1 player');
+  assert.equal(canPickGame(rosterOf(MAX_PLAYERS), ONE_TO_NINE).ok, true);
+});
+
+test('there is no ready step: unready and dropped players count and do not block', () => {
+  const players = rosterOf(2);
+  const dropped = players.get('p1');
+  dropped.connected = false;
+  dropped.graceEndsAt = Date.now() + 30000;
+  assert.equal(canPickGame(players, TWO_TO_THREE).ok, true);
+  assert.equal('ready' in players.get('p0'), false, 'a roster player has no ready flag');
 });

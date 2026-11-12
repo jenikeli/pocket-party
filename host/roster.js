@@ -1,6 +1,6 @@
-// The host's player list: each player's color slot, name, phone, ready flag, and whether they are connected
-// or in their grace period. Plain data and functions (no Phaser, no DOM), so it can be unit tested in Node.
-// Used by host/room.js, host/lobby-rules.js and the scenes.
+// The host's player list: each player's color slot, name, phone, and whether they are connected or in their
+// grace period. Plain data and functions (no DOM), so it can be unit tested in Node. Used by host/room.js,
+// host/lobby-rules.js, the lobby's player chips (host/lobby-players.js) and the games.
 
 // One color per slot. MAX_PLAYERS in shared/protocol.js is 9, so 9 colors.
 export const PLAYER_COLORS = [
@@ -11,7 +11,7 @@ export const PLAYER_COLORS = [
 const MAX_NAME_LENGTH = 12;
 
 // `players` is a Map(playerId -> player). A player is
-// { playerId, colorIndex, name, device, ready, connected, graceEndsAt }, where name and device ('iPhone Safari')
+// { playerId, colorIndex, name, device, connected, graceEndsAt }, where name and device ('iPhone Safari')
 // are '' until the controller sends them, and graceEndsAt is the Date.now() time their slot is freed, or null
 // while they are connected.
 export function addPlayer(players, playerId) {
@@ -20,7 +20,6 @@ export function addPlayer(players, playerId) {
     colorIndex: findFreeColorIndex(players),
     name: '',
     device: '',
-    ready: false,
     connected: true,
     graceEndsAt: null,
   };
@@ -46,7 +45,7 @@ export function displayName(player) {
   return player.name || `Player ${player.colorIndex + 1}`;
 }
 
-// The player's color as CSS text, e.g. '#e74c3c', for Phaser text styles and the controller.
+// The player's color as CSS text, e.g. '#e74c3c', for the host's pages and Phaser text, and the controller.
 export function colorText(player) {
   return `#${PLAYER_COLORS[player.colorIndex].toString(16).padStart(6, '0')}`;
 }

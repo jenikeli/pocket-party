@@ -29,7 +29,7 @@ export function createGame() {
   // from the card, because messages can arrive before Phaser is ready to draw one.
   const tracks = new Map();
 
-  // The lab has no assets of its own, and Phaser is the same module the shell already loaded.
+  // The lab has no assets of its own, and Phaser loads with its scene (host/hand-driven-phaser.js).
   async function load() {}
 
   function start(shell) {

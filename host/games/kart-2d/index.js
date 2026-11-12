@@ -25,7 +25,7 @@ export function createGame() {
   const sentViews = new Map();
   let wantsLobby = false;
 
-  // Everything is drawn from code; Phaser is the module the shell already loaded.
+  // Everything is drawn from code; Phaser loads with the renderer (host/hand-driven-phaser.js).
   async function load() {}
 
   function start(shell) {

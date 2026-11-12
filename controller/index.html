@@ -3,33 +3,46 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <!-- maximum-scale and user-scalable stop pinch zoom on Android; iOS also needs touch-action in the CSS. -->
+  <!-- maximum-scale and user-scalable stop pinch zoom on Android; iOS Safari ignores them, so touch-action in the CSS and
+       controller/no-zoom.js stop it there. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Pocket Party</title>
   <link rel="stylesheet" href="/controller/style.css">
 </head>
 <body>
+  <!-- Join: the room code first (the host's QR link fills it in), then the name. Join sits at the bottom, under the thumb. -->
   <main id="join-screen">
-    <h1>Pocket Party</h1>
+    <h1 class="pp-title">Pocket Party</h1>
     <form id="join-form">
-      <label for="player-name">Your name</label>
-      <input id="player-name" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next">
       <label for="room-code">Room code</label>
-      <input id="room-code" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
-      <button id="join-button" type="submit">Join</button>
+      <input id="room-code" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next">
+      <label for="player-name">Your name</label>
+      <input id="player-name" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done">
+      <p id="join-status" class="pp-muted"></p>
+      <details id="device-details">
+        <summary>Device details</summary>
+        <dl id="device-info"></dl>
+      </details>
+      <button id="join-button" class="pp-button pp-primary" type="submit">Join</button>
     </form>
-    <p id="join-status"></p>
-    <dl id="device-info"></dl>
   </main>
 
-  <!-- The lobby: who this phone plays as, and the ready button. -->
+  <!-- The lobby: who this phone plays as. The game is picked on the host's screen, and the game's own setup
+       screen is where players get ready. -->
   <main id="lobby-screen" hidden>
-    <p id="lobby-room"></p>
-    <p id="player-badge"><span id="player-swatch"></span><span id="player-label"></span></p>
-    <button type="button" id="ready-button" aria-pressed="false">I'm ready</button>
-    <p id="lobby-hint"></p>
-    <p id="wake-status"></p>
-    <button type="button" class="leave-button">Leave game</button>
+    <p id="lobby-room" class="pp-muted"></p>
+    <div id="lobby-identity">
+      <span id="player-swatch"></span>
+      <p id="player-label" class="pp-title"></p>
+      <p id="lobby-hint"></p>
+      <button type="button" id="change-name-button" class="pp-button pp-small">Change name</button>
+      <form id="change-name-form" hidden>
+        <input id="change-name-input" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Your name">
+        <button type="submit" class="pp-button pp-primary pp-small">Save</button>
+      </form>
+    </div>
+    <p id="wake-status" class="pp-muted"></p>
+    <button type="button" class="leave-button pp-button">Leave</button>
   </main>
 
   <!-- A running game: the room line and Leave are the shell's; the game builds its controls in #game-container
@@ -37,15 +50,15 @@
   <main id="game-screen" hidden>
     <div id="game-top">
       <p id="game-status"></p>
-      <button type="button" class="leave-button">Leave</button>
+      <button type="button" class="leave-button pp-button pp-small">Leave</button>
     </div>
     <div id="game-container"></div>
   </main>
   <!-- Covers every screen while the phone gets its slot back after a drop. -->
   <div id="reconnect-overlay" hidden>
     <p id="reconnect-text"></p>
-    <button type="button" id="reconnect-button" hidden>Tap to reconnect</button>
-    <button type="button" class="leave-button" id="overlay-leave-button" hidden>Leave game</button>
+    <button type="button" id="reconnect-button" class="pp-button pp-primary" hidden>Tap to reconnect</button>
+    <button type="button" class="leave-button pp-button" id="overlay-leave-button" hidden>Leave game</button>
   </div>
   <script type="module" src="/controller/main.js"></script>
 </body>

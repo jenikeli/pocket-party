@@ -16,11 +16,12 @@
 #mode-tabs button {
   font-size: 18px;
   padding: 12px 4px;
-  background: #2a3145;
+  background: var(--pp-panel-2);
 }
 
 #mode-tabs button[aria-pressed="true"] {
-  background: #3498db;
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
 }
 
 #lab-notice {
@@ -39,8 +40,8 @@
   justify-content: center;
   gap: 16px;
   border-radius: 24px;
-  background: #1c2130;
-  color: #9aa4bf;
+  background: var(--pp-panel);
+  color: var(--pp-muted);
 }
 
 /* A short glow on each tap or swipe, so the player sees every one register. */
@@ -50,7 +51,7 @@
 
 @keyframes pad-flash {
   from { background: #34405e; }
-  to { background: #1c2130; }
+  to { background: var(--pp-panel); }
 }
 
 #input-pad button {
@@ -60,7 +61,7 @@
 #big-readout {
   margin: 0;
   font-size: 96px;
-  color: #ffffff;
+  color: var(--pp-ink);
 }
 
 #pad-hint {
@@ -73,7 +74,7 @@
   justify-content: center;
   width: 160px;
   height: 160px;
-  border: 3px solid #3a4258;
+  border: 3px solid var(--pp-line);
   border-radius: 50%;
 }
 
@@ -81,7 +82,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #3498db;
+  background: var(--pp-accent);
 }
 
 #readout {

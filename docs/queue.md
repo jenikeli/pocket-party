@@ -8,7 +8,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
 | A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | building |
-| B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | building |
+| B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
 | C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | building |
 | D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | queued |
 | E | Course pictures: the tool and the saved previews | sonnet | | queued |
@@ -459,6 +459,10 @@ world frees), unit tests.
 (The main session logs here what it decided without the user, for the review at the end.)
 
 - D: no changes to the cover drafts were recorded when the user saw them, so D finishes them as drawn.
+- B: the phone lobby's "Also here: ..." line in `phones.png` needs the other players' names in `CONTROLLER_STATE`
+  (A's protocol). The main session adds it after A merges (`others: [names]`, sent by `host/room.js`, shown by
+  `controller/lobby-screen.js`), as a small fix.
+- B: `controller/no-zoom.js` added beside the spec's files (main.js was at 191 lines); accepted.
 
 ## Parked for the user
 

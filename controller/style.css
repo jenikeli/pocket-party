@@ -1,11 +1,26 @@
-/* Controller styles: mobile-first, full-screen touch surface. Used by controller/index.html. */
+/* Controller styles: the Night look (the tokens and classes the host's host/ui.css shares), mobile-first, full-screen
+   touch surface. Used by controller/index.html; the games' own style.css files build on the tokens. */
+
+:root {
+  --pp-bg: #10131c;
+  --pp-panel: #1c2130;
+  --pp-panel-2: #2a3145;
+  --pp-line: #343d57;
+  --pp-ink: #ffffff;
+  --pp-muted: #9aa4bf;
+  --pp-accent: #f39c12;
+  --pp-accent-ink: #1c2130;
+  --pp-ok: #2ecc71;
+  --pp-danger: #8e2b22;
+  --pp-radius: 0.45em;
+}
 
 html, body {
   margin: 0;
   height: 100dvh; /* dvh follows the visible area as mobile browser bars show and hide */
-  background: #10131c;
-  color: #ffffff;
-  font-family: sans-serif;
+  background: var(--pp-bg);
+  color: var(--pp-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   /* No browser gestures (scroll, double-tap zoom, pinch) on the controller; we handle touches ourselves. */
   touch-action: none;
   user-select: none;
@@ -21,60 +36,158 @@ html, body {
   display: none !important;
 }
 
+/* The join and lobby screens scroll when the page is turned or the keyboard is up, so nothing is cut off. A
+   scroll container's touch-action ends the chain of its ancestors' "none", so pan-y allows only a vertical swipe:
+   no pinch and no double-tap zoom, on iPhone Safari too. */
 main {
   box-sizing: border-box;
   height: 100dvh;
   padding: 24px;
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+h1 {
+  margin: 0 0 24px;
 }
 
-label {
-  color: #9aa4bf;
+.pp-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-/* 16px or more stops iOS Safari from zooming in when the field is focused. */
+.pp-muted {
+  color: var(--pp-muted);
+}
+
+/* 16px or more on text fields stops iOS Safari from zooming in when one is focused. */
 input, button {
-  font-size: 32px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: none;
-}
-
-#room-code {
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
+  font-family: inherit;
+  font-size: 20px;
+  padding: 14px 16px;
+  border-radius: var(--pp-radius);
+  border: 1px solid var(--pp-line);
 }
 
 input {
+  background: var(--pp-panel);
+  color: var(--pp-ink);
   /* Inherited user-select: none can make text fields impossible to type in on iOS Safari. */
   user-select: text;
   -webkit-user-select: text;
 }
 
-button {
-  background: #3498db;
-  color: #ffffff;
+input:focus-visible {
+  outline: 2px solid var(--pp-accent);
+  outline-offset: 1px;
+}
+
+/* A plain button is the neutral one; the games' style.css files restyle their own. */
+button, .pp-button {
+  background: var(--pp-panel-2);
+  color: var(--pp-ink);
+  font-weight: 700;
+}
+
+.pp-primary {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+  border-color: var(--pp-accent);
+}
+
+.pp-small {
+  font-size: 16px;
+  padding: 10px 16px;
 }
 
 button:disabled {
   opacity: 0.5;
 }
 
+.pp-button[aria-pressed="true"] {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+  border-color: var(--pp-accent);
+}
+
+.pp-panel {
+  background: var(--pp-panel);
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  padding: 16px;
+}
+
+/* A row of buttons where one is pressed. */
+.pp-segment {
+  display: flex;
+  gap: 8px;
+}
+
+.pp-segment > * {
+  flex: 1;
+}
+
+/* Join screen: the form fills the page so Join sits at the bottom, under the thumb. */
+#join-screen {
+  display: flex;
+  flex-direction: column;
+}
+
+#join-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--pp-muted);
+}
+
+#room-code {
+  text-transform: uppercase;
+  text-align: center;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 0.4em;
+  /* The trailing letter-space would push the four letters off centre. */
+  padding-left: calc(16px + 0.4em);
+}
+
+#join-status {
+  min-height: 1.3em;
+  margin: 8px 0 0;
+}
+
+#device-details {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--pp-muted);
+}
+
+#device-details summary {
+  padding: 4px 0;
+}
+
 dl {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 8px 16px;
-  color: #9aa4bf;
+  color: var(--pp-muted);
 }
 
 dd {
   margin: 0;
-  color: #ffffff;
+  color: var(--pp-ink);
+}
+
+#join-button {
+  margin-top: auto;
+  padding: 20px 16px;
+  font-size: 24px;
 }
 
 #game-screen {
@@ -82,11 +195,14 @@ dd {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
+  /* Games draw their own controls and handle touches themselves. */
+  overflow: hidden;
+  touch-action: none;
 }
 
 #game-status {
   margin: 0;
-  color: #9aa4bf;
+  color: var(--pp-muted);
 }
 
 /* The game fills what is left below the top line. */
@@ -97,48 +213,62 @@ dd {
   min-height: 0;
 }
 
+/* Lobby: who you are in the middle, Leave at the bottom. */
 #lobby-screen {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 #lobby-screen p {
   margin: 0;
 }
 
-#lobby-room,
-#lobby-hint,
-#wake-status {
-  color: #9aa4bf;
+#lobby-room {
+  font-size: 14px;
 }
 
-#wake-status {
-  font-size: 13px;
-}
-
-#player-badge {
+#lobby-identity {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  font-size: 28px;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
 }
 
 #player-swatch {
   flex: none;
-  width: 48px;
-  height: 48px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
-  background: #3a4258;
+  background: var(--pp-panel-2);
 }
 
-#ready-button {
-  padding: 32px 16px;
-  font-size: 36px;
+#player-label {
+  font-size: 40px;
+  overflow-wrap: anywhere;
 }
 
-#ready-button[aria-pressed="true"] {
-  background: #2a3145;
+#lobby-hint {
+  max-width: 18em;
+  color: var(--pp-ink);
+}
+
+#change-name-form {
+  display: flex;
+  gap: 8px;
+}
+
+#change-name-input {
+  min-width: 0;
+  flex: 1;
+}
+
+#wake-status {
+  font-size: 13px;
+  text-align: center;
 }
 
 /* Sits on top of everything and swallows touches, so nobody plays blind while the socket is down. */
@@ -154,14 +284,19 @@ dd {
   background: rgba(16, 19, 28, 0.92);
   text-align: center;
   font-size: 28px;
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 
 /* Leaving is rare and final, so its buttons are quiet. */
 .leave-button {
-  font-size: 18px;
-  padding: 10px 16px;
-  background: #2a3145;
-  color: #9aa4bf;
+  color: var(--pp-muted);
+  font-weight: 600;
+}
+
+#lobby-screen .leave-button {
+  padding: 16px;
+  color: var(--pp-ink);
 }
 
 #game-top {

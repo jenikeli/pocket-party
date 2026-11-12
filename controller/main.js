@@ -7,8 +7,9 @@ import { keepScreenAwake } from '/shared/wake-lock.js';
 import { createConnection, ROOM_CLOSED, UNREACHABLE, KICKED, LEFT } from '/controller/connection.js';
 import { saveSession, loadSession, clearSession, saveName, loadName } from '/controller/session-store.js';
 import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
-import { showLobbyState, showConnectedPlaceholder, onReadyChange } from '/controller/lobby-screen.js';
+import { showLobbyState, showConnectedPlaceholder, onNameChange } from '/controller/lobby-screen.js';
 import { showGame, stopGame } from '/controller/game-screen.js';
+import { blockZoomGestures } from '/controller/no-zoom.js';
 
 const joinScreen = document.getElementById('join-screen');
 const joinForm = document.getElementById('join-form');
@@ -146,7 +147,11 @@ joinForm.addEventListener('submit', (event) => {
   connection.join(roomCode);
 });
 
-onReadyChange((wantsReady) => connection.send({ type: MESSAGE_TYPES.SET_READY, ready: wantsReady }));
+// The new name is remembered for the next join, and the host answers with the name it settled on.
+onNameChange((name) => {
+  saveName(name);
+  connection.send({ type: MESSAGE_TYPES.PLAYER_NAME, name });
+});
 reconnectButton.addEventListener('click', () => connection.reconnect());
 // A native confirm dialog is plain, but works the same on iOS and Android and cannot be tapped by accident.
 for (const leaveButton of document.querySelectorAll('.leave-button')) {
@@ -168,6 +173,8 @@ document.addEventListener('visibilitychange', () => {
 // close frame, so the host shows "waiting to reconnect" at once; without it, Chrome kept the socket open
 // after the tab closed. The slot itself is kept for the grace period, because a reload looks the same.
 window.addEventListener('pagehide', () => connection.disconnect());
+
+blockZoomGestures(document);
 
 // The host's QR code links to /?room=CODE, so scanning players only need to tap Join.
 const linkRoomCode = (new URLSearchParams(location.search).get('room') || '').toUpperCase();

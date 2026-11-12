@@ -507,6 +507,9 @@ world frees), unit tests.
   now, the 2D entries included; `startGame(hostPage, controllerPage, { gameId, controlsSelector, timeoutMs })`.
   Merged on its passing runs (m1 12, m3 14, m4 27, m5a 6, https 4, m10-shell 8, m10-turned-controls 3), its
   reviewer reading the merged commit afterwards, so F could start.
+- Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
+  worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
+  send each implementer on with SendMessage, or follow the skill's "After an interruption".
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

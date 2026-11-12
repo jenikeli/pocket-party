@@ -10,12 +10,12 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | A | Host shell in HTML: Tap to start, lobby, join window, room settings, loading screen, game session | opus | | merged |
 | B | Phone shell: join and lobby screens, no ready, portrait, zoom stopped | sonnet | | merged |
 | C | Kart phone screens: portrait setup, driving controls drawn sideways | opus | | merged |
-| D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | building |
+| D | Game covers finished from the approved drafts, and the 2D lobby background | sonnet | | merged |
 | E | Course pictures: the tool and the saved previews | sonnet | | building |
 | M | Seaside Skyway: floating islands and backdrop cliffs removed | sonnet | | building |
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | queued |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | queued |
-| I | Audio core: unlock, volumes, synth helpers | sonnet | A | queued |
+| I | Audio core: unlock, volumes, synth helpers | sonnet | A | building |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | queued |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | queued |
 | P | Bloom's clamp folded into its first pass | sonnet | | queued |
@@ -475,6 +475,11 @@ world frees), unit tests.
   in (or failed). Host zoom: `touch-action: pan-x pan-y`, `user-scalable=no`, `gesturestart` stopped.
   `.pp-dot` takes its colour from `--pp-dot-color` (F and H need the name). Extra files beside the spec's:
   `host/shell.css`, `host/lobby.css`, `host/pictures.js`, `host/confirm-click.js`.
+- D: the 3D cover's kart moved up and the input lab's pill moved up, so the lobby's name bar does not hide them;
+  nothing else redrawn. The 2D wide picture is a real race shot with the infield's clock and standings painted
+  over in the grass colour. D's diff (two SVG nudges and a JPEG) was reviewed by the main session, no reviewer.
+- Order: H and T1 both own `test/helpers/host-buttons.js`, so they do not run together: I builds beside E and M,
+  T1 starts when E and M have stopped drawing, H after T1.
 - Interrupted 2026-11-12 by the usage limit; resumed 2026-11-13: A's and D's implementers and C's reviewer were
   sent on from where they stopped (their worktrees held the work, nothing lost).
 

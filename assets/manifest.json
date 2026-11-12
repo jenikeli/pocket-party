@@ -31,6 +31,38 @@
       "source": "https://ambientcg.com/a/Asphalt023S",
       "licence": "CC0 1.0",
       "usedBy": "host/games/kart-3d/photo-asphalt.js (M7d4b2 trial)"
+    },
+    {
+      "path": "covers/kart-3d.svg",
+      "sha256": "7b472d467bcbd0882b2017bf7499f6671bad8fcc5c29bf1a92533a77f5caa9c1",
+      "bytes": 4601,
+      "source": "drawn for M10 (cover art of our own design)",
+      "licence": "our own",
+      "usedBy": "host/games/index.js (the lobby thumbnail)"
+    },
+    {
+      "path": "covers/kart-2d.svg",
+      "sha256": "6c65bd39e5223c394f7080d037ac09c82334d002f4434b2f5755f6b9b6c1e7bc",
+      "bytes": 2841,
+      "source": "drawn for M10 (cover art of our own design)",
+      "licence": "our own",
+      "usedBy": "host/games/index.js (the lobby thumbnail)"
+    },
+    {
+      "path": "covers/input-lab.svg",
+      "sha256": "32f0d4737da64e73afa87763d2f95fcb994af1e513cdb6b1721e417f5b093db4",
+      "bytes": 2494,
+      "source": "drawn for M10 (cover art of our own design)",
+      "licence": "our own",
+      "usedBy": "host/games/index.js (the lobby thumbnail)"
+    },
+    {
+      "path": "covers/kart-2d-wide.jpg",
+      "sha256": "c19a8f66d9b521c36b6a7f3875628b74c707931256e1e5ab4e12df9c1d9881aa",
+      "bytes": 31267,
+      "source": "a screenshot of our 2D race, the infield readout painted over (M10 task D)",
+      "licence": "our own",
+      "usedBy": "host/games/index.js (the lobby background of Kart race 2D)"
     }
   ]
 }

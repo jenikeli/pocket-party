@@ -23,7 +23,7 @@
     <g fill="#2ecc71" stroke="none"><circle cx="266" cy="166" r="4"/><circle cx="302" cy="144" r="4"/><circle cx="338" cy="136" r="4"/><circle cx="366" cy="152" r="4"/></g>
     <text x="248" y="116" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="22" font-weight="700" fill="#ffffff" stroke="none">18 ms</text>
     <g stroke="#343d57" stroke-width="2"><path d="M368 28 h14 M375 21 v14 M18 28 h14 M25 21 v14 M368 272 h14 M375 265 v14"/></g>
-    <rect x="236" y="222" width="144" height="30" rx="15" fill="#2ec4d6" stroke="none"/>
-    <text x="308" y="243" text-anchor="middle" font-family="system-ui, 'Segoe UI', Arial, sans-serif" font-size="15" font-weight="800" letter-spacing="3" fill="#10131c" stroke="none">INPUT LAB</text>
+    <rect x="236" y="216" width="144" height="30" rx="15" fill="#2ec4d6" stroke="none"/>
+    <text x="308" y="237" text-anchor="middle" font-family="system-ui, 'Segoe UI', Arial, sans-serif" font-size="15" font-weight="800" letter-spacing="3" fill="#10131c" stroke="none">INPUT LAB</text>
   </g>
 </svg>

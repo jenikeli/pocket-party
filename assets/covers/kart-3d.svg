@@ -42,6 +42,8 @@
       <path d="M-31 -7 H-22 L-31 -24 H-38 Z" fill="#18a558"/>
       <path d="M-12 -2 H20" stroke-width="2"/>
     </g>
+    <!-- The lobby draws the game name over the bottom of the cover, so the kart sits above it -->
+    <g transform="translate(0 -24)">
     <g stroke="#ffffff" stroke-width="5" opacity="0.85">
       <path d="M26 236 L84 226 M12 262 L62 254 M316 226 L374 218 M338 254 L392 247"/>
     </g>
@@ -63,6 +65,7 @@
     <g fill="#ffd21f" stroke-width="2">
       <path d="M88 268 l4 -10 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 Z"/>
       <path d="M316 262 l3 -8 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 Z"/>
+    </g>
     </g>
     <text x="16" y="62" font-family="system-ui, 'Segoe UI', Arial, sans-serif" font-size="60" font-weight="900" font-style="italic" fill="#ffd21f" stroke-width="7" paint-order="stroke">3D</text>
   </g>

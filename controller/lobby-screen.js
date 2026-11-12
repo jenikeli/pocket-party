@@ -6,6 +6,7 @@
 const playerSwatch = document.getElementById('player-swatch');
 const playerLabel = document.getElementById('player-label');
 const lobbyHint = document.getElementById('lobby-hint');
+const lobbyOthers = document.getElementById('lobby-others');
 const changeNameButton = document.getElementById('change-name-button');
 const changeNameForm = document.getElementById('change-name-form');
 const changeNameInput = document.getElementById('change-name-input');
@@ -13,7 +14,7 @@ const changeNameInput = document.getElementById('change-name-input');
 let nameChangeCallback = () => {};
 let currentName = '';
 
-// `state` is { name, color } from a CONTROLLER_STATE message.
+// `state` is { name, color, others } from a CONTROLLER_STATE message; others is the other players' names.
 // The host re-sends the state whenever anything about the player changes, so the name field is closed only when
 // the name itself changed: otherwise a re-send would throw away what the player is typing.
 export function showLobbyState(state) {
@@ -24,6 +25,7 @@ export function showLobbyState(state) {
   playerSwatch.style.background = state.color;
   playerLabel.textContent = state.name;
   lobbyHint.textContent = 'You are in. The game is picked on the big screen.';
+  lobbyOthers.textContent = state.others.length > 0 ? `Also here: ${state.others.join(', ')}` : '';
 }
 
 // Shown between JOINED and the host's first CONTROLLER_STATE.

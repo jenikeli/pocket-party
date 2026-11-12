@@ -85,8 +85,9 @@ export const MESSAGE_TYPES = Object.freeze({
   // server -> host: the same plus { playerId }, added by the server as for INPUT.
   PLAYER_NAME: 'player_name',
 
-  // host -> server: { playerId, screen, name, color, gameId, view }. Everything that player's controller
-  // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c'.
+  // host -> server: { playerId, screen, name, color, others, gameId, view }. Everything that player's controller
+  // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c',
+  // others the other players' names (for the phone lobby's "Also here" line).
   // On the GAME screen, gameId names the game (the controller loads controller/games/<gameId>/index.js) and
   // view is whatever small object that game set for this player (null until it sets one); both are null in
   // the lobby. The host sends it on join, rejoin and whenever any of it changes.

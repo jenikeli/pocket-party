@@ -266,6 +266,11 @@ dd {
   flex: 1;
 }
 
+#lobby-others {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 #wake-status {
   font-size: 13px;
   text-align: center;

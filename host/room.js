@@ -72,6 +72,7 @@ export function createRoom() {
         break;
       case MESSAGE_TYPES.PLAYER_JOINED:
         sendControllerState(addPlayer(room.players, message.playerId));
+        tellLobbyWhoIsHere(message.playerId);
         break;
       case MESSAGE_TYPES.PLAYER_DISCONNECTED:
         if (player) {
@@ -90,12 +91,14 @@ export function createRoom() {
           endGracePeriod(player);
           room.players.delete(player.playerId);
           controllerViews.delete(player.playerId);
+          tellLobbyWhoIsHere(player.playerId);
         }
         break;
       case MESSAGE_TYPES.PLAYER_NAME:
         if (player) {
           player.name = cleanName(message.name);
           sendControllerState(player);
+          tellLobbyWhoIsHere(player.playerId);
         }
         break;
       case MESSAGE_TYPES.DEVICE_INFO:
@@ -142,9 +145,28 @@ export function createRoom() {
       screen: room.screen,
       name: displayName(player),
       color: colorText(player),
+      others: otherNames(player),
       gameId: room.gameId,
       view: controllerViews.get(player.playerId) ?? null,
     });
+  }
+
+  function otherNames(player) {
+    const others = [...room.players.values()].filter((other) => other !== player);
+    return others.map(displayName);
+  }
+
+  // The phone lobby lists who else is in the room, so when someone joins, leaves or changes their name, every
+  // other phone in the lobby gets its state again. Not during a game: no game screen shows the list.
+  function tellLobbyWhoIsHere(changedPlayerId) {
+    if (room.screen !== CONTROLLER_SCREENS.LOBBY) {
+      return;
+    }
+    for (const player of room.players.values()) {
+      if (player.connected && player.playerId !== changedPlayerId) {
+        sendControllerState(player);
+      }
+    }
   }
 
   // Disconnected players are skipped: they get the current screen when they rejoin. A player who joins later

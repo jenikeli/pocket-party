@@ -550,6 +550,9 @@ world frees), unit tests.
   engines; CPU karts are silent. A player's engine runs on after they finish, until the results (the 2D
   engines go silent at the finish). "First" in the finish cue is place 1. Hits are told apart by a guess at
   what touched the kart; one hit sound per kart per 0.15 s. Countdown, GO and finish repeat the 2D numbers.
+- Synth click fixed (found by L's offline render): every `tone` and `noise` played its first sample at full
+  volume, because a new gain node starts at 1; `shapeEnvelope` now sets it silent first. J's and K's effects
+  had the same click; J's peak figures in its table were measured before this fix.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".
@@ -622,3 +625,18 @@ nothing silent (quietest: roulette tick 0.107).
 | Finish, first place | a player crosses the line in 1st | C5 E5 G5, then C6 held (as 2D) | about 1.1 s | 0.28 to 0.30 |
 | Finish, other places | a player crosses the line | C5 then E5 (as 2D) | about 0.35 s | 0.2 |
 | Engine, one per player | countdown through the race, stopped at the results (runs on after the player finishes) | sawtooth voice through a lowpass; pitch 70 to 190 Hz, lowpass 300 to 1500 Hz with speed; drifting: pitch times 1.07, duller; boosting: pitch times 1.18, brighter, 1.3 times louder; each player detuned 3.5% | held | 0.12 / sqrt(players), times 0.4 to 1.0 |
+
+### L: music (all composed for this task; offline render of each tune through the limiter at music volume 1)
+
+Silent on setup screens and during the countdown; a race's tune starts at GO; the lobby tune plays through the
+loading screen and stops when the game shows. A Watch race plays its course's tune; Measure and the course
+build are silent. At the default music volume (0.7) the music peaks around 0.2, a little under the effects.
+
+| Tune | Key | Tempo | Bars | Voices | Mood | Render: length, peak, longest silence |
+|---|---|---|---|---|---|---|
+| `lobby` | F major | 96 | 16 | triangle lead, held triangle chords, square bass in half notes, kick on 1 and 3, offbeat hat | light, unhurried | 40.0 s, 0.447, 0.014 s |
+| `kart-2d` | E minor | 150 | 16 | lowpassed square lead in eighths, sixteenth arpeggios, bass jumping octaves, four-on-the-floor kick, snare on 2 and 4, eighth hats | quick, arcade | 25.6 s, 0.393, 0.006 s |
+| `palm-bay-airport` | G major | 132 | 32 (A B A C) | staccato square lead with rests, offbeat chord stabs, bass hopping root to fifth, kick on every beat, snare on 2 and 4, offbeat hat | sunny, bouncy | 58.2 s, 0.398, 0.036 s |
+| `seaside-skyway` | D major | 112 | 32 (A B A C) | triangle lead in long notes, sixteenth arpeggios, bass in half notes, kick on 1 and 3, snare on 4, eighth hats | breezy | 68.6 s, 0.409, 0.074 s |
+| `test-track` | C major | 120 | 16 | lowpassed sawtooth lead in quarters, held chords, bass on every beat, kick on 1 and 3, snare on 2 and 4, eighth hats | plain | 32.0 s, 0.373, 0.006 s |
+| `results` | B-flat major | 100 | 4-bar fanfare once, then a 16-bar loop | square lead; the fanfare runs up an arpeggio with held chords, kicks and a snare roll; the loop is a slow lead over held chords | fanfare, then calm | 48.0 s, 0.384, 0.015 s |

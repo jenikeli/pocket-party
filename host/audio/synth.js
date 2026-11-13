@@ -29,6 +29,9 @@ const SETTLE_SECONDS = 0.05; // from the peak down to the held level
 // clock (context.currentTime is "now"); the music passes exact beats, so notes keep time however slow the
 // frames are.
 function shapeEnvelope(gain, { start, length, attack, volume, sustain, release }) {
+  // A new gain node starts at 1, and the scheduled value below does not cover the very first sample, which
+  // would play at full volume: a click on every note (seen in an offline render of the music, M10 task L).
+  gain.gain.value = SILENT;
   gain.gain.setValueAtTime(SILENT, start);
   gain.gain.linearRampToValueAtTime(volume, start + attack);
   if (sustain === undefined) {

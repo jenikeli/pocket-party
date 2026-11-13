@@ -1098,8 +1098,8 @@ The other parts (road, sea, supports, decks, gate, surroundings, sky) each moved
 
 - **Why it drops to 40:** High with 4 views went from 13.3 ms (M7d4b2) to 17.5. That is past the 16.7 ms of a 60 Hz frame, so frames miss their slot.
 - **The karts cost 3.4 ms with 4 views** (Medium 14.0 against 10.6 without them), and 0.6 ms with one. They add about 900 draw calls, since each kart's 10 calls are drawn again in each view's shadow pass.
-- **Bloom costs more than before:** High over Medium is 3.5 ms with 4 views, against 1.4 in M7d4b2. The likely cause is the clamp pass added by the flicker fix (`guardBloomInput`), a full-screen pass at pixel ratio 2. Not measured on its own.
-- **Still well above MK8DX's own bar,** 30 fps with 3-4 players. A steady 60 on High with four views would need about 1-4 ms back. The candidates: the karts' shadows from a one-mesh stand-in per kart, and the clamp folded into bloom's first pass.
+- **Bloom costs more than before:** High over Medium is 3.5 ms with 4 views, against 1.4 in M7d4b2. The likely cause is the clamp pass added by the flicker fix (`guardBloomInput`), a full-screen pass at pixel ratio 2. Not measured on its own. (M10, task P: wrong. `guardBloomInput` adds one line to the shader of bloom's own first pass, not a pass; a bloom frame is 28 draw calls with or without it. The cause of the extra 2.1 ms is not known.)
+- **Still well above MK8DX's own bar,** 30 fps with 3-4 players. A steady 60 on High with four views would need about 1-4 ms back. The candidates: the karts' shadows from a one-mesh stand-in per kart, and the clamp folded into bloom's first pass (M10: it already is, nothing to fold).
 
 **The rest of the procedure on the iPad (2026-11-04):**
 - **Step 1:** Seaside Skyway took almost 7 s to appear, against about 4 s in M7d4d.

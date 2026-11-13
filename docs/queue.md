@@ -18,8 +18,8 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | building |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | building |
-| P | Bloom's clamp folded into its first pass | sonnet | | building |
-| N | Palm Bay Airport's leftovers | sonnet | M | queued |
+| P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
+| N | Palm Bay Airport's leftovers | sonnet | M | building |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | queued |
 | J | 3D race sounds | opus | F I | queued |
 | K | 2D race and shell sounds | sonnet | H I | merged |
@@ -507,6 +507,10 @@ world frees), unit tests.
   now, the 2D entries included; `startGame(hostPage, controllerPage, { gameId, controlsSelector, timeoutMs })`.
   Merged on its passing runs (m1 12, m3 14, m4 27, m5a 6, https 4, m10-shell 8, m10-turned-controls 3), its
   reviewer reading the merged commit afterwards, so F could start.
+- P: dropped, nothing to build. The clamp is already a line in the shader of bloom's own first pass
+  (`guardBloomInput`), not a pass: a bloom frame of the floodlight piece is 28 draw calls with and without it,
+  and the before and after sheets are identical. M7d5's note guessed wrong; why bloom went from 1.4 to 3.5 ms
+  with 4 views is still not known (to measure on the iPad, not in software).
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

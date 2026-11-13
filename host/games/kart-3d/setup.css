@@ -1,7 +1,8 @@
 /* The 3D race's setup screen in the host's look (host/ui.css): the chosen course's saved picture over the whole
    screen, the course's name and the course pictures on the left, one card with the race's settings and the
-   players on the right, and the "Display and tools" drawer. Sizes are in em of the screen's .pp-stage (80 x 45).
-   Loaded with the game by host/games/kart-3d/index.js; the markup is setup-panel.js's. */
+   players on the right, and the tools icon with its drawer. Sizes are in em of the screen's .pp-stage (80 x 45).
+   The top corners are the shell's bar (5em down from the top is clear). The player rows and the laps control are
+   host/kart/panels.css's. Loaded with the game by host/games/kart-3d/index.js; the markup is setup-markup.js's. */
 
 /* Over the game's canvas, which draws nothing while this shows. */
 .k3d-setup {
@@ -18,7 +19,7 @@
   object-fit: cover;
 }
 
-/* Darker at the top (the buttons), at the bottom and to the left (the course's name), so the text reads on any
+/* Darker at the top (the shell's bar), at the bottom and to the left (the course's name), so the text reads on any
    picture. */
 .k3d-setup-scrim {
   position: absolute;
@@ -31,19 +32,19 @@
   position: absolute;
 }
 
-.k3d-lobby-button {
-  top: 1.5em;
-  left: 2em;
-}
-
 .k3d-tools-button {
-  top: 1.5em;
+  top: 5em;
   right: 2em;
 }
 
-/* The drawer under "Display and tools": over the card while it is open. */
+.k3d-tools-button[aria-pressed="true"] {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+}
+
+/* The drawer under the tools icon: over the card while it is open. */
 .k3d-tools {
-  top: 4em;
+  top: 8.2em;
   right: 2em;
   z-index: 1;
   width: 28em;
@@ -72,23 +73,19 @@
   flex-wrap: nowrap;
 }
 
-/* The chosen course: its name large over the picture, its blurb, and the course pictures under them. */
+/* The chosen course: its name large over the picture, and the course pictures under it. */
 .k3d-course {
-  left: 2em;
-  top: 15.5em;
-  width: 46em;
+  left: 2.5em;
+  top: 9em;
+  width: 44em;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.3em;
 }
 
-.k3d-kicker {
-  color: #dbe3f0;
-}
-
 .k3d-course-name {
-  font-size: 3.6em;
+  font-size: 3.8em;
 }
 
 .k3d-courses {
@@ -107,7 +104,6 @@
   border-radius: var(--pp-radius);
   overflow: hidden;
   font: inherit;
-  text-align: left;
   background: var(--pp-panel);
   color: var(--pp-ink);
   cursor: pointer;
@@ -120,30 +116,17 @@
   object-fit: cover;
 }
 
-/* The name on a dark strip along the picture's foot. */
-.k3d-course-tile span {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0.3em 0.5em;
-  font-size: 0.78em;
-  font-weight: 700;
-  text-shadow: none;
-  background: rgba(16, 19, 28, 0.85);
-}
-
 .k3d-course-tile[aria-pressed="true"] {
   outline: 0.22em solid var(--pp-accent);
   outline-offset: 0.12em;
 }
 
-/* The card on the right; it ends above the shell's game bar in the bottom right corner. */
+/* The card on the right, under the tools icon. */
 .k3d-card {
-  top: 8.5em;
+  top: 9em;
   right: 2em;
-  width: 25em;
-  max-height: 32.5em;
+  width: 30em;
+  max-height: 34em;
   overflow-y: auto;
   padding: 1.1em 1.2em;
   display: flex;
@@ -151,43 +134,27 @@
   gap: 0.6em;
 }
 
-.k3d-heading {
-  margin: 0;
-  font-size: 1.15em;
-  font-weight: 800;
-}
-
-.k3d-card hr {
-  width: 100%;
-  margin: 0.2em 0;
-  border: 0;
-  border-top: 0.08em solid var(--pp-line);
-}
-
-.k3d-rules {
-  display: grid;
-  grid-template-columns: auto 1fr;
+/* One setting per line: the laps and the class, then CPU and Items with their words. */
+.k3d-rule {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5em 0.9em;
+  gap: 0.5em 1.2em;
 }
 
-.k3d-rules .pp-button {
+.k3d-rule > .pp-muted {
+  width: 3em;
+}
+
+.k3d-rule .pp-segment {
+  flex-wrap: nowrap;
+}
+
+.k3d-rule .pp-button {
   padding: 0.32em 0.5em;
 }
 
-.k3d-laps {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-}
-
-.k3d-laps-value {
-  min-width: 1em;
-  text-align: center;
-  font-weight: 800;
-}
-
-/* The Items row (items/item-settings-panel.js): On or Off, then one button per item with its icon. */
+/* The Items row (items/item-settings-panel.js): one button per item with its icon, bright while allowed. */
 .k3d-items {
   align-items: center;
 }
@@ -204,53 +171,6 @@
 
 .k3d-item[aria-pressed="false"] svg {
   opacity: 0.4;
-}
-
-.k3d-items.off .k3d-item {
-  opacity: 0.35;
-}
-
-.k3d-players {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
-/* Dot, name and state on the first line, the control style under the name (in the markup it comes before the
-   state, so a row's text reads name, style, state). */
-.k3d-player {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 0.7em;
-}
-
-.k3d-player .pp-dot {
-  width: 1.1em;
-  height: 1.1em;
-}
-
-.k3d-player-name {
-  font-weight: 700;
-}
-
-.k3d-player-style {
-  grid-column: 2;
-  grid-row: 2;
-  font-size: 0.75em;
-}
-
-.k3d-player-state {
-  grid-column: 3;
-  grid-row: 1;
-}
-
-.k3d-ready {
-  color: var(--pp-ok);
-  font-weight: 700;
 }
 
 .k3d-status {

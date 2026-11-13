@@ -20,7 +20,7 @@ import { itemBoxSpots, PICKUP_REACH } from '../../host/games/kart-3d/items/item-
 import { stepItems, startEffect } from '../../host/games/kart-3d/items/item-rules.js';
 import { BUILT_ITEMS } from '../../host/games/kart-3d/items/item-catalog.js';
 import { itemHud, itemPhoneView } from '../../host/games/kart-3d/items/item-views.js';
-import { createItemSettings, toggleItems, toggleItem, allowedItems } from '../../host/games/kart-3d/items/item-settings.js';
+import { createItemSettings, toggleItem, allowedItems } from '../../host/games/kart-3d/items/item-settings.js';
 
 const STEP = 1 / 60;
 const track = buildTrack(SEASIDE_SKYWAY);
@@ -183,16 +183,14 @@ test('items off: no boxes, null views; unbuilt ids are left out', () => {
   assert.deepEqual([notBuilt.items.allowed, notBuilt.items.boxes], [[], []]);
 });
 
-test('settings: on with every built item; off allows none; each item toggles', () => {
+test('settings: every built item at first; each item toggles; every item off allows none', () => {
   const settings = createItemSettings();
   assert.deepEqual(allowedItems(settings), BUILT_ITEMS);
   toggleItem(settings, KART_ITEMS.MAGNET);
   toggleItem(settings, 'not-an-item');
   assert.deepEqual(allowedItems(settings), BUILT_ITEMS.filter((id) => id !== KART_ITEMS.MAGNET));
-  toggleItems(settings);
+  BUILT_ITEMS.filter((id) => id !== KART_ITEMS.MAGNET).forEach((id) => toggleItem(settings, id));
   assert.deepEqual(allowedItems(settings), []);
-  toggleItems(settings);
-  assert.equal(allowedItems(settings).includes(KART_ITEMS.MAGNET), false, 'each item keeps its switch');
 });
 
 // Drives a 1-player race with every built item allowed for `seconds` of race time. Returns the race and the

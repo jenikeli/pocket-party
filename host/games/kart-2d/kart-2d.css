@@ -2,46 +2,38 @@
    the live readout in the infield. Sizes are in em of the race's .pp-stage. Loaded with the game by
    host/games/kart-2d/index.js. */
 
-/* A full-stage dim with one panel in the middle. It stops clicks reaching the track under it. */
+/* A full-stage dim with one panel under the top bar. The shell's bar sits in the top corners (5em down from the
+   top is clear), and the panel is centred between them. It stops clicks reaching the track under it. */
 .k2d-screen {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 6em;
   background: rgba(0, 0, 0, 0.6);
 }
 
 .k2d-panel {
-  width: 42em;
-  padding: 1.4em 2em;
+  width: 38em;
+  max-height: 36em;
+  overflow-y: auto;
+  padding: 1.2em 1.4em;
   display: flex;
   flex-direction: column;
-  gap: 0.7em;
+  gap: 0.8em;
   border: 0.1em solid var(--pp-line);
 }
 
-.k2d-heading {
-  font-size: 2.4em;
-  text-align: center;
-}
-
-.k2d-laps {
+/* The title on the left, the laps on the right. */
+.k2d-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.8em;
-  font-size: 1.4em;
+  justify-content: space-between;
 }
 
-.k2d-laps .pp-button {
-  min-width: 2.2em;
-}
-
-.k2d-laps-value {
-  min-width: 1.5em;
-  text-align: center;
-  font-weight: 800;
+.k2d-heading {
+  font-size: 2em;
 }
 
 .k2d-list {
@@ -53,43 +45,25 @@
   gap: 0.3em;
 }
 
-.k2d-player,
 .k2d-result {
   display: grid;
+  grid-template-columns: 2.5em 1fr auto;
   align-items: center;
   gap: 0.8em;
   padding: 0.2em 0.5em;
   border-radius: var(--pp-radius);
   background: var(--pp-panel-2);
-  font-size: 0.8em;
-}
-
-.k2d-player {
-  grid-template-columns: 11em 1fr auto;
-}
-
-.k2d-result {
-  grid-template-columns: 2.5em 1fr auto;
   font-size: 1.1em;
 }
 
-.k2d-ready {
-  color: var(--pp-ok);
-  font-weight: 600;
-}
-
+/* Reserves the line, so Start race does not move when the reason comes and goes. */
 .k2d-status {
-  text-align: center;
+  min-height: 1.4em;
+  margin: 0;
 }
 
 .k2d-panel .pp-big {
-  align-self: center;
-}
-
-.k2d-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1em;
+  align-self: flex-start;
 }
 
 /* The readout in the infield, left clear of the road (the infield is 860 x 500 design pixels round the middle of

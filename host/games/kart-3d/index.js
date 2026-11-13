@@ -1,9 +1,9 @@
 // The 3D kart race (M6 to M10), a game module: a setup screen (setup-panel.js: the course from saved pictures,
 // laps, engine class, CPU level and the items on the host, the drawing quality, the Measure tool and Watch behind
-// "Display and tools", and control style and ready on each phone), then the chosen course is built behind the
+// the tools icon, and control style and ready on each phone), then the chosen course is built behind the
 // loading screen (M10: nothing is built before), a countdown with MK8DX's rocket start, and 1-4 players race
 // their laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results,
-// and Race again or Back to lobby. Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
+// and Race again. Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
 // needed. The room is open to new players on the setup and results screens. Loaded through host/games/index.js
 // and run by the shell (host/game-session.js).
 // The rules live in DOM-free modules next to this file; this file connects them to the shell, the setup screen's
@@ -14,7 +14,7 @@ import { MESSAGE_TYPES } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
 import { preloadPictures } from '/host/pictures.js';
 import { showLoading } from '/host/loading-screen.js';
-import { loadStylesheet } from '/host/kart/panel-parts.js';
+import { loadStylesheets } from '/host/kart/panel-parts.js';
 import { createSetup, stepLaps, canStartRace } from '/host/kart/setup.js';
 import { buildTrack } from './track-builder.js';
 import { COURSES } from './courses.js';
@@ -35,10 +35,11 @@ import { createCourseLoader } from './course-loader.js';
 import { createMeasurePanel } from './measure-panel.js';
 import { loadQuality, saveQuality } from './quality.js';
 import { loadPlainCourse } from './plain-course.js';
-import { toggleItems, toggleItem } from './items/item-settings.js';
+import { toggleItem } from './items/item-settings.js';
 
-// The game's stylesheets: the setup screen's and the race panels'.
-const STYLESHEETS = ['/host/games/kart-3d/setup.css', '/host/games/kart-3d/race-panels.css'];
+// The game's stylesheets: the player rows' and laps control's, shared with the 2D race, then the setup screen's
+// and the race panels'.
+const STYLESHEETS = ['/host/kart/panels.css', '/host/games/kart-3d/setup.css', '/host/games/kart-3d/race-panels.css'];
 
 // Returns a fresh 3D race game that follows the game module interface in plan.md.
 export function createGame() {
@@ -56,7 +57,7 @@ export function createGame() {
   let frameDrawer = null;
   // Every course's track, built once (a few thousand stations each, in milliseconds), by course id.
   const tracks = new Map(COURSES.map((course) => [course.id, buildTrack(course)]));
-  // Laps and control styles, kept from race to race until the game goes back to the lobby, and the host's own
+  // Laps and control styles, kept from race to race until the game ends, and the host's own
   // choices with them (host-choices.js). The drawing quality is the host device's, remembered between games.
   const setup = createSetup();
   const choices = createHostChoices(loadQuality());
@@ -67,32 +68,20 @@ export function createGame() {
   const session = createRaceSession({ getPlayers: () => shell.players, setup, choices, chosenTrack });
   // Whether the shell has been told the room is open; null until the first time.
   let roomOpen = null;
-  let wantsLobby = false;
   // The race's cues (countdown, drifts, boosts, items, hits, laps).
   const raceSounds = createRaceSounds();
   const readout = createReadout();
 
-  // Three.js is fetched here, when the game is chosen, not when the lobby loads, and so are the photo-scanned
+  // Three.js is fetched here, when the game is chosen, not when the host page loads, and so are the photo-scanned
   // asphalt's maps (about 5 MB), the stylesheets and the setup screen's course pictures, so it shows complete.
   async function load() {
     rendererModule = await import('./renderer.js');
     const { loadPhotoAsphalt } = await import('./photo-asphalt.js');
     photoAsphalt = await loadPhotoAsphalt();
-    // stop() is not called for a game that failed to load, so what is already on the page is taken off here.
-    try {
-      for (const href of STYLESHEETS) {
-        stylesheets.push(await loadStylesheet(href));
-      }
-      await preloadPictures(Object.values(COURSE_PREVIEWS).map((preview) => preview.picture));
-    } catch (error) {
-      removeStylesheets();
-      throw error;
-    }
-  }
-
-  function removeStylesheets() {
-    stylesheets.forEach((link) => link.remove());
-    stylesheets = [];
+    await preloadPictures(Object.values(COURSE_PREVIEWS).map((preview) => preview.picture));
+    // Last, since stop() is never called for a game that failed to load: nothing after this can fail and leave
+    // the stylesheets on the page.
+    stylesheets = await loadStylesheets(STYLESHEETS);
   }
 
   function start(gameShell) {
@@ -107,16 +96,15 @@ export function createGame() {
       onQuality: (value) => choose('quality', value),
       onMeasure: startMeasuring,
       onWatch: watchRace,
-      onToggleItems: () => !session.race && toggleItems(choices.items),
       onToggleItem: (id) => !session.race && toggleItem(choices.items, id),
       onStartRace: startRace,
-      onBackToLobby: () => (wantsLobby = true),
+      onRemovePlayer: gameShell.removePlayer,
     });
     const tuningPanel = createTuningPanel(shell.container);
     // After the setup panel, so its report shows over the setup screen once a run ends.
     measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(choices.quality));
     const raceBar = createRaceBar(shell.container, { onBackToSetup: session.showSetup, onRestart: session.restart, onTuning: () => tuningPanel.toggle() });
-    const resultsPanel = createResultsPanel(shell.container, { onRaceAgain: session.showSetup, onBackToLobby: () => (wantsLobby = true) });
+    const resultsPanel = createResultsPanel(shell.container, { onRaceAgain: session.showSetup });
     const panels = { setupPanel, raceBar, resultsPanel, tuningPanel, measurePanel };
     frameDrawer = createFrameDrawer({ renderer, readout, session, setup, choices, chosenTrack, players: () => shell.players, panels });
     phoneViews = createPhoneViews({ shell, session, setup, choices, courseName: () => chosenCourse().name });
@@ -215,15 +203,16 @@ export function createGame() {
     phoneViews.forget(playerId);
   }
 
+  // A race is left through the shell's back arrow, which closes the room, so the game never ends itself.
   function isDone() {
-    return wantsLobby;
+    return false;
   }
 
   function stop() {
     stopPinging();
     playTune(null);
     courseLoader.stop();
-    removeStylesheets();
+    stylesheets.forEach((link) => link.remove());
     renderer.destroy();
   }
 

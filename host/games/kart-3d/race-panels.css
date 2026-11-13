@@ -72,7 +72,8 @@
   text-shadow: 0 0.06em 0 #7a3f00, 0 0 0.3em rgba(0, 0, 0, 0.6);
 }
 
-/* The results: one panel in the middle, a row per kart. It stays clear of the bottom right. */
+/* The results: one panel in the middle, a row per kart, then Race again. It stays clear of the top corners (the
+   shell's bar). */
 .k3d-results {
   left: 50%;
   top: 50%;
@@ -86,11 +87,6 @@
   gap: 0.7em;
   border: 0.1em solid var(--pp-line);
   background: rgba(28, 33, 48, 0.94);
-}
-
-.k3d-results-heading {
-  font-size: 2.2em;
-  text-align: center;
 }
 
 .k3d-results-rows {
@@ -133,10 +129,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.k3d-results-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1em;
+.k3d-results .pp-big {
+  align-self: flex-start;
 }
 
 /* Tuning and Measure: developer panels in the top left, small text, scrolling when they are tall. */

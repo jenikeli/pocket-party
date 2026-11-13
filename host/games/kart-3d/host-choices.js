@@ -1,6 +1,6 @@
 // The 3D race's choices made on the host's setup screen, beside each phone's own (host/kart/setup.js): the
 // course, the engine class, the CPU level, the drawing quality and the items. Kept from race to race until the
-// game goes back to the lobby. Plain functions, unit tested in Node. Used by host/games/kart-3d/index.js, and
+// game ends. Plain functions, unit tested in Node. Used by host/games/kart-3d/index.js, and
 // read by setup-panel.js.
 
 import { COURSES } from './courses.js';

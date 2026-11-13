@@ -12,10 +12,11 @@ import {
   forgetPlayer,
   playersHoldingUpStart,
   canStartRace,
+  startBlocker,
 } from '../../host/kart/setup.js';
 
-const ana = { playerId: 'ana', connected: true };
-const bo = { playerId: 'bo', connected: true };
+const ana = { playerId: 'ana', colorIndex: 0, name: 'Ana', connected: true };
+const bo = { playerId: 'bo', colorIndex: 1, name: 'Bo', connected: true };
 
 test('laps start at 3 and stay between 1 and 9', () => {
   const setup = createSetup();
@@ -69,6 +70,26 @@ test('the race can start once everyone is connected and ready', () => {
   const boAway = { ...bo, connected: false };
   assert.deepEqual(playersHoldingUpStart(setup, [ana, boAway]), [boAway], 'a dropped player holds the start up');
   assert.equal(canStartRace(setup, [ana, boAway]), false);
+});
+
+test('the line above Start race says why the race cannot start, and is empty when it can', () => {
+  const setup = createSetup();
+  assert.equal(startBlocker(setup, []), 'Needs a player');
+  assert.equal(startBlocker(setup, [], 2), 'Needs 2 players');
+  assert.equal(startBlocker(setup, [ana], 2), 'Needs 2 players', 'one player is too few for a race of 2');
+  assert.equal(startBlocker(setup, [ana, bo], 2), 'Waiting for Ana, Bo');
+  applyChoice(setup, 'ana', { choice: 'ready', value: true }, true);
+  assert.equal(startBlocker(setup, [ana, bo], 2), 'Waiting for Bo');
+  applyChoice(setup, 'bo', { choice: 'ready', value: true }, true);
+  assert.equal(startBlocker(setup, [ana, bo], 2), '');
+  assert.equal(startBlocker(setup, [ana], 1), '', 'the 3D race can start with one player');
+});
+
+test('the race needs the players the game asks for, ready, before it can start', () => {
+  const setup = createSetup();
+  applyChoice(setup, 'ana', { choice: 'ready', value: true }, true);
+  assert.equal(canStartRace(setup, [ana]), true);
+  assert.equal(canStartRace(setup, [ana], 2), false, 'the 2D race needs 2');
 });
 
 test('before the next race everyone is not ready again, with their control style kept', () => {

@@ -4,6 +4,7 @@
 // index.js); the settings last for as long as the game runs.
 
 import { KART_CHOICES, KART_STEERING } from '../../shared/protocol.js';
+import { displayName } from '../roster.js';
 
 export const DEFAULT_LAPS = 3;
 export const MIN_LAPS = 1;
@@ -54,13 +55,23 @@ export function forgetPlayer(setup, playerId) {
 }
 
 // The players (roster entries, from the list `players`) the host is waiting for: anyone not ready, and anyone
-// waiting to reconnect. A dropped player holds the start up, as in the lobby, so nobody's kart starts without
+// waiting to reconnect. A dropped player holds the start up, so nobody's kart starts without
 // them; the grace period frees their slot if they never come back.
 export function playersHoldingUpStart(setup, players) {
   return players.filter((player) => !player.connected || !playerSetup(setup, player.playerId).ready);
 }
 
-// True when the host may start: at least one player, and nobody holding the start up.
-export function canStartRace(setup, players) {
-  return players.length > 0 && playersHoldingUpStart(setup, players).length === 0;
+// Why the host cannot start yet, as the line shown above Start race, or '' when they can: too few players
+// (`minPlayers`: the 2D race needs 2, the 3D race races alone with CPU karts) or someone still being waited for.
+export function startBlocker(setup, players, minPlayers = 1) {
+  if (players.length < minPlayers) {
+    return minPlayers === 1 ? 'Needs a player' : `Needs ${minPlayers} players`;
+  }
+  const waitingFor = playersHoldingUpStart(setup, players).map(displayName);
+  return waitingFor.length > 0 ? `Waiting for ${waitingFor.join(', ')}` : '';
+}
+
+// True when the host may start: enough players, and nobody holding the start up.
+export function canStartRace(setup, players, minPlayers = 1) {
+  return startBlocker(setup, players, minPlayers) === '';
 }

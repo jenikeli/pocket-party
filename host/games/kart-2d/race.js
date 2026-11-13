@@ -6,6 +6,8 @@ import { LAP_LENGTH, lapPosition, pointOnTrack } from './track.js';
 import { driveKart, hitWalls, bumpKarts } from './kart-physics.js';
 import { NEUTRAL_CONTROLS } from '../../kart/kart-controls.js';
 
+// A race needs this many players: the 2D race has no CPU karts to fill the grid.
+export const MIN_PLAYERS = 2;
 export const COUNTDOWN_SECONDS = 3;
 // Once the first kart finishes, the rest have this long before the race ends without them.
 export const FINISH_TIME_LIMIT_SECONDS = 30;

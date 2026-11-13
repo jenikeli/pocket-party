@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { roomIsOpen } from '../../host/games/kart-2d/race-views.js';
-import { setupRows } from '../../host/kart/setup-rows.js';
+import { setupRows, styleIcons } from '../../host/kart/setup-rows.js';
 import { createRace, stepRace, RACE_PHASES } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { KART_CHOICES, KART_STEERING } from '../../shared/protocol.js';
@@ -25,9 +25,10 @@ test('the setup rows come in slot order with each player\'s control style and st
   applyChoice(setup, 'p0', { choice: KART_CHOICES.READY, value: true }, true);
   const rows = setupRows(setup, roster(playerAt(2), playerAt(0), playerAt(1, { connected: false })));
   assert.deepEqual(rows.map((row) => row.player.playerId), ['p0', 'p1', 'p2']);
-  assert.deepEqual(rows.map((row) => row.controlsText), ['Tilt, auto-accelerate', 'Stick, Go button', 'Stick, Go button']);
-  assert.deepEqual(rows.map((row) => row.stateText), ['Ready', '(away)', 'Choosing...']);
+  assert.deepEqual(rows.map((row) => row.steering), ['tilt', 'stick', 'stick']);
+  assert.deepEqual(rows.map((row) => row.autoAccelerate), [true, false, false]);
   assert.deepEqual(rows.map((row) => row.ready), [true, false, false]);
+  assert.deepEqual(rows.map((row) => row.away), [false, true, false]);
 });
 
 test('a player who joins while the setup screen is up gets a row, and is not ready', () => {
@@ -37,15 +38,27 @@ test('a player who joins while the setup screen is up gets a row, and is not rea
   players.set('late', playerAt(1, { playerId: 'late' }));
   const rows = setupRows(setup, players);
   assert.equal(rows.length, 2);
-  assert.equal(rows[1].stateText, 'Choosing...');
+  assert.equal(rows[1].ready, false);
+  assert.equal(rows[1].away, false);
 });
 
 test('a dropped player is shown as away even when they were ready', () => {
   const setup = createSetup();
   applyChoice(setup, 'p0', { choice: KART_CHOICES.READY, value: true }, true);
   const [row] = setupRows(setup, roster(playerAt(0, { connected: false })));
-  assert.equal(row.stateText, '(away)');
+  assert.equal(row.away, true);
   assert.equal(row.ready, false);
+});
+
+test('a row shows two icons: how the player steers and how they accelerate', () => {
+  assert.deepEqual(styleIcons({ steering: 'stick', autoAccelerate: false }), [
+    { icon: 'stick', label: 'Stick' },
+    { icon: 'go-button', label: 'Go button' },
+  ]);
+  assert.deepEqual(styleIcons({ steering: 'tilt', autoAccelerate: true }), [
+    { icon: 'tilt', label: 'Tilt' },
+    { icon: 'auto', label: 'Auto-accelerate' },
+  ]);
 });
 
 test('the room is open on the setup screen and the results, closed while the karts race', () => {

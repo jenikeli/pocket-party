@@ -1,0 +1,99 @@
+/* What both kart races' setup screens share, in the host's look (host/ui.css): the player rows
+   (host/kart/player-rows.js) and the laps control (lapsStepperMarkup in host/kart/panel-parts.js). Sizes are in em
+   of the screen's .pp-stage. Loaded with the game's own stylesheet by host/games/kart-2d/index.js and
+   host/games/kart-3d/index.js. */
+
+.kart-player-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+/* A green edge says ready; the edge is always there, transparent, so a row does not shift when it turns. */
+.kart-player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.3em 0.4em 0.3em 0.7em;
+  border-left: 0.3em solid transparent;
+  border-radius: var(--pp-radius);
+  background: var(--pp-panel-2);
+}
+
+.kart-player-row.ready {
+  border-left-color: var(--pp-ok);
+}
+
+.kart-player-row.away {
+  opacity: 0.5;
+}
+
+.kart-player-row .pp-dot {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.kart-player-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kart-player-style {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  color: var(--pp-muted);
+}
+
+.kart-player-tick {
+  display: flex;
+  color: var(--pp-ok);
+}
+
+.kart-player-row:not(.ready) .kart-player-tick {
+  visibility: hidden;
+}
+
+/* The cross is quiet until its first click arms it (the .armed rule of host/ui.css makes it red). */
+.kart-player-row .kart-remove-button:not(.armed) {
+  background: transparent;
+  color: var(--pp-muted);
+}
+
+.kart-remove-button {
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 0.4em;
+}
+
+/* Flag, minus, the number, plus. */
+.kart-laps {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.kart-laps > span:first-child {
+  display: flex;
+  color: var(--pp-muted);
+}
+
+.kart-laps .pp-icon-button {
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 0.5em;
+}
+
+.kart-laps-value {
+  min-width: 1.2em;
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 800;
+}

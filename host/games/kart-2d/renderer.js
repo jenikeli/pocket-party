@@ -12,16 +12,16 @@ import { createRaceHud } from './race-hud.js';
 import { createResultsPanel } from './results-panel.js';
 import { createSetupPanel } from './setup-panel.js';
 
-// `onLapsStep(step)` (-1 or 1) and `onStartRace()` are the setup panel's buttons, `onRaceAgain()` and
-// `onBackToLobby()` the results panel's. Returns { draw(setup, race, players, alpha), destroy() }.
-export function createRenderer(container, { onLapsStep, onStartRace, onRaceAgain, onBackToLobby }) {
+// `onLapsStep(step)` (-1 or 1), `onStartRace()` and `onRemovePlayer(playerId)` are the setup panel's buttons,
+// `onRaceAgain()` the results panel's. Returns { draw(setup, race, players, alpha), destroy() }.
+export function createRenderer(container, { onLapsStep, onStartRace, onRemovePlayer, onRaceAgain }) {
   // The panels are HTML, so they exist at once. The stage is positioned, so it paints above Phaser's canvas.
   const stage = document.createElement('div');
   stage.className = 'pp-stage';
   container.append(stage);
   const hud = createRaceHud(stage);
-  const setupPanel = createSetupPanel(stage, { onLapsStep, onStartRace });
-  const resultsPanel = createResultsPanel(stage, { onRaceAgain, onBackToLobby });
+  const setupPanel = createSetupPanel(stage, { onLapsStep, onStartRace, onRemovePlayer });
+  const resultsPanel = createResultsPanel(stage, { onRaceAgain });
   // Set once Phaser has made the scene, a frame or two after start.
   let scene = null;
   // playerId -> kart sprite.

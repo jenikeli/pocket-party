@@ -5,12 +5,12 @@
 
 import { MESSAGE_TYPES, INPUT_KINDS } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
-import { createRace, stepRace, removeKart } from './race.js';
+import { createRace, stepRace, removeKart, MIN_PLAYERS } from './race.js';
 import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlayer, canStartRace } from '/host/kart/setup.js';
 import { createControlsTable } from '/host/kart/kart-controls.js';
 import { controllerView, setupView, roomIsOpen } from './race-views.js';
 import { createRenderer } from './renderer.js';
-import { loadStylesheet } from '/host/kart/panel-parts.js';
+import { loadStylesheets } from '/host/kart/panel-parts.js';
 import { createRaceSounds } from './race-sounds.js';
 import { playTune, tuneForRace } from '/host/audio/music.js';
 
@@ -21,23 +21,23 @@ export function createGame() {
   let setRoomOpen = null;
   let renderer = null;
   const raceSounds = createRaceSounds();
-  // The panels' stylesheet, loaded with the game and removed when it stops.
-  let stylesheet = null;
+  // The panels' stylesheets (the races' shared one, then this game's), loaded with the game and removed when it
+  // stops.
+  let stylesheets = [];
   // Whether the shell has been told the room is open; null until the first time.
   let roomOpen = null;
-  // Laps and control styles, kept from race to race until the game goes back to the lobby.
+  // Laps and control styles, kept from race to race until the game ends.
   const setup = createSetup();
   // null while the setup screen shows.
   let race = null;
   let controls = createControlsTable();
   // playerId -> the view last sent to that phone as JSON, so a view is only sent when it changes.
   const sentViews = new Map();
-  let wantsLobby = false;
 
   // Everything is drawn from code and the panels are HTML; Phaser loads with the renderer
-  // (host/hand-driven-phaser.js). Only the panels' stylesheet is fetched here.
+  // (host/hand-driven-phaser.js). Only the panels' stylesheets are fetched here.
   async function load() {
-    stylesheet = await loadStylesheet('/host/games/kart-2d/kart-2d.css');
+    stylesheets = await loadStylesheets(['/host/kart/panels.css', '/host/games/kart-2d/kart-2d.css']);
   }
 
   function start(shell) {
@@ -47,8 +47,8 @@ export function createGame() {
     renderer = createRenderer(shell.container, {
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
       onStartRace: startRace,
+      onRemovePlayer: shell.removePlayer,
       onRaceAgain: showSetup,
-      onBackToLobby: () => (wantsLobby = true),
     });
     showSetup();
   }
@@ -73,10 +73,10 @@ export function createGame() {
 
   // Everyone in the roster gets a kart, on the grid in slot order. Inputs held from the last race are dropped.
   // The renderer only enables Start race when canStartRace allows it; checked again here because the click
-  // can arrive in the same frame as a player dropping.
+  // can arrive in the same frame as a player dropping or being removed.
   function startRace() {
     const grid = playersInSlotOrder(players);
-    if (race || !canStartRace(setup, grid)) {
+    if (race || !canStartRace(setup, grid, MIN_PLAYERS)) {
       return;
     }
     race = createRace(grid.map((player) => player.playerId), setup.laps);
@@ -136,13 +136,14 @@ export function createGame() {
     sentViews.delete(playerId);
   }
 
+  // A race is left through the shell's back arrow, which closes the room, so the game never ends itself.
   function isDone() {
-    return wantsLobby;
+    return false;
   }
 
   function stop() {
-    // The stylesheet first, so it goes even if tearing down the renderer throws.
-    stylesheet?.remove();
+    // The stylesheets first, so they go even if tearing down the renderer throws.
+    stylesheets.forEach((link) => link.remove());
     playTune(null);
     renderer.destroy();
   }

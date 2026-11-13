@@ -14,10 +14,9 @@ test('every course has a preview entry and no entry is for an unknown course', (
   assert.deepEqual(Object.keys(COURSE_PREVIEWS).sort(), COURSES.map((course) => course.id).sort());
 });
 
-test('every entry has a blurb and a distance that is on the course', () => {
+test('every entry has a distance that is on the course', () => {
   for (const course of COURSES) {
-    const { blurb, s } = COURSE_PREVIEWS[course.id];
-    assert.ok(blurb.length > 0, `${course.id} has a blurb`);
+    const { s } = COURSE_PREVIEWS[course.id];
     assert.ok(s >= 0 && s < buildTrack(course).length, `${course.id}: s ${s} is on the course`);
   }
 });

@@ -12,7 +12,7 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | building |
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | built, in review (branch worktree-agent-a7243f7bc1a718b76) |
-| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | building |
+| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | built, in review (branch worktree-agent-a5a7c0774aa25483f) |
 | T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
 
@@ -245,6 +245,8 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- Task D: the lab's cards moved down (grid from y=110, cards 310 high) and its title into the right column, to
+  keep the top corners clear; `host/buttons.js` now holds only `drawCloseButton`.
 - Task C: the 2D race's "Needs 2 players" rule is `MIN_PLAYERS` in its own `race.js`; both races' `isDone()`
   return false (the shell's back arrow is the only way out); no "Results" heading; the 3D tools icon sits under
   the shell's top bar, 5 em down on the right.

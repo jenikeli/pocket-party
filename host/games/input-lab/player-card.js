@@ -2,19 +2,21 @@
 // and the numbers (rate, round trip, jitter, raw value). Used by host/games/input-lab/index.js.
 
 import { INPUT_KINDS } from '/shared/protocol.js';
-import { drawConfirmButton } from '/host/buttons.js';
+import { drawCloseButton } from '/host/buttons.js';
 
-// Cards sit in a 3x3 grid (MAX_PLAYERS is 9) in the left 1380 px; the lab's title and the shell's game buttons
-// use the rest.
+// Cards sit in a 3x3 grid (MAX_PLAYERS is 9) in the left 1380 px, below the shell's top bar (the back arrow at
+// the top left needs 120 px of height); the lab's title uses the rest.
 export const CARD_WIDTH = 440;
-export const CARD_HEIGHT = 340;
+export const CARD_HEIGHT = 310;
 export const CARD_GAP = 15;
+export const GRID_TOP = 110;
 const CARDS_PER_ROW = 3;
 // The stick picture, relative to the card's top-left corner.
 export const RING_CENTER = { x: 105, y: 195 };
 export const RING_RADIUS = 75;
-// The Remove button, relative to the card's top-left corner.
-export const REMOVE_BUTTON_CENTER = { x: CARD_WIDTH - 80, y: 36 };
+// The Remove button (a close mark), relative to the card's top-left corner.
+export const REMOVE_BUTTON_CENTER = { x: CARD_WIDTH - 36, y: 36 };
+const REMOVE_BUTTON_SIZE = 52;
 const DOT_RADIUS = 22;
 
 const SWIPE_ARROWS = { up: '↑', down: '↓', left: '←', right: '→' };
@@ -26,11 +28,11 @@ const WARNING_COLOR = '#f39c12';
 export function cardPosition(slotIndex) {
   return {
     x: CARD_GAP + (slotIndex % CARDS_PER_ROW) * (CARD_WIDTH + CARD_GAP),
-    y: CARD_GAP + Math.floor(slotIndex / CARDS_PER_ROW) * (CARD_HEIGHT + CARD_GAP),
+    y: GRID_TOP + Math.floor(slotIndex / CARDS_PER_ROW) * (CARD_HEIGHT + CARD_GAP),
   };
 }
 
-// Draws an empty card. `onRemove()` runs when the host confirms the card's Remove button.
+// Draws an empty card. `onRemove()` runs on the second click of the card's Remove button.
 // Returns { showName, showDevice, showMode, showInput, showStats, showWaiting, destroy }.
 export function createPlayerCard(scene, slotIndex, color, colorText, onRemove) {
   const { x, y } = cardPosition(slotIndex);
@@ -46,17 +48,14 @@ export function createPlayerCard(scene, slotIndex, color, colorText, onRemove) {
   const dot = scene.add.circle(RING_CENTER.x, RING_CENTER.y, DOT_RADIUS, color);
   const bigText = text(RING_CENTER.x, RING_CENTER.y, '', { fontSize: '80px' }).setOrigin(0.5);
   const statsText = text(215, 118, '', { fontSize: '24px', fontFamily: 'monospace', lineSpacing: 6 });
-  const rawText = text(20, 296, '', { fontSize: '20px', color: DIM_COLOR });
+  const rawText = text(20, 278, '', { fontSize: '20px', color: DIM_COLOR });
   // Covers the card while the player is in their grace period.
   const waitingCover = scene.add.rectangle(0, 0, CARD_WIDTH, CARD_HEIGHT, 0x10131c, 0.92).setOrigin(0);
   const waitingText = text(CARD_WIDTH / 2, CARD_HEIGHT / 2, '', { fontSize: '30px', color: WARNING_COLOR, align: 'center' })
     .setOrigin(0.5);
   // Drawn after the cover, so a player who is waiting to reconnect can still be removed.
-  const removeButton = drawConfirmButton(scene, REMOVE_BUTTON_CENTER.x, REMOVE_BUTTON_CENTER.y, {
-    width: 130,
-    height: 44,
-    fontSize: 22,
-    label: 'Remove',
+  const removeButton = drawCloseButton(scene, REMOVE_BUTTON_CENTER.x, REMOVE_BUTTON_CENTER.y, {
+    size: REMOVE_BUTTON_SIZE,
     onConfirm: onRemove,
   });
   container.add([background, title, deviceText, modeText, ring, dot, bigText, statsText, rawText, waitingCover, waitingText]);

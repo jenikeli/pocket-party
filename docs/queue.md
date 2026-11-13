@@ -11,8 +11,8 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
 | A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | built, in review (branch worktree-agent-a95dcc595d6339030) |
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
-| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | built, in review (branch worktree-agent-a7243f7bc1a718b76) |
-| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | built, in review (branch worktree-agent-a5a7c0774aa25483f) |
+| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | merged |
+| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | merged |
 | T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
 
@@ -245,6 +245,8 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- After C: `blurb` left `course-previews.js` and the items' `on` switch (`toggleItems`) left `item-settings.js`,
+  with their tests, since nothing shows or sets them any more.
 - Task A: one `#settings-button`, in a top bar that is always there (picker and games); the input lab's
   `minPlayers` 2 -> 1 so the picker reads "1 to 9" as the mockup; the picker's title at 4em (4.4em wrapped); the
   lost-connection cover is replaced by the picker's problem line; `server/` unchanged (nothing parked).

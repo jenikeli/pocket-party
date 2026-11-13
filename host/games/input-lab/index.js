@@ -36,6 +36,8 @@ export function createGame() {
     players = shell.players;
     removePlayer = shell.removePlayer;
     pingPlayer = shell.pingPlayer;
+    // Phones can join for as long as the lab runs; it never closes the room.
+    shell.setRoomOpen(true);
     phaser = startHandDrivenPhaser({
       parent: shell.container,
       backgroundColor: '#10131c',
@@ -91,7 +93,7 @@ export function createGame() {
     tracks.delete(playerId);
   }
 
-  // The lab never ends by itself; the host ends it with the shell's "End game".
+  // The lab never ends by itself; the host leaves it with the shell's back arrow.
   function isDone() {
     return false;
   }
@@ -125,7 +127,7 @@ export function createGame() {
   }
 
   // Cards sit by color slot, so a player keeps their card position across a drop and rejoin. A player who
-  // joined just before the room closed to new players gets a card too.
+  // joins while the lab runs gets a card on the next frame (the room is empty at start()).
   function addMissingCards() {
     for (const player of players.values()) {
       const track = trackFor(player.playerId);
@@ -168,11 +170,11 @@ export function createGame() {
   return { load, start, onMessage, step, render, onPlayerLeft, isDone, stop };
 }
 
-// In the space right of the cards; the shell's End game and Close room buttons sit below it.
+// In the space right of the cards, below the shell's top bar.
 function drawTitle(scene) {
-  scene.add.text(1650, 90, 'Input lab', { ...TEXT_STYLE, fontSize: '56px', fontStyle: 'bold' }).setOrigin(0.5);
+  scene.add.text(1650, 240, 'Input lab', { ...TEXT_STYLE, fontSize: '56px', fontStyle: 'bold' }).setOrigin(0.5);
   scene.add
-    .text(1650, 180, 'Compare drag, tap, swipe and tilt.\nPick the input on each phone.', {
+    .text(1650, 330, 'Compare drag, tap, swipe and tilt.\nPick the input on each phone.', {
       ...TEXT_STYLE,
       fontSize: '26px',
       color: '#9aa4bf',

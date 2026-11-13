@@ -66,16 +66,16 @@
     },
     {
       "path": "kart-3d/previews/palm-bay-airport.jpg",
-      "sha256": "1834b00c542e9b7e77f1a2edcdb885bfc13a4f7fc7124ef704265f23d435219b",
-      "bytes": 156788,
+      "sha256": "233f0f7e147be0075ba3ce8dcdadf448240f41faa2e4e2174e2a033fb8ae38f1",
+      "bytes": 165743,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen) and host/games/index.js (the lobby background of Kart race 3D)"
     },
     {
       "path": "kart-3d/previews/seaside-skyway.jpg",
-      "sha256": "0199eca777ffbeb8df01e9a8f4480bed80d4827a3ba9cacc8cae4bbf4009db37",
-      "bytes": 146387,
+      "sha256": "804b42d10fc4d4bc2e6235b90da12a861d6bcbcfe65a29ee6bad1e6f075297eb",
+      "bytes": 143982,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen)"

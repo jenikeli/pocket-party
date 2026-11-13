@@ -1537,3 +1537,106 @@ ahead in the race: a kart's length) or behind it, within its reach; CPU karts us
 behind (`items/cpu-items.js`).
 Checked on the iPad with the phone (2026-11-06): works as wanted; `PUSH_BESIDE` stays 2.
 
+
+## M10: Polish
+
+Built 2026-11-12 and 13 (the queue and every decision are in "M10" in `docs/history.md`). Device run pending.
+
+### What was built for the 3D race
+
+- **The setup screen** shows saved course pictures and builds nothing; Start race, Watch and Measure build the
+  chosen course behind a loading bar (stages: scenery, baked shade, course light, shaders), and a course built
+  once is kept until another is chosen.
+- **Kart shadows** come from one box stand-in per kart (320 to 392 triangles, cut from each design's own shape),
+  kept out of the colour pass by a negative draw range that is opened only around its shadow draw.
+- **The kit's drawn maps** are made once per game and shared by every build.
+- **Seaside Skyway** lost its floating islands and backdrop cliffs; **Palm Bay Airport** gained dressing on its
+  grass, larger islands and a second prop plane south of the runway.
+- **The panels** (race bar, countdown, results, tuning, Measure) are in the Night look; **sounds and music** play.
+
+### What was measured without a device (all in software, llvmpipe, on the dev box)
+
+- **Kart shadows** (a scratch page, 12 karts, 4 views; not Seaside with the Measure tool, since a whole race
+  would not start in software under load): the shadow passes went from 480 draw calls and 1,169,692 triangles to
+  48 and 16,848; the colour passes are unchanged (484 calls). Frame time 50.8 ms before, 32.5 ms with the first
+  version of the stand-in (relative only).
+- **Kit maps once** (`buildScenery` alone, one course per fresh page, built twice):
+
+  | Course | Before, 1st | Before, 2nd | After, 1st | After, 2nd |
+  |---|---|---|---|---|
+  | Seaside Skyway | 16.1 s | 16.5 s | 10.3 s | 2.0 s |
+  | Palm Bay Airport | 9.7 s | 9.2 s | 7.9 s | 3.4 s |
+  | Test track | 7.3 s | 6.9 s | 5.4 s | 1.1 s |
+
+  The first-build gain is the box average as a running sum; the frames are byte-identical. The maps kept are
+  about 77 MB for Seaside alone (as before) and about 100 MB once all three courses were built in one game.
+- **Bloom's clamp** is one line in the shader of bloom's own first pass, not a pass: a bloom frame of the
+  floodlight piece is 28 draw calls with and without it. Why bloom costs 3.5 ms with 4 views is not known.
+- **Palm Bay Airport:** 1,222,019 -> 1,314,101 triangles (+7.5%), 398 -> 412 meshes, 61.9 -> 64.0 MB of maps;
+  built in 9.8 s before and 10.5 s after in paired runs on a loaded machine.
+- **The course build as the race does it** (plain Test track, Medium): 18 to 31 s, nearly all of it the shader
+  compile and the first frame through bloom, with the page blocked meanwhile.
+- **Sound:** an offline render of every 3D cue and of four boosting engines through the limiter peaked at 0.54
+  (before the first-sample click was fixed), nothing silent; each tune peaks between 0.37 and 0.45 at full music
+  volume with no silence longer than 0.074 s.
+
+### Device run (iPad host, an iPhone and an Android phone, HTTPS on the LAN)
+
+Nobody has heard a sound or seen these screens on a real device. The browser tests already prove the flows; this
+run is for what they cannot: real touch and Safari, the iPad's look and speed, sensors, and ears.
+
+1. **Tap to start (iPad).** Open `/host`. Tap the button: does the page go full screen where it can, does the
+   lobby appear with its music, and does the join window open by itself? Note anything cut off.
+2. **The lobby's look (iPad).** Close the join window (Done, and again by tapping outside it). Tap each game's
+   thumbnail: the title, blurb and background change, and Play says why it is off with nobody in the room. Do the
+   three covers and the two backgrounds look right at this size? Try a double tap and a pinch: the page must not
+   zoom.
+3. **Joining (both phones).** Scan the QR code from across the room with each phone, join, and check in
+   portrait: the room code is filled in, the name field does not zoom the page when focused (iPhone), "You are
+   in" shows with your colour, "Also here" names the other phone, Change name works and shows on the iPad's chip.
+4. **No zoom on the phones (iPhone first).** On the join, lobby and game screens double tap and pinch
+   everywhere. Nothing may zoom. This was the bug that started it, so try hard.
+5. **Room settings (iPad).** Open Room settings.
+   **Tune:** *Music* and *Sound effects* (Room settings, 0 to 100, defaults 70 and 80): the balance between the
+   lobby tune and the join blip (have a phone leave and join); note the values that sound right. Check they are
+   kept after a reload.
+6. **2D race (both phones, rotation lock ON).** Play Kart race 2D. On the phones the setup is in portrait:
+   choose Stick on one and Tilt on the other, press Ready, then turn each phone sideways with its top end in the
+   left hand. Do the controls read upright? Does the stick steer the way the thumb moves, and does tilt steer
+   like a wheel and run straight at GO? Is the iPhone's notch or home bar in the way of a button? Then the same
+   with rotation lock OFF (the page turns by itself): still right?
+7. **2D sounds (iPad).** Countdown beeps, GO, the engines, the finish jingles, the race tune from GO and the
+   results tune. Name any sound that is wrong, too loud or annoying (the table of every sound is in "M10" in
+   `docs/history.md`).
+8. **3D setup (iPad).** Back to lobby, play Kart race 3D. The setup shows Palm Bay Airport's picture; tap the
+   other course pictures; open "Display and tools". Have the second phone join now (Add players, bottom right):
+   it should get a row. Does the card fit with the players listed?
+9. **The course build (iPad).** Everyone Ready, Start race on Seaside Skyway. Time from the tap to the
+   countdown, and say whether the bar moves or sticks. Finish or Back to setup, Start race again on the same
+   course (should be near instant), then on Palm Bay Airport, then Seaside again: note each time. (M9: Seaside
+   took almost 7 s, the airport about 6 s.)
+10. **Frame rate (iPad, no phones).** Display and tools, Look: High. Watch, no phones: 4, on Seaside Skyway;
+    open Tuning in the race bar and note the fps. Then Measure (Display and tools) on Seaside and Copy the
+    report. The aim was a steady 60 with 4 views on High (M7d5: 17.5 ms a frame, about 40 fps). Same Watch on
+    Palm Bay Airport (60 before).
+11. **Kart shadows (iPad, one phone).** In a race look at the shadow under and beside your kart from the chase
+    camera, on a sunny stretch: does it look like the kart's, or like blocks? Any stripes on the road, any
+    flicker, a shadow that lags or is missing with 4 views?
+12. **3D sounds (iPad, both phones).** One race with items on. Listen for: rocket start or stall, the drift
+    squeal and the three mini-turbo chimes, boosts, the item box and roulette, each item, bumps and walls, lap and
+    final lap, the finish, the engines (one per player: do two sound like two?). Does anything click, clip or
+    drown the music? Name the ones to change.
+13. **Music (iPad).** Is each tune bearable on a loop for a whole race: lobby, 2D, the airport, Seaside, the test
+    track, results? Lock the iPad or switch app for half a minute mid-tune and come back: does the music return
+    cleanly (no burst of notes, no silence)?
+14. **Courses (iPad).** Seaside Skyway: is the sky clean now the floating islands and cliffs are gone, or empty
+    anywhere? Palm Bay Airport: the grass south of the runway (s about 960) and beside the start straight, and
+    the islands from the glide (s about 1140): better?
+15. **Memory (iPad).** In one game, race on all three courses one after another, twice round. Any reload,
+    black canvas or "a problem repeatedly occurred" from Safari? (The kit's maps now stay for the whole game.)
+16. **Drops (a phone).** Lock a phone mid-race for 20 s and unlock: it reconnects and drives on. Join with a
+    third device during a race: refused; on the results screen: let in, and gets a kart on Race again.
+17. Anything that looks or sounds broken, with what you were doing.
+
+**Report back:** the build times of step 9, the fps and the Measure report of step 10, the volumes of step 5,
+and the sounds and tunes to change.

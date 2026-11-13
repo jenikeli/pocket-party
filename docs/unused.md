@@ -2,7 +2,7 @@
 
 Code, assets and tools that the game itself does not use, kept on purpose. Each entry lists what to delete, so a
 cleanup is quick when it is wanted. Add an entry whenever something is kept but unused; remove it once it is
-deleted or used again. Last checked 2026-11-06 (end of M9).
+deleted or used again. Last checked 2026-11-13 (end of M10).
 
 ## Deleted
 
@@ -17,12 +17,18 @@ deleted or used again. Last checked 2026-11-06 (end of M9).
 
 ## Small things in the code
 
+- `drawConfirmButton` and `drawButton` in `host/buttons.js` (Phaser canvas buttons): since M10 only the input
+  lab's player card uses them (`host/games/input-lab/player-card.js`). If the input lab's card moves to HTML,
+  delete the file.
+- `test-results/reference/m10/` (ignored by git): the chosen design's pictures and prototype page, used by M10's
+  tasks. Delete the folder once the device run is done.
+
 - `isOnRoad` in `host/games/kart-2d/track.js`: used only by its unit test (`test/unit/kart-track.test.js`); the
   2D race's rules use `wallContact` and `lapPosition`.
 - About 30 constants and functions are exported but used only inside their own file (for example `GRAVITY` in
-  `kart-physics.js`, the layout constants in `host/settings-panel.js`). They are not dead code; the `export` is
+  `kart-physics.js`). They are not dead code; the `export` is
   just unneeded. Not worth a change on its own.
-- About 45 exports are used only by tests (constants such as `SLIPSTREAM_SECONDS`, the 2D race's button positions).
+- About 45 exports are used only by tests (constants such as `SLIPSTREAM_SECONDS`, `describeResultRow` and `tuningValueText` of the 3D race's panels).
   That is expected: tests read the same numbers as the code.
 
 How these were found: a scan of every `export` in `host/`, `controller/`, `shared/`, `server/` and `tools/`

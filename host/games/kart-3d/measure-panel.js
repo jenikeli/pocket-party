@@ -21,9 +21,9 @@ export function createMeasurePanel(container, renderer, restoreLook) {
     <p id="kart-3d-measure-progress"></p>
     <pre id="kart-3d-measure-report" hidden></pre>
     <div class="measure-buttons">
-      <button type="button" id="kart-3d-measure-stop" class="pp-button pp-small">Stop</button>
-      <button type="button" id="kart-3d-measure-copy" class="pp-button pp-small" hidden>Copy</button>
-      <button type="button" id="kart-3d-measure-close" class="pp-button pp-small" hidden>Close</button>
+      <button type="button" id="kart-3d-measure-stop" class="pp-button">Stop</button>
+      <button type="button" id="kart-3d-measure-copy" class="pp-button" hidden>Copy</button>
+      <button type="button" id="kart-3d-measure-close" class="pp-button" hidden>Close</button>
       <p id="kart-3d-measure-status" class="pp-muted"></p>
     </div>
     <textarea id="kart-3d-measure-text" class="k3d-dev-text" readonly hidden></textarea>`;

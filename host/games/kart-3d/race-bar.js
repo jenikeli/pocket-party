@@ -16,9 +16,9 @@ export function createRaceBar(container, { onBackToSetup, onRestart, onTuning })
   bar.hidden = true;
   bar.innerHTML = `
     <div class="k3d-bar-buttons">
-      <button type="button" id="kart-3d-setup-button" class="pp-button pp-small">Back to setup</button>
-      <button type="button" id="kart-3d-restart-button" class="pp-button pp-small">Restart</button>
-      <button type="button" id="kart-3d-tuning-button" class="pp-button pp-small" aria-pressed="false">Tuning</button>
+      <button type="button" id="kart-3d-setup-button" class="pp-button">Back to setup</button>
+      <button type="button" id="kart-3d-restart-button" class="pp-button">Restart</button>
+      <button type="button" id="kart-3d-tuning-button" class="pp-button" aria-pressed="false">Tuning</button>
     </div>
     <p id="kart-3d-readout" class="pp-muted k3d-readout" hidden></p>`;
   const clock = createLine('kart-3d-clock', 'k3d-clock');

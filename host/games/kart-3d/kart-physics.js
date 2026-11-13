@@ -10,28 +10,20 @@
 // vertical all work the same way, and gravity only matters in the air. That is how MK8DX feels too: slopes
 // barely change a kart's speed.
 
-import { vec, add, scale, addScaled, cross, dot, normalize, flatten, rotate } from './vector.js';
-import { locate, surfaceAt, pointAt, SURFACES } from './track.js';
+import { vec, add, scale, addScaled, cross, dot, normalize, rotate } from './vector.js';
+import { locate, pointAt, SURFACES } from './track.js';
 import { hitWall } from './kart-walls.js';
+import { settle } from './kart-ground.js';
 import { nextSpeed, turnAngle, driftTurnAngle, kartTopSpeed } from './kart-driving.js';
 import { freshTechniques, useDriftButton, afterMove, hopGravity } from './kart-techniques.js';
 import { freshBoosts, stepBoosts } from './kart-boosts.js';
 import { freshBody, moveBody } from './kart-body.js';
-import { freshGlide, glide, keepInCorridor, endGlide } from './kart-glide.js';
+import { freshGlide, glide, keepInCorridor } from './kart-glide.js';
 import { tuning } from './tuning.js';
 import { isHeldOnWall } from './items/sticky-walls.js';
 
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
-// How far the road may drop away or rise under a kart in one step while it stays stuck to it. Big enough for
-// the outer lane of a road rolling up to a wall; a ramp's lip is followed by a gap, so karts still take off.
-const GROUND_SNAP = 0.5;
-// A kart coming down lands if it is no deeper than this below the road (it crossed the surface this step).
-const LANDING_DEPTH = 1.5;
-// This far below the road (or below where the road would be), it has fallen off.
-const FALL_DEPTH = 3;
-// Seconds from falling past FALL_DEPTH (about half a second after leaving the road) to being put back.
-export const RESPAWN_DELAY = 1;
 // A kart that fell is put back this far before the last place it was on the road, so it has a run-up to
 // jumps; MK8DX puts karts back about where they fell.
 const RESPAWN_BACK = 30;
@@ -156,45 +148,6 @@ function fly(kart, controls, dt) {
   const angle = -turnAngle(controls.steer, forwardSpeed(kart), dt) * AIR_STEERING_SHARE;
   kart.forward = normalize(rotate(kart.forward, kart.up, angle));
   kart.velocity = rotate(kart.velocity, kart.up, angle);
-}
-
-// After the move: stuck to the road, taking off, landing, or falling off.
-function settle(track, kart, contact) {
-  const surface = surfaceAt(contact);
-  kart.trackIndex = contact.index;
-  kart.s = contact.s;
-  kart.lateral = contact.lateral;
-  kart.antiGravity = contact.station.antiGravity;
-  const nearSurface = contact.height > -GROUND_SNAP && contact.height < GROUND_SNAP;
-  const landing = !kart.grounded && contact.height <= 0 && contact.height > -LANDING_DEPTH;
-  if (surface && ((kart.grounded && nearSurface) || landing)) {
-    stickToRoad(kart, contact, surface);
-  } else {
-    kart.grounded = false;
-    kart.surface = null;
-    if (contact.height < -FALL_DEPTH) {
-      kart.respawnIn = RESPAWN_DELAY;
-      endGlide(kart);
-    }
-  }
-}
-
-// Puts the kart on the surface with its up along the road's normal and its nose flat on the road. A kart that
-// was already on the road keeps its speed along the nose over a change of slope (so a ramp does not slow it);
-// one landing keeps only the part of its velocity along the road.
-function stickToRoad(kart, contact, surface) {
-  const oldSide = cross(kart.forward, kart.up);
-  const forward = normalize(flatten(kart.forward, contact.normal));
-  const side = cross(forward, contact.normal);
-  const speed = dot(kart.velocity, kart.grounded ? kart.forward : forward);
-  const slide = dot(kart.velocity, kart.grounded ? oldSide : side);
-  kart.position = addScaled(kart.position, contact.normal, -contact.height);
-  kart.up = contact.normal;
-  kart.forward = forward;
-  kart.velocity = addScaled(scale(forward, speed), side, slide);
-  kart.grounded = true;
-  kart.surface = surface;
-  kart.lastGroundIndex = contact.index;
 }
 
 // Held on a sticky wall (items/sticky-walls.js, which lets it go): it stays where it is, whatever the controls.

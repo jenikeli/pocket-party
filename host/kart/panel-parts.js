@@ -9,7 +9,10 @@ export function loadStylesheet(href) {
     link.rel = 'stylesheet';
     link.href = href;
     link.onload = () => resolve(link);
-    link.onerror = () => reject(new Error(`could not load the stylesheet ${href}`));
+    link.onerror = () => {
+      link.remove();
+      reject(new Error(`could not load the stylesheet ${href}`));
+    };
     document.head.append(link);
   });
 }

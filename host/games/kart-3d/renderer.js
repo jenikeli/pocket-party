@@ -11,17 +11,16 @@
 // host/games/kart-3d/index.js.
 
 import * as THREE from 'three';
-import { displayName, colorText } from '/host/roster.js';
 import { createSkyEnvironment } from './scenery.js';
+import { createWebglRenderer } from './webgl-renderer.js';
 import { createKartModels } from './kart-models.js';
-import { KART_DESIGNS } from './karts/kart-designs.js';
-import { assignDesigns } from './karts/kart-roster.js';
+import { createKartPlacer, describeViews } from './kart-placement.js';
 import { createViews } from './views.js';
 import { createEffects, describeEffects } from './effects.js';
 import { createBloom } from './bloom.js';
 import { QUALITY_LEVELS } from './quality.js';
 import { tuning } from './tuning.js';
-import { kartPose, viewTargets, viewHud } from './race-views.js';
+import { kartPose } from './race-views.js';
 import { FIELD_SIZE } from './race.js';
 import { courseExtent } from './track.js';
 import { runStages, nextDrawnFrame } from './staged-build.js';
@@ -29,7 +28,6 @@ import { waitForGpu, frameStats, describeGpu } from './gpu-probe.js';
 import { createCourseWorld } from './course-world.js';
 import { disposeKitMaps } from './canvas-texture.js';
 import { createItemDrawing } from './items/item-drawing.js';
-import { kartLookScale } from './items/kart-effect-looks.js';
 
 // The last stage of a course's build, the shaders, fills this much of the loading bar beside the course's own
 // stages (course-world.js's weights).
@@ -41,16 +39,7 @@ const SHADERS_WEIGHT = 1;
 // before the first draw. Returns { buildCourse, draw(race, players, alpha, dt), clear(), setQuality(level),
 // setLook(look), waitForGpu(), frameStats(), describeGpu(), destroy() }.
 export function createRenderer(container, qualityLevel, photoAsphalt, plainCourse) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  // Counted over a whole frame (every view and the shadow passes) for frameStats(), not per render() call.
-  renderer.info.autoReset = false;
-  renderer.toneMapping = THREE.NeutralToneMapping;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  // Three.js redraws the shadow map on every render() call, which would be once per view. Off, it is asked for
-  // in draw(), before each view (each has its own map).
-  renderer.shadowMap.autoUpdate = false;
-  container.append(renderer.domElement);
+  const renderer = createWebglRenderer(container);
   let contextLost = false;
   let destroyed = false;
   renderer.domElement.addEventListener('webglcontextlost', () => (contextLost = true));
@@ -58,9 +47,7 @@ export function createRenderer(container, qualityLevel, photoAsphalt, plainCours
   const scene = new THREE.Scene();
   const environment = createSkyEnvironment(renderer);
   const kartModels = createKartModels(FIELD_SIZE);
-  // The race whose karts' designs (indexes into KART_DESIGNS, one per kart) were last worked out.
-  let designsRace = null;
-  let kartDesigns = [];
+  const kartPlacer = createKartPlacer(kartModels);
   // In one group, so a look can hide them all (setLook).
   const kartGroup = new THREE.Group();
   kartGroup.add(...kartModels.karts);
@@ -100,17 +87,10 @@ export function createRenderer(container, qualityLevel, photoAsphalt, plainCours
     scene.environmentIntensity = tuning.courseLightStrength;
     world.update(dt, race);
     const poses = race.karts.map((kart) => kartPose(kart, alpha));
-    placeKarts(race, players, poses, dt);
+    kartPlacer.place(race, players, poses, dt);
     itemDrawing.update(race, course.track(), poses, dt);
     effects.update(race.karts.map((kart, index) => describeEffects(kart, poses[index])), dt);
-    const targets = viewTargets(race, players).map(({ kart, player }) => ({
-      pose: poses[race.karts.indexOf(kart)],
-      name: player ? displayName(player) : 'CPU',
-      color: player ? colorText(player) : '#ffffff',
-      boosting: kart.boost !== null,
-      gliding: kart.gliding,
-      hud: viewHud(race, kart),
-    }));
+    const targets = describeViews(race, players, poses);
     drawFrame((target) => views.draw(renderer, scene, targets, dt, target, fitShadow), targets.length);
   }
 
@@ -138,23 +118,6 @@ export function createRenderer(container, qualityLevel, photoAsphalt, plainCours
     } else {
       drawViews(null);
     }
-  }
-
-  // `poses` are the karts' poses as drawn this frame, in the order of race.karts. Which design each kart draws is
-  // worked out once per race (kart-roster.js), so a kart keeps its look when its player leaves mid-race.
-  function placeKarts(race, players, poses, dt) {
-    if (designsRace !== race) {
-      designsRace = race;
-      kartDesigns = assignDesigns(race.karts, players, KART_DESIGNS);
-    }
-    kartModels.karts.forEach((model, index) => {
-      const kart = race.karts[index];
-      if (!kart) {
-        kartModels.hide(index);
-        return;
-      }
-      kartModels.show(index, kart, poses[index], kartDesigns[index], dt, kartLookScale(race, kart));
-    });
   }
 
   // Another level chosen on the setup screen: its bloom and pixel ratio, with everything shown.

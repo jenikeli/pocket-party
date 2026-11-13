@@ -7,7 +7,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
-import { createRace, stepRace, removeKart, playerKart, raceClock, RACE_PHASES } from '../../host/games/kart-3d/race.js';
+import { createRace, stepRace, removeKart, playerKart, RACE_PHASES } from '../../host/games/kart-3d/race.js';
+import { raceClock } from '../../host/games/kart-3d/race-finish.js';
 import {
   setupView,
   roomIsOpen,

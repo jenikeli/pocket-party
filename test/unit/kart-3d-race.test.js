@@ -15,12 +15,11 @@ import {
   removeKart,
   playerKart,
   kartsInPlaceOrder,
-  raceClock,
   FIELD_SIZE,
   RACE_PHASES,
   ENGINE_CLASSES,
-  FINISH_TIME_LIMIT_SECONDS,
 } from '../../host/games/kart-3d/race.js';
+import { raceClock, FINISH_TIME_LIMIT_SECONDS } from '../../host/games/kart-3d/race-finish.js';
 import { forwardSpeed } from '../../host/games/kart-3d/kart-physics.js';
 import { laneControls } from '../helpers/lane-driver.js';
 import { steeringRate, kartTopSpeed } from '../../host/games/kart-3d/kart-driving.js';

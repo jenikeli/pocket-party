@@ -11,7 +11,8 @@ import { countdownNumber, GO_AT } from './rocket-start.js';
 import { playerSetup } from '../../kart/setup.js';
 import { SETUP_PHASE } from '../../kart/setup-rows.js';
 import { playersInSlotOrder } from '../../roster.js';
-import { playerKart, kartsInPlaceOrder, raceClock, RACE_PHASES, FINISH_TIME_LIMIT_SECONDS } from './race.js';
+import { playerKart, kartsInPlaceOrder, RACE_PHASES } from './race.js';
+import { raceClock, FINISH_TIME_LIMIT_SECONDS } from './race-finish.js';
 import { formatRaceTime } from '../../kart/race-time.js';
 import { itemHud, itemPhoneView } from './items/item-views.js';
 

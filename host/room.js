@@ -8,6 +8,7 @@ import { openSocket } from '/shared/socket.js';
 import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
 import { DEFAULT_SETTINGS } from '/host/lobby-rules.js';
 import { GAMES } from '/host/games/index.js';
+import { createGracePeriods } from '/host/grace-periods.js';
 
 // Returns the room object. Call setListener(lobby) and then connect() once, after Tap to start
 // (host/game-session.js takes over the listener while a game runs). The listener needs
@@ -17,10 +18,14 @@ export function createRoom() {
   let listener = null;
   // True once the host pressed "Close room", so the closing socket is not reported as a lost connection.
   let closedByHost = false;
-  // playerId -> setTimeout id, for players in their grace period.
-  const graceTimers = new Map();
   // playerId -> the view the running game set for that player's controller (see setControllerView).
   const controllerViews = new Map();
+
+  // Each dropped player's grace period (grace-periods.js).
+  const gracePeriods = createGracePeriods({
+    graceSeconds: () => room.settings.graceSeconds,
+    removePlayer: (playerId) => socket.send({ type: MESSAGE_TYPES.REMOVE_PLAYER, playerId }),
+  });
 
   const room = {
     roomCode: null,
@@ -76,19 +81,19 @@ export function createRoom() {
         break;
       case MESSAGE_TYPES.PLAYER_DISCONNECTED:
         if (player) {
-          startGracePeriod(player);
+          gracePeriods.start(player);
         }
         break;
       case MESSAGE_TYPES.PLAYER_RECONNECTED:
         if (player) {
-          endGracePeriod(player);
+          gracePeriods.end(player);
           // A rejoining phone may have reloaded and know nothing, so tell it everything again.
           sendControllerState(player);
         }
         break;
       case MESSAGE_TYPES.PLAYER_LEFT:
         if (player) {
-          endGracePeriod(player);
+          gracePeriods.end(player);
           room.players.delete(player.playerId);
           controllerViews.delete(player.playerId);
           tellLobbyWhoIsHere(player.playerId);
@@ -115,27 +120,6 @@ export function createRoom() {
     }
     // `player` is still passed after PLAYER_LEFT, so the listener can tidy up what it drew for them.
     listener?.handleMessage(message, player);
-  }
-
-  // The host, not the server, times the grace period, because its length is a lobby setting. When it runs
-  // out the host asks the server to free the slot, and removes the player only when PLAYER_LEFT confirms it.
-  // So if a rejoin reaches the server first, the server refuses the removal and both sides still agree.
-  function startGracePeriod(player) {
-    const graceMs = room.settings.graceSeconds * 1000;
-    player.connected = false;
-    player.graceEndsAt = Date.now() + graceMs;
-    clearTimeout(graceTimers.get(player.playerId));
-    const timer = setTimeout(() => {
-      socket.send({ type: MESSAGE_TYPES.REMOVE_PLAYER, playerId: player.playerId });
-    }, graceMs);
-    graceTimers.set(player.playerId, timer);
-  }
-
-  function endGracePeriod(player) {
-    clearTimeout(graceTimers.get(player.playerId));
-    graceTimers.delete(player.playerId);
-    player.connected = true;
-    player.graceEndsAt = null;
   }
 
   function sendControllerState(player) {

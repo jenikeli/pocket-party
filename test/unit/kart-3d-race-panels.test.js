@@ -1,5 +1,5 @@
 // Unit tests for the plain parts of the 3D race's HTML panels (M10 G): what a results row shows, how the tuning
-// panel writes a number, and the stage and stylesheet the panels share. The DOM itself is checked by the browser tests.
+// panel writes a number, and the stage the panels sit in. The DOM itself is checked by the browser tests.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -32,12 +32,8 @@ test('a tuned number is written with the decimals of its slider\'s step, then it
 
 // A stand-in for the few parts of the page createRaceStage uses.
 function fakeElement() {
-  const element = { children: [], dataset: {}, className: '' };
+  const element = { children: [], className: '' };
   element.append = (child) => element.children.push(child);
-  element.querySelector = (selector) => {
-    assert.equal(selector, 'link[data-race-panels]');
-    return element.children.find((child) => child.rel === 'stylesheet') ?? null;
-  };
   return element;
 }
 
@@ -45,15 +41,12 @@ afterEach(() => {
   delete globalThis.document;
 });
 
-test('the panels share one stylesheet link per container, and each gets its own stage', () => {
+test('each panel gets its own stage in the container, with the panel\'s class names', () => {
   globalThis.document = { createElement: fakeElement };
   const container = fakeElement();
   const first = createRaceStage(container, 'k3d-race-stage');
   const second = createRaceStage(container, 'k3d-race-stage k3d-stage-over');
-  const links = container.children.filter((child) => child.rel === 'stylesheet');
-  assert.equal(links.length, 1);
-  assert.equal(links[0].href, '/host/games/kart-3d/race-panels.css');
   assert.equal(first.className, 'pp-stage k3d-race-stage');
   assert.equal(second.className, 'pp-stage k3d-race-stage k3d-stage-over');
-  assert.deepEqual(container.children.filter((child) => child !== links[0]), [first, second]);
+  assert.deepEqual(container.children, [first, second]);
 });

@@ -1,7 +1,7 @@
 /* The 3D race's panels over the canvas, in the host's look (host/ui.css): the race bar, the clock and the
    countdown (race-bar.js), the results (results-panel.js), and the developer panels, tuning and Measure
    (tuning-panel.js, measure-panel.js). Sizes are in em of each panel's .pp-stage (80 x 45). The bottom right is
-   left clear for the shell's game bar. Linked by race-stage.js. */
+   left clear for the shell's game bar. Loaded by index.js. */
 
 /* Every panel's own stage lets clicks through where it is empty (host/ui.css); its children take them. */
 .k3d-race-stage > * {
@@ -42,39 +42,33 @@
   white-space: pre-line;
 }
 
-/* Not clickable: they override the stage's "children take clicks". */
-.pp-stage > .k3d-clock,
-.pp-stage > .k3d-countdown {
+/* The clock and the countdown are not clickable, which overrides the stage's "children take clicks" (hence the
+   .pp-stage > selector). */
+.pp-stage > .k3d-clock {
+  right: 1em;
+  top: 0.6em;
   margin: 0;
   pointer-events: none;
+  text-align: right;
+  font-size: 1.6em;
   font-weight: 800;
-}
-
-.pp-stage > .k3d-clock {
+  font-variant-numeric: tabular-nums;
+  white-space: pre-line;
   text-shadow: 0 0.08em 0 rgba(0, 0, 0, 0.85), 0 0 0.3em rgba(0, 0, 0, 0.5);
 }
 
-.k3d-clock {
-  right: 1em;
-  top: 0.6em;
-  text-align: right;
-  font-size: 1.6em;
-  font-variant-numeric: tabular-nums;
-  white-space: pre-line;
-}
-
-.k3d-countdown {
+.pp-stage > .k3d-countdown {
   left: 0;
   right: 0;
   top: 50%;
+  margin: 0;
+  pointer-events: none;
   transform: translateY(-50%);
   text-align: center;
   font-size: 7em;
+  font-weight: 800;
   line-height: 1;
   color: var(--pp-accent);
-}
-
-.pp-stage > .k3d-countdown {
   text-shadow: 0 0.06em 0 #7a3f00, 0 0 0.3em rgba(0, 0, 0, 0.6);
 }
 

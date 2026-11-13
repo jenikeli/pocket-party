@@ -20,9 +20,9 @@ export function createTuningPanel(container) {
   panel.hidden = true;
   panel.innerHTML = `
     <div class="tuning-buttons">
-      <button type="button" id="kart-3d-tuning-copy" class="pp-button pp-small">Copy values</button>
-      <button type="button" id="kart-3d-tuning-reset" class="pp-button pp-small">Reset</button>
-      <button type="button" id="kart-3d-tuning-close" class="pp-button pp-small">Close</button>
+      <button type="button" id="kart-3d-tuning-copy" class="pp-button">Copy values</button>
+      <button type="button" id="kart-3d-tuning-reset" class="pp-button">Reset</button>
+      <button type="button" id="kart-3d-tuning-close" class="pp-button">Close</button>
       <p id="kart-3d-tuning-status" class="pp-muted"></p>
     </div>
     <textarea id="kart-3d-tuning-text" class="k3d-dev-text" readonly hidden></textarea>`;

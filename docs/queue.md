@@ -25,7 +25,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | merged |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | merged |
-| R | Long files split | sonnet | F G J O Q | building |
+| R | Long files split | sonnet | F G J O Q | merged |
 | T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | building |
 | Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | queued |
 
@@ -567,6 +567,13 @@ world frees), unit tests.
   (not at Play) and when the connection is lost; setup screens and countdowns are silent. A new tune starts at
   once while the old one fades (0.5 s). Only major and natural minor keys, diatonic notes (the tests require it).
 - R does not split the long browser test files (m4-lobby, m10-shell): T2 is working in `test/browser/`.
+- R: new files `race-session.js`, `frame-drawer.js`, `phone-link.js`, `kart-placement.js`,
+  `webgl-renderer.js`, `kart-ground.js`, `race-finish.js`, `items/castle-drawing.js`,
+  `items/held-goo-look.js`, `host/grace-periods.js`, `controller/screens.css`. Still over 200 lines: the 3D
+  race's `index.js` (232) and `renderer.js` (212), each one closure of small functions; `controller/connection.js`
+  (212, one rejoin state machine); and the files a few lines over that the task left. The race's four stages
+  stay four (the tuning and Measure panels need their own). Both 3D stylesheets are awaited in `load()` and
+  taken off the page in `stop()` and when a load fails.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

@@ -1,5 +1,5 @@
-// Controller entry point: joins a room, shows the lobby or the host's current game as the host says, and shows
-// "Reconnecting..." while controller/connection.js gets the player back into their slot.
+// Controller entry point: joins a room, shows the host's game as the host says ("The game ended" when the host
+// closes the room), and shows "Reconnecting..." while controller/connection.js gets the player back into their slot.
 // Loaded by controller/index.html.
 
 import { MESSAGE_TYPES, JOIN_FAILURE_REASONS, CONTROLLER_SCREENS } from '/shared/protocol.js';
@@ -7,8 +7,9 @@ import { keepScreenAwake } from '/shared/wake-lock.js';
 import { createConnection, ROOM_CLOSED, UNREACHABLE, KICKED, LEFT } from '/controller/connection.js';
 import { saveSession, loadSession, clearSession, saveName, loadName } from '/controller/session-store.js';
 import { detectPlatform, detectBrowser, listDeviceInfo } from '/controller/device-info.js';
-import { showLobbyState, showConnectedPlaceholder, onNameChange } from '/controller/lobby-screen.js';
-import { showGame, stopGame } from '/controller/game-screen.js';
+import { showGame, showConnected, stopGame } from '/controller/game-screen.js';
+import { icon } from '/shared/icons.js';
+import { confirmOnSecondClick } from '/shared/confirm-click.js';
 import { blockZoomGestures } from '/controller/no-zoom.js';
 
 const joinScreen = document.getElementById('join-screen');
@@ -17,21 +18,20 @@ const nameInput = document.getElementById('player-name');
 const roomCodeInput = document.getElementById('room-code');
 const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
-const lobbyScreen = document.getElementById('lobby-screen');
-const lobbyRoom = document.getElementById('lobby-room');
 const gameScreen = document.getElementById('game-screen');
-const gameStatus = document.getElementById('game-status');
+const gameRoomCode = document.getElementById('game-status');
+const endedScreen = document.getElementById('ended-screen');
+const endedJoinButton = document.getElementById('ended-join-button');
 const reconnectOverlay = document.getElementById('reconnect-overlay');
 const reconnectText = document.getElementById('reconnect-text');
 const reconnectButton = document.getElementById('reconnect-button');
 const overlayLeaveButton = document.getElementById('overlay-leave-button');
 
 const END_TEXT = {
-  [JOIN_FAILURE_REASONS.NO_SUCH_ROOM]: 'No room with that code. Check the code on the big screen.',
+  [JOIN_FAILURE_REASONS.NO_SUCH_ROOM]: 'No game is open right now.',
   [JOIN_FAILURE_REASONS.ROOM_FULL]: 'That room is full.',
   [JOIN_FAILURE_REASONS.GAME_IN_PROGRESS]: 'That game has already started.',
   [JOIN_FAILURE_REASONS.REJOIN_REFUSED]: 'Your place in the game is gone (away too long, or removed). Join again.',
-  [ROOM_CLOSED]: 'The host left the game.',
   [UNREACHABLE]: 'Could not reach the server.',
   [KICKED]: 'The host removed you from the game.',
   [LEFT]: 'You left the game.',
@@ -45,12 +45,11 @@ const connection = createConnection({
     saveSession(session);
     showRoomCodeInUrl(session.roomCode);
     reconnectOverlay.hidden = true;
-    lobbyRoom.textContent = `Room ${session.roomCode}`;
-    gameStatus.textContent = `In room ${session.roomCode}`;
+    gameRoomCode.textContent = session.roomCode;
     // After a rejoin the current screen stays up; the host's CONTROLLER_STATE follows right away either way.
     if (!joinScreen.hidden) {
-      showConnectedPlaceholder();
-      showScreen(lobbyScreen);
+      showConnected();
+      showScreen(gameScreen);
     }
     // Sent after every join and rejoin: the page may have reloaded, and the host simply keeps the latest.
     connection.send({ type: MESSAGE_TYPES.DEVICE_INFO, platform: detectPlatform(), browser: detectBrowser() });
@@ -65,7 +64,11 @@ const connection = createConnection({
     if (ROOM_GONE_REASONS.has(reason)) {
       showRoomCodeInUrl('');
     }
-    showJoinScreen(END_TEXT[reason] || `Could not join (${reason}).`);
+    if (reason === ROOM_CLOSED) {
+      showEndedScreen();
+    } else {
+      showJoinScreen(END_TEXT[reason] || `Could not join (${reason}).`);
+    }
   },
 });
 
@@ -88,19 +91,16 @@ function handleHostMessage(message) {
     console.warn('Controller ignoring unexpected message:', message);
     return;
   }
+  // A phone in a room is always in a game; the first state replaces "Connected" with the game's screen.
   if (message.screen === CONTROLLER_SCREENS.GAME) {
     // After a rejoin the host sends the game again; a game that is still running just gets the view.
     showScreen(gameScreen);
     showGame(message.gameId, message.view, (gameMessage) => connection.send(gameMessage));
-  } else {
-    stopGame();
-    showLobbyState(message);
-    showScreen(lobbyScreen);
   }
 }
 
 function showScreen(screen) {
-  for (const each of [joinScreen, lobbyScreen, gameScreen]) {
+  for (const each of [joinScreen, gameScreen, endedScreen]) {
     each.hidden = each !== screen;
   }
 }
@@ -110,6 +110,12 @@ function showJoinScreen(statusText) {
   showScreen(joinScreen);
   joinButton.disabled = false;
   joinStatus.textContent = statusText;
+}
+
+// The room is gone because the host went back to the game picker. The name stays for the next game.
+function showEndedScreen() {
+  stopGame();
+  showScreen(endedScreen);
 }
 
 // `offerButtons` adds "Tap to reconnect" and "Leave game", once the automatic attempts have run out.
@@ -147,19 +153,12 @@ joinForm.addEventListener('submit', (event) => {
   connection.join(roomCode);
 });
 
-// The new name is remembered for the next join, and the host answers with the name it settled on.
-onNameChange((name) => {
-  saveName(name);
-  connection.send({ type: MESSAGE_TYPES.PLAYER_NAME, name });
-});
+endedJoinButton.addEventListener('click', () => showJoinScreen(''));
 reconnectButton.addEventListener('click', () => connection.reconnect());
-// A native confirm dialog is plain, but works the same on iOS and Android and cannot be tapped by accident.
+// Leaving takes two taps: the first turns the button red, the second leaves. Your place is then given to someone else.
+document.querySelector('#game-top .leave-button').innerHTML = icon('close');
 for (const leaveButton of document.querySelectorAll('.leave-button')) {
-  leaveButton.addEventListener('click', () => {
-    if (confirm('Leave the game? Your place will be given to someone else.')) {
-      connection.leave();
-    }
-  });
+  confirmOnSecondClick(leaveButton, () => connection.leave());
 }
 
 // Phones suspend hidden tabs, and their sockets may die without a close event, so check on the way back.
@@ -181,7 +180,8 @@ const linkRoomCode = (new URLSearchParams(location.search).get('room') || '').to
 roomCodeInput.value = linkRoomCode;
 nameInput.value = loadName();
 showDeviceInfo();
-keepScreenAwake((status) => (document.getElementById('wake-status').textContent = `Screen awake: ${status}`));
+// The phone shows no wake-lock status (a screen shows only what the player needs); the lock is still taken.
+keepScreenAwake(() => {});
 
 // A saved place in the same room (a reload, or the tab was closed and the link opened again): take it back.
 // A link to a different room means a new game, so that player joins normally.

@@ -1,4 +1,4 @@
-/* The controller page's own screens (join, game, lobby, reconnect overlay), built on the tokens and classes of
+/* The controller page's own screens (join, game, game ended, reconnect overlay), built on the tokens and classes of
    controller/style.css. Used by controller/index.html, linked after style.css. */
 
 /* Join screen: the form fills the page so Join sits at the bottom, under the thumb. */
@@ -73,9 +73,17 @@ dd {
   touch-action: none;
 }
 
+/* The room code, in the same type as on the host's chip. */
 #game-status {
   margin: 0;
   color: var(--pp-muted);
+  font: 800 20px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+}
+
+/* "Connected", until the host's first state names the game. */
+#game-container > .game-connected {
+  margin: auto;
 }
 
 /* The game fills what is left below the top line. */
@@ -86,67 +94,25 @@ dd {
   min-height: 0;
 }
 
-/* Lobby: who you are in the middle, Leave at the bottom. */
-#lobby-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-#lobby-screen p {
-  margin: 0;
-}
-
-#lobby-room {
-  font-size: 14px;
-}
-
-#lobby-identity {
-  flex: 1;
+/* "The game ended": the message in the middle, the way back to the join page at the bottom, under the thumb. */
+#ended-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 24px;
   text-align: center;
 }
 
-#player-swatch {
-  flex: none;
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: var(--pp-panel-2);
+#ended-text {
+  margin: auto 0;
+  font-size: 32px;
 }
 
-#player-label {
-  font-size: 40px;
-  overflow-wrap: anywhere;
-}
-
-#lobby-hint {
-  max-width: 18em;
-  color: var(--pp-ink);
-}
-
-#change-name-form {
-  display: flex;
-  gap: 8px;
-}
-
-#change-name-input {
-  min-width: 0;
-  flex: 1;
-}
-
-#lobby-others {
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-
-#wake-status {
-  font-size: 13px;
-  text-align: center;
+#ended-join-button {
+  align-self: stretch;
+  padding: 20px 16px;
+  font-size: 24px;
 }
 
 /* Sits on top of everything and swallows touches, so nobody plays blind while the socket is down. */
@@ -166,15 +132,10 @@ dd {
   touch-action: pan-y;
 }
 
-/* Leaving is rare and final, so its buttons are quiet. */
+/* Leaving is rare and final, so its buttons are quiet (red once armed, from style.css). */
 .leave-button {
   color: var(--pp-muted);
   font-weight: 600;
-}
-
-#lobby-screen .leave-button {
-  padding: 16px;
-  color: var(--pp-ink);
 }
 
 #game-top {

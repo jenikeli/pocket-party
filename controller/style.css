@@ -37,7 +37,7 @@ html, body {
   display: none !important;
 }
 
-/* The join and lobby screens scroll when the page is turned or the keyboard is up, so nothing is cut off. A
+/* The join and ended screens scroll when the page is turned or the keyboard is up, so nothing is cut off. A
    scroll container's touch-action ends the chain of its ancestors' "none", so pan-y allows only a vertical swipe:
    no pinch and no double-tap zoom, on iPhone Safari too. */
 main {

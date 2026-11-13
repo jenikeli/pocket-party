@@ -32,18 +32,13 @@
 }
 
 #kart-setup-game,
-#kart-setup-laps,
-.kart-setup-label {
+#kart-setup-laps {
   font-size: 14px;
 }
 
 #kart-setup-title {
   font-size: 28px;
   overflow-wrap: anywhere;
-}
-
-#kart-setup .kart-setup-label {
-  margin-top: 12px;
 }
 
 #kart-setup button {
@@ -62,6 +57,26 @@
   color: var(--pp-accent-ink, #1c2130);
 }
 
+/* A choice: its icon above its word, in the accent colour once chosen. The two rows of choices sit a little
+   apart, since no label names them any more. */
+#kart-setup .kart-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 16px;
+}
+
+#kart-setup .kart-choice .pp-icon {
+  width: 28px;
+  height: 28px;
+}
+
+#kart-choices .pp-segment {
+  margin-top: 8px;
+}
+
 #kart-steering-note {
   font-size: 16px;
   color: var(--pp-accent, #f39c12);
@@ -74,12 +89,12 @@
   text-align: center;
 }
 
-#kart-turn-note {
-  font-size: 14px;
-}
-
-/* The primary action until pressed; once ready it turns green and says "Ready!". */
+/* The primary action until pressed; once ready it turns green with a tick. */
 #kart-setup #kart-ready-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 20px 16px;
   background: var(--pp-accent, #f39c12);
   color: var(--pp-accent-ink, #1c2130);
@@ -91,15 +106,11 @@
   background: var(--pp-ok, #2ecc71);
 }
 
-/* Landscape page: the phone is already sideways, so the hint goes, and Ready takes a column of its own. */
+/* Landscape page: Ready takes a column of its own. */
 @media (orientation: landscape) {
   #kart-setup {
     grid-template-rows: none;
     grid-template-columns: 1fr minmax(160px, 30%);
-  }
-
-  #kart-turn-note {
-    display: none;
   }
 
   /* A landscape page is short: a smaller title and tighter rows keep the choices in view. */
@@ -107,7 +118,7 @@
     font-size: 22px;
   }
 
-  #kart-setup .kart-setup-label {
+  #kart-choices .pp-segment {
     margin-top: 4px;
   }
 

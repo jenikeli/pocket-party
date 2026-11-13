@@ -10,9 +10,9 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 |---|---|---|---|---|
 | 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
 | A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | building |
-| B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | built, in review (branch worktree-agent-a2820e72e065dfd04) |
+| B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | building |
-| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | queued |
+| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | building |
 | T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
 

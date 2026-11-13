@@ -1,4 +1,5 @@
-<!-- Controller page (/): what each player opens on their phone. Join screen, then the lobby, then the game. -->
+<!-- Controller page (/): what each player opens on their phone. Join screen, then the game's own screen, or
+     "The game ended". -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -28,34 +29,23 @@
     </form>
   </main>
 
-  <!-- The lobby: who this phone plays as. The game is picked on the host's screen, and the game's own setup
-       screen is where players get ready. -->
-  <main id="lobby-screen" hidden>
-    <p id="lobby-room" class="pp-muted"></p>
-    <div id="lobby-identity">
-      <span id="player-swatch"></span>
-      <p id="player-label" class="pp-title"></p>
-      <p id="lobby-hint"></p>
-      <button type="button" id="change-name-button" class="pp-button pp-small">Change name</button>
-      <form id="change-name-form" hidden>
-        <input id="change-name-input" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" aria-label="Your name">
-        <button type="submit" class="pp-button pp-primary pp-small">Save</button>
-      </form>
-    </div>
-    <p id="lobby-others" class="pp-muted"></p>
-    <p id="wake-status" class="pp-muted"></p>
-    <button type="button" class="leave-button pp-button">Leave</button>
-  </main>
-
-  <!-- A running game: the room line and Leave are the shell's; the game builds its controls in #game-container
-       (controller/game-screen.js loads controller/games/<id>/). -->
+  <!-- A phone in a room is always in a game: the room code and the leave icon (set in controller/main.js) are the
+       shell's; the game builds its controls in #game-container (controller/game-screen.js loads
+       controller/games/<id>/). -->
   <main id="game-screen" hidden>
     <div id="game-top">
       <p id="game-status"></p>
-      <button type="button" class="leave-button pp-button pp-small">Leave</button>
+      <button type="button" class="leave-button pp-icon-button" aria-label="Leave game" title="Leave game"></button>
     </div>
     <div id="game-container"></div>
   </main>
+
+  <!-- The host went back to the game picker, so the room is closed. The name stays; the next game has a new code. -->
+  <main id="ended-screen" hidden>
+    <p id="ended-text" class="pp-title">The game ended</p>
+    <button type="button" id="ended-join-button" class="pp-button pp-primary">Join another</button>
+  </main>
+
   <!-- Covers every screen while the phone gets its slot back after a drop. -->
   <div id="reconnect-overlay" hidden>
     <p id="reconnect-text"></p>

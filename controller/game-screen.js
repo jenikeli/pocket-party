@@ -20,6 +20,15 @@ export function showGame(gameId, view, send) {
   startGame(current, send);
 }
 
+// Between joining and the host's first CONTROLLER_STATE.
+export function showConnected() {
+  stopGame();
+  const note = document.createElement('p');
+  note.className = 'game-connected';
+  note.textContent = 'Connected';
+  container.append(note);
+}
+
 export function stopGame() {
   if (current?.module) {
     current.module.stop();
@@ -28,7 +37,7 @@ export function stopGame() {
   container.replaceChildren();
 }
 
-// `entry` stops being `current` if the host moves on (back to the lobby) while the files are still loading;
+// `entry` stops being `current` if the host moves on (the room closes) while the files are still loading;
 // the game is then never started.
 async function startGame(entry, send) {
   try {

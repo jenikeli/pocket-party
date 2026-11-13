@@ -1,9 +1,11 @@
 // The phone's setup screen for both kart races, before every race: the race's line (game, course, laps),
-// steering (stick or tilt), accelerate (Go button or auto) and Ready. What is picked is shown from the host's
-// view, so the highlight only moves once the host has the choice. Used by controller/kart/controls.js.
+// steering (stick or tilt), accelerate (Go button or auto) and Ready (green with a tick once pressed). What is
+// picked is shown from the host's view, so the highlight only moves once the host has the choice. Used by
+// controller/kart/controls.js.
 
 import { KART_CHOICES, KART_STEERING } from '/shared/protocol.js';
 import * as steering from '/controller/kart/steering.js';
+import { icon } from '/shared/icons.js';
 
 let elements = null; // { setup, game, title, laps, readyButton }
 let gameTitle = ''; // the race's own name ("Kart race 3D"), set by start
@@ -34,11 +36,13 @@ export function show(view) {
     button.setAttribute('aria-pressed', String(picked));
   }
   elements.readyButton.setAttribute('aria-pressed', String(ready));
-  elements.readyButton.textContent = ready ? 'Ready!' : 'Ready';
+  // Ready turns green (setup.css) and gains a tick once it is on; the word stays.
+  elements.readyButton.innerHTML = ready ? `${icon('check')}Ready` : 'Ready';
 }
 
 function onClick(event) {
-  if (event.target === elements.readyButton) {
+  // contains(), not ===: once ready the button holds the tick, and a tap on the tick has the SVG as its target.
+  if (elements.readyButton.contains(event.target)) {
     sendChoice(KART_CHOICES.READY, !ready);
     return;
   }

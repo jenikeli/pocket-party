@@ -11,7 +11,7 @@ import { setRoomCode, openJoinWindow, closeJoinWindow } from '/host/join-window.
 import { setUpRoomSettings } from '/host/room-settings.js';
 import { showConnectionLost } from '/host/connection-lost.js';
 import { hideTapToStart } from '/host/tap-to-start.js';
-import { confirmButton } from '/host/confirm-click.js';
+import { confirmOnSecondClick } from '/shared/confirm-click.js';
 import { showPicture } from '/host/pictures.js';
 import { playGame } from '/host/game-session.js';
 import { playRosterSounds, forgetRoster, playShellSound } from '/host/shell-sounds.js';
@@ -36,7 +36,7 @@ export function createLobby(room) {
   let problem = '';
 
   document.getElementById('add-players-button').addEventListener('click', () => openJoinWindow(room));
-  confirmButton(document.getElementById('lobby-close-room-button'), 'Close it?', () => room.close());
+  confirmOnSecondClick(document.getElementById('lobby-close-room-button'), () => room.close());
   playButton.addEventListener('click', play);
   setUpRoomSettings(room);
   // For the life of the page; refresh() does nothing while a game hides the lobby. A plain timer, not the

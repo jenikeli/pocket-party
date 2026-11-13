@@ -1,11 +1,10 @@
-// Plays the 2D race's sounds: the countdown beeps, GO, the finish jingles and one engine voice per kart. What
+// Plays the 2D race's sounds: the countdown beeps, GO, the finish jingles. What
 // happens is decided by host/games/kart-2d/sound-cues.js; this file only makes the noises (host/audio/synth.js).
-// Created by host/games/kart-2d/index.js, which calls update() every step and stop() when the game ends.
+// Created by host/games/kart-2d/index.js, which calls update() every step.
 
-import { tone, voice } from '../../audio/synth.js';
+import { tone } from '../../audio/synth.js';
 import { audioContext } from '../../audio/audio.js';
-import { RACE_PHASES } from './race.js';
-import { soundSnapshot, raceCues, engineLevels } from './sound-cues.js';
+import { soundSnapshot, raceCues } from './sound-cues.js';
 
 // Notes in Hz: C5, E5, G5 and C6 for the finish jingles.
 const C5 = 523;
@@ -57,55 +56,20 @@ function playCue(cue) {
   }
 }
 
-// Returns { update(race), stop() }. update(race) takes the race after a step (null on the setup screen).
+// Returns { update(race) }. update(race) takes the race after a step (null on the setup screen).
 export function createRaceSounds() {
   // The snapshot of the step before, null outside a race.
   let previous = null;
-  // playerId -> that kart's engine voice.
-  const engines = new Map();
-
-  function stopEngines() {
-    for (const engine of engines.values()) {
-      engine.stop();
-    }
-    engines.clear();
-  }
-
-  // Engines run from the countdown (idling) until the race is over; a kart that left has its voice stopped.
-  // A new voice starts silent and is then set to its levels, so it fades in instead of clicking.
-  function updateEngines(race) {
-    const present = new Set(race.karts.map((kart) => kart.playerId));
-    for (const [playerId, engine] of engines) {
-      if (!present.has(playerId)) {
-        engine.stop();
-        engines.delete(playerId);
-      }
-    }
-    race.karts.forEach((kart, index) => {
-      const levels = engineLevels(kart, index, race.karts.length);
-      if (!engines.has(kart.playerId)) {
-        engines.set(kart.playerId, voice({ ...levels, volume: 0 }));
-      }
-      engines.get(kart.playerId).update(levels);
-    });
-  }
 
   return {
     update(race) {
       if (!race) {
-        stopEngines();
         previous = null;
         return;
       }
       const snapshot = soundSnapshot(race);
       raceCues(previous, snapshot).forEach(playCue);
       previous = snapshot;
-      if (race.phase === RACE_PHASES.RESULTS) {
-        stopEngines();
-      } else {
-        updateEngines(race);
-      }
     },
-    stop: stopEngines,
   };
 }

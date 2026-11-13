@@ -1,19 +1,18 @@
 // Unit tests for the 3D race's sounds: the snapshots and cue decisions (host/games/kart-3d/sound-snapshot.js,
 // sound-cues.js) as plain functions, on a real race and on hand-made snapshots, and race-sounds.js against a
-// fake Web Audio context, to check that only the players' karts get engines and every one is stopped.
+// fake Web Audio context, to check that the cues play and nothing is left running.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildTrack } from '../../host/games/kart-3d/track-builder.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
-import { createRace, stepRace, removeKart, playerKart, RACE_PHASES } from '../../host/games/kart-3d/race.js';
+import { createRace, stepRace, playerKart, RACE_PHASES } from '../../host/games/kart-3d/race.js';
 import { soundSnapshot, knockedBy } from '../../host/games/kart-3d/sound-snapshot.js';
-import { raceCues, engineLevels, playerShare } from '../../host/games/kart-3d/sound-cues.js';
+import { raceCues, playerShare } from '../../host/games/kart-3d/sound-cues.js';
 import { createRaceSounds } from '../../host/games/kart-3d/race-sounds.js';
-import { kartTopSpeed } from '../../host/games/kart-3d/kart-driving.js';
 import { BOOST_KINDS } from '../../host/games/kart-3d/kart-boosts.js';
 import { tuning } from '../../host/games/kart-3d/tuning.js';
-import { scale, addScaled } from '../../host/games/kart-3d/vector.js';
+import { addScaled } from '../../host/games/kart-3d/vector.js';
 import { unlockAudio } from '../../host/audio/audio.js';
 import { NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { KART_ITEMS } from '../../shared/protocol.js';
@@ -204,29 +203,6 @@ test('what touched a kart: another kart, a standing blocker, another kart\'s pus
   assert.equal(knockedBy(race, track, kart), 'push');
 });
 
-// A player kart at `speedShare` of its top speed, `change` on top.
-function movingKart(race, speedShare, change = {}) {
-  const kart = playerKart(race, 'a');
-  return { ...kart, velocity: scale(kart.forward, speedShare * kartTopSpeed(kart)), ...change };
-}
-
-test('an engine rises with speed, revs while drifting and roars while boosting, and is quieter with more players', () => {
-  const race = createRace(track, ['a'], 1, 150, 'normal');
-  const idle = engineLevels(movingKart(race, 0), 0, 1);
-  const full = engineLevels(movingKart(race, 1), 0, 1);
-  assert.ok(full.frequency > idle.frequency && full.filterFrequency > idle.filterFrequency && full.volume > idle.volume);
-  assert.ok(idle.volume > 0, 'an idling engine is heard');
-  const drifting = engineLevels(movingKart(race, 1, { driftDirection: 1 }), 0, 1);
-  assert.ok(drifting.frequency > full.frequency && drifting.filterFrequency < full.filterFrequency);
-  const boosting = engineLevels(movingKart(race, 1, { boost: { kind: BOOST_KINDS.MINI_TURBO, timeLeft: 1 } }), 0, 1);
-  assert.ok(boosting.frequency > full.frequency && boosting.filterFrequency > full.filterFrequency && boosting.volume > full.volume);
-  assert.equal(engineLevels(movingKart(race, 2), 0, 1).frequency, full.frequency, 'past top speed the pitch stops rising');
-  const ofFour = engineLevels(movingKart(race, 1), 0, 4);
-  assert.ok(ofFour.volume < full.volume && ofFour.volume * 4 < full.volume * 2.5, 'four engines are not four times as loud');
-  assert.notEqual(engineLevels(movingKart(race, 1), 1, 4).frequency, ofFour.frequency, 'players\' engines are detuned');
-  assert.equal(playerShare(4), 0.5);
-});
-
 // A stand-in for Web Audio that records the oscillators (and when each was stopped) and the levels the gains
 // ramp to (an envelope's first ramp is its sound's volume). audio.js keeps the first context it is given, so the
 // fake is made once and each test empties its lists.
@@ -274,36 +250,16 @@ function installFakeAudio() {
   return fakeAudio;
 }
 
-test('only the players get engines, none in a watched race, and every one is stopped when it should be', () => {
+test('no kart has an engine sound: a race with players leaves no sound running', () => {
   const { oscillators } = installFakeAudio();
-  // The engines are the only sawtooth oscillators; the cues use square, triangle and sine.
-  const running = () => oscillators.filter((oscillator) => oscillator.type === 'sawtooth' && oscillator.stoppedAt === null);
   const sounds = createRaceSounds();
   const race = createRace(track, ['a', 'b', 'c'], 1, 150, 'normal', Object.values(KART_ITEMS));
-  stepRace(race, track, () => NEUTRAL_CONTROLS, STEP);
-  sounds.update(race, track, { engines: true });
-  assert.equal(running().length, 3, 'one voice per player, none for the 9 CPU karts');
-  sounds.update(race, track, { engines: true });
-  assert.equal(oscillators.filter((oscillator) => oscillator.type === 'sawtooth').length, 3, 'a voice is made once');
-
-  removeKart(race, 'c');
-  sounds.update(race, track, { engines: true });
-  assert.equal(running().length, 2, 'a kart that left has its voice stopped');
-  sounds.update(race, track, { engines: false });
-  assert.equal(running().length, 0, 'a watched race has no engines');
-  sounds.update(race, track, { engines: true });
-  race.phase = RACE_PHASES.RESULTS;
-  sounds.update(race, track, { engines: true });
-  assert.equal(running().length, 0, 'no engine runs on the results screen');
-
-  const second = createRace(track, ['a'], 1, 150, 'normal');
-  sounds.update(second, track, { engines: true });
-  assert.equal(running().length, 1);
-  sounds.update(null, track, { engines: true });
-  assert.equal(running().length, 0, 'going back to the setup screen stops them');
-  sounds.update(second, track, { engines: true });
-  sounds.stop();
-  assert.equal(running().length, 0, 'stop() ends them for good');
+  for (let step = 0; step < 120; step++) {
+    stepRace(race, track, () => NEUTRAL_CONTROLS, STEP);
+    sounds.update(race, track);
+  }
+  assert.ok(oscillators.every((oscillator) => oscillator.stoppedAt !== null), 'every tone has its end set');
+  assert.equal(playerShare(4), 0.5);
 });
 
 test('a race with every item and four players runs through its sounds without failing', () => {
@@ -314,9 +270,8 @@ test('a race with every item and four players runs through its sounds without fa
     race.phase === RACE_PHASES.COUNTDOWN ? NEUTRAL_CONTROLS : { ...laneControls(track, playerKart(race, playerId), 0), drift: false, item: race.time % 2 < 1 };
   for (let step = 0; step < 40 * 60; step += 1) {
     stepRace(race, track, controlsFor, STEP);
-    sounds.update(race, track, { engines: true });
+    sounds.update(race, track);
   }
-  sounds.stop();
 });
 
 // A race past its countdown, so no countdown cue plays, with the player karts given.
@@ -332,7 +287,7 @@ test('a kart grinding along a wall is heard once per 0.15 s, not every time its 
   const sounds = createRaceSounds();
   const race = racingRace(['a']);
   const kart = playerKart(race, 'a');
-  const update = () => sounds.update(race, track, { engines: false });
+  const update = () => sounds.update(race, track);
   // Each step the grip loosens again (slideLeft rising from 0.1 to 0.35); counts the hit sounds' oscillators.
   const hitAfter = (seconds) => {
     kart.slideLeft = 0.1;
@@ -349,7 +304,6 @@ test('a kart grinding along a wall is heard once per 0.15 s, not every time its 
   assert.equal(hitAfter(STEP), 0, 'the next, a step later, is not');
   assert.equal(hitAfter(0.1), 0);
   assert.equal(hitAfter(0.2), 1, 'once 0.15 s have passed it is heard again');
-  sounds.stop();
 });
 
 test('a race-wide cue plays at full volume and a kart\'s cue at its player share', () => {
@@ -358,15 +312,14 @@ test('a race-wide cue plays at full volume and a kart\'s cue at its player share
   const race = createRace(track, ['a', 'b', 'c', 'd'], 1, 150, 'normal');
   // The countdown's first beep (a square tone at 0.22) is race-wide.
   stepRace(race, track, () => NEUTRAL_CONTROLS, STEP);
-  sounds.update(race, track, { engines: false });
+  sounds.update(race, track);
   assert.deepEqual(ramps, [0.22]);
   // A hop (a sine at 0.15) is player 'a''s, so with four players it plays at half.
   ramps.length = 0;
   playerKart(race, 'a').hopping = true;
-  sounds.update(race, track, { engines: false });
+  sounds.update(race, track);
   assert.equal(ramps.length, 1);
   assert.ok(Math.abs(ramps[0] - 0.15 * playerShare(4)) < 1e-9, `${ramps[0]}`);
-  sounds.stop();
 });
 
 test('taking a snapshot leaves the race as it was, also on a hit that asks what touched the kart', () => {

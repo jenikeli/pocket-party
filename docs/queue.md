@@ -8,10 +8,10 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
-| 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | queued |
-| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | queued |
-| B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | queued |
-| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | queued |
+| 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
+| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | building |
+| B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | building |
+| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | building |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | queued |
 | T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
@@ -239,6 +239,13 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
 ## Decisions made during the run
 
 (The main session logs here what it decided without the user, for the review at the end.)
+
+- Task 0: the old lobby's and game bar's two-click buttons moved to `shared/confirm-click.js` lose their label
+  swap ("End it?", "Close it?", "Remove?") at once, since the shared rule has no label change; tasks A and T
+  replace those screens and their tests anyway.
+- Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
+  `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- Task 0: `--pp-danger` keeps its value (`#8e2b22`); the mockup's brighter red was not taken as a token change.
 
 ## Parked for the user
 

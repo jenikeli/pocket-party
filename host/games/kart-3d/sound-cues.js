@@ -1,39 +1,17 @@
 // What the 3D race sounds like, decided without any audio: which cues happened between two steps of the race
 // (the countdown, starts, drifts and their mini-turbo levels, boosts, hops, tricks, glides, items, hits, laps,
-// finishing), read from two snapshots (sound-snapshot.js), and how a player's engine should sound. Plain
+// finishing), read from two snapshots (sound-snapshot.js). Plain
 // functions, unit tested in Node; host/games/kart-3d/race-sounds.js turns the results into Web Audio. Only the
 // players' karts (and the stand-ins of a watched race) make cues: twelve karts' worth of hits and boosts would
 // be noise.
 
 import { START_OUTCOMES } from './rocket-start.js';
 import { BOOST_KINDS } from './kart-boosts.js';
-import { kartTopSpeed } from './kart-driving.js';
-import { length } from './vector.js';
 
 // The roulette ticks this often while it rolls, as MK8DX's item box roulette does.
 export const ROULETTE_TICK_SECONDS = 0.08;
 // Spin and rocket start boosts have their own cues (spin, rocketStart), so their boost cue would play twice.
 const BOOSTS_WITH_OWN_CUES = [BOOST_KINDS.SPIN, BOOST_KINDS.ROCKET_START];
-
-// The engine's pitch and brightness at standstill and at top speed: a low sawtooth, a little lower than the 2D
-// race's (a bigger kart), opening up as it speeds.
-const IDLE_FREQUENCY = 70;
-const FULL_FREQUENCY = 190;
-const IDLE_FILTER = 300;
-const FULL_FILTER = 1500;
-// A drift revs the engine up but sounds strained (higher, duller); a boost roars (higher, much brighter, louder).
-const DRIFT_PITCH = 1.07;
-const DRIFT_FILTER = 0.75;
-const BOOST_PITCH = 1.18;
-const BOOST_FILTER = 1.8;
-const BOOST_LOUDNESS = 1.3;
-// Each player's engine is a few percent off the one before, so two engines at one speed beat like two engines
-// rather than adding up into one loud buzz.
-const DETUNE_SHARE = 0.035;
-// One engine alone is about this loud (before the volume slider); with several players each gets a share that
-// shrinks with the square root of their number, so four are louder than one but nowhere near four times.
-const ENGINE_VOLUME = 0.12;
-const IDLE_LOUDNESS = 0.4;
 
 // The cues that happened between two snapshots (`before` is null for the first step of a race; a snapshot of
 // another race counts as none, so a Restart starts afresh). Once the results show nothing more is heard: the
@@ -158,31 +136,7 @@ function lapCues(was, now) {
 }
 
 // How loud each player's sounds are with `count` players racing: 1 for one, half for four, so four players'
-// engines and cues together stay about as loud as one player's.
+// cues together stay about as loud as one player's.
 export function playerShare(count) {
   return 1 / Math.sqrt(Math.max(count, 1));
-}
-
-// How one player's engine should sound now: { frequency, filterFrequency, volume }. `index` is the kart's place
-// among the players (for the detune) and `count` how many players there are. Pitch, brightness and loudness
-// rise with speed, with a different colour while drifting and while boosting.
-export function engineLevels(kart, index, count) {
-  const speedShare = Math.min(length(kart.velocity) / kartTopSpeed(kart), 1);
-  const boosting = kart.boost !== null;
-  const drifting = kart.driftDirection !== 0;
-  let pitch = 1 + DETUNE_SHARE * index;
-  let brightness = 1;
-  if (boosting) {
-    pitch *= BOOST_PITCH;
-    brightness *= BOOST_FILTER;
-  } else if (drifting) {
-    pitch *= DRIFT_PITCH;
-    brightness *= DRIFT_FILTER;
-  }
-  const loudness = (IDLE_LOUDNESS + (1 - IDLE_LOUDNESS) * speedShare) * (boosting ? BOOST_LOUDNESS : 1);
-  return {
-    frequency: pitch * (IDLE_FREQUENCY + (FULL_FREQUENCY - IDLE_FREQUENCY) * speedShare),
-    filterFrequency: brightness * (IDLE_FILTER + (FULL_FILTER - IDLE_FILTER) * speedShare),
-    volume: ENGINE_VOLUME * playerShare(count) * loudness,
-  };
 }

@@ -143,8 +143,6 @@ export function createGame() {
   function stop() {
     // The stylesheet first, so it goes even if tearing down the renderer throws.
     stylesheet?.remove();
-    // Engines are held voices: they would drone on after the game if not stopped.
-    raceSounds.stop();
     playTune(null);
     renderer.destroy();
   }

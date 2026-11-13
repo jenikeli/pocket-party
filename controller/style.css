@@ -119,6 +119,33 @@ button:disabled {
   padding: 16px;
 }
 
+/* An icon from shared/icons.js: it takes its size from the text around it and its colour from currentColor. */
+.pp-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex: none;
+}
+
+/* A square button holding one icon, 44px so a thumb finds it. .pp-primary makes it the accent one. */
+.pp-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+
+/* A two-click control after its first tap (shared/confirm-click.js): red until the second tap, a press
+   elsewhere or 3 s. After .pp-primary, so an armed accent control is red too. */
+.pp-button.armed,
+.pp-icon-button.armed {
+  background: var(--pp-danger);
+  color: var(--pp-ink);
+  border-color: var(--pp-danger);
+}
+
 /* A row of buttons where one is pressed. */
 .pp-segment {
   display: flex;

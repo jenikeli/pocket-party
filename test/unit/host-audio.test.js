@@ -13,7 +13,7 @@ import {
   audioContext,
   effectsOutput,
 } from '../../host/audio/audio.js';
-import { tone, noise, voice } from '../../host/audio/synth.js';
+import { tone, noise } from '../../host/audio/synth.js';
 
 function fakeStorage(initial = {}) {
   const values = { ...initial };
@@ -156,9 +156,6 @@ test('without an unlock the helpers make no sound and do not fail', () => {
   assert.equal(effectsOutput(), null);
   tone({ frequency: 440, length: 0.1 });
   noise({ frequency: 1000, length: 0.1 });
-  const quiet = voice({ frequency: 80, filterFrequency: 400 });
-  quiet.update({ volume: 1 });
-  quiet.stop();
   assert.equal(fake.made.length, 0);
 });
 
@@ -272,16 +269,4 @@ test('a noise burst filters white noise and slides its cutoff', () => {
     ['exponential', 500, 10.2],
   ]);
   assert.equal(made.find((created) => created.kind === 'source').loop, true);
-});
-
-test('a voice is steered by update and fades out on stop', () => {
-  const before = fake.made.length;
-  const engine = voice({ frequency: 80, filterFrequency: 400, volume: 0.1 });
-  const [oscillator, filter, gain] = fake.made.slice(before);
-  engine.update({ frequency: 120, volume: 0.2 });
-  assert.equal(oscillator.frequency.calls.length, 1);
-  assert.equal(filter.frequency.calls.length, 0);
-  assert.equal(gain.gain.calls.length, 1);
-  engine.stop();
-  assert.equal(oscillator.stopped, 10.3);
 });

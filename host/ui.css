@@ -80,14 +80,52 @@
   cursor: default;
 }
 
-/* A confirm button after its first click (host/confirm-click.js). */
+/* An icon from shared/icons.js: it takes its size from the text around it and its colour from currentColor. */
+.pp-icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex: none;
+}
+
+/* A square button holding one icon. .pp-primary makes it the accent one. */
+.pp-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.6em;
+  height: 2.6em;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0.6em;
+  font: inherit;
+  background: var(--pp-panel-2);
+  color: var(--pp-ink);
+  cursor: pointer;
+}
+
+.pp-icon-button.pp-primary {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+}
+
+.pp-icon-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* A two-click control after its first click (shared/confirm-click.js): red until the second click, a press
+   elsewhere or 3 s. After .pp-primary, so an armed accent control is red too. */
 .pp-button.armed,
+.pp-icon-button.armed,
 .pp-chip.armed {
   background: var(--pp-danger);
   color: var(--pp-ink);
 }
 
 .pp-button:focus-visible,
+.pp-icon-button:focus-visible,
 .pp-chip:focus-visible {
   outline: 0.15em solid var(--pp-accent);
   outline-offset: 0.1em;

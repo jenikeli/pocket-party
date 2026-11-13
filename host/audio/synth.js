@@ -1,6 +1,5 @@
-// Small sound builders on Web Audio for the games' effects and the music: a one-shot tone, a one-shot burst of
-// noise, and a held voice whose pitch and loudness change while it plays (an engine). Used by the race sounds
-// (J, K) and the music (L). All do nothing before the unlock or without Web Audio.
+// Small sound builders on Web Audio for the games' effects and the music: a one-shot tone and a one-shot burst
+// of noise. Used by the race sounds and the music. All do nothing before the unlock or without Web Audio.
 
 import { audioContext, effectsOutput } from './audio.js';
 
@@ -106,49 +105,4 @@ export function noise(options) {
   source.connect(filterNode).connect(gain).connect(output);
   source.start(start);
   source.stop(start + length);
-}
-
-const NO_VOICE = { update() {}, stop() {} };
-
-// A sound that keeps going and is steered while it plays, for an engine. options { type = 'sawtooth', frequency
-// (required), filterFrequency (required; a lowpass: lower is duller), volume = 0, output = effectsOutput() }. Returns
-// { update({ frequency, filterFrequency, volume }), stop() }; update changes only what it is given, gliding
-// there over a few milliseconds so a value that jumps every frame does not buzz. stop() fades out.
-export function voice(options) {
-  const context = audioContext();
-  if (!context) {
-    return NO_VOICE;
-  }
-  const { type = 'sawtooth', frequency, filterFrequency, volume = 0 } = options;
-  const output = options.output ?? effectsOutput();
-
-  const oscillator = context.createOscillator();
-  oscillator.type = type;
-  oscillator.frequency.value = frequency;
-  const filterNode = context.createBiquadFilter();
-  filterNode.type = 'lowpass';
-  filterNode.frequency.value = filterFrequency;
-  const gain = context.createGain();
-  gain.gain.value = volume;
-  oscillator.connect(filterNode).connect(gain).connect(output);
-  oscillator.start();
-
-  const glide = (parameter, value) => parameter.setTargetAtTime(value, context.currentTime, 0.03);
-  return {
-    update(change) {
-      if (change.frequency !== undefined) {
-        glide(oscillator.frequency, change.frequency);
-      }
-      if (change.filterFrequency !== undefined) {
-        glide(filterNode.frequency, change.filterFrequency);
-      }
-      if (change.volume !== undefined) {
-        glide(gain.gain, change.volume);
-      }
-    },
-    stop() {
-      glide(gain.gain, 0);
-      oscillator.stop(context.currentTime + 0.3);
-    },
-  };
 }

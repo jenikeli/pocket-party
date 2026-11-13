@@ -68,7 +68,7 @@ export function createGame() {
   // Whether the shell has been told the room is open; null until the first time.
   let roomOpen = null;
   let wantsLobby = false;
-  // The race's cues and the players' engines; a watched race's stand-ins are heard by their cues only.
+  // The race's cues (countdown, drifts, boosts, items, hits, laps).
   const raceSounds = createRaceSounds();
   const readout = createReadout();
 
@@ -198,7 +198,7 @@ export function createGame() {
   // Views are sent from here only, so every change reaches the phones within one step.
   function step(dt) {
     session.step(dt);
-    raceSounds.update(session.race, chosenTrack(), { engines: !session.standIns });
+    raceSounds.update(session.race, chosenTrack());
     // Each course has its own tune, by its id (host/audio/tunes/), from GO; the results' after.
     playTune(tuneForRace(session.race, choices.courseId));
     syncRoomOpen();
@@ -221,7 +221,6 @@ export function createGame() {
 
   function stop() {
     stopPinging();
-    raceSounds.stop();
     playTune(null);
     courseLoader.stop();
     removeStylesheets();

@@ -1,8 +1,8 @@
 // The players as chips (colour dot and name), in slot order, with "back in 0:24" on a dropped player. Used by
-// the lobby (where a click arms "Remove?" and a second click removes) and the join window (chips only).
+// the lobby (where a click arms the chip, red, and a second click removes) and the join window (chips only).
 
 import { displayName, colorText, playersInSlotOrder, secondsUntilFreed, formatMinutes } from '/host/roster.js';
-import { confirmOnSecondClick } from '/host/confirm-click.js';
+import { confirmOnSecondClick } from '/shared/confirm-click.js';
 
 // Fills `list` (an element) with one chip per player. With `onRemove(playerId)` the chips are buttons that
 // remove a player on a confirmed click. Returns { show(players, now) }, called on every refresh: chips are
@@ -24,11 +24,7 @@ export function createPlayerChips(list, { onRemove } = {}) {
     const entry = { chip, dot, name, status, confirm: null };
     if (onRemove) {
       chip.type = 'button';
-      entry.confirm = confirmOnSecondClick(chip, {
-        // The next refresh relabels it; showing "Remove?" at once makes the click feel answered.
-        onArmedChange: (armed) => (status.textContent = armed ? 'Remove?' : ''),
-        onConfirm: () => onRemove(playerId),
-      });
+      entry.confirm = confirmOnSecondClick(chip, () => onRemove(playerId));
     }
     chips.set(playerId, entry);
     return entry;
@@ -60,9 +56,7 @@ function showPlayer(entry, player, now) {
   entry.dot.style.setProperty('--pp-dot-color', colorText(player));
   entry.name.textContent = displayName(player);
   entry.chip.classList.toggle('away', !player.connected);
-  if (entry.confirm?.isArmed()) {
-    entry.status.textContent = 'Remove?';
-  } else if (!player.connected) {
+  if (!player.connected) {
     // A countdown, so everyone can see how long the slot is still held.
     entry.status.textContent = `back in ${formatMinutes(secondsUntilFreed(player, now))}`;
   } else {

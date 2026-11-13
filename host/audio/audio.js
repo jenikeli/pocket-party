@@ -116,7 +116,7 @@ function resumeWhenVisible() {
   }
 }
 
-// Effects and music each have a volume, then both go through one limiter: four karts' engines and a jingle at
+// Effects and music each have a volume, then both go through one limiter: four karts' cues and a jingle at
 // once would otherwise add up past full scale and crackle. A compressor with the browser's defaults would pump
 // (the whole mix ducking at every loud sound), so it is set as a peak limiter: it acts only above -6 dB, with
 // no soft knee, a ratio of 20, and fast to clamp (3 ms) and release (0.1 s).

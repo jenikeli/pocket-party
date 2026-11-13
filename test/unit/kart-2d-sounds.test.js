@@ -1,12 +1,11 @@
 // Unit tests for the 2D race's and the shell's sounds: the cue decisions (host/games/kart-2d/sound-cues.js,
 // host/shell-sounds.js) as plain functions, and race-sounds.js against a fake Web Audio context, to check that
-// every engine voice is stopped when the race ends or the game stops.
+// no sound is left running (the karts have no engine sound since M10b).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRace, stepRace, removeKart, RACE_PHASES } from '../../host/games/kart-2d/race.js';
-import { soundSnapshot, raceCues, engineLevels } from '../../host/games/kart-2d/sound-cues.js';
-import { MAX_SPEED } from '../../host/games/kart-2d/kart-physics.js';
+import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
+import { soundSnapshot, raceCues } from '../../host/games/kart-2d/sound-cues.js';
 import { createRaceSounds } from '../../host/games/kart-2d/race-sounds.js';
 import { unlockAudio } from '../../host/audio/audio.js';
 import { rosterCues, playRosterSounds, forgetRoster } from '../../host/shell-sounds.js';
@@ -47,22 +46,6 @@ test('a kart crossing the line is a finish cue, first for the first of the race 
     { type: 'finish', playerId: 'b', first: false },
   ]);
   assert.deepEqual(raceCues(snapshotOf(null, ['a']), snapshotOf(null, ['a'])), []);
-});
-
-test('an engine rises with speed, is quieter in a bigger field and is silent once the kart finished', () => {
-  const standing = { velocityX: 0, velocityY: 0, finishTime: null };
-  const flying = { velocityX: MAX_SPEED * 0.6, velocityY: MAX_SPEED * 0.8, finishTime: null };
-  const idle = engineLevels(standing, 0, 1);
-  const full = engineLevels(flying, 0, 1);
-  assert.ok(full.frequency > idle.frequency);
-  assert.ok(full.filterFrequency > idle.filterFrequency);
-  assert.ok(full.volume > idle.volume && idle.volume > 0);
-  assert.ok(engineLevels(flying, 0, 9).volume < full.volume);
-  assert.ok(engineLevels(flying, 0, 9).volume * 9 < full.volume * 4, 'nine karts are not nine times as loud');
-  assert.notEqual(engineLevels(flying, 1, 9).frequency, full.frequency, 'neighbouring karts are detuned');
-  assert.equal(engineLevels({ ...flying, finishTime: 12 }, 0, 1).volume, 0);
-  const faster = { velocityX: MAX_SPEED * 3, velocityY: 0, finishTime: null };
-  assert.equal(engineLevels(faster, 0, 1).frequency, full.frequency, 'past top speed the pitch stops rising');
 });
 
 test('joins and leaves of the roster are cues, and a first look makes none', () => {
@@ -125,38 +108,17 @@ function installFakeAudio() {
   return oscillators;
 }
 
-test('every engine voice is stopped when the race ends, a kart leaves, the race is dropped or the game stops', () => {
+test('a race plays its cues as short tones and leaves nothing running', () => {
   const oscillators = installFakeAudio();
   unlockAudio();
-  // The engines are the sawtooth oscillators; the cues' tones are square, triangle or sine.
-  const engines = () => oscillators.filter((oscillator) => oscillator.type === 'sawtooth');
-  const running = () => engines().filter((oscillator) => oscillator.stoppedAt === null);
-
   const sounds = createRaceSounds();
   const race = createRace(['a', 'b', 'c'], 1);
-  stepRace(race, () => NEUTRAL_CONTROLS, DT);
-  sounds.update(race);
-  assert.equal(running().length, 3, 'one voice per kart from the countdown');
-  sounds.update(race);
-  assert.equal(engines().length, 3, 'a voice is made once, not every step');
-
-  removeKart(race, 'c');
-  sounds.update(race);
-  assert.equal(running().length, 2, 'a kart that left has its voice stopped');
-
-  race.karts[0].finishTime = 5;
-  race.karts[1].finishTime = 6;
-  race.phase = RACE_PHASES.RESULTS;
-  sounds.update(race);
-  assert.equal(running().length, 0, 'no engine runs on the results screen');
-
-  const second = createRace(['a', 'b'], 1);
-  sounds.update(second);
-  assert.equal(running().length, 2);
+  for (let step = 0; step < 6 * 60; step++) {
+    stepRace(race, () => NEUTRAL_CONTROLS, DT);
+    sounds.update(race);
+  }
+  assert.equal(oscillators.length, 4, 'three countdown beeps and GO');
+  assert.ok(oscillators.every((oscillator) => oscillator.stoppedAt !== null), 'every tone has its end set');
   sounds.update(null);
-  assert.equal(running().length, 0, 'going back to the setup screen stops them');
-
-  sounds.update(second);
-  sounds.stop();
-  assert.equal(running().length, 0, 'stop() ends them for good');
+  assert.equal(oscillators.length, 4, 'the setup screen makes no sound');
 });

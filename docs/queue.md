@@ -529,6 +529,12 @@ world frees), unit tests.
   1.17 M triangles before, 48 and 17 k after; colour passes unchanged. The shadow's outline and size match the
   old one; its lighter gaps between head, body and wheels are filled, the hat's shadow is stepped, and a faint
   darker patch sits behind the kart. Wheel prisms do not steer, roll or tuck. Sheets: `o-before`, `o-after`.
+- N: the airport goes from 1,222,019 to 1,314,101 triangles (+7.5%, over M9's figure the spec named, under the
+  real 1.8 M budget) and builds about 6% slower (paired runs under load: 9.8 s before, 10.5 s after). Accepted:
+  dressing is not free; to get back to 1.22 M, thin the 95 runway edge lights (682 triangles each) or drop palms
+  (4,128 each). Only ground level with the road was dressed (the lobe's flat band and corner, the runway's south
+  side); the lobe's south-west stays sand. Islands grew (sizes 16 to 22) and moved out rather than closer, to
+  stay out of the road's baked shade. A second prop plane stands south of the runway.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

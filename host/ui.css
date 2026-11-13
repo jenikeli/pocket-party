@@ -193,12 +193,12 @@ button.pp-chip {
   gap: 0.3em;
 }
 
-/* The dark fade over a picture: darker at the top (the chips) and the bottom (the title), light between. */
+/* The dark fade over a picture: darkest on the left, where a title goes, and dark again on the right, under the
+   top bar's controls; light between. */
 .pp-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(8, 12, 22, 0.55), rgba(8, 12, 22, 0.05) 30%, rgba(8, 12, 22, 0.1) 50%,
-      rgba(8, 12, 22, 0.82));
+  background: linear-gradient(90deg, rgba(16, 19, 28, 0.85), rgba(16, 19, 28, 0.25) 55%, rgba(16, 19, 28, 0.7));
 }
 
 @media (prefers-reduced-motion: no-preference) {

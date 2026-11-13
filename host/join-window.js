@@ -1,32 +1,30 @@
-// The join window: one big panel with the QR code, the room code, the link and the players so far, over the
-// lobby or a running game. Opened by "Add players" (the lobby's and the game bar's) and by the lobby itself when
-// it first shows an empty room; Done or a click outside the panel closes it. Used by host/lobby.js and
-// host/game-session.js.
+// The join window (#join-window), the one way into a game: the big QR code, the room code, the link and the
+// players so far, over the running game. Opened by the game session when a game's room opens and by the top
+// bar's add-players icon; the close icon or a click outside the panel closes it. Used by host/game-session.js.
 
 import { qrCodeSvg, joinUrl } from '/host/qr-code.js';
-import { createPlayerChips } from '/host/lobby-players.js';
-import { playRosterSounds, forgetRoster } from '/host/shell-sounds.js';
+import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
 
-// Often enough for the "back in 0:24" countdowns to tick smoothly.
+// Often enough that a phone joining shows up at once.
 const REFRESH_MS = 250;
 
 const joinWindow = document.getElementById('join-window');
 const panel = joinWindow.querySelector('.join-panel');
-const playerChips = createPlayerChips(document.getElementById('join-players'));
+const playerList = document.getElementById('join-players');
 // The room whose players the open window shows; null while it is closed.
 let shownRoom = null;
 let refreshTimer = null;
 
-document.getElementById('join-done-button').addEventListener('click', closeJoinWindow);
+document.getElementById('join-close-button').addEventListener('click', closeJoinWindow);
 joinWindow.addEventListener('click', (event) => {
   if (!panel.contains(event.target)) {
     closeJoinWindow();
   }
 });
 
-// Called once, when the server has given the room its code. The QR holds the whole join link, so a phone that
-// scans it lands on the join screen with the code filled in; the text shows only the address, short enough to
-// type, and the code beside it.
+// Called for each game's room, once the server has given it its code. The QR holds the whole join link, so a
+// phone that scans it lands on the join screen with the code filled in; the text shows only the address, short
+// enough to type, and the code above it.
 export function setRoomCode(roomCode) {
   document.getElementById('join-qr').innerHTML = qrCodeSvg(joinUrl(location.origin, roomCode));
   document.getElementById('join-code').textContent = roomCode;
@@ -38,8 +36,6 @@ export function setRoomCode(roomCode) {
 
 export function openJoinWindow(room) {
   shownRoom = room;
-  // Over a running game nobody watched the players, so what changed before now is not news.
-  forgetRoster();
   joinWindow.hidden = false;
   refresh();
   clearInterval(refreshTimer);
@@ -53,7 +49,22 @@ export function closeJoinWindow() {
   refreshTimer = null;
 }
 
+// The players as chips (dot and name) in slot order, a dropped one dimmed. Redrawn whole: nothing in the list
+// is clicked, so nothing is lost by it.
 function refresh() {
-  playerChips.show(shownRoom.players, Date.now());
-  playRosterSounds(shownRoom.players);
+  const chips = playersInSlotOrder(shownRoom.players).map((player) => {
+    const chip = document.createElement('span');
+    chip.className = 'pp-chip';
+    chip.classList.toggle('away', !player.connected);
+    chip.dataset.playerId = player.playerId;
+    const dot = document.createElement('span');
+    dot.className = 'pp-dot';
+    dot.style.setProperty('--pp-dot-color', colorText(player));
+    const name = document.createElement('span');
+    // Names come from phones, so they only ever go in as text.
+    name.textContent = displayName(player);
+    chip.append(dot, name);
+    return chip;
+  });
+  playerList.replaceChildren(...chips);
 }

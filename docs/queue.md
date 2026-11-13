@@ -9,7 +9,7 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
 | 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
-| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | built, in review (branch worktree-agent-a95dcc595d6339030) |
+| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | merged |
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | merged |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | merged |

@@ -1,29 +1,28 @@
-// The host's link to the server plus its player roster, shared by the lobby and every game for the life of the
-// page. It keeps the roster in step with joins, drops and rejoins, runs each dropped player's grace period, and
-// tells controllers what to show. Created by host/main.js; the listener (the lobby, or the game session while a
-// game runs) hears every message after it.
+// One game's room: the host's link to the server plus the game's player roster. Made by host/game-session.js
+// when a game has loaded and closed when the game ends, so nothing of one game's players carries into the next.
+// It keeps the roster in step with joins, drops and rejoins, runs each dropped player's grace period, and tells
+// controllers what to show. The listener (the game session) hears every message after it.
 
 import { MESSAGE_TYPES, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
 import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
-import { DEFAULT_SETTINGS } from '/host/lobby-rules.js';
-import { GAMES } from '/host/games/index.js';
+import { browserStorage, readGraceSeconds } from '/host/shell-rules.js';
 import { createGracePeriods } from '/host/grace-periods.js';
 
-// Returns the room object. Call setListener(lobby) and then connect() once, after Tap to start
-// (host/game-session.js takes over the listener while a game runs). The listener needs
-// handleMessage(message, player) and handleConnectionLost(closedByHost).
-export function createRoom() {
+// Returns the room for the game `gameId` (its registry id). Call connect() once, then setListener(listener):
+// the listener needs handleMessage(message, player) and handleConnectionLost().
+export function createRoom(gameId) {
   let socket = null;
   let listener = null;
-  // True once the host pressed "Close room", so the closing socket is not reported as a lost connection.
+  // True once the host closed the room, so the closing socket is not reported as a lost connection.
   let closedByHost = false;
-  // playerId -> the view the running game set for that player's controller (see setControllerView).
+  // playerId -> the view the game set for that player's controller (see setControllerView).
   const controllerViews = new Map();
 
-  // Each dropped player's grace period (grace-periods.js).
+  // Each dropped player's grace period (grace-periods.js). The length is read at each drop, so a change in the
+  // settings applies to the next player who drops.
   const gracePeriods = createGracePeriods({
-    graceSeconds: () => room.settings.graceSeconds,
+    graceSeconds: () => readGraceSeconds(browserStorage()),
     removePlayer: (playerId) => socket.send({ type: MESSAGE_TYPES.REMOVE_PLAYER, playerId }),
   });
 
@@ -31,16 +30,9 @@ export function createRoom() {
     roomCode: null,
     // Map(playerId -> player), see host/roster.js.
     players: new Map(),
-    // gameId is the game the lobby has chosen.
-    settings: { ...DEFAULT_SETTINGS, gameId: GAMES[0].id },
-    // What every controller is showing, and on the GAME screen which game; changed with setScreen().
-    screen: CONTROLLER_SCREENS.LOBBY,
-    gameId: null,
     connect,
     setListener: (newListener) => (listener = newListener),
     send: (message) => socket.send(message),
-    sendControllerState,
-    setScreen,
     setControllerView,
     setRoomOpen,
     setPlayerLimit,
@@ -48,18 +40,37 @@ export function createRoom() {
     close,
   };
 
+  // Resolves to the room code once the server has made the room (ROOM_CREATED). Rejects if the socket closes
+  // before that: the server cannot be reached, or it refused the connection.
   function connect() {
-    socket = openSocket({
-      onOpen: () => socket.send({ type: MESSAGE_TYPES.CREATE_ROOM }),
-      onMessage: handleMessage,
-      onClose: () => listener?.handleConnectionLost(closedByHost),
+    return new Promise((resolve, reject) => {
+      socket = openSocket({
+        onOpen: () => socket.send({ type: MESSAGE_TYPES.CREATE_ROOM }),
+        onMessage: (message) => {
+          handleMessage(message);
+          if (message.type === MESSAGE_TYPES.ROOM_CREATED) {
+            resolve(message.roomCode);
+          }
+        },
+        onClose: () => {
+          if (room.roomCode === null) {
+            reject(new Error('The connection to the server closed before the room was made'));
+          } else if (!closedByHost) {
+            listener?.handleConnectionLost();
+          }
+        },
+      });
     });
   }
 
-  // The server deletes a room when its host's socket closes and sends ROOM_CLOSED to every phone, so
-  // closing the socket is all "Close room" needs.
+  // The server deletes a room when its host's socket closes and sends ROOM_CLOSED to every phone, so closing the
+  // socket is all the server needs. A closing socket can still deliver a few messages, and a dropped player's
+  // grace timer may still be running, so both are cut off here: nothing of this room reaches the game that was
+  // stopped, the picker, or the next game.
   function close() {
     closedByHost = true;
+    listener = null;
+    gracePeriods.clear();
     socket.close();
   }
 
@@ -70,6 +81,9 @@ export function createRoom() {
 
   // The room updates the roster first, so the listener that hears the message next already sees the change.
   function handleMessage(message) {
+    if (closedByHost) {
+      return;
+    }
     const player = room.players.get(message.playerId);
     switch (message.type) {
       case MESSAGE_TYPES.ROOM_CREATED:
@@ -77,7 +91,6 @@ export function createRoom() {
         break;
       case MESSAGE_TYPES.PLAYER_JOINED:
         sendControllerState(addPlayer(room.players, message.playerId));
-        tellLobbyWhoIsHere(message.playerId);
         break;
       case MESSAGE_TYPES.PLAYER_DISCONNECTED:
         if (player) {
@@ -96,14 +109,12 @@ export function createRoom() {
           gracePeriods.end(player);
           room.players.delete(player.playerId);
           controllerViews.delete(player.playerId);
-          tellLobbyWhoIsHere(player.playerId);
         }
         break;
       case MESSAGE_TYPES.PLAYER_NAME:
         if (player) {
           player.name = cleanName(message.name);
           sendControllerState(player);
-          tellLobbyWhoIsHere(player.playerId);
         }
         break;
       case MESSAGE_TYPES.DEVICE_INFO:
@@ -122,54 +133,21 @@ export function createRoom() {
     listener?.handleMessage(message, player);
   }
 
+  // A room is one game, so every phone in it is on that game's screen.
   function sendControllerState(player) {
     socket.send({
       type: MESSAGE_TYPES.CONTROLLER_STATE,
       playerId: player.playerId,
-      screen: room.screen,
+      screen: CONTROLLER_SCREENS.GAME,
       name: displayName(player),
       color: colorText(player),
-      others: otherNames(player),
-      gameId: room.gameId,
+      gameId,
       view: controllerViews.get(player.playerId) ?? null,
     });
   }
 
-  function otherNames(player) {
-    const others = [...room.players.values()].filter((other) => other !== player);
-    return others.map(displayName);
-  }
-
-  // The phone lobby lists who else is in the room, so when someone joins, leaves or changes their name, every
-  // other phone in the lobby gets its state again. Not during a game: no game screen shows the list.
-  function tellLobbyWhoIsHere(changedPlayerId) {
-    if (room.screen !== CONTROLLER_SCREENS.LOBBY) {
-      return;
-    }
-    for (const player of room.players.values()) {
-      if (player.connected && player.playerId !== changedPlayerId) {
-        sendControllerState(player);
-      }
-    }
-  }
-
-  // Disconnected players are skipped: they get the current screen when they rejoin. A player who joins later
-  // gets it on PLAYER_JOINED, so a game that opened the room just finds them in `players`. `gameId` is the
-  // running game on the GAME screen, null for the lobby. Views belong to one game run, so a new screen starts
-  // with none.
-  function setScreen(screen, gameId = null) {
-    room.screen = screen;
-    room.gameId = gameId;
-    controllerViews.clear();
-    for (const player of room.players.values()) {
-      if (player.connected) {
-        sendControllerState(player);
-      }
-    }
-  }
-
-  // The running game changes what one phone shows. The view is kept, so a phone that rejoins later gets it
-  // again with the rest of its CONTROLLER_STATE, without the game doing anything.
+  // The game changes what one phone shows. The view is kept, so a phone that rejoins later gets it again with
+  // the rest of its CONTROLLER_STATE, without the game doing anything.
   function setControllerView(playerId, view) {
     const player = room.players.get(playerId);
     if (!player) {
@@ -181,13 +159,13 @@ export function createRoom() {
     }
   }
 
-  // Whether the server lets new players in. Someone joining in the middle of a race would have no kart, so the
-  // shell closes the room when a game starts and the game opens it on its setup and results screens.
+  // Whether the server lets new players in. Someone joining in the middle of a race would have no kart, so a
+  // game closes its room for a race and opens it on its setup and results screens.
   function setRoomOpen(open) {
     socket.send({ type: MESSAGE_TYPES.SET_ROOM_OPEN, open });
   }
 
-  // The server refuses joins beyond this: MAX_PLAYERS in the lobby, the game's own maximum while it runs.
+  // The server refuses joins beyond this: the game's own maximum.
   function setPlayerLimit(maxPlayers) {
     socket.send({ type: MESSAGE_TYPES.SET_PLAYER_LIMIT, maxPlayers });
   }

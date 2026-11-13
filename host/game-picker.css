@@ -1,0 +1,95 @@
+/* The game picker's layout (host/game-picker.js): the chosen game's picture behind, its title, player range and
+   Play at the bottom left, the thumbnails at the bottom right. Loaded by host/index.html. */
+
+/* The chosen game's picture fills the screen; a plain dark fade when it has none. */
+.picker-picture {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #26304a, var(--pp-bg) 65%);
+}
+
+.picker-picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.picker-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.2em;
+  padding: 2.5em 2em 2.5em 3em;
+}
+
+.picker-game {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9em;
+  padding-bottom: 1em;
+}
+
+/* On one line: the longest title still fits beside the thumbnails. */
+.picker-game-title {
+  font-size: 4em;
+  white-space: nowrap;
+}
+
+.picker-range {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 1.3em;
+}
+
+.picker-problem {
+  color: var(--pp-accent);
+}
+
+.picker-problem:empty {
+  display: none;
+}
+
+.picker-games {
+  display: flex;
+  gap: 0.9em;
+}
+
+.game-tile {
+  display: flex;
+  flex-direction: column;
+  width: 14.5em;
+  margin: 0;
+  padding: 0;
+  border: 0.2em solid transparent;
+  border-radius: 0.6em;
+  overflow: hidden;
+  font: inherit;
+  text-align: left;
+  background: var(--pp-panel);
+  color: var(--pp-ink);
+  cursor: pointer;
+}
+
+/* The covers are drawn 4:3 and cropped a little (a fixed height, since the iPad's Safari may not have
+   aspect-ratio). */
+.game-tile img {
+  display: block;
+  width: 100%;
+  height: 8em;
+  object-fit: cover;
+}
+
+.game-tile span {
+  padding: 0.45em 0.7em;
+  font-size: 0.95em;
+  font-weight: 700;
+}
+
+.game-tile[aria-pressed="true"] {
+  border-color: var(--pp-accent);
+}

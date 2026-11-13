@@ -7,25 +7,26 @@
 // URL path the WebSocket server listens on. Pages connect to ws(s)://<same host>/ws.
 export const SOCKET_PATH = '/ws';
 
-// Most controllers one room accepts, and the limit the host sets in the lobby (see SET_PLAYER_LIMIT).
+// Most controllers one room accepts; a game's own maximum (SET_PLAYER_LIMIT) is never above it.
 // The Android hotspot accepts 10 clients and the host display is one of them, which leaves 9 phones.
 export const MAX_PLAYERS = 9;
 
 export const MESSAGE_TYPES = Object.freeze({
-  // host -> server: {}. Sent once the host has loaded; the server answers with ROOM_CREATED.
+  // host -> server: {}. Sent when a game the host picked has loaded: each game runs in a room of its own. The
+  // server answers with ROOM_CREATED.
   CREATE_ROOM: 'create_room',
 
   // server -> host: { roomCode }. The code players type (or scan) to join.
   ROOM_CREATED: 'room_created',
 
-  // host -> server: { maxPlayers }. The room's player limit: MAX_PLAYERS in the lobby, the running game's own
-  // maximum while a game runs. The server clamps it to 1..MAX_PLAYERS and refuses joins beyond it (rejoins
+  // host -> server: { maxPlayers }. The room's player limit, the game's own maximum, sent as soon as the room
+  // exists. The server clamps it to 1..MAX_PLAYERS and refuses joins beyond it (rejoins
   // always get in: their slot is still held). Until the host sends this, a room takes MAX_PLAYERS.
   SET_PLAYER_LIMIT: 'set_player_limit',
 
-  // host -> server: { open } (true or false). The host closes the room when a game starts, so new players are
-  // refused with GAME_IN_PROGRESS (rejoins still get in); a game opens it again on screens where a new player
-  // can come in (its setup and results), and the lobby always has it open. Rooms start open.
+  // host -> server: { open } (true or false). A game closes its room for a race, so new players are refused
+  // with GAME_IN_PROGRESS (rejoins still get in), and opens it on screens where a new player can come in (its
+  // setup and results). Rooms start open.
   SET_ROOM_OPEN: 'set_room_open',
 
   // controller -> server: { roomCode }. First join; the server answers with JOINED or JOIN_FAILED.
@@ -78,19 +79,19 @@ export const MESSAGE_TYPES = Object.freeze({
   // server -> host: { playerId }. The slot is freed (grace period over, kicked, or left); its token no longer works.
   PLAYER_LEFT: 'player_left',
 
-  // server -> controller: {}. The host left, so the room is gone. The server then closes the socket.
+  // server -> controller: {}. The host left (its game ended and it went back to its game picker, or the page
+  // closed), so the room is gone. The server then closes the socket.
   ROOM_CLOSED: 'room_closed',
 
   // controller -> server: { name }, sent after every JOINED. What the player typed; the host cleans it up.
   // server -> host: the same plus { playerId }, added by the server as for INPUT.
   PLAYER_NAME: 'player_name',
 
-  // host -> server: { playerId, screen, name, color, others, gameId, view }. Everything that player's controller
-  // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c',
-  // others the other players' names (for the phone lobby's "Also here" line).
-  // On the GAME screen, gameId names the game (the controller loads controller/games/<gameId>/index.js) and
-  // view is whatever small object that game set for this player (null until it sets one); both are null in
-  // the lobby. The host sends it on join, rejoin and whenever any of it changes.
+  // host -> server: { playerId, screen, name, color, gameId, view }. Everything that player's controller
+  // shows: screen is one of CONTROLLER_SCREENS, name the name the host uses, color a CSS color like '#e74c3c'.
+  // gameId names the room's game (the controller loads controller/games/<gameId>/index.js) and view is
+  // whatever small object that game set for this player (null until it sets one). The host sends it on join,
+  // rejoin and whenever any of it changes.
   // server -> controller: the same without playerId.
   CONTROLLER_STATE: 'controller_state',
 
@@ -134,10 +135,10 @@ export const JOIN_FAILURE_REASONS = Object.freeze({
   REJOIN_REFUSED: 'rejoin_refused',
 });
 
-// What the host tells a controller to show (CONTROLLER_STATE screen).
+// What the host tells a controller to show (CONTROLLER_STATE screen). A room is one game, so a phone in a room
+// is always on that game's screen.
 export const CONTROLLER_SCREENS = Object.freeze({
-  LOBBY: 'lobby',
-  // A game is running; CONTROLLER_STATE's gameId says which.
+  // CONTROLLER_STATE's gameId says which game.
   GAME: 'game',
 });
 

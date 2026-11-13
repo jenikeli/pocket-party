@@ -1,5 +1,5 @@
-// Unit tests for the host's lobby logic: the roster (host/roster.js) and the lobby rules (host/lobby-rules.js).
-// Both are plain modules, so they run in Node without a browser.
+// Unit tests for the host's player roster (host/roster.js) and the shell's rules (host/shell-rules.js): the
+// hold time setting and the game picker's player range. Both are plain modules, so they run in Node.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -13,17 +13,14 @@ import {
   secondsUntilFreed,
   formatMinutes,
 } from '../../host/roster.js';
-import { DEFAULT_SETTINGS, stepGraceSeconds, canPickGame } from '../../host/lobby-rules.js';
+import {
+  DEFAULT_GRACE_SECONDS,
+  stepGraceSeconds,
+  readGraceSeconds,
+  storeGraceSeconds,
+  playerRangeText,
+} from '../../host/shell-rules.js';
 import { MAX_PLAYERS } from '../../shared/protocol.js';
-
-// A roster of `count` connected players.
-function rosterOf(count) {
-  const players = new Map();
-  for (let index = 0; index < count; index += 1) {
-    addPlayer(players, `p${index}`);
-  }
-  return players;
-}
 
 test('new players get the lowest free color, and a freed color is reused', () => {
   const players = new Map();
@@ -75,10 +72,10 @@ test('the grace countdown rounds up, stops at 0, and shows as minutes', () => {
   assert.equal(formatMinutes(0), '0:00');
 });
 
-// Changed on purpose after the M4 device run: the grace period default went from 2 minutes to 30 seconds. The max
-// players setting went in M10: each game's own limit applies.
-test('the only room setting is a 30 second grace period', () => {
-  assert.deepEqual(DEFAULT_SETTINGS, { graceSeconds: 30 });
+// Changed on purpose after the M4 device run: the grace period default went from 2 minutes to 30 seconds.
+test('a dropped player is held for 30 seconds unless the host changed it', () => {
+  assert.equal(DEFAULT_GRACE_SECONDS, 30);
+  assert.equal(readGraceSeconds(fakeStorage()), 30);
 });
 
 test('the grace period steps by 30 seconds between 30 seconds and 10 minutes', () => {
@@ -88,40 +85,46 @@ test('the grace period steps by 30 seconds between 30 seconds and 10 minutes', (
   assert.equal(stepGraceSeconds(600, 1), 600);
 });
 
+// A localStorage stand-in: a Map behind getItem and setItem, which return null and store strings as the real one.
+function fakeStorage() {
+  const items = new Map();
+  return {
+    getItem: (key) => items.get(key) ?? null,
+    setItem: (key, value) => items.set(key, String(value)),
+  };
+}
+
+// M10b: no room outlives its game, so the hold time is kept in the host's own storage.
+test('the hold time is stored, and read back on the next visit', () => {
+  const storage = fakeStorage();
+  storeGraceSeconds(storage, 90);
+  assert.equal(readGraceSeconds(storage), 90);
+});
+
+test('a stored hold time that is not one of the steps, or storage that fails, gives the default', (t) => {
+  t.mock.method(console, 'warn', () => {});
+  const storage = fakeStorage();
+  for (const stored of ['45', '0', '900', 'abc', '']) {
+    storage.setItem('pocket-party-grace-seconds', stored);
+    assert.equal(readGraceSeconds(storage), 30, `"${stored}" reads as the default`);
+  }
+  const broken = {
+    getItem: () => {
+      throw new Error('blocked');
+    },
+    setItem: () => {
+      throw new Error('blocked');
+    },
+  };
+  assert.equal(readGraceSeconds(broken), 30);
+  storeGraceSeconds(broken, 60);
+  assert.equal(readGraceSeconds(null), 30, 'no storage at all');
+  storeGraceSeconds(null, 60);
+});
+
 // Registry entries like those in host/games/index.js, which the unit tests cannot import (it uses browser paths).
-const TWO_TO_THREE = { id: 'test-game', title: 'Test game', minPlayers: 2, maxPlayers: 3 };
-const NONE_TO_FOUR = { id: 'test-race', title: 'Test race', minPlayers: 0, maxPlayers: 4 };
-const ONE_TO_NINE = { id: 'test-solo', title: 'Test solo', minPlayers: 1, maxPlayers: MAX_PLAYERS };
-
-test('a game can be picked with a player count in its range, edges included', () => {
-  assert.deepEqual(canPickGame(rosterOf(1), TWO_TO_THREE), {
-    ok: false,
-    reason: 'Test game needs at least 2 players',
-  });
-  assert.deepEqual(canPickGame(rosterOf(2), TWO_TO_THREE), { ok: true, reason: '' });
-  assert.deepEqual(canPickGame(rosterOf(3), TWO_TO_THREE), { ok: true, reason: '' });
-  assert.deepEqual(canPickGame(rosterOf(4), TWO_TO_THREE), {
-    ok: false,
-    reason: 'Test game takes at most 3 players',
-  });
-});
-
-test('a game that takes no players (the 3D race, for Watch) can be picked in an empty room', () => {
-  assert.equal(canPickGame(rosterOf(0), NONE_TO_FOUR).ok, true);
-  assert.equal(canPickGame(rosterOf(4), NONE_TO_FOUR).ok, true);
-  assert.equal(canPickGame(rosterOf(5), NONE_TO_FOUR).reason, 'Test race takes at most 4 players');
-});
-
-test('a game for one player or more says "player", not "players"', () => {
-  assert.equal(canPickGame(rosterOf(0), ONE_TO_NINE).reason, 'Test solo needs at least 1 player');
-  assert.equal(canPickGame(rosterOf(MAX_PLAYERS), ONE_TO_NINE).ok, true);
-});
-
-test('there is no ready step: unready and dropped players count and do not block', () => {
-  const players = rosterOf(2);
-  const dropped = players.get('p1');
-  dropped.connected = false;
-  dropped.graceEndsAt = Date.now() + 30000;
-  assert.equal(canPickGame(players, TWO_TO_THREE).ok, true);
-  assert.equal('ready' in players.get('p0'), false, 'a roster player has no ready flag');
+test('the picker shows how many play a game, and a game that starts with nobody reads from 1', () => {
+  assert.equal(playerRangeText({ minPlayers: 0, maxPlayers: 4 }), '1 to 4');
+  assert.equal(playerRangeText({ minPlayers: 2, maxPlayers: MAX_PLAYERS }), `2 to ${MAX_PLAYERS}`);
+  assert.equal(playerRangeText({ minPlayers: 1, maxPlayers: MAX_PLAYERS }), `1 to ${MAX_PLAYERS}`);
 });

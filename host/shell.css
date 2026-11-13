@@ -1,5 +1,6 @@
-/* The layout of the shell's own screens on the host page (host/index.html): Tap to start, the join window,
-   loading, connection lost and the game bar. The lobby's is in host/lobby.css, the shared look in host/ui.css. */
+/* The layout of the shell's own screens on the host page (host/index.html): Tap to start, the join window and
+   loading. The game picker's is in host/game-picker.css, the top bar's in host/top-bar.css, the shared look in
+   host/ui.css. */
 
 html,
 body {
@@ -26,7 +27,7 @@ p {
   height: 100dvh;
 }
 
-/* Over a running game: the loading screen under the join window, both under the connection-lost cover. */
+/* Over a running game: the top bar, then the loading screen, then the join window. */
 .shell-screen,
 .shell-overlay {
   position: fixed;
@@ -40,12 +41,7 @@ p {
 
 .join-window {
   z-index: 30;
-  background: rgba(6, 9, 16, 0.72);
-}
-
-.connection-lost {
-  z-index: 40;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(8, 10, 16, 0.78);
 }
 
 /* White text with a shadow, readable on any picture. */
@@ -58,10 +54,9 @@ p {
   text-shadow: none;
 }
 
-/* Tap to start, loading and connection lost: one centred column. */
+/* Tap to start and loading: one centred column. */
 .tap-stage,
-.loading-stage,
-.connection-lost-stage {
+.loading-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,8 +66,7 @@ p {
 }
 
 .tap-title,
-.loading-title,
-.lobby-game-title {
+.loading-title {
   font-size: 3.4em;
 }
 
@@ -80,20 +74,16 @@ p {
   margin: 0.4em 0 0.2em;
 }
 
-.connection-lost-message {
-  font-size: 2.3em;
-  margin-bottom: 0.6em;
-}
-
-/* The players as chips (host/lobby-players.js), in the lobby and the join window. */
+/* The players as chips, in the join window (host/join-window.js). */
 .player-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6em;
 }
 
-/* The join window: the QR large on the left, the code and the players on the right. In em of the stage, so it
-   keeps its proportions on every screen and the widest code (WWWW) still fits its column. */
+/* The join window: the QR large on the left, the code and the players on the right, the close icon in the
+   corner. In em of the stage, so it keeps its proportions on every screen and the widest code (WWWW) still fits
+   its column. */
 .join-panel {
   position: absolute;
   inset: 4em 11.2em;
@@ -128,10 +118,6 @@ p {
   gap: 0.8em;
 }
 
-.join-title {
-  font-size: 2.2em;
-}
-
 .join-code {
   font-size: 4.2em;
   letter-spacing: 0.1em;
@@ -139,7 +125,8 @@ p {
 }
 
 .join-url {
-  font-size: 1.15em;
+  font-size: 1.2em;
+  color: var(--pp-muted);
   overflow-wrap: anywhere;
 }
 
@@ -147,9 +134,12 @@ p {
   color: var(--pp-accent);
 }
 
-.join-done {
-  align-self: flex-end;
-  margin-top: auto;
+.join-close {
+  position: absolute;
+  top: 0.8em;
+  right: 0.8em;
+  background: none;
+  color: var(--pp-muted);
 }
 
 /* Loading: the picture under a dark veil, the title and the bar in the middle. */
@@ -181,17 +171,6 @@ p {
   background: var(--pp-accent);
 }
 
-/* The shell's buttons over a running game, bottom right, where games keep clear. */
-.game-bar {
-  position: fixed;
-  right: calc(0.67 * var(--pp-em));
-  bottom: calc(0.67 * var(--pp-em));
-  z-index: 10;
-  display: flex;
-  gap: 0.5em;
-  font: var(--pp-em) / 1.2 system-ui, sans-serif;
-}
-
 /* A small line over everything (an HTML element, so every screen shows it without drawing it). */
 #wake-status {
   position: fixed;
@@ -202,16 +181,4 @@ p {
   font: 12px sans-serif;
   color: #5c6680;
   pointer-events: none;
-}
-
-/* The volume sliders in the lobby's room settings (host/room-settings.js): a label over a slider in the accent. */
-.room-settings-slider {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-}
-
-.room-settings-slider input {
-  width: 100%;
-  accent-color: var(--pp-accent);
 }

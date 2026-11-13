@@ -1,6 +1,6 @@
 // Unit tests for the plain parts of the host's HTML shell: the join window's QR code (host/qr-code.js), the
-// stage's em (host/stage.js) and the loading bar's creep (host/loading-screen.js). The screens themselves are
-// browser-tested.
+// stage's em (host/stage.js), the loading bar's creep (host/loading-screen.js), the shell's sounds
+// (host/shell-sounds.js) and the protocol's controller screens. The screens themselves are browser-tested.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,6 +8,8 @@ import { qrCodeSvg, joinUrl, QUIET_ZONE_MODULES } from '../../host/qr-code.js';
 import { stageEm } from '../../host/stage.js';
 import { creepFraction } from '../../host/loading-screen.js';
 import { qrcode } from '../../host/vendor/qrcode-generator-2.0.4.mjs';
+import { playShellSound } from '../../host/shell-sounds.js';
+import { CONTROLLER_SCREENS } from '../../shared/protocol.js';
 
 // The dark squares an SVG from qrCodeSvg draws, as 'column,row' strings in the code's own grid (border removed).
 function darkSquaresIn(svg) {
@@ -61,4 +63,16 @@ test('the loading bar creeps from 0 towards 90% and never gets there', () => {
   assert.ok(creepFraction(3000) > creepFraction(1000));
   assert.ok(creepFraction(60000) < 0.9);
   assert.ok(creepFraction(60000) > 0.89);
+});
+
+test('the shell\'s sounds play without failing before the audio is unlocked', () => {
+  // Before Tap to start's unlock every sound is a no-op, so this checks only that each name exists and runs.
+  for (const name of ['join', 'leave', 'click', 'play']) {
+    playShellSound(name);
+  }
+});
+
+// M10b: a room is one game, so a phone in a room is always on the game's screen; the phone lobby went.
+test('the only controller screen is the game', () => {
+  assert.deepEqual(Object.values(CONTROLLER_SCREENS), ['game']);
 });

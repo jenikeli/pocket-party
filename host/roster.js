@@ -1,6 +1,6 @@
 // The host's player list: each player's color slot, name, phone, and whether they are connected or in their
 // grace period. Plain data and functions (no DOM), so it can be unit tested in Node. Used by host/room.js,
-// host/lobby-rules.js, the lobby's player chips (host/lobby-players.js) and the games.
+// the join window (host/join-window.js) and the games.
 
 // One color per slot. MAX_PLAYERS in shared/protocol.js is 9, so 9 colors.
 export const PLAYER_COLORS = [
@@ -50,7 +50,7 @@ export function colorText(player) {
   return `#${PLAYER_COLORS[player.colorIndex].toString(16).padStart(6, '0')}`;
 }
 
-// Players in slot order, which is the order the lobby lists them in.
+// Players in slot order, which is the order every list of them follows.
 export function playersInSlotOrder(players) {
   return [...players.values()].sort((first, second) => first.colorIndex - second.colorIndex);
 }

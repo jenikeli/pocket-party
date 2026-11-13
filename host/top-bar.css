@@ -1,0 +1,78 @@
+/* The top bar over the game picker and every game (host/game-bar.js) and its settings panel (host/settings.js),
+   plus the icon slots host/main.js fills. Loaded by host/index.html. */
+
+/* The top bar (host/game-bar.js): the back arrow top left, the room code, add players and the gear top right,
+   inside the stage like a game's own panels. Over the game, under the loading screen. */
+.top-bar {
+  z-index: 10;
+}
+
+.top-bar-back {
+  position: absolute;
+  top: 1.5em;
+  left: 2em;
+}
+
+.top-bar-right {
+  position: absolute;
+  top: 1.5em;
+  right: 2em;
+  display: flex;
+  gap: 0.6em;
+}
+
+/* The gear is in the accent while its panel is open. */
+.top-bar .pp-icon-button[aria-pressed="true"] {
+  background: var(--pp-accent);
+  color: var(--pp-accent-ink);
+}
+
+/* The room code, as a quiet label beside the add-players icon. */
+.room-code-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 2.17em;
+  padding: 0 0.75em;
+  border-radius: 0.5em;
+  font: 800 1.2em/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+  background: var(--pp-panel-2);
+}
+
+/* Settings: a small panel under the top right buttons, a row per setting, each an icon and its control. */
+.settings {
+  position: absolute;
+  top: 5em;
+  right: 2em;
+  width: 21em;
+  padding: 1em 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  color: var(--pp-muted);
+}
+
+.settings-row input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--pp-accent);
+}
+
+.settings-value {
+  min-width: 3em;
+  text-align: center;
+  font-weight: 600;
+  color: var(--pp-ink);
+}
+
+/* Where host/main.js puts an icon beside words: the span gives way, so the icon sits in the line as if it were
+   there itself. */
+.icon-slot {
+  display: contents;
+}

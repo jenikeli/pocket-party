@@ -1,5 +1,5 @@
 // Integration tests for M4 on the real server: held slots, rejoining with the token, freeing slots (grace period
-// over, kicked by the host, left on purpose), the lobby's player limit and open/closed room, and the lobby's
+// over, kicked by the host, left on purpose), a game's player limit and open/closed room, and the player
 // messages both ways.
 
 import { describe, test, before, after } from 'node:test';
@@ -273,7 +273,7 @@ describe('player limit', () => {
   });
 });
 
-describe('lobby messages', () => {
+describe('player messages', () => {
   test('player_name reaches the host with the server-added playerId', async () => {
     const { host, roomCode } = await createHost(port);
     const { controller, reply } = await joinRoom(port, roomCode);
@@ -303,7 +303,8 @@ describe('lobby messages', () => {
     const target = await joinRoom(port, roomCode);
     const other = await joinRoom(port, roomCode);
 
-    const state = { screen: 'lobby', name: 'Ana', color: '#e74c3c', gameId: null, view: null };
+    // Since M10b a room is one game, so a phone is always on its screen; `others` (the old lobby's list) went.
+    const state = { screen: 'game', name: 'Ana', color: '#e74c3c', gameId: 'kart-2d', view: null };
     host.send({ type: MESSAGE_TYPES.CONTROLLER_STATE, playerId: target.reply.playerId, ...state });
     assert.deepEqual(await target.controller.next(), { type: MESSAGE_TYPES.CONTROLLER_STATE, ...state });
     assert.deepEqual(await other.controller.collectFor(150), []);

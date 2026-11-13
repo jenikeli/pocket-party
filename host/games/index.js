@@ -1,13 +1,14 @@
-// The game registry: every game the lobby can start, with what the lobby shows of it and its player range, and
-// loading a game's code on demand. Used by the lobby (host/lobby.js), host/room.js and host/game-session.js.
-// The shell never imports a game directly, only through here.
+// The game registry: every game the picker offers, with what the picker shows of it and its player range, and
+// loading a game's code on demand. Used by the game picker (host/game-picker.js), host/main.js and
+// host/game-session.js. The shell never imports a game directly, only through here.
 
 import { MAX_PLAYERS } from '/shared/protocol.js';
 
-// In the order the lobby offers them; the first is the default. `id` is also the folder name, under
-// host/games/ and controller/games/. `blurb` is the line under the title in the lobby, `cover` the thumbnail
-// (assets/covers/), `background` the wide picture that fills the lobby while the game is chosen (null: a plain
-// dark fade).
+// In the order the picker offers them; the first is the default. `id` is also the folder name, under
+// host/games/ and controller/games/. `minPlayers` and `maxPlayers` are the range the picker shows ('1 to 4');
+// the maximum is also the room's player limit, which the server holds to, and the minimum is the game's own to
+// enforce. `cover` is the thumbnail (assets/covers/), `background` the wide picture that fills the picker while
+// the game is chosen (null: a plain dark fade).
 export const GAMES = Object.freeze([
   // Split screen, one view per player, so at most 4 (M6). CPU karts fill the field, so one player can race alone,
   // as in MK8DX. It starts with no players too, for the setup screen's Watch (self-driving karts, no phones);
@@ -16,7 +17,6 @@ export const GAMES = Object.freeze([
   Object.freeze({
     id: 'kart-3d',
     title: 'Kart race 3D',
-    blurb: 'Up to 4 players, split screen. CPU karts fill the grid.',
     minPlayers: 0,
     maxPlayers: 4,
     cover: '/assets/covers/kart-3d.svg',
@@ -25,7 +25,6 @@ export const GAMES = Object.freeze([
   Object.freeze({
     id: 'kart-2d',
     title: 'Kart race 2D',
-    blurb: `2 to ${MAX_PLAYERS} players on one screen.`,
     minPlayers: 2,
     maxPlayers: MAX_PLAYERS,
     cover: '/assets/covers/kart-2d.svg',
@@ -34,8 +33,7 @@ export const GAMES = Object.freeze([
   Object.freeze({
     id: 'input-lab',
     title: 'Input lab',
-    blurb: 'Try tap, swipe and tilt, and see how long each input takes to arrive.',
-    minPlayers: 2,
+    minPlayers: 1,
     maxPlayers: MAX_PLAYERS,
     cover: '/assets/covers/input-lab.svg',
     background: null,

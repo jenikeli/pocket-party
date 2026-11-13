@@ -1,31 +1,41 @@
-// The shell's buttons over a running game, bottom right: "Add players" (only while the game has the room open),
-// "End game" and "Close room". End game and Close room take two clicks: the first arms the button (red), the
-// second does it (shared/confirm-click.js). Used by host/game-session.js.
+// The shell's top bar (#top-bar): the settings gear top right on the game picker, and over a running game also
+// the back arrow top left and, while the game has its room open, the room code and the add-players icon beside
+// the gear. Back closes the room, so it takes two clicks: the first arms it (red), the second goes back
+// (shared/confirm-click.js). Shown by host/main.js; the game's part by host/game-session.js.
 
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
 
-const bar = document.getElementById('game-bar');
+const bar = document.getElementById('top-bar');
+const backButton = document.getElementById('game-back-button');
+const roomCodeChip = document.getElementById('room-code-chip');
 const addPlayersButton = document.getElementById('game-add-players-button');
-let handlers = { onAddPlayers: () => {}, onEndGame: () => {}, onCloseRoom: () => {} };
+let handlers = { onBack: () => {}, onAddPlayers: () => {} };
 
 addPlayersButton.addEventListener('click', () => handlers.onAddPlayers());
-const endButton = confirmOnSecondClick(document.getElementById('end-game-button'), () => handlers.onEndGame());
-const closeButton = confirmOnSecondClick(document.getElementById('close-room-button'), () => handlers.onCloseRoom());
+const back = confirmOnSecondClick(backButton, () => handlers.onBack());
 
-// `onAddPlayers()` runs on a click, `onEndGame()` and `onCloseRoom()` on a confirmed click.
-export function showGameBar(newHandlers) {
-  handlers = newHandlers;
+// Once, after Tap to start: the gear is there from the picker on.
+export function showTopBar() {
   bar.hidden = false;
 }
 
-export function hideGameBar() {
-  bar.hidden = true;
-  addPlayersButton.hidden = true;
-  endButton.disarm();
-  closeButton.disarm();
+// `onBack()` runs on a confirmed click, `onAddPlayers()` on a click. The room code and add players stay hidden
+// until showRoomOpen(true).
+export function showGameControls({ roomCode, onBack, onAddPlayers }) {
+  handlers = { onBack, onAddPlayers };
+  roomCodeChip.textContent = roomCode;
+  backButton.hidden = false;
 }
 
-// Shown while the room is open to new players (a game's setup and results screens), hidden during a race.
-export function showAddPlayersButton(shown) {
-  addPlayersButton.hidden = !shown;
+export function hideGameControls() {
+  back.disarm();
+  backButton.hidden = true;
+  showRoomOpen(false);
+}
+
+// Shown while the game has its room open to new players (its setup and results screens), hidden during a race:
+// a code nobody can join with would only mislead.
+export function showRoomOpen(open) {
+  roomCodeChip.hidden = !open;
+  addPlayersButton.hidden = !open;
 }

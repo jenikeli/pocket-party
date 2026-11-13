@@ -6,7 +6,7 @@ import { STEP_SECONDS, countSteps } from './fixed-step.js';
 
 // `game` follows the game module interface in plan.md. `onDone(error)` runs once, when the game says it is
 // done (error null) or when step or render threw (the error); the loop has stopped by then.
-// Returns { stop() } for ending the game from outside (End game, Close room).
+// Returns { stop() } for ending the game from outside (the back arrow, a lost connection).
 export function startGameRunner(game, onDone) {
   let frameId = null;
   let lastFrameTime = null;

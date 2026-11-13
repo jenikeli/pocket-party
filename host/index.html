@@ -1,6 +1,6 @@
-<!-- Host display page (/host): runs the authoritative game. The shell's screens (Tap to start, the lobby, the
-     join window, room settings, loading, connection lost) are the HTML below, run by host/main.js; a running game
-     draws in its own container, created by host/game-session.js. -->
+<!-- Host display page (/host): runs the authoritative game. The shell's screens (Tap to start, the game picker,
+     the top bar with its settings, the join window, loading) are the HTML below, run by host/main.js; a running
+     game draws in its own container, created by host/game-session.js. -->
 <!doctype html>
 <html lang="en">
 
@@ -11,7 +11,8 @@
   <title>Pocket Party - Host</title>
   <link rel="stylesheet" href="/host/ui.css">
   <link rel="stylesheet" href="/host/shell.css">
-  <link rel="stylesheet" href="/host/lobby.css">
+  <link rel="stylesheet" href="/host/game-picker.css">
+  <link rel="stylesheet" href="/host/top-bar.css">
 </head>
 
 <body>
@@ -23,52 +24,54 @@
     </div>
   </section>
 
-  <section id="lobby" class="shell-screen" hidden>
-    <div class="lobby-picture">
-      <img id="lobby-background" alt="" hidden>
+  <section id="game-picker" class="shell-screen" hidden>
+    <div class="picker-picture">
+      <img id="picker-background" alt="" hidden>
       <div class="pp-scrim"></div>
     </div>
-    <div class="pp-stage lobby-stage">
-      <div class="lobby-top">
-        <div id="lobby-players" class="player-chips"></div>
-        <button type="button" id="add-players-button" class="pp-button pp-primary pp-small">Add players</button>
-        <button type="button" id="room-settings-button" class="pp-button pp-small" aria-pressed="false">Room settings</button>
-        <button type="button" id="lobby-close-room-button" class="pp-button pp-small">Close room</button>
+    <div class="pp-stage picker-stage">
+      <div class="picker-game on-picture">
+        <h1 id="picker-game-title" class="pp-title picker-game-title"></h1>
+        <p class="picker-range"><span class="icon-slot" data-icon="user"></span><span id="picker-player-range"></span></p>
+        <button type="button" id="play-button" class="pp-button pp-primary pp-big"><span class="icon-slot"
+            data-icon="play"></span>Play</button>
+        <p id="picker-problem" class="picker-problem"></p>
       </div>
-      <div id="room-settings" class="pp-panel room-settings" hidden>
-        <p class="pp-muted">Hold a dropped player for</p>
-        <div class="room-settings-row">
-          <button type="button" id="grace-minus" class="pp-button" aria-label="Hold for less time">-</button>
-          <span id="grace-value" class="room-settings-value"></span>
-          <button type="button" id="grace-plus" class="pp-button" aria-label="Hold for more time">+</button>
-        </div>
-        <label class="room-settings-slider">
-          <span class="pp-muted">Music</span>
-          <input type="range" id="music-volume" min="0" max="100" step="5">
-        </label>
-        <label class="room-settings-slider">
-          <span class="pp-muted">Sound effects</span>
-          <input type="range" id="effects-volume" min="0" max="100" step="5">
-        </label>
-      </div>
-      <div class="lobby-bottom">
-        <div class="lobby-game on-picture">
-          <p class="lobby-kicker">Pocket Party</p>
-          <h1 id="lobby-game-title" class="pp-title lobby-game-title"></h1>
-          <p id="lobby-game-blurb"></p>
-          <button type="button" id="play-button" class="pp-button pp-primary pp-big">Play</button>
-          <p id="lobby-status" class="lobby-note"></p>
-          <p id="lobby-problem" class="lobby-note lobby-problem"></p>
-        </div>
-        <div id="lobby-games" class="lobby-games"></div>
-      </div>
+      <div id="picker-games" class="picker-games"></div>
     </div>
   </section>
 
-  <div id="game-bar" class="game-bar" hidden>
-    <button type="button" id="game-add-players-button" class="pp-button pp-primary pp-small" hidden>Add players</button>
-    <button type="button" id="end-game-button" class="pp-button pp-small">End game</button>
-    <button type="button" id="close-room-button" class="pp-button pp-small">Close room</button>
+  <!-- Over the picker and every game (host/game-bar.js). Games keep the top corners clear for it. -->
+  <div id="top-bar" class="pp-stage top-bar" hidden>
+    <button type="button" id="game-back-button" class="pp-icon-button top-bar-back" data-icon="back"
+      aria-label="Back to the games" title="Back to the games" hidden></button>
+    <div class="top-bar-right">
+      <span id="room-code-chip" class="room-code-chip" hidden></span>
+      <button type="button" id="game-add-players-button" class="pp-icon-button pp-primary" data-icon="add-players"
+        aria-label="Add players" title="Add players" hidden></button>
+      <button type="button" id="settings-button" class="pp-icon-button" data-icon="gear" aria-label="Settings"
+        title="Settings" aria-pressed="false"></button>
+    </div>
+    <div id="settings" class="pp-panel settings" hidden>
+      <div class="settings-row">
+        <span class="icon-slot" data-icon="music"></span>
+        <input type="range" id="music-volume" min="0" max="100" step="5" aria-label="Music volume"
+          title="Music volume">
+      </div>
+      <div class="settings-row">
+        <span class="icon-slot" data-icon="volume"></span>
+        <input type="range" id="effects-volume" min="0" max="100" step="5" aria-label="Effects volume"
+          title="Effects volume">
+      </div>
+      <div class="settings-row" title="How long a dropped player's place is held">
+        <span class="icon-slot" data-icon="clock"></span>
+        <button type="button" id="grace-minus" class="pp-icon-button" data-icon="minus"
+          aria-label="Hold a dropped player for less time" title="Hold a dropped player for less time"></button>
+        <span id="grace-value" class="settings-value"></span>
+        <button type="button" id="grace-plus" class="pp-icon-button" data-icon="plus"
+          aria-label="Hold a dropped player for more time" title="Hold a dropped player for more time"></button>
+      </div>
+    </div>
   </div>
 
   <section id="join-window" class="shell-overlay join-window" hidden>
@@ -76,15 +79,14 @@
       <div class="pp-panel join-panel">
         <div id="join-qr" class="join-qr"></div>
         <div class="join-text">
-          <h2 class="pp-title join-title">Join the party</h2>
-          <p class="pp-muted">Scan the code, or open the link and type the room code</p>
           <p id="join-code" class="pp-title join-code"></p>
           <p id="join-url" class="join-url"></p>
           <p id="join-lan-warning" class="join-warning" hidden>Phones cannot reach "localhost". Open /host using
             the LAN IP instead.</p>
           <div id="join-players" class="player-chips"></div>
-          <button type="button" id="join-done-button" class="pp-button pp-primary pp-big join-done">Done</button>
         </div>
+        <button type="button" id="join-close-button" class="pp-icon-button join-close" data-icon="close"
+          aria-label="Close" title="Close"></button>
       </div>
     </div>
   </section>
@@ -96,13 +98,6 @@
       <h1 id="loading-title" class="pp-title loading-title"></h1>
       <div class="loading-track"><div id="loading-bar" class="loading-bar"></div></div>
       <p id="loading-label"></p>
-    </div>
-  </section>
-
-  <section id="connection-lost" class="shell-overlay connection-lost" hidden>
-    <div class="pp-stage connection-lost-stage">
-      <h1 id="connection-lost-message" class="pp-title connection-lost-message"></h1>
-      <button type="button" id="new-room-button" class="pp-button pp-primary pp-big">Open a new room</button>
     </div>
   </section>
 

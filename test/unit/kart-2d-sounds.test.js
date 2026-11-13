@@ -1,6 +1,6 @@
-// Unit tests for the 2D race's and the shell's sounds: the cue decisions (host/games/kart-2d/sound-cues.js,
-// host/shell-sounds.js) as plain functions, and race-sounds.js against a fake Web Audio context, to check that
-// no sound is left running (the karts have no engine sound since M10b).
+// Unit tests for the 2D race's sounds: the cue decisions (host/games/kart-2d/sound-cues.js) as plain functions,
+// and race-sounds.js against a fake Web Audio context, to check that no sound is left running (the karts have no
+// engine sound since M10b).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +8,6 @@ import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
 import { soundSnapshot, raceCues } from '../../host/games/kart-2d/sound-cues.js';
 import { createRaceSounds } from '../../host/games/kart-2d/race-sounds.js';
 import { unlockAudio } from '../../host/audio/audio.js';
-import { rosterCues, playRosterSounds, forgetRoster } from '../../host/shell-sounds.js';
 import { NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 
 const DT = 1 / 60;
@@ -46,25 +45,6 @@ test('a kart crossing the line is a finish cue, first for the first of the race 
     { type: 'finish', playerId: 'b', first: false },
   ]);
   assert.deepEqual(raceCues(snapshotOf(null, ['a']), snapshotOf(null, ['a'])), []);
-});
-
-test('joins and leaves of the roster are cues, and a first look makes none', () => {
-  assert.deepEqual(rosterCues(null, ['a', 'b']), []);
-  assert.deepEqual(rosterCues(['a'], ['a']), []);
-  assert.deepEqual(rosterCues(['a'], ['a', 'b']), ['join']);
-  assert.deepEqual(rosterCues(['a', 'b'], ['a']), ['leave']);
-  assert.deepEqual(rosterCues(['a', 'b'], ['b', 'c']), ['join', 'leave']);
-  assert.deepEqual(rosterCues(new Set(['a']), new Set(['a', 'b'])), ['join']);
-});
-
-test('the roster watcher runs through joins, leaves and a restart without failing before the unlock', () => {
-  // Before the unlock the sounds are no-ops, so this checks only that the calls run and do not throw.
-  forgetRoster();
-  playRosterSounds(new Map([['a', {}]]));
-  playRosterSounds(new Map([['a', {}], ['b', {}]]));
-  playRosterSounds(new Map([['b', {}]]));
-  forgetRoster();
-  playRosterSounds(new Map());
 });
 
 // A stand-in for Web Audio that records the oscillators and when each was stopped.

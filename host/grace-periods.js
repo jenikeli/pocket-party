@@ -1,13 +1,13 @@
 // The grace period of the host's roster: how long a player whose phone dropped keeps their slot before the host
 // asks the server to free it. Used by host/room.js.
 
-// `graceSeconds()` is the lobby setting's current length and `removePlayer(playerId)` asks the server to free the
-// slot. Returns { start(player), end(player) }.
+// `graceSeconds()` is the hold time setting's current length (host/settings.js) and `removePlayer(playerId)`
+// asks the server to free the slot. Returns { start(player), end(player), clear() }.
 export function createGracePeriods({ graceSeconds, removePlayer }) {
   // playerId -> setTimeout id, for players in their grace period.
   const graceTimers = new Map();
 
-  // The host times the grace period because its length is a lobby setting. When it runs out the host asks the
+  // The host times the grace period because its length is the host's own setting. When it runs out the host asks the
   // server to free the slot, and removes the player only when PLAYER_LEFT confirms it. So if a rejoin reaches the
   // server first, the server refuses the removal and both sides still agree.
   function start(player) {
@@ -26,5 +26,13 @@ export function createGracePeriods({ graceSeconds, removePlayer }) {
     player.graceEndsAt = null;
   }
 
-  return { start, end };
+  // The room closed: no slot is left to free.
+  function clear() {
+    for (const timer of graceTimers.values()) {
+      clearTimeout(timer);
+    }
+    graceTimers.clear();
+  }
+
+  return { start, end, clear };
 }

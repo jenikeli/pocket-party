@@ -1,44 +1,8 @@
-// The shell's small sounds: a blip when a player joins, another when one leaves, a click when a game is chosen
-// and a rise on Play. The roster comparison is a plain function (unit tested in Node); the rest plays through
-// host/audio/synth.js. Used by host/lobby.js and host/join-window.js.
+// The shell's small sounds, played through host/audio/synth.js: a blip when a player joins a game's room and
+// another when one leaves it (host/game-session.js, while the room is open), a click when a game is chosen and a
+// rise on Play (host/game-picker.js).
 
 import { tone } from './audio/synth.js';
-
-// The player ids seen at the last check, null until the first one (and again after forgetRoster).
-let knownPlayerIds = null;
-
-// Which blips a change of players calls for: ['join'] when someone is new, ['leave'] when someone is gone, both
-// when both happened in the same interval, [] for no change or for the first look (`before` null), so a lobby
-// that opens with people in it is not a burst of blips. Ids are arrays or sets of player ids.
-export function rosterCues(before, after) {
-  if (!before) {
-    return [];
-  }
-  const was = new Set(before);
-  const is = new Set(after);
-  const cues = [];
-  if ([...is].some((playerId) => !was.has(playerId))) {
-    cues.push('join');
-  }
-  if ([...was].some((playerId) => !is.has(playerId))) {
-    cues.push('leave');
-  }
-  return cues;
-}
-
-// Called on every refresh of a screen that shows the players (the lobby, the join window). Both call it, and
-// they share the one baseline, so a join seen by one is not played again by the other.
-export function playRosterSounds(players) {
-  const playerIds = [...players.keys()];
-  rosterCues(knownPlayerIds, playerIds).forEach(playShellSound);
-  knownPlayerIds = playerIds;
-}
-
-// The next check is a first look again. Called when the players have not been watched for a while (a game ran,
-// the join window was shut), so the joins and leaves of that time do not all play at once.
-export function forgetRoster() {
-  knownPlayerIds = null;
-}
 
 // A join is a short sine blip sliding up, a leave the same blip sliding down. The click is a very short square
 // tick; Play is a triangle sweep that climbs about two octaves in 0.3 s.

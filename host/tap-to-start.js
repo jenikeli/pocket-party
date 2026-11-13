@@ -1,5 +1,5 @@
 // The host page's first screen: "Pocket Party" and one button. Browsers allow full screen, a wake lock (on
-// some) and sound only from a tap, so everything that needs one happens on this tap, and the room is created
+// some) and sound only from a tap, so everything that needs one happens on this tap, and the game picker comes
 // after it. Used by host/main.js.
 
 import { keepScreenAwake } from '/shared/wake-lock.js';
@@ -9,7 +9,7 @@ const screen = document.getElementById('tap-to-start');
 const button = document.getElementById('tap-to-start-button');
 
 // `onStart()` runs once, on the tap, after the unlocks; the screen stays until hideTapToStart(), so the button
-// reads "Starting..." while the room is being created.
+// reads "Starting..." while the picker's pictures finish loading.
 export function showTapToStart(onStart) {
   button.addEventListener(
     'click',

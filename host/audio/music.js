@@ -1,5 +1,5 @@
 // The music: a small sequencer that loops one tune (host/audio/tunes/) through the music volume. Called by the
-// lobby (host/lobby.js) and the races (host/games/kart-2d/index.js, host/games/kart-3d/index.js) with the name
+// game picker (host/game-picker.js) and the races (host/games/kart-2d/index.js, host/games/kart-3d/index.js) with the name
 // of the tune their screen should have; does nothing before the audio unlock.
 //
 // How it keeps time: a plain timer wakes every 50 ms and schedules every note that falls in the next 0.3 s at

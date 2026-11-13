@@ -1,6 +1,6 @@
 // Integration tests for the WebSocket relay: the real server, driven by scripted host and controller clients.
 // Covers rooms, joining, input forwarding and leaving (M1), and the M3 lab messages. Reconnection and the
-// lobby's messages (M4) are in reconnect.test.js.
+// player messages (M4) are in reconnect.test.js.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';

@@ -1,8 +1,8 @@
-// The shell's pictures (game covers and wide backgrounds): fetching them before the room opens, and showing one
-// in an <img> only once it has loaded. Used by host/main.js, host/lobby.js and host/loading-screen.js.
+// The shell's pictures (game covers and wide backgrounds): fetching them before the picker shows, and showing one
+// in an <img> only once it has loaded. Used by host/main.js, host/game-picker.js and host/loading-screen.js.
 
-// Resolves once every picture has loaded or failed. A missing picture is logged, not fatal: the lobby still
-// works with a plain background, so it must not keep the room from opening.
+// Resolves once every picture has loaded or failed. A missing picture is logged, not fatal: the picker shows
+// a plain background in its place.
 export function preloadPictures(paths) {
   return Promise.all(
     paths.map(

@@ -175,6 +175,13 @@ test('the islands and boats float in open sea, away from the road and its shade'
     const room = name.startsWith('island') ? radius + SHADE_REACH : radius + 2;
     assert.ok(nearest > room, `${name} is ${nearest.toFixed(0)} from the road`);
   }
+  // None floats in another (the islands' shallows reach far, and have grown with M10's bigger islands).
+  afloat.forEach((first, index) => {
+    for (const second of afloat.slice(index + 1)) {
+      const apart = Math.hypot(first.x - second.x, first.z - second.z);
+      assert.ok(apart > first.radius + second.radius, `${first.name} and ${second.name} are ${apart.toFixed(0)} apart`);
+    }
+  });
 });
 
 test('the plane taking off rolls on the runway east of the road, and no floodlight stands under its low flight', () => {

@@ -1,9 +1,10 @@
 // Palm Bay Airport's props beside the road (M9): the apron's ground vehicles round the parked planes, floodlight
 // masts with banners, windsocks, taxiway signs at the junctions and edge lights along the airfield's roads, and on
-// the beach road palms, parasols and loungers. Each spot is { piece (a name in PROP_REACH), s, side, out (from the
-// edge of the ground), turn (degrees from facing the road; 90 lies a vehicle along the road) }, as kit/props.js
-// places them; they stand on the ground beside the road, which is level with it there (airport-ground.js).
-// Distances along the lap (s) are the track's own. Plain data, unit tested in Node. Drawn by
+// the beach road palms, parasols and loungers, and (M10) palms, trees, hedges and a few vehicles on the grass
+// that was plain: in the start lobe and south of the runway. Each spot is { piece (a name in PROP_REACH), s, side,
+// out (from the edge of the ground), turn (degrees from facing the road; 90 lies a vehicle along the road) }, as
+// kit/props.js places them; they stand on the ground beside the road, which is level with it there
+// (airport-ground.js). Distances along the lap (s) are the track's own. Plain data, unit tested in Node. Drawn by
 // host/games/kart-3d/airport-scenery.js.
 
 const row = (piece, fromS, toS, spacing, side, out) => Array.from({ length: Math.floor((toS - fromS) / spacing) + 1 }, (_, index) => ({ piece, s: fromS + index * spacing, side, out }));
@@ -86,6 +87,24 @@ export const PROPS = Object.freeze([
   { piece: 'airport-floodlight', s: 1005, side: 'right', out: 28 },
   { piece: 'baggage-train', s: 1040, side: 'right', out: 18 },
   { piece: 'follow-me-car', s: 1034, side: 'right', out: 8 },
+  // The start lobe's grass (M10), flat and level with the road out to z 70 (airport-ground.js): beside the start
+  // straight, palms with hedges between them and round trees behind; inside the first corner, planters at the
+  // apron's edge with trees behind them, and a few trees down the corner's inside.
+  ...row('palm', 14, 86, 36, 'right', 16),
+  ...row('hedge', 30, 39, 3, 'right', 9),
+  ...row('round-tree', 26, 74, 24, 'right', 34),
+  ...row('round-tree', 10, 82, 24, 'right', 56),
+  ...row('planter', 112, 136, 12, 'right', 43),
+  ...row('round-tree', 108, 140, 16, 'right', 50),
+  ...row('round-tree', 250, 290, 13, 'right', 38),
+  ...row('palm', 262, 286, 24, 'right', 20),
+  // South of the runway (the left side, as the karts drive west along it): palms and a hedge on the grass, trees
+  // behind, and a fuel truck and a follow-me car out by the hangar.
+  ...row('palm', 934, 1040, 53, 'left', 16),
+  ...row('hedge', 1086, 1092, 3, 'left', 14),
+  ...row('round-tree', 940, 1060, 40, 'left', 40),
+  { piece: 'fuel-truck', s: 1010, side: 'left', out: 26, turn: 90 },
+  { piece: 'follow-me-car', s: 1030, side: 'left', out: 20, turn: 90 },
   // The beach road: palms, parasols and loungers either side, round the turn and along the straight after it.
   ...[1216, 1232].flatMap((s) => beachSpot(s, 'left', 13)),
   ...[1220, 1238].flatMap((s) => beachSpot(s, 'right', 11)),

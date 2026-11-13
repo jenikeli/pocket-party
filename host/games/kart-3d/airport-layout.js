@@ -55,8 +55,8 @@ export function toWorld(spot, { x, z }) {
 }
 
 // More planes: an airliner parked past the end of the start straight, nose west toward the karts coming, and one at
-// the cargo stand east of the taxiway's last turn; small prop planes by the first corner, the last, and south of
-// the runway.
+// the cargo stand east of the taxiway's last turn; small prop planes by the first corner, the last, and two on the
+// grass south of the runway.
 export const APRON_AIRLINERS = Object.freeze([
   { livery: 'palm-air', x: 232, z: -58, heading: Math.PI },
   { livery: 'coral-wings', x: 500, z: 70, heading: -Math.PI / 2 },
@@ -65,6 +65,7 @@ export const PROP_PLANES = Object.freeze([
   { x: 242, z: 14, heading: Math.PI },
   { x: -50, z: -38, heading: -Math.PI / 4 },
   { x: 255, z: 296, heading: Math.PI / 2 },
+  { x: 222, z: 322, heading: Math.PI },
 ]);
 
 // The control tower inside the first corner, its door toward the start straight.
@@ -96,13 +97,14 @@ export const TAKE_OFF = Object.freeze({ from: { x: 548, y: 0, z: 240 }, to: { x:
 
 // The rocky islands out in the sea (kit/rock-island.js; seed picks the kind, size is the radius at the waterline),
 // south and west of the bay, where the glide and the beach road look out, far enough from the road to stay out of
-// its baked shade. Each is turned so its beach (its +x) faces the course.
+// its baked shade. Big enough to read from the glide, 100 and more away. Each is turned so its beach (its +x) faces
+// the course.
 export const ISLANDS = Object.freeze([
-  { seed: 1, size: 10, x: 130, z: 345, heading: Math.PI / 2 },
-  { seed: 2, size: 11, x: 20, z: 390, heading: Math.PI / 2 },
-  { seed: 3, size: 9, x: -105, z: 250, heading: 0 },
-  { seed: 5, size: 12, x: -110, z: 420, heading: Math.PI / 4 },
-  { seed: 6, size: 8, x: -150, z: 90, heading: 0 },
+  { seed: 1, size: 22, x: 135, z: 375, heading: Math.PI / 2 },
+  { seed: 2, size: 20, x: 10, z: 430, heading: Math.PI / 2 },
+  { seed: 3, size: 18, x: -105, z: 270, heading: 0 },
+  { seed: 5, size: 22, x: -120, z: 460, heading: Math.PI / 4 },
+  { seed: 6, size: 16, x: -150, z: 90, heading: 0 },
 ]);
 
 // Boats on the water: { kind, x, z, heading }; a motor yacht moored in the bay north of the glide, the others out

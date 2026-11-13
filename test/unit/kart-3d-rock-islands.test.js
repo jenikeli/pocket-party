@@ -189,3 +189,7 @@ test('an island builds as a group, its materials made once per course and the su
   first.update(1);
   assert.notEqual(water.material.opacity, before);
 });
+
+test('a small island whose beach has only its two end corners still builds (seed 6 at size 12 used to throw)', () => {
+  assert.doesNotThrow(() => rockIslandGeometry({ seed: 6, size: 12 }));
+});

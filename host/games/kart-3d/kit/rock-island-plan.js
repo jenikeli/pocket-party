@@ -64,11 +64,18 @@ function planBeach(mass, arc) {
 }
 
 // Palms on the caps' grass, the inner part (not on the lip), and on the beach if there is one.
+// A beach palm stands at one of the beach's inner corners. A small island's beach has only its two end corners
+// (seed 6 at size 12), so then an end corner has to do.
+function beachPalmCorners(beach) {
+  const inner = beach.corners.slice(1, -1);
+  return inner.length > 0 ? inner : beach.corners;
+}
+
 function planPalms(kind, masses, beach, random) {
   return Array.from({ length: PALMS[kind] }, (_, index) => {
     const onBeach = beach && index % 2 === 1;
     const mass = onBeach ? 0 : index % Math.min(masses.length, 2);
-    const corners = onBeach ? beach.corners.slice(1, -1) : masses[mass].tiers[0].top.points.map((_, corner) => corner);
+    const corners = onBeach ? beachPalmCorners(beach) : masses[mass].tiers[0].top.points.map((_, corner) => corner);
     const corner = corners[Math.floor(random() * corners.length)];
     const spot = onBeach ? { beach: between(random, 2.5, 4.5) } : { share: between(random, 0.2, 0.62) };
     return { mass, corner, ...spot, turn: random() * 2 * Math.PI, size: between(random, 0.9, 1.2) };

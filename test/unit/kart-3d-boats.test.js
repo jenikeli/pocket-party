@@ -1,7 +1,8 @@
 // Unit tests for the kit's boats (M7d4d): the sailboat and the motor yacht build one coloured part each, nothing has
 // a NaN position, they keep to their footprint and height (the seaside layout test allows 3.5 round and 7.5 up
 // for a boat), the hulls' faces point outward, the triangles stay in budget, and every boat in BOATS has a kind
-// that has a builder.
+// that has a builder; and (M10) addBoats, which both courses use, puts each kind in one instanced mesh per part, each
+// boat at its spot and rocking out of step with its neighbours.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,6 +29,8 @@ const { buildSailboat, SAILBOAT_HULL } = await import('../../host/games/kart-3d/
 const { buildMotorYacht, YACHT_HULL } = await import('../../host/games/kart-3d/kit/motor-yacht.js');
 const { hullBand, hullTransom, hullDeck } = await import('../../host/games/kart-3d/kit/boat-hull.js');
 const { BOATS } = await import('../../host/games/kart-3d/seaside-landmarks.js');
+const { addBoats } = await import('../../host/games/kart-3d/seaside-surroundings.js');
+const { BOATS: AIRPORT_BOATS } = await import('../../host/games/kart-3d/airport-layout.js');
 
 const kit = { keep: (thing) => thing };
 const boxOf = (geometry) => geometry.computeBoundingBox() ?? geometry.boundingBox;
@@ -88,4 +91,43 @@ test('BOATS has sailboats and about as many yachts, each of a kind with a builde
   assert.ok(kinds.every((kind) => kind === 'sailboat' || kind === 'motor-yacht'));
   const yachts = kinds.filter((kind) => kind === 'motor-yacht').length;
   assert.ok(yachts >= BOATS.length / 3 && yachts <= BOATS.length / 2 + 1, `${yachts} yachts of ${BOATS.length}`);
+});
+
+// addBoats takes a course's boat spots, so the airport's go through the same code as Seaside Skyway's.
+const SEA_LEVEL = -8.2;
+const boatsKit = () => ({ world: new THREE.Group(), keep: (thing) => thing });
+const countOf = (spots, kind) => spots.filter((boat) => boat.kind === kind).length;
+
+// Where the instance `slot` of `mesh` stands.
+function placeOf(mesh, slot) {
+  const matrix = new THREE.Matrix4();
+  mesh.getMatrixAt(slot, matrix);
+  return new THREE.Vector3().setFromMatrixPosition(matrix);
+}
+
+test('addBoats makes one instanced mesh per kind, with an instance per boat of that kind, for either course\'s boats', () => {
+  for (const spots of [BOATS, AIRPORT_BOATS]) {
+    const fleetKit = boatsKit();
+    addBoats(fleetKit, SEA_LEVEL, spots);
+    const meshes = fleetKit.world.children;
+    assert.ok(meshes.every((mesh) => mesh.isInstancedMesh && mesh.userData.keepWhole), 'instanced, never cut into cells');
+    assert.deepEqual(meshes.map((mesh) => mesh.count).sort(), [countOf(spots, 'motor-yacht'), countOf(spots, 'sailboat')].sort());
+  }
+});
+
+test('addBoats puts each boat at its spot, rocking out of step with its neighbours as time passes', () => {
+  const fleetKit = boatsKit();
+  const fleet = addBoats(fleetKit, SEA_LEVEL, AIRPORT_BOATS);
+  const spots = AIRPORT_BOATS.filter((boat) => boat.kind === 'sailboat');
+  const sailboats = fleetKit.world.children.find((mesh) => mesh.count === spots.length);
+  spots.forEach((spot, slot) => {
+    const place = placeOf(sailboats, slot);
+    assert.ok(Math.abs(place.x - spot.x) < 1e-4 && Math.abs(place.z - spot.z) < 1e-4, `boat ${slot} is at its spot`);
+  });
+  const heightsAt = () => spots.map((spot, slot) => placeOf(sailboats, slot).y);
+  const atRest = heightsAt();
+  assert.ok(new Set(atRest.map((height) => height.toFixed(3))).size > 1, 'out of step at rest');
+  fleet.bob(1.7);
+  assert.notDeepEqual(heightsAt(), atRest, 'moved with time');
+  assert.ok(heightsAt().every((height) => Math.abs(height - SEA_LEVEL) <= 0.2 + 1e-6), 'within 0.2 of the sea level');
 });

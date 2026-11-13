@@ -19,12 +19,12 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | merged |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | merged |
 | P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
-| N | Palm Bay Airport's leftovers | sonnet | M | building |
+| N | Palm Bay Airport's leftovers | sonnet | M | merged |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | building |
 | J | 3D race sounds | opus | F I | building |
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
-| Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | queued |
+| Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | building |
 | R | Long files split | sonnet | F G J O Q | queued |
 | T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | queued |
 | Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | queued |

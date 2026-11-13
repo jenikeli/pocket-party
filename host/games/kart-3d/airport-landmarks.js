@@ -6,7 +6,6 @@
 // with the props, the islands and boats with the surroundings, the flying plane with the sky). Used by
 // airport-scenery.js.
 
-import * as THREE from 'three';
 import { buildTerminal, terminalGates } from './kit/terminal.js';
 import { buildControlTower } from './kit/control-tower.js';
 import { buildAirliner, AIRLINER_DOOR } from './kit/airliner.js';
@@ -16,10 +15,9 @@ import { buildBigHangar } from './kit/hangar-big.js';
 import { buildBaggageConveyor } from './kit/baggage-conveyor.js';
 import { buildTakeOffPlane } from './kit/take-off-plane.js';
 import { buildRockIsland } from './kit/rock-island.js';
-import { buildSailboat } from './kit/sailboat.js';
-import { buildMotorYacht } from './kit/motor-yacht.js';
 import { kitPart } from './kit/kit.js';
 import { KIT_PARTS } from './kit/layout-rules.js';
+import { addBoats } from './seaside-surroundings.js';
 import {
   TERMINAL, GATE_LIVERIES, APRON_AIRLINERS, PROP_PLANES, CONTROL_TOWER, HANGARS, BIG_HANGAR, CONVEYOR, TAKE_OFF,
   ISLANDS, BOATS, gatePlaneSpot,
@@ -55,54 +53,17 @@ export function buildAirportLandmarks(kit, seaLevel) {
   kitPart(kit, KIT_PARTS.SKY).world.add(takeOff.object);
   const sea = kitPart(kit, KIT_PARTS.SURROUNDINGS);
   const islands = ISLANDS.map((island) => placeLandmark(sea, buildRockIsland(sea, island), { ...island, y: seaLevel }));
-  const boats = addBoats(sea, seaLevel);
+  const boats = addBoats(sea, seaLevel, BOATS);
   const moving = [tower, conveyor, takeOff, ...islands];
+  // The boats rock by the time since the start (Seaside's addBoats), the others by each frame's dt.
+  let time = 0;
   return {
     update(dt) {
+      time += dt;
       for (const landmark of moving) {
         landmark.update(dt);
       }
-      boats.bob(dt);
+      boats.bob(time);
     },
   };
-}
-
-// How to build each kind of boat in BOATS.
-const BOAT_BUILDERS = { sailboat: buildSailboat, 'motor-yacht': buildMotorYacht };
-
-// The boats, rocking gently on the waves, each kind one instanced mesh per part (as Seaside Skyway's,
-// seaside-surroundings.js). Returns { bob(dt) }.
-function addBoats(kit, seaLevel) {
-  const matrix = new THREE.Matrix4();
-  const turn = new THREE.Quaternion();
-  const tilt = new THREE.Euler(0, 0, 0, 'YXZ');
-  const position = new THREE.Vector3();
-  const scale = new THREE.Vector3(1, 1, 1);
-  const fleets = Object.entries(BOAT_BUILDERS).map(([kind, build]) => {
-    // Each boat keeps its index in BOATS, so its rocking is out of step with its neighbours'.
-    const boats = BOATS.map((boat, index) => ({ boat, index })).filter(({ boat }) => boat.kind === kind);
-    const meshes = build(kit).map(({ geometry, material }) => {
-      const mesh = new THREE.InstancedMesh(geometry, material, boats.length);
-      // Moved boat by boat in bob(), so never cut into cells (split-meshes.js).
-      mesh.userData.keepWhole = true;
-      kit.world.add(mesh);
-      return mesh;
-    });
-    return { boats, meshes };
-  });
-  let time = 0;
-  function bob(dt) {
-    time += dt;
-    for (const { boats, meshes } of fleets) {
-      boats.forEach(({ boat, index }, slot) => {
-        tilt.set(0.04 * Math.sin(time * 0.9 + index), boat.heading, 0.07 * Math.sin(time * 1.1 + index * 2));
-        position.set(boat.x, seaLevel + 0.2 * Math.sin(time * 1.3 + index), boat.z);
-        matrix.compose(position, turn.setFromEuler(tilt), scale);
-        meshes.forEach((mesh) => mesh.setMatrixAt(slot, matrix));
-      });
-      meshes.forEach((mesh) => { mesh.instanceMatrix.needsUpdate = true; });
-    }
-  }
-  bob(0);
-  return { bob };
 }

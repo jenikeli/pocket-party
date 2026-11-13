@@ -3,7 +3,8 @@
 // island ahead of the start straight, the giant Koopa shell half sunk off the first corner, sailboats rocking,
 // and ripples on the water. Placed from seaside-landmarks.js; every set of one piece is one instanced or merged
 // mesh. Only the palms cast shadows (onto their islands): everything else's would fall on the sea, which takes
-// none. Used by seaside-scenery.js; the kit-shots page reuses addIslands and addInstances.
+// none. Used by seaside-scenery.js; the kit-shots page reuses addIslands and addInstances, and Palm Bay Airport's
+// landmarks addBoats.
 
 import * as THREE from 'three';
 import { BEACH_ISLANDS, LIGHTHOUSE, KOOPA_SHELL, BOATS, islandHeightAt } from './seaside-landmarks.js';
@@ -31,7 +32,7 @@ export function buildSeasideSurroundings(kit, sea) {
   addHuts(kit, islands.huts);
   addLighthouse(kit, seaLevel + islandHeightAt(lighthouseIsland, 0));
   addKoopaShell(kit, seaLevel);
-  const boats = addBoats(kit, seaLevel);
+  const boats = addBoats(kit, seaLevel, BOATS);
   const water = dressSea(sea, keep);
   let time = 0;
   return {
@@ -107,20 +108,21 @@ function addKoopaShell(kit, seaLevel) {
   kit.world.add(shell);
 }
 
-// How to build each kind of boat in BOATS.
+// How to build each kind of boat in a spot's `kind`.
 const BOAT_BUILDERS = { sailboat: buildSailboat, 'motor-yacht': buildMotorYacht };
 
+// `spots` is a course's list of [{ kind, x, z, heading }] (seaside-landmarks.js's BOATS, airport-layout.js's).
 // Returns { bob(time) }: the boats rocking gently on the waves at `time` seconds. Each kind of boat is one
-// instanced mesh per part.
-function addBoats(kit, seaLevel) {
+// instanced mesh per part. Used by this course and by Palm Bay Airport's landmarks.
+export function addBoats(kit, seaLevel, spots) {
   const matrix = new THREE.Matrix4();
   const turn = new THREE.Quaternion();
   const tilt = new THREE.Euler(0, 0, 0, 'YXZ');
   const position = new THREE.Vector3();
   const scale = new THREE.Vector3(1, 1, 1);
   const fleets = Object.entries(BOAT_BUILDERS).map(([kind, build]) => {
-    // Each boat keeps its index in BOATS, so its rocking is out of step with its neighbours'.
-    const boats = BOATS.map((boat, index) => ({ boat, index })).filter(({ boat }) => boat.kind === kind);
+    // Each boat keeps its index in `spots`, so its rocking is out of step with its neighbours'.
+    const boats = spots.map((boat, index) => ({ boat, index })).filter(({ boat }) => boat.kind === kind);
     const meshes = build(kit).map(({ geometry, material }) => {
       const mesh = new THREE.InstancedMesh(geometry, material, boats.length);
       // Moved boat by boat in bob(), so never cut into cells (split-meshes.js).

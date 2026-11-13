@@ -13,7 +13,7 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | merged |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | merged |
-| T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
+| T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | building |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
 
 Order: 0 by the main session first (it fixes the names the others build on). Then A, B and C together (no shared
@@ -245,6 +245,12 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- After A's review: a closed room drops late messages, its listener and its grace timers (`room.close()`), a
+  late `setRoomOpen` from a stopped game is ignored, and a throw while a game's screen is set up ends the game
+  like any other error. Not done: a timeout for a server that accepts the socket but never answers
+  `CREATE_ROOM` (the server always answers).
+- After A: the 3D tools icon stays under the top bar (the mockup has it in the bar, left of the gear): the bar
+  is the shell's and the icon the game's, and moving it would make the shell know a game's control.
 - After C: `blurb` left `course-previews.js` and the items' `on` switch (`toggleItems`) left `item-settings.js`,
   with their tests, since nothing shows or sets them any more.
 - Task A: one `#settings-button`, in a top bar that is always there (picker and games); the input lab's

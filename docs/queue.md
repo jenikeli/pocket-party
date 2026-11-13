@@ -9,7 +9,7 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
 | 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
-| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | building |
+| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | built, in review (branch worktree-agent-a95dcc595d6339030) |
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | built, in review (branch worktree-agent-a7243f7bc1a718b76) |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | built, in review (branch worktree-agent-a5a7c0774aa25483f) |
@@ -245,6 +245,9 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- Task A: one `#settings-button`, in a top bar that is always there (picker and games); the input lab's
+  `minPlayers` 2 -> 1 so the picker reads "1 to 9" as the mockup; the picker's title at 4em (4.4em wrapped); the
+  lost-connection cover is replaced by the picker's problem line; `server/` unchanged (nothing parked).
 - Task D: the lab's cards moved down (grid from y=110, cards 310 high) and its title into the right column, to
   keep the top corners clear; `host/buttons.js` now holds only `drawCloseButton`.
 - Task C: the 2D race's "Needs 2 players" rule is `MIN_PLAYERS` in its own `race.js`; both races' `isDone()`

@@ -9,14 +9,12 @@ import { SURFACES } from './track.js';
 import { sparkLevel, SPARK_COLORS } from './kart-techniques.js';
 import { countdownNumber, GO_AT } from './rocket-start.js';
 import { playerSetup } from '../../kart/setup.js';
+import { SETUP_PHASE } from '../../kart/setup-rows.js';
 import { playersInSlotOrder } from '../../roster.js';
 import { playerKart, kartsInPlaceOrder, raceClock, RACE_PHASES, FINISH_TIME_LIMIT_SECONDS } from './race.js';
 import { formatRaceTime } from '../../kart/race-time.js';
 import { itemHud, itemPhoneView } from './items/item-views.js';
 
-// The phase a phone's view has on the setup screen (the shared kart controls know it by this name); the race's
-// own are RACE_PHASES.
-export const SETUP_PHASE = 'setup';
 // How long after GO the phone says how the start went, and after the last lap starts that it is the last.
 const START_SHOWN_FOR = 2;
 const FINAL_LAP_SHOWN_FOR = 3;
@@ -24,10 +22,17 @@ const FINAL_LAP_SHOWN_FOR = 3;
 const KART_LENGTH = 2;
 export const BANNERS = Object.freeze({ FINAL_LAP: 'Final lap!', FINISH: 'Finish!', TELEPORT: 'Teleport!' });
 
-// The setup view for one player's phone: { phase: 'setup', laps, engineClass, steering, autoAccelerate, ready }.
-export function setupView(setup, engineClass, playerId) {
+// The setup view for one player's phone: { phase: 'setup', laps, engineClass, courseName, steering,
+// autoAccelerate, ready }; the phone shows the course's name as the race's title.
+export function setupView(setup, engineClass, courseName, playerId) {
   const { steering, autoAccelerate, ready } = playerSetup(setup, playerId);
-  return { phase: SETUP_PHASE, laps: setup.laps, engineClass, steering, autoAccelerate, ready };
+  return { phase: SETUP_PHASE, laps: setup.laps, engineClass, courseName, steering, autoAccelerate, ready };
+}
+
+// Whether new players may join: on the setup screen and the results, not while a course is built for a race
+// (the loading screen) or karts race. A watched race counts as a race: the phones wait through it.
+export function roomIsOpen(race, buildingCourse) {
+  return !buildingCourse && (race === null || race.phase === RACE_PHASES.RESULTS);
 }
 
 // The view during the race, or null if the player has no kart (they joined after the race started):

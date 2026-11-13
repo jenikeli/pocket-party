@@ -1,8 +1,8 @@
 // The 3D race's sun and its shadow map. In a race each view gets its own (M7d4b): a smaller map fitted round the
 // ground ahead of that view's camera (shadow-fit.js) and drawn just before the view, so its shadows are sharper
 // and the shadow pass skips casters far away (the course is cut into cells, split-meshes.js); M7d4b1's device
-// runs chose it for its sharper shadows. The setup screen's overview flies round the whole course, so there one
-// map covers all of it, as in M7c. Used by host/games/kart-3d/scenery.js, which adds it to the world, and
+// runs chose it for its sharper shadows. One map over the whole course, as in M7c, is used where a picture of
+// the whole course is taken (course-light.js's capture, kit-shots' views). Used by host/games/kart-3d/scenery.js, which adds it to the world, and
 // renderer.js.
 
 import * as THREE from 'three';

@@ -9,17 +9,21 @@
 // These margins were set when frames took over a second (SwiftShader) and are kept on purpose.
 // Since M9 every 3D test picks its course on the setup screen before it starts (clickStartRace), Seaside Skyway
 // unless it says otherwise, so the tests stay on the course they were written for while Palm Bay Airport is first.
+// Since M10 the game starts with no course built: Start race, Watch and Measure build the chosen one behind the
+// loading screen (#loading-screen), so the long wait moved from starting the game to those clicks
+// (waitForCourseBuilt). Look, Measure and Watch sit in the "Display and tools" drawer (openTools).
 
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { PLAIN_COURSE_STORAGE_KEY } from '../../host/games/kart-3d/plain-course.js';
 import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
 import { clickNow } from './host-buttons.js';
 
-// The 3D race builds its world and draws a first frame while it starts. In software that takes about 10 s more
+// The 3D race builds the chosen course after Start race, Watch or Measure. In software that takes about 10 s more
 // since M7d4b2 (the course light, and the detailed pieces' maps drawn pixel by pixel) and since M7d4c1 the shade
 // baked round the whole lap, about 400 depth maps: 21 s for Seaside Skyway, 10 s for the Test track. The plain
-// course does none of these. A hook or test that starts the game needs its own timeout past node's default 60 s:
-// STARTING_TIMEOUT leaves room for the joins and clicks around the start.
+// course does none of these. A hook or test that starts a race needs its own timeout past node's default 60 s:
+// STARTING_TIMEOUT leaves room for the joins and clicks around the start. GAME_START_TIMEOUT also bounds one
+// course build (waitForCourseBuilt).
 export const GAME_START_TIMEOUT = 90000;
 export const STARTING_TIMEOUT = GAME_START_TIMEOUT + 30000;
 
@@ -42,10 +46,33 @@ export async function pickCourse(hostPage, courseId) {
   await hostPage.waitForSelector(`${button}[aria-pressed="true"]`);
 }
 
-// From the setup screen with every player ready: picks `courseId` (Seaside Skyway unless given), then clicks
-// Start race once it is enabled.
+// From the setup screen with every player ready: picks `courseId` (Seaside Skyway unless given), clicks Start
+// race once it is enabled, and waits until the course is built (the race's countdown then runs).
 export async function clickStartRace(hostPage, courseId = SEASIDE_SKYWAY.id) {
   await pickCourse(hostPage, courseId);
   await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
   await clickNow(hostPage, '#kart-3d-start-button');
+  await waitForCourseBuilt(hostPage);
+}
+
+// After a click that builds a course (Start race, Watch, Measure): waits until the setup screen has gone and the
+// loading screen is not up. A course built before is not built again, so the loading screen may never show.
+export async function waitForCourseBuilt(hostPage) {
+  await hostPage.waitForSelector('#kart-3d-setup', { state: 'hidden', timeout: GAME_START_TIMEOUT });
+  await hostPage.waitForSelector('#loading-screen', { state: 'hidden', timeout: GAME_START_TIMEOUT });
+}
+
+// Opens the setup screen's "Display and tools" drawer (Look, Measure, Watch), if it is not open. Its buttons
+// can be clicked with clickNow while it is closed too; open it for screenshots and visibility checks.
+export async function openTools(hostPage) {
+  if (!(await hostPage.isVisible('#kart-3d-tools'))) {
+    await clickNow(hostPage, '#kart-3d-tools-button');
+  }
+  await hostPage.waitForSelector('#kart-3d-tools:not([hidden])');
+}
+
+// From the setup screen: clicks Watch with `viewCount` views (1 to 4) and waits until its course is built.
+export async function clickWatch(hostPage, viewCount) {
+  await clickNow(hostPage, `[data-watch-views="${viewCount}"]`);
+  await waitForCourseBuilt(hostPage);
 }

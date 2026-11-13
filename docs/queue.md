@@ -16,12 +16,12 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | T1 | Browser tests for the new shell (m1, m3, m4, m5a, https) and the helpers every test uses | sonnet | A B C D | merged |
 | H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
-| F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | building |
+| F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | merged |
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | building |
 | P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
 | N | Palm Bay Airport's leftovers | sonnet | M | building |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | queued |
-| J | 3D race sounds | opus | F I | queued |
+| J | 3D race sounds | opus | F I | building |
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | queued |
@@ -511,6 +511,17 @@ world frees), unit tests.
   (`guardBloomInput`), not a pass: a bloom frame of the floodlight piece is 28 draw calls with and without it,
   and the before and after sheets are identical. M7d5's note guessed wrong; why bloom went from 1.4 to 3.5 ms
   with 4 views is still not known (to measure on the iPad, not in software).
+- F: the room is closed during any course build (Measure's too) and open while Measure runs. The old course
+  is freed at the next build, not when another is picked. Bar weights: scenery 4, shade 4, light 1, shaders 1.
+  A build error ends the game with the lobby's problem line. Setup's Back to lobby is
+  `#kart-3d-setup-lobby-button`; the Items toggle reads "On"/"Off". Shared by both races now, in `host/kart/`:
+  `panel-parts.js` (`loadStylesheet`, `setText`, `setPressed`) and `setup-rows.js`. `index.js` is 345 lines
+  (task R). In software the build is 18-31 s on the plain test track, nearly all shader compile, page blocked.
+  New files: `setup-panel.js`, `setup-markup.js`, `setup.css`, `race-bar.js`, `course-world.js`,
+  `staged-build.js`, `course-loader.js`, `host-choices.js`. For T2: the setup view has `courseName`; m6c, m7b,
+  m8, m9, m7d4b must wait for the build after Start race, Watch or Measure (`waitForCourseBuilt`, `clickWatch`,
+  `openTools` in kart-3d-host.js); nothing is drawn behind the setup any more.
+- O: first implementer lost its worktree in the interruption before changing anything; respawned.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

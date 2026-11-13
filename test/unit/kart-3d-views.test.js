@@ -10,6 +10,7 @@ import { SEASIDE_SKYWAY } from '../../host/games/kart-3d/seaside-skyway.js';
 import { createRace, stepRace, removeKart, playerKart, raceClock, RACE_PHASES } from '../../host/games/kart-3d/race.js';
 import {
   setupView,
+  roomIsOpen,
   raceView,
   viewHud,
   viewTargets,
@@ -41,10 +42,18 @@ function runRace(race, controlsFor, seconds) {
   }
 }
 
-test('phone views: the setup view has the laps and engine class; the race view carries the control style', () => {
+test('phone views: the setup view has the laps, engine class and course; the race view carries the control style', () => {
   const setup = createSetup();
   applyChoice(setup, 'p1', { choice: 'steering', value: 'tilt' }, true);
-  assert.deepEqual(setupView(setup, 200, 'p1'), { phase: 'setup', laps: 3, engineClass: 200, steering: 'tilt', autoAccelerate: false, ready: false });
+  assert.deepEqual(setupView(setup, 200, 'Seaside Skyway', 'p1'), {
+    phase: 'setup',
+    laps: 3,
+    engineClass: 200,
+    courseName: 'Seaside Skyway',
+    steering: 'tilt',
+    autoAccelerate: false,
+    ready: false,
+  });
   const race = createRace(track, ['p1'], 3, 200, 'normal');
   assert.deepEqual(raceView(race, setup, 'p1'), {
     phase: 'countdown',
@@ -101,6 +110,17 @@ test('the final lap shows for 3 s on the phone and in the view; then the finish'
   assert.equal(viewHud(race, kart).banner, BANNERS.FINISH);
   const cpu = race.karts[0];
   assert.deepEqual(viewHud(race, cpu), { lap: null, laps: 3, place: cpu.place, banner: null, item: null }, 'a CPU kart\'s view shows only its place');
+});
+
+test('the room is open on the setup screen and the results, closed while a course is built and while karts race', () => {
+  assert.equal(roomIsOpen(null, false), true);
+  assert.equal(roomIsOpen(null, true), false);
+  const race = createRace(track, ['p1'], 1, 150, 'normal');
+  assert.equal(roomIsOpen(race, false), false);
+  race.phase = RACE_PHASES.RACING;
+  assert.equal(roomIsOpen(race, false), false);
+  race.phase = RACE_PHASES.RESULTS;
+  assert.equal(roomIsOpen(race, false), true);
 });
 
 test('the host\'s countdown and clock, with the time left once a player has finished', () => {

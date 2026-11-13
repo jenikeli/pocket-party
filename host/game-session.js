@@ -27,9 +27,9 @@ export async function playGame({ room, lobby, gameInfo }) {
   try {
     game = await loadGame(gameInfo.id, (fraction) => loading.setProgress(fraction));
   } finally {
-    // Hidden before start(), which may show the loading screen again for its own slow part (the 3D race's
-    // course). start() runs without yielding, so the page is not drawn in between and the screen stays up
-    // until the game has started.
+    // Hidden before start(), which runs without yielding, so the page is not drawn in between and the screen
+    // stays up until the game has started. A game may show it again later for its own slow part (the 3D race
+    // builds its course after Start race).
     loading.hide();
   }
 

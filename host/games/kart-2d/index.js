@@ -10,7 +10,7 @@ import { createSetup, stepLaps, playerSetup, applyChoice, clearReady, forgetPlay
 import { createControlsTable } from '/host/kart/kart-controls.js';
 import { controllerView, setupView, roomIsOpen } from './race-views.js';
 import { createRenderer } from './renderer.js';
-import { loadStylesheet } from './panel-parts.js';
+import { loadStylesheet } from '/host/kart/panel-parts.js';
 import { createRaceSounds } from './race-sounds.js';
 
 // Returns a fresh race game that follows the game module interface in plan.md.

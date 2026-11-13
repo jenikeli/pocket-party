@@ -54,7 +54,8 @@ export function createViews(container) {
     views.slice(targets.length).forEach((view) => view.hud.hide());
   }
 
-  // One view over the whole canvas from `camera`, with no HUD (the setup screen's overview).
+  // One view over the whole canvas from `camera`, with no HUD (renderer.js: the frame that builds a new course's
+  // shaders, and wiping the canvas for the setup screen).
   function drawOne(renderer, scene, camera, renderTarget = null) {
     const size = renderer.getSize(new THREE.Vector2());
     drawRect(renderer, scene, camera, viewRects(1, size.x, size.y)[0], renderTarget);

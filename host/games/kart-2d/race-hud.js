@@ -7,7 +7,8 @@ import { standingRows } from './race-views.js';
 import { formatRaceTime } from '/host/kart/race-time.js';
 import { ordinal } from '/shared/ordinal.js';
 import { MAX_PLAYERS } from '/shared/protocol.js';
-import { setText, createPlayerChip, fillPlayerChip } from './panel-parts.js';
+import { setText } from '/host/kart/panel-parts.js';
+import { createPlayerChip, fillPlayerChip } from './panel-parts.js';
 
 // Adds the readout to `stage` (a .pp-stage). Returns { show(race, players) }; `players` is the shell's live
 // roster, and `race` null on the setup screen, which leaves the readout empty.

@@ -1,9 +1,10 @@
-// Unit tests for what the 2D race's HTML panels are built from (host/games/kart-2d/race-views.js): the setup
-// screen's rows, and when the room is open to new players.
+// Unit tests for what the 2D race's HTML panels are built from (host/kart/setup-rows.js and
+// host/games/kart-2d/race-views.js): the setup screen's rows, and when the room is open to new players.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { setupRows, roomIsOpen } from '../../host/games/kart-2d/race-views.js';
+import { roomIsOpen } from '../../host/games/kart-2d/race-views.js';
+import { setupRows } from '../../host/kart/setup-rows.js';
 import { createRace, stepRace, RACE_PHASES } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { KART_CHOICES, KART_STEERING } from '../../shared/protocol.js';

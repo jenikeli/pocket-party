@@ -4,8 +4,9 @@
 
 import { canStartRace, playersHoldingUpStart } from '/host/kart/setup.js';
 import { displayName, playersInSlotOrder } from '/host/roster.js';
-import { setupRows } from './race-views.js';
-import { setText, createPlayerChip, fillPlayerChip } from './panel-parts.js';
+import { setupRows } from '/host/kart/setup-rows.js';
+import { setText } from '/host/kart/panel-parts.js';
+import { createPlayerChip, fillPlayerChip } from './panel-parts.js';
 
 // Adds the screen to `stage` (a .pp-stage). Returns { show(setup, players) }; `setup` null hides it.
 // `onLapsStep(step)` gets -1 or 1, and `onStartRace()` runs on a click of Start race (enabled once everyone is

@@ -64,7 +64,7 @@ function createRenderer() {
   return renderer;
 }
 
-// The same order as the race's buildWorld (renderer.js): world built and added to the scene, shade baked into it,
+// The same order as the race's course build (course-world.js): world built and added to the scene, shade baked into it,
 // then the light taken from the course and set as the scene's environment.
 async function buildLitScene(renderer, track, piece) {
   const scene = new THREE.Scene();

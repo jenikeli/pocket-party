@@ -1,27 +1,8 @@
-// Small pieces the 2D race's HTML panels share: loading the stylesheet, setting text only when it changed, and a
-// player's chip. Used by setup-panel.js, results-panel.js, race-hud.js and index.js.
+// A player's chip for the 2D race's HTML panels (the kart races' shared pieces are host/kart/panel-parts.js). Used
+// by setup-panel.js, results-panel.js and race-hud.js.
 
 import { displayName, colorText } from '/host/roster.js';
-
-// Adds the stylesheet to the page and resolves with its <link> once it has loaded, so the panels are never
-// shown unstyled. The game removes the link again when it stops.
-export function loadStylesheet(href) {
-  return new Promise((resolve, reject) => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    link.onload = () => resolve(link);
-    link.onerror = () => reject(new Error(`could not load the stylesheet ${href}`));
-    document.head.append(link);
-  });
-}
-
-// The panels are refreshed every frame, and writing the same text again makes the browser redo the layout.
-export function setText(element, text) {
-  if (element.textContent !== text) {
-    element.textContent = text;
-  }
-}
+import { setText } from '/host/kart/panel-parts.js';
 
 // An empty chip (colour dot and name), the look's .pp-chip; fill it with fillPlayerChip.
 export function createPlayerChip() {

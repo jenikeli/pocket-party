@@ -3,7 +3,7 @@
 // signs (a name, and on the big hangar our own emblem: a sun over a palm) and the big hangar's floor markings.
 // Used by kit/hangar-parts.js, kit/hangar.js and kit/hangar-big-skin.js.
 
-import { createCanvas, canvasTexture, repeatingTexture } from '../canvas-texture.js';
+import { createCanvas, canvasTexture, repeatingTexture, drawnOnce } from '../canvas-texture.js';
 import { createSurface } from './surface-maps.js';
 
 const FONT = '"Arial Black", "Helvetica Neue", Arial, sans-serif';
@@ -17,6 +17,10 @@ const css = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
 // Corrugated sheet in a tile 2 units square (256 pixels): ribs every 0.25 units running up the tile, rounded
 // as real sheet is, its valleys a little darker, and a lap where one sheet overlaps the next at the tile's foot.
 export function createCorrugatedMaps() {
+  return drawnOnce('hangar-corrugated', drawCorrugatedMaps);
+}
+
+function drawCorrugatedMaps() {
   const pixelsPerUnit = 128;
   const surface = createSurface(2, 2, pixelsPerUnit, { color: [236, 238, 240], roughness: 0.45, base: 128 });
   for (let row = 0; row < surface.height; row += 1) {
@@ -33,6 +37,10 @@ export function createCorrugatedMaps() {
 // Glazing in a tile 4 units wide and 3 tall (256 by 192 pixels): white frames round pale blue panes that let
 // most light through.
 export function createGlazingMaps() {
+  return drawnOnce('hangar-glazing', drawGlazingMaps);
+}
+
+function drawGlazingMaps() {
   const { canvas, context } = createCanvas(256, 192);
   context.fillStyle = 'rgba(245, 247, 250, 1)';
   context.fillRect(0, 0, 256, 192);

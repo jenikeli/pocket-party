@@ -9,6 +9,7 @@ import { createSurface } from './surface-maps.js';
 import { nearestCell } from './cell-noise.js';
 import { createLayeredNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 export const ROCK_SIZE = 512;
 // Slabs across the tile and down it. The pieces lay the tile on twice as wide as it is tall, so the slabs come out
@@ -30,7 +31,7 @@ const materials = new WeakMap();
 // `kit` is the course's (kit/kit.js). Returns the rock material, drawing its maps the first time it is asked for.
 export function rockMaterial({ keep }) {
   if (!materials.has(keep)) {
-    const { map, normalMap, aoMap, roughnessMap } = createRockMaps();
+    const { map, normalMap, aoMap, roughnessMap } = drawnOnce('rock', createRockMaps);
     const maps = { map: keep(map), normalMap: keep(normalMap), aoMap: keep(aoMap), roughnessMap: keep(roughnessMap) };
     materials.set(keep, keep(new THREE.MeshStandardMaterial({ vertexColors: true, ...maps, roughness: 1 })));
   }

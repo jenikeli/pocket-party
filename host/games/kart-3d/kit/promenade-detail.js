@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { createSurface, hexToRgb } from './surface-maps.js';
 import { PILLAR } from './promenade-shapes.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const STONE_PIXELS_PER_UNIT = 128;
 const COURSES = 5;
@@ -23,8 +24,8 @@ const RIM = { middle: 0.45, half: 0.045 };
 
 // `keep(thing)` registers what must be disposed. Returns { stone, plaque }: the shaft's and the plaque's materials.
 export function createPromenadeDetail(keep) {
-  const stoneMaps = drawStoneMaps();
-  const plaqueMaps = drawPlaqueMaps();
+  const stoneMaps = drawnOnce('promenade-stone', drawStoneMaps);
+  const plaqueMaps = drawnOnce('promenade-plaque', drawPlaqueMaps);
   [...Object.values(stoneMaps), ...Object.values(plaqueMaps)].forEach(keep);
   return {
     stone: keep(new THREE.MeshStandardMaterial({ ...stoneMaps, roughness: 1 })),

@@ -112,7 +112,7 @@ export function createPixelImage(width, height) {
   // uses a shade map only for the light that is not the sun's, as such shade is.
   function toShadeTexture({ reach, strength, repeat = true }) {
     const heights = Float32Array.from({ length: width * height }, (unused, index) => pixels[index * 3]);
-    const average = boxAverage(boxAverage(heights, reach, 1, 0), reach, 0, 1);
+    const average = boxAverage(boxAverage(heights, width, height, reach, true), width, height, reach, false);
     const shade = createPixelImage(width, height);
     shade.fill((x, y) => {
       const below = Math.max(0, average[y * width + x] - heights[y * width + x]) / 255;
@@ -122,22 +122,28 @@ export function createPixelImage(width, height) {
     return shade.toDataTexture({ repeat });
   }
 
-  // `values` (one per pixel, row by row) averaged over `reach` pixels either way along (stepX, stepY), wrapping.
-  function boxAverage(values, reach, stepX, stepY) {
-    const averaged = new Float32Array(values.length);
-    for (let y = 0; y < height; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        let sum = 0;
-        for (let step = -reach; step <= reach; step += 1) {
-          const atX = (((x + step * stepX) % width) + width) % width;
-          const atY = (((y + step * stepY) % height) + height) % height;
-          sum += values[atY * width + atX];
-        }
-        averaged[y * width + x] = sum / (2 * reach + 1);
-      }
-    }
-    return averaged;
-  }
-
   return { width, height, fill, mix, dot, rect, valueAt, toCanvas, toTexture, toDataTexture, toReliefTexture, toShadeTexture };
+}
+
+// `values` (one per pixel of a `width` by `height` picture, row by row) averaged over `reach` pixels either way
+// along the rows (`alongRows` true) or the columns, wrapping round the edges. A running sum, so the time does not
+// grow with `reach` (the shade maps' reach is up to 12 pixels, on tiles of 512 x 512: M10 Q).
+export function boxAverage(values, width, height, reach, alongRows) {
+  const averaged = new Float32Array(values.length);
+  const [lines, length] = alongRows ? [height, width] : [width, height];
+  const [lineStride, itemStride] = alongRows ? [width, 1] : [1, width];
+  const count = 2 * reach + 1;
+  const wrap = (index) => ((index % length) + length) % length;
+  for (let line = 0; line < lines; line += 1) {
+    const at = (index) => line * lineStride + wrap(index) * itemStride;
+    let sum = 0;
+    for (let index = -reach; index <= reach; index += 1) {
+      sum += values[at(index)];
+    }
+    for (let index = 0; index < length; index += 1) {
+      averaged[at(index)] = sum / count;
+      sum += values[at(index + reach + 1)] - values[at(index - reach)];
+    }
+  }
+  return averaged;
 }

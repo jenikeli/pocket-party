@@ -4,6 +4,7 @@
 // (kit/platform.js) and the barriers (shared through kit/kit.js).
 
 import { createPixelImage } from './pixel-image.js';
+import { drawnOnce } from '../canvas-texture.js';
 import { createLayeredNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
 
@@ -11,6 +12,10 @@ const SIZE = 256;
 
 // Returns { map, relief }: the colour texture and its normal map.
 export function createConcreteTexture() {
+  return drawnOnce('concrete', drawConcreteTexture);
+}
+
+function drawConcreteTexture() {
   const random = createRandom(47);
   const image = createPixelImage(SIZE, SIZE);
   const heights = createPixelImage(SIZE, SIZE);

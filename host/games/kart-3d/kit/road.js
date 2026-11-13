@@ -37,7 +37,8 @@ const COLORS = { metal: 0xc4d8ff, grass: 0xffffff, grassMown: 0xd8ecc8, concrete
 // Returns { meshes, update(dt), dispose() }.
 export function buildKitRoad(track, theme, photoAsphalt) {
   const concrete = createConcreteTexture();
-  // Each surface's maps, by surface name; the concrete has its relief (M7d4).
+  // Each surface's maps, by surface name; the concrete has its relief (M7d4). They are the kit's maps drawn once per game
+  // (canvas-texture.js), so dispose does not free them.
   const ownMaps = {
     metal: { map: createMetalTexture() },
     grass: { map: createGrassTexture() },
@@ -82,7 +83,6 @@ export function buildKitRoad(track, theme, photoAsphalt) {
       mesh.geometry.dispose();
       mesh.material.dispose();
     }
-    Object.values(ownMaps).flatMap((surfaceMaps) => Object.values(surfaceMaps)).forEach((texture) => texture.dispose());
     [paint, panels, plates, glidePanels].forEach((part) => part.dispose());
   }
 

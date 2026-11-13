@@ -9,6 +9,7 @@ import { coloured, mergeShapes, shaded } from '../shape-utils.js';
 import { createRandom, between } from '../random.js';
 import { buildLeafScale } from './leaf-scale.js';
 import { drawLeafScale } from './garden-textures.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 // A round crown, a ball of CROWN_RADIUS about CROWN_Y. From the top tier down: the ring's angle from the top
 // (radians), how many scales, their length and width, and the dark and light greens of their base and tip. The
@@ -26,7 +27,7 @@ const TRUNK_COLOR = 0x7a5232;
 
 // The tree's trunk (with the painted material) and canopy (with leaf maps), as parts.
 export function buildRoundTree(kit) {
-  const leafMaps = drawLeafScale();
+  const leafMaps = drawnOnce('leaf-scale', drawLeafScale);
   Object.values(leafMaps).forEach(kit.keep);
   const leafMaterial = new THREE.MeshStandardMaterial({ ...leafMaps, vertexColors: true, roughness: 1, side: THREE.DoubleSide });
   return [

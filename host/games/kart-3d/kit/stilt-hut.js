@@ -14,6 +14,7 @@ import { buildRoof } from './stilt-hut-roof.js';
 import { buildWood, FLOOR, WALLS } from './stilt-hut-wood.js';
 import { buildPosts } from './stilt-hut-posts.js';
 import { flowerBox } from './stilt-hut-flowers.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 // Where the thatch's tile repeats on the roof.
 const THATCH_REPEAT = [3, 1.5];
@@ -38,7 +39,7 @@ export function buildStiltHutGeometry() {
 export function buildStiltHut(kit) {
   const { keep, textures, materials } = kit;
   const geometry = buildStiltHutGeometry();
-  const thatchMaps = createThatchMaps();
+  const thatchMaps = drawnOnce('thatch', createThatchMaps);
   Object.values(thatchMaps).forEach((map) => {
     map.repeat.set(...THATCH_REPEAT);
     keep(map);

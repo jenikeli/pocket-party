@@ -9,6 +9,7 @@ import { coloured, mergeShapes, shaded } from '../shape-utils.js';
 import { createRandom, between } from '../random.js';
 import { drawHedgeFur } from './garden-textures.js';
 import { buildFlower } from './flowers.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const LENGTH = 2.4;
 const HEIGHT = 1;
@@ -19,7 +20,7 @@ const FLOWER_COLORS = [0xff7ab8, 0xff8cc4, 0xff6aae];
 
 // The loaf (with the fur maps) and the flowers (with the painted material), as parts.
 export function buildHedge(kit) {
-  const furMaps = drawHedgeFur();
+  const furMaps = drawnOnce('hedge-fur', drawHedgeFur);
   Object.values(furMaps).forEach(kit.keep);
   const furMaterial = new THREE.MeshStandardMaterial({ ...furMaps, vertexColors: true, roughness: 1 });
   return [

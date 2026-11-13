@@ -11,6 +11,7 @@ import { createRandom, between as randomBetween } from '../random.js';
 import { buildTrunk, trunkPoint } from './palm-trunk.js';
 import { buildFrondCard } from './palm-frond.js';
 import { drawBark, drawFrond } from './palm-textures.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const FRONDS = 10;
 
@@ -44,8 +45,8 @@ function buildFronds() {
 // The palm's two materials, { trunk, fronds }, every texture passed through `keep`. The trunk's vertex colours
 // shade it (and tint the crown); the fronds' blades are cut out of the texture (alphaTest), seen from both sides.
 export function createPalmMaterials(keep) {
-  const bark = drawBark();
-  const frond = drawFrond();
+  const bark = drawnOnce('palm-bark', drawBark);
+  const frond = drawnOnce('palm-frond', drawFrond);
   Object.values(bark).forEach(keep);
   Object.values(frond).forEach(keep);
   return {

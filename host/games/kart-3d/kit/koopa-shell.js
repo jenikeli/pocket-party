@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { at, coloured, mergeShapes, shaded } from '../shape-utils.js';
 import { scuteAt, drawScuteMaps } from './koopa-shell-scutes.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const DOME_RADIUS = 0.96;
 const DOME_HEIGHT = 0.72;
@@ -17,7 +18,7 @@ const WHITE = 0xfffbee;
 const UNDERSIDE = 0x3a2a1c;
 
 export function buildKoopaShell({ keep }) {
-  const maps = drawScuteMaps();
+  const maps = drawnOnce('koopa-scutes', drawScuteMaps);
   Object.values(maps).forEach(keep);
   const { map, normalMap, aoMap, roughnessMap } = maps;
   const geometry = mergeShapes([buildDome(), ...buildLobes(), buildUnderside()]);

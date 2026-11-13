@@ -4,6 +4,7 @@
 // each with its relief, shade and roughness (kit/surface-maps.js). Used by kit/terminal.js and kit/control-tower.js.
 
 import { createSurface, hexToRgb } from './surface-maps.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 export const CORAL = 0xf0532d;
 export const SUN_YELLOW = 0xffc531;
@@ -53,6 +54,10 @@ function bandPaint(x, y) {
 
 // One period of the band, to repeat along it: 512 by 80 pixels.
 export function createBandMaps() {
+  return drawnOnce('terminal-band', drawBandMaps);
+}
+
+function drawBandMaps() {
   const pixelsPerUnit = 32;
   const surface = createSurface(BAND_PERIOD, BAND_HEIGHT, pixelsPerUnit, { color: hexToRgb(BAND_WHITE), roughness: 0.55, base: 100 });
   for (let row = 0; row < surface.height; row += 1) {
@@ -73,6 +78,10 @@ export function createBandMaps() {
 // White metal cladding: panels 2 wide and 1.5 tall with dark joints, in a tile 4 by 3 units (256 by 192 pixels).
 // The tower's shaft and the terminal's walls wear it.
 export function createCladdingMaps() {
+  return drawnOnce('terminal-cladding', drawCladdingMaps);
+}
+
+function drawCladdingMaps() {
   const surface = createSurface(4, 3, 64, { color: [150, 152, 158], roughness: 0.6, base: 80 });
   for (let column = 0; column < 2; column += 1) {
     for (let row = 0; row < 2; row += 1) {
@@ -85,6 +94,10 @@ export function createCladdingMaps() {
 
 // A standing-seam metal roof: light grey sheets 1 unit wide, in a tile 4 by 4 units (256 pixels).
 export function createRoofMaps() {
+  return drawnOnce('terminal-roof', drawRoofMaps);
+}
+
+function drawRoofMaps() {
   const surface = createSurface(4, 4, 64, { color: [120, 126, 134], roughness: 0.6, base: 60 });
   for (let sheet = 0; sheet < 4; sheet += 1) {
     const paint = { color: hexToRgb(sheet % 2 === 0 ? 0xc3c9d0 : 0xbcc2ca), roughness: 0.4 };
@@ -95,6 +108,10 @@ export function createRoofMaps() {
 
 // The skylight's glazing: white frames round sky-blue panes 2 units square, in a tile 4 by 4 units (256 pixels).
 export function createSkylightMaps() {
+  return drawnOnce('terminal-skylight', drawSkylightMaps);
+}
+
+function drawSkylightMaps() {
   const surface = createSurface(4, 4, 64, { color: hexToRgb(0xf4f4f2), roughness: 0.35, base: 200 });
   for (let column = 0; column < 2; column += 1) {
     for (let row = 0; row < 2; row += 1) {
@@ -108,6 +125,10 @@ export function createSkylightMaps() {
 // The jet bridges' ribbed steel: ribs 0.25 apart running up, with a seam every 2 units, in a tile 2 by 2 units
 // (128 pixels).
 export function createRibbedMaps() {
+  return drawnOnce('terminal-ribbed', drawRibbedMaps);
+}
+
+function drawRibbedMaps() {
   const surface = createSurface(2, 2, 64, { color: hexToRgb(0xd8dce1), roughness: 0.4, base: 120 });
   for (let x = 0; x < 2; x += 0.25) {
     surface.groove([x, 0], [x, 2], { size: 0.05, depth: 60, color: [90, 96, 104], amount: 0.3, roughness: 0.6 });

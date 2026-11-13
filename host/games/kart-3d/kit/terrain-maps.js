@@ -8,6 +8,7 @@ import { createSurface } from './surface-maps.js';
 import { createPixelImage } from './pixel-image.js';
 import { createLayeredNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 // The land's maps repeat every this many units; its sand comes in finer, and its grass is mown in stripes this
 // wide, across x (the runway's way).
@@ -60,10 +61,10 @@ export function landShade(height) {
 // multiplies the vertex colour). The runway is the taxiway's tarmac a little darker, the hangar's floor the
 // apron's slabs a little greyer.
 export function createPavedMaterials({ keep }) {
-  const apronMaps = Object.values(createApronMaps()).map(keep);
+  const apronMaps = Object.values(drawnOnce('apron', createApronMaps)).map(keep);
   const [map, normalMap, aoMap, roughnessMap] = apronMaps;
   const apron = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map, normalMap, aoMap, roughnessMap, roughness: 1, ...PUSHED_BACK }));
-  const tarmacMaps = createTarmacMaps();
+  const tarmacMaps = drawnOnce('tarmac', createTarmacMaps);
   keep(tarmacMaps.map);
   keep(tarmacMaps.normalMap);
   const tarmac = keep(new THREE.MeshStandardMaterial({ vertexColors: true, ...tarmacMaps, roughness: 0.9, ...PUSHED_BACK }));

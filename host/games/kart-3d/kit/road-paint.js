@@ -53,6 +53,7 @@ export function buildRoadPaint(track, theme) {
   for (const check of startLineChecks(track)) {
     addRoadRect(paint, track, check, 0, check.dark ? theme.checks[1] : theme.checks[0]);
   }
+  // The paint texture is the kit's, drawn once per game (canvas-texture.js): dispose does not free it.
   const texture = createPaintTexture();
   const paintMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, map: texture, roughness: 0.6 });
   // Paint lies on the asphalt (the curbs stand on it), so it is pulled toward the camera a little to win where
@@ -66,7 +67,6 @@ export function buildRoadPaint(track, theme) {
       mesh.geometry.dispose();
       mesh.material.dispose();
     }
-    texture.dispose();
   }
   return { meshes: [paintMesh, glowMesh], dispose };
 }

@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { roundedBox, at, wrapUv, mergeShapes } from '../shape-utils.js';
 import { createSurface, hexToRgb } from './surface-maps.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const PIXELS_PER_UNIT = 96;
 // The heights (0 to 255) of the core in the seams and of the panels on it, and how far the bolts stand on them.
@@ -26,7 +27,8 @@ const GRIME = [120, 112, 100];
 export function buildDetailedShafts(keep, post, color) {
   const height = post.top - post.bottom;
   const shafts = post.xs.map((x) => wrapUv(at(roundedBox(post.width, height, post.width, 0.1), x, (post.bottom + post.top) / 2, 0), post.bottom, height));
-  const maps = drawPostMaps(post, height, color);
+  const key = `gate-post:${JSON.stringify([post.width, post.bottom, height, post.panels, post.boltColor, color])}`;
+  const maps = drawnOnce(key, () => drawPostMaps(post, height, color));
   Object.values(maps).forEach(keep);
   const material = keep(new THREE.MeshStandardMaterial({ ...maps, roughness: 1 }));
   return new THREE.Mesh(keep(mergeShapes(shafts)), material);

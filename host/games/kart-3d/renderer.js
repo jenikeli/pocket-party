@@ -27,6 +27,7 @@ import { courseExtent } from './track.js';
 import { runStages, nextDrawnFrame } from './staged-build.js';
 import { waitForGpu, frameStats, describeGpu } from './gpu-probe.js';
 import { createCourseWorld } from './course-world.js';
+import { disposeKitMaps } from './canvas-texture.js';
 import { createItemDrawing } from './items/item-drawing.js';
 import { kartLookScale } from './items/kart-effect-looks.js';
 
@@ -224,6 +225,9 @@ export function createRenderer(container, qualityLevel, photoAsphalt, plainCours
     itemDrawing.dispose();
     kartModels.dispose();
     course.dispose();
+    // The kit's drawn maps outlive each course (canvas-texture.js), so they are freed here, when the game stops,
+    // and while the renderer is still alive: disposing a texture is what tells it to free the GPU's copy.
+    disposeKitMaps();
     environment.dispose();
     Object.values(photoAsphalt).forEach((texture) => texture.dispose());
     renderer.dispose();

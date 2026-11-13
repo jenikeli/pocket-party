@@ -13,6 +13,7 @@ import { createLayeredNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
 import { inCutting, underTunnel, landHeightAt, RETAINING_WALL, TUNNEL } from '../airport-ground.js';
 import { ROAD_THICKNESS } from './road.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 // The face's map repeats every FACE_TILE units along and FACE_HEIGHT up: boards BOARD long and half as tall.
 const FACE_TILE = 8;
@@ -51,7 +52,7 @@ export function buildRetainingWalls({ world, track, keep }) {
       }
     }
   });
-  const maps = Object.values(createFaceMaps()).map(keep);
+  const maps = Object.values(drawnOnce('retaining-wall', createFaceMaps)).map(keep);
   const [map, normalMap, aoMap, roughnessMap] = maps;
   const material = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map, normalMap, aoMap, roughnessMap, roughness: 1 }));
   world.add(withShadows(new THREE.Mesh(keep(builder.build()), material)));

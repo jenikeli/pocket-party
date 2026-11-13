@@ -10,6 +10,7 @@ import { roundProfile, tubeProfile, profileLength } from './extrude.js';
 import { roundedBox, at, wrapUv } from '../shape-utils.js';
 import { createSurface, hexToRgb } from './surface-maps.js';
 import { createRandom } from '../random.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 // Each rail's middle above the road, and its half depth (across the road) and half height.
 const RAIL_LIFTS = [0.59, 1.03];
@@ -31,8 +32,8 @@ export function createStripedRailDetail(out, keep) {
   const perimeter = profileLength(railProfiles[0]);
   const blockHeight = BLOCK.height;
   const blockGeometry = wrapUv(at(roundedBox(BLOCK.across, blockHeight, BLOCK.along, 0.07), 0, BLOCK.bottom + blockHeight / 2, 0), BLOCK.bottom, blockHeight);
-  const railMaps = drawRailMaps(perimeter);
-  const blockMaps = drawBlockMaps();
+  const railMaps = drawnOnce(`striped-rail:${perimeter}`, () => drawRailMaps(perimeter));
+  const blockMaps = drawnOnce('striped-rail-block', drawBlockMaps);
   [...Object.values(railMaps), ...Object.values(blockMaps)].forEach(keep);
   return {
     railProfiles,

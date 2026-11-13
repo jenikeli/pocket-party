@@ -4,6 +4,7 @@
 // stone moved to kit/thatch-texture.js and kit/stone-texture.js in M7d4c3.)
 
 import { createPixelImage } from './pixel-image.js';
+import { drawnOnce } from '../canvas-texture.js';
 import { createLayeredNoise, createTileNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
 
@@ -14,6 +15,10 @@ const SIZE = 256;
 // Since M7d4 with its relief: the gaps sunk, each plank's edges worn round, the grain in fine ridges and the
 // nail heads standing up. Returns { map, relief }: the colour texture and its normal map.
 export function createWoodTexture() {
+  return drawnOnce('wood', drawWoodTexture);
+}
+
+function drawWoodTexture() {
   const random = createRandom(61);
   const image = createPixelImage(SIZE, SIZE);
   const heights = createPixelImage(SIZE, SIZE);
@@ -57,6 +62,10 @@ export function createWoodTexture() {
 
 // Pale beach sand: fine grains, soft wind ripples across the tile, a few darker specks and white shell bits.
 export function createSandTexture() {
+  return drawnOnce('sand', drawSandTexture);
+}
+
+function drawSandTexture() {
   const random = createRandom(67);
   const image = createPixelImage(SIZE, SIZE);
   const patches = createLayeredNoise(random, 3, 3);

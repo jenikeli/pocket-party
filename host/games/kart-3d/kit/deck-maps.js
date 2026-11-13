@@ -7,6 +7,7 @@
 import { createPixelImage } from './pixel-image.js';
 import { createLayeredNoise, createTileNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 const SIZE = 512;
 // A pixel's height as a grey [r, g, b].
@@ -27,6 +28,10 @@ function mapsOf(colors, heights, { depth, reach, strength }) {
 // its joint staggered from the next plank's, the gaps between them sunk and dark, each plank's edges worn round,
 // the grain in fine ridges, and two nail heads either side of every joint.
 export function createBoardsMaps() {
+  return drawnOnce('deck-boards', drawBoardsMaps);
+}
+
+function drawBoardsMaps() {
   const random = createRandom(71);
   const colors = createPixelImage(SIZE, SIZE);
   const heights = createPixelImage(SIZE, SIZE);
@@ -73,6 +78,10 @@ export function createBoardsMaps() {
 // lengths so the joints never line up; each stone a little different in tone and height, its edges rounded
 // down to a deep joint, with chips and specks on it.
 export function createPavingMaps() {
+  return drawnOnce('deck-paving', drawPavingMaps);
+}
+
+function drawPavingMaps() {
   const random = createRandom(73);
   const colors = createPixelImage(SIZE, SIZE);
   const heights = createPixelImage(SIZE, SIZE);
@@ -116,6 +125,10 @@ export function createPavingMaps() {
 
 // Sand in wind ripples across a tile (6 units: nine ripples, two-thirds of a unit each): each ripple a long gentle slope and a short steep one, crests wandering, with specks and shell bits.
 export function createSandMaps() {
+  return drawnOnce('deck-sand', drawSandMaps);
+}
+
+function drawSandMaps() {
   const random = createRandom(79);
   const colors = createPixelImage(SIZE, SIZE);
   const heights = createPixelImage(SIZE, SIZE);

@@ -4,6 +4,7 @@
 // kit/kit.js (the decks' grass).
 
 import { createPixelImage } from './pixel-image.js';
+import { drawnOnce } from '../canvas-texture.js';
 import { createLayeredNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
 
@@ -13,6 +14,10 @@ const SMALL = 256;
 // Nearly white, multiplied by each mark's own colour: dark specks where the asphalt's gaps show through, and
 // worn patches where the paint is thin.
 export function createPaintTexture() {
+  return drawnOnce('road-paint', drawPaintTexture);
+}
+
+function drawPaintTexture() {
   const random = createRandom(37);
   const image = createPixelImage(SMALL, SMALL);
   const wear = createLayeredNoise(random, 3, 3);
@@ -30,6 +35,10 @@ export function createPaintTexture() {
 // Anti-gravity road: brushed metal plates 2 units square with dark seams and a rivet every half unit along
 // their edges, multiplied by the road's blue tint.
 export function createMetalTexture() {
+  return drawnOnce('road-metal', drawMetalTexture);
+}
+
+function drawMetalTexture() {
   const random = createRandom(41);
   const image = createPixelImage(SIZE, SIZE);
   const plate = SIZE / 4;
@@ -57,6 +66,10 @@ export function createMetalTexture() {
 
 // Bright grass with short blades in lighter and darker greens, leaning a little.
 export function createGrassTexture() {
+  return drawnOnce('road-grass', drawGrassTexture);
+}
+
+function drawGrassTexture() {
   const random = createRandom(43);
   const image = createPixelImage(SMALL, SMALL);
   const patches = createLayeredNoise(random, 4, 2);

@@ -9,10 +9,11 @@ import { mergeShapes } from '../shape-utils.js';
 import { createStoneMaps } from './stone-texture.js';
 import { buildShaft, buildTowerPainted, buildTowerPanes, buildTowerGloss } from './lighthouse-tower.js';
 import { buildTopPainted, buildTopGloss, buildDome, buildVane, buildGlass } from './lighthouse-top.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 export function buildLighthouse(kit, height) {
   const { keep, materials } = kit;
-  const stoneMaps = Object.values(createStoneMaps()).map(keep);
+  const stoneMaps = Object.values(drawnOnce('lighthouse-stone', createStoneMaps)).map(keep);
   const [map, normalMap, aoMap, roughnessMap] = stoneMaps;
   const stone = keep(new THREE.MeshStandardMaterial({ vertexColors: true, map, normalMap, aoMap, roughnessMap, roughness: 1 }));
   // The dome is the glossiest thing on it, as in the study.

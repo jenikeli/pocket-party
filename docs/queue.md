@@ -24,9 +24,9 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | J | 3D race sounds | opus | F I | merged |
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | building |
-| Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | building |
+| Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | merged |
 | R | Long files split | sonnet | F G J O Q | queued |
-| T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | queued |
+| T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | building |
 | Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | queued |
 
 Order: A, B, C first. D, E, M take the free places. T1 runs when A to D are merged, with only H and I building
@@ -553,6 +553,15 @@ world frees), unit tests.
 - Synth click fixed (found by L's offline render): every `tone` and `noise` played its first sample at full
   volume, because a new gain node starts at 1; `shapeEnvelope` now sets it silent first. J's and K's effects
   had the same click; J's peak figures in its table were measured before this fix.
+- Q: the kit's drawn maps are kept for the whole game (`drawnOnce` in `canvas-texture.js`), freed by
+  `disposeKitMaps()` in the renderer's `destroy()`. `buildScenery` alone, in software: Seaside 16.1 s -> 10.3 s
+  the first time and 16.5 -> 2.0 s the second; the airport 9.7 -> 7.9 and 9.2 -> 3.4; the test track 7.3 -> 5.4
+  and 6.9 -> 1.1. The first-build gain is `boxAverage` as a running sum (frames byte-identical). Memory: about
+  77 MB of maps for Seaside alone as before, about 100 MB once all three courses were built in one game (before:
+  one course's maps at a time). Left so; if the iPad shows memory trouble, trimming to the current course's
+  maps at each build is about 15 lines in `canvas-texture.js` (the reviewer's design). Maps changed per use
+  (plane skins, animated panels, sea ripples) are not cached. `kit/stilt-hut.js` still sets `repeat` on the
+  shared thatch maps (harmless: one user, same value).
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

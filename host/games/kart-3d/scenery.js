@@ -14,6 +14,7 @@ import { buildAirportRoad, buildAirportScenery } from './airport-scenery.js';
 import { buildPlainDressing } from './plain-scenery.js';
 import { addSun, SUN_OFFSET } from './sun.js';
 import { splitIntoCells } from './split-meshes.js';
+import { isKitMap } from './canvas-texture.js';
 
 const SKY_TOP = 0x3d8bff;
 const HORIZON = 0xcfe8ff;
@@ -44,15 +45,19 @@ const SCENERIES = {
 // update moves the scenery on by the real time since the last drawn frame (waves, boats, panels) and shows the
 // race's state on it (the start lights; race is null on the setup screen); showParts hides the parts named in
 // `hidden` ('road', 'sea' or a kit part, kit/kit.js) and shows the rest; dispose takes it all out of the scene
-// again and frees what it created.
+// again and frees what it created, except the kit's maps, which are drawn once per game and kept for the next course
+// (canvas-texture.js).
 export function buildScenery(scene, track, { photoAsphalt, plainCourse }) {
   const scenery = SCENERIES[track.scenery];
   if (!scenery) {
     throw new Error(`No scenery called "${track.scenery}" in scenery.js: every course must name one`);
   }
   const disposables = [];
+  // The kit's maps drawn once per game (canvas-texture.js) outlive the course: the next one reuses them.
   const keep = (thing) => {
-    disposables.push(thing);
+    if (!isKitMap(thing)) {
+      disposables.push(thing);
+    }
     return thing;
   };
   scene.fog = new THREE.Fog(HORIZON, 150, 600);

@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { createSurface } from './surface-maps.js';
 import { createLayeredNoise, createTileNoise } from '../noise.js';
 import { createRandom, between } from '../random.js';
+import { drawnOnce } from '../canvas-texture.js';
 
 export const ISLAND_ROCK_SIZE = 512;
 // Bands this many pixels tall, at least and at most (the tile is laid on 12 units square: about 1 to 3.5 units).
@@ -34,7 +35,8 @@ const materials = new WeakMap();
 // `kit` is the course's (kit/kit.js). Returns the islands' rock material, drawing its maps the first time.
 export function islandRockMaterial({ keep }) {
   if (!materials.has(keep)) {
-    const { map, normalMap, aoMap, roughnessMap } = drawIslandRockSurface().toMaps({ depth: 18, shade: { reach: 10, strength: 2.5 }, repeat: true });
+    const drawMaps = () => drawIslandRockSurface().toMaps({ depth: 18, shade: { reach: 10, strength: 2.5 }, repeat: true });
+    const { map, normalMap, aoMap, roughnessMap } = drawnOnce('island-rock', drawMaps);
     const maps = { map: keep(map), normalMap: keep(normalMap), aoMap: keep(aoMap), roughnessMap: keep(roughnessMap) };
     materials.set(keep, keep(new THREE.MeshStandardMaterial({ vertexColors: true, ...maps, roughness: 1 })));
   }

@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { drawSponsorAtlas } from './sponsors.js';
 import { createSurface, hexToRgb, grey } from './surface-maps.js';
-import { createCanvas } from '../canvas-texture.js';
+import { createCanvas, drawnOnce } from '../canvas-texture.js';
 
 // The atlas copy's pixels per atlas pixel.
 const ATLAS_SCALE = 2;
@@ -28,8 +28,8 @@ const PAD_SHADE = 0.86;
 // colour (a hex). `keep(thing)` registers what must be disposed. Returns { boardMaterial, padMaterial, padColor }:
 // padColor is the colour to give the pad's vertices.
 export function createSponsorWallDetail(keep, board) {
-  const boardMaps = drawBoardMaps();
-  const padMaps = drawPadMaps(board);
+  const boardMaps = drawnOnce('sponsor-board', drawBoardMaps);
+  const padMaps = drawnOnce(`sponsor-pad:${board.length}:${board.padLength}:${board.padRidge}`, () => drawPadMaps(board));
   [...Object.values(boardMaps), ...Object.values(padMaps)].forEach(keep);
   // The paint's grey as Three.js multiplies it, in linear light.
   const paintShare = new THREE.Color().setRGB(PAD_SHADE, PAD_SHADE, PAD_SHADE, THREE.SRGBColorSpace).r;

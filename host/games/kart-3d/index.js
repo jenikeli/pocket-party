@@ -26,6 +26,7 @@ import { createReadout } from './readout.js';
 import { createHostChoices, setChoice } from './host-choices.js';
 import { createSetupPanel } from './setup-panel.js';
 import { createRaceBar } from './race-bar.js';
+import { createRaceSounds } from './race-sounds.js';
 import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
 import { createCourseLoader } from './course-loader.js';
@@ -81,6 +82,8 @@ export function createGame() {
   let roomOpen = null;
   let wantsLobby = false;
   const stepTimer = createStepTimer();
+  // The race's cues and the players' engines; a watched race's stand-ins are heard by their cues only.
+  const raceSounds = createRaceSounds();
   const readout = createReadout();
   // When the last frame was drawn, for the cameras' time step.
   let lastDrawAt = null;
@@ -250,6 +253,7 @@ export function createGame() {
       stepRace(race, chosenTrack(), controlsFor, dt);
       stepTimer.record(performance.now() - startedAt);
     }
+    raceSounds.update(race, chosenTrack(), { engines: !standIns });
     syncRoomOpen();
     sendChangedViews();
   }
@@ -337,6 +341,7 @@ export function createGame() {
 
   function stop() {
     clearInterval(pingTimer);
+    raceSounds.stop();
     courseLoader.stop();
     stylesheet?.remove();
     renderer.destroy();

@@ -21,9 +21,9 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
 | N | Palm Bay Airport's leftovers | sonnet | M | merged |
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | merged |
-| J | 3D race sounds | opus | F I | building |
+| J | 3D race sounds | opus | F I | merged |
 | K | 2D race and shell sounds | sonnet | H I | merged |
-| L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
+| L | Music made in code, wired to the lobby and the races | opus | I J K | building |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | building |
 | R | Long files split | sonnet | F G J O Q | queued |
 | T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | queued |
@@ -545,6 +545,11 @@ world frees), unit tests.
   race's panels' stylesheet is a `<link>` added by `race-stage.js` (not awaited; the panels start hidden); task
   R makes it one way with `setup.css`. G saw results and Measure only in forced states.
 - Q: first implementer lost its worktree in the third interruption before committing; respawned.
+- J: five files (`sound-snapshot.js`, `sound-cues.js`, `cue-sounds.js`, `item-hit-sounds.js`,
+  `race-sounds.js`). Only karts with a player make cues; in a Watch race the stand-ins' cues play with no
+  engines; CPU karts are silent. A player's engine runs on after they finish, until the results (the 2D
+  engines go silent at the finish). "First" in the finish cue is place 1. Hits are told apart by a guess at
+  what touched the kart; one hit sound per kart per 0.15 s. Countdown, GO and finish repeat the 2D numbers.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

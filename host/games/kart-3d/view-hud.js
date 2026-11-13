@@ -7,6 +7,7 @@
 import { ordinal } from '/shared/ordinal.js';
 import { KART_ITEMS } from '/shared/protocol.js';
 import { ITEM_ICONS } from '/shared/item-icons.js';
+import { setText } from '/host/kart/panel-parts.js';
 
 // The roulette flips to the next icon this often, in milliseconds (MK8DX's spins fast).
 const ROULETTE_FLIP_MS = 80;
@@ -144,12 +145,6 @@ function createLine(root, className) {
   line.className = className;
   root.append(line);
   return line;
-}
-
-function setText(element, text) {
-  if (element.textContent !== text) {
-    element.textContent = text;
-  }
 }
 
 function setStyle(element, property, value) {

@@ -1,49 +1,40 @@
-// What the 3D race shows over the canvas while karts race: a small bar at the top (Back to setup, Restart and
-// Tuning, which opens tuning-panel.js and the readout), the race clock top right, and the countdown in big
-// letters in the middle. The setup screen is setup-panel.js's, the results results-panel.js's. Used by
-// host/games/kart-3d/index.js, which owns the state; the bar only shows it and reports clicks. The bottom right
-// stays clear for the shell's game bar.
+// What the 3D race shows over the canvas while karts race, in the host's look (host/ui.css): a small bar at the
+// top (Back to setup, Restart and Tuning, which opens tuning-panel.js and the readout), the race clock top right,
+// and the countdown in big letters in the middle. The setup screen is setup-panel.js's, the results
+// results-panel.js's. Used by host/games/kart-3d/index.js, which owns the state; the bar only shows it and reports
+// clicks. The bottom right stays clear for the shell's game bar.
 
-import { setText } from '/host/kart/panel-parts.js';
-
-const STYLE = `
-  #kart-3d-race-bar { position: fixed; left: 50%; top: 8px; transform: translateX(-50%); display: flex; gap: 12px;
-    align-items: flex-start; padding: 8px 12px; border-radius: 10px; background: rgba(16, 19, 28, 0.75);
-    color: #ffffff; font: 14px sans-serif; }
-  #kart-3d-race-bar p { margin: 0; white-space: pre-line; }
-  #kart-3d-clock { position: fixed; right: 12px; top: 8px; margin: 0; color: #ffffff; text-align: right;
-    font: bold 28px sans-serif; text-shadow: 0 2px 0 #000000; pointer-events: none; white-space: pre-line; }
-  #kart-3d-countdown { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0;
-    color: #ffd84a; font: bold 160px sans-serif; text-shadow: 0 6px 0 #a3471b, 0 0 24px rgba(0, 0, 0, 0.6);
-    pointer-events: none; }
-  #kart-3d-race-bar button { font: 16px sans-serif; padding: 8px 12px; border: none; border-radius: 8px;
-    background: #2a3145; color: #ffffff; cursor: pointer; }
-`;
+import { setText, setPressed } from '../../kart/panel-parts.js';
+import { createRaceStage } from './race-stage.js';
 
 // `onBackToSetup()`, `onRestart()` and `onTuning()` run on a click of those buttons. Returns { show(...), hide() }.
 export function createRaceBar(container, { onBackToSetup, onRestart, onTuning }) {
-  const style = document.createElement('style');
-  style.textContent = STYLE;
+  const stage = createRaceStage(container, 'k3d-race-stage');
   const bar = document.createElement('div');
   bar.id = 'kart-3d-race-bar';
+  bar.className = 'pp-panel k3d-bar';
   bar.hidden = true;
   bar.innerHTML = `
-    <button type="button" id="kart-3d-setup-button">Back to setup</button>
-    <button type="button" id="kart-3d-restart-button">Restart</button>
-    <button type="button" id="kart-3d-tuning-button">Tuning</button>
-    <p id="kart-3d-readout" hidden></p>`;
-  const clock = createLine('kart-3d-clock');
-  const countdown = createLine('kart-3d-countdown');
-  container.append(style, bar, clock, countdown);
+    <div class="k3d-bar-buttons">
+      <button type="button" id="kart-3d-setup-button" class="pp-button pp-small">Back to setup</button>
+      <button type="button" id="kart-3d-restart-button" class="pp-button pp-small">Restart</button>
+      <button type="button" id="kart-3d-tuning-button" class="pp-button pp-small" aria-pressed="false">Tuning</button>
+    </div>
+    <p id="kart-3d-readout" class="pp-muted k3d-readout" hidden></p>`;
+  const clock = createLine('kart-3d-clock', 'k3d-clock');
+  const countdown = createLine('kart-3d-countdown', 'k3d-countdown');
+  stage.append(bar, clock, countdown);
   const readout = bar.querySelector('#kart-3d-readout');
+  const tuningButton = bar.querySelector('#kart-3d-tuning-button');
   bar.querySelector('#kart-3d-setup-button').addEventListener('click', onBackToSetup);
   bar.querySelector('#kart-3d-restart-button').addEventListener('click', onRestart);
-  bar.querySelector('#kart-3d-tuning-button').addEventListener('click', onTuning);
+  tuningButton.addEventListener('click', onTuning);
 
   // Passed every frame: `clockText` is the clock's lines ('' before GO and at the results), `countdownText` '3',
   // '2', '1', 'GO!' or '' once the karts are off, `readoutText` the readout's text (null leaves it as it is,
-  // since it is rebuilt only a few times a second), `readoutShown` whether it shows (with the tuning panel),
-  // and `barShown` whether the bar shows (not over the results, which have their own buttons).
+  // since it is rebuilt only a few times a second), `readoutShown` whether it shows (with the tuning panel, so
+  // the Tuning button reads as pressed), and `barShown` whether the bar shows (not over the results, which have
+  // their own buttons).
   function show({ clockText, countdownText, readoutText, readoutShown, barShown }) {
     bar.hidden = !barShown;
     clock.hidden = clockText === '';
@@ -51,6 +42,7 @@ export function createRaceBar(container, { onBackToSetup, onRestart, onTuning })
     countdown.hidden = countdownText === '';
     setText(countdown, countdownText);
     readout.hidden = !readoutShown;
+    setPressed(tuningButton, readoutShown);
     if (readoutText !== null) {
       setText(readout, readoutText);
     }
@@ -65,9 +57,10 @@ export function createRaceBar(container, { onBackToSetup, onRestart, onTuning })
   return { show, hide };
 }
 
-function createLine(id) {
+function createLine(id, className) {
   const line = document.createElement('p');
   line.id = id;
+  line.className = className;
   line.hidden = true;
   return line;
 }

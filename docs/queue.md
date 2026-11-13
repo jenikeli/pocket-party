@@ -20,7 +20,7 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | O | Kart shadows from one stand-in mesh per kart | sonnet | | merged |
 | P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
 | N | Palm Bay Airport's leftovers | sonnet | M | merged |
-| G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | building |
+| G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | merged |
 | J | 3D race sounds | opus | F I | building |
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
@@ -438,6 +438,12 @@ world frees), unit tests.
 `sticky-walls-look.js` (204), and any file this queue left over 200 lines.
 
 - By responsibility, no behaviour change, exports and their users kept in step, every test still passing.
+- From the run: `index.js` of the 3D race (about 350 lines). `race-panels.css` is added by a `<link>` in
+  `race-stage.js` while `setup.css` is awaited in `load()` with `loadStylesheet`: make it one way (both awaited
+  in `load()`, both removed in `stop()`; `race-stage.js` then only makes the stage). The race's four stages
+  could be two. In `race-panels.css`: the clock's and countdown's rules are split over two blocks each, and
+  `pp-small` on the bar's and dev panels' buttons is overridden by a later rule (drop one). `controller/style.css`
+  (306 lines), `test/browser/m4-lobby.test.js` (415) and `m10-shell.test.js` (266) are long too.
 
 ### T2. Browser tests for the setup screens (sonnet, a browser-test task)
 
@@ -535,6 +541,10 @@ world frees), unit tests.
   (4,128 each). Only ground level with the road was dressed (the lobe's flat band and corner, the runway's south
   side); the lobe's south-west stays sand. Islands grew (sizes 16 to 22) and moved out rather than closer, to
   stay out of the road's baked shade. A second prop plane stands south of the runway.
+- G: results rows show a colour dot beside a white name (m7b's colour assertion moves to the dot, T2). The
+  race's panels' stylesheet is a `<link>` added by `race-stage.js` (not awaited; the panels start hidden); task
+  R makes it one way with `setup.css`. G saw results and Measure only in forced states.
+- Q: first implementer lost its worktree in the third interruption before committing; respawned.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

@@ -1,44 +1,33 @@
-// The Measure tool on the host (M7d4b; developer only, like the tuning panel): the setup screen's Measure button
-// starts it, and while it runs (measure-run.js, one case frame per drawn frame) a line over the picture says what
+// The Measure tool on the host (M7d4b; developer only, like the tuning panel; in the host's look): the setup
+// screen's Measure button starts it, and while it runs (measure-run.js, one case frame per drawn frame) a line over the picture says what
 // is being measured, with a Stop button; then the report shows, with Copy (to paste back to Claude) and Close.
 // Used by host/games/kart-3d/index.js, which hides its other panels while it runs.
 
 import { createMeasureRun } from './measure-run.js';
 import { copyText } from './copy-text.js';
-
-const STYLE = `
-  #kart-3d-measure { position: fixed; z-index: 1; left: 8px; top: 8px; max-width: calc(100vw - 16px);
-    max-height: calc(100dvh - 16px); overflow: auto; box-sizing: border-box; padding: 10px 14px; border-radius: 10px;
-    background: rgba(16, 19, 28, 0.88); color: #ffffff; font: 14px sans-serif; }
-  #kart-3d-measure p { margin: 0; }
-  #kart-3d-measure .measure-buttons { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-  #kart-3d-measure button { font: 15px sans-serif; padding: 8px 12px; border: none; border-radius: 8px;
-    background: #2a3145; color: #ffffff; cursor: pointer; }
-  #kart-3d-measure pre { margin: 8px 0 0; font: 12px monospace; white-space: pre; }
-  #kart-3d-measure textarea { width: 100%; height: 160px; margin-top: 8px; font: 12px monospace; }
-  #kart-3d-measure-status { color: #9aa4bf; }
-`;
+import { createRaceStage } from './race-stage.js';
 
 // `renderer` is renderer.js's; `restoreLook()` puts the host's own quality back once a run ends. Returns
 // { start(track, courseName), isRunning(), frame() }: start begins a run on the course shown; frame() draws the
 // run's next frame (call it instead of the game's own drawing while isRunning()).
 export function createMeasurePanel(container, renderer, restoreLook) {
-  const style = document.createElement('style');
-  style.textContent = STYLE;
+  // Over the setup screen, which comes first in the page.
+  const stage = createRaceStage(container, 'k3d-race-stage k3d-stage-over');
   const panel = document.createElement('div');
   panel.id = 'kart-3d-measure';
+  panel.className = 'pp-panel k3d-dev-panel k3d-measure';
   panel.hidden = true;
   panel.innerHTML = `
     <p id="kart-3d-measure-progress"></p>
     <pre id="kart-3d-measure-report" hidden></pre>
     <div class="measure-buttons">
-      <button type="button" id="kart-3d-measure-stop">Stop</button>
-      <button type="button" id="kart-3d-measure-copy" hidden>Copy</button>
-      <button type="button" id="kart-3d-measure-close" hidden>Close</button>
-      <p id="kart-3d-measure-status"></p>
+      <button type="button" id="kart-3d-measure-stop" class="pp-button pp-small">Stop</button>
+      <button type="button" id="kart-3d-measure-copy" class="pp-button pp-small" hidden>Copy</button>
+      <button type="button" id="kart-3d-measure-close" class="pp-button pp-small" hidden>Close</button>
+      <p id="kart-3d-measure-status" class="pp-muted"></p>
     </div>
-    <textarea id="kart-3d-measure-text" readonly hidden></textarea>`;
-  container.append(style, panel);
+    <textarea id="kart-3d-measure-text" class="k3d-dev-text" readonly hidden></textarea>`;
+  stage.append(panel);
   const byId = (id) => panel.querySelector(`#kart-3d-measure-${id}`);
   let run = null;
   byId('stop').addEventListener('click', () => run?.stop());

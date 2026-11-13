@@ -1,46 +1,32 @@
-// The 3D race's tuning panel on the host (developer only, like the readout): one slider per number in tuning.js,
-// grouped, each showing its value and changing the race at once; Copy values puts every value on the clipboard
-// as text to paste back to Claude, and Reset puts the defaults back. Opened by the race bar's Tuning button
-// (panels.js), closed by that or its own Close (it lies over the race bar on a narrow screen). Used by
+// The 3D race's tuning panel on the host (developer only, like the readout), in the host's look: one slider per
+// number in tuning.js, grouped, each showing its value and changing the race at once; Copy values puts every value
+// on the clipboard as text to paste back to Claude, and Reset puts the defaults back. Opened by the race bar's
+// Tuning button, closed by that or its own Close (it lies over the race bar on a narrow screen). Used by
 // host/games/kart-3d/index.js.
 
 import { TUNABLES, tuning, setTuning, resetTuning, describeTuning } from './tuning.js';
 import { copyText } from './copy-text.js';
-
-const STYLE = `
-  #kart-3d-tuning { position: fixed; z-index: 1; left: 8px; top: 8px; width: 360px; max-height: calc(100dvh - 16px);
-    overflow-y: auto; box-sizing: border-box; padding: 10px 14px; border-radius: 10px;
-    background: rgba(16, 19, 28, 0.88); color: #ffffff; font: 14px sans-serif; }
-  #kart-3d-tuning h3 { margin: 12px 0 4px; font-size: 15px; color: #ffd84a; }
-  #kart-3d-tuning label { display: block; margin: 6px 0; }
-  #kart-3d-tuning .tuning-name { display: flex; justify-content: space-between; gap: 8px; color: #c8cfe0; }
-  #kart-3d-tuning .tuning-value { color: #ffffff; font-weight: bold; white-space: nowrap; }
-  #kart-3d-tuning input[type="range"] { width: 100%; margin: 2px 0 0; }
-  #kart-3d-tuning .tuning-buttons { display: flex; gap: 8px; align-items: center; }
-  #kart-3d-tuning button { font: 15px sans-serif; padding: 8px 12px; border: none; border-radius: 8px;
-    background: #2a3145; color: #ffffff; cursor: pointer; }
-  #kart-3d-tuning textarea { width: 100%; height: 160px; margin-top: 8px; font: 12px monospace; }
-  #kart-3d-tuning-status { margin: 0; color: #9aa4bf; }
-`;
+import { createRaceStage } from './race-stage.js';
 
 // Returns { toggle(), setVisible(visible), isOpen() }: toggle opens or closes it (the Tuning button);
 // setVisible(false) hides it whatever was chosen (the setup screen), setVisible(true) shows it again if it was
 // open; isOpen() says whether it is open (the readout shows with it).
 export function createTuningPanel(container) {
-  const style = document.createElement('style');
-  style.textContent = STYLE;
+  // Over the setup screen and the race bar, which come first in the page.
+  const stage = createRaceStage(container, 'k3d-race-stage k3d-stage-over');
   const panel = document.createElement('div');
   panel.id = 'kart-3d-tuning';
+  panel.className = 'pp-panel k3d-dev-panel k3d-tuning';
   panel.hidden = true;
   panel.innerHTML = `
     <div class="tuning-buttons">
-      <button type="button" id="kart-3d-tuning-copy">Copy values</button>
-      <button type="button" id="kart-3d-tuning-reset">Reset</button>
-      <button type="button" id="kart-3d-tuning-close">Close</button>
-      <p id="kart-3d-tuning-status"></p>
+      <button type="button" id="kart-3d-tuning-copy" class="pp-button pp-small">Copy values</button>
+      <button type="button" id="kart-3d-tuning-reset" class="pp-button pp-small">Reset</button>
+      <button type="button" id="kart-3d-tuning-close" class="pp-button pp-small">Close</button>
+      <p id="kart-3d-tuning-status" class="pp-muted"></p>
     </div>
-    <textarea id="kart-3d-tuning-text" readonly hidden></textarea>`;
-  container.append(style, panel);
+    <textarea id="kart-3d-tuning-text" class="k3d-dev-text" readonly hidden></textarea>`;
+  stage.append(panel);
   const status = panel.querySelector('#kart-3d-tuning-status');
   const copyBox = panel.querySelector('#kart-3d-tuning-text');
   const sliders = TUNABLES.map((tunable) => createSlider(tunable));
@@ -76,6 +62,12 @@ export function createTuningPanel(container) {
   return { toggle, setVisible, isOpen: () => open };
 }
 
+// A tuned number as the panel shows it: as many decimals as its slider's step has, then its unit.
+export function tuningValueText(tunable, number) {
+  const decimals = (String(tunable.step).split('.')[1] ?? '').length;
+  return `${number.toFixed(decimals)} ${tunable.unit}`.trim();
+}
+
 // One slider: { tunable, row, show() }, show() setting it to the live value.
 function createSlider(tunable) {
   const row = document.createElement('label');
@@ -89,11 +81,10 @@ function createSlider(tunable) {
   const input = document.createElement('input');
   Object.assign(input, { type: 'range', min: tunable.min, max: tunable.max, step: tunable.step });
   row.append(name, input);
-  const decimals = (String(tunable.step).split('.')[1] ?? '').length;
 
   function show() {
     input.value = tuning[tunable.key];
-    value.textContent = `${tuning[tunable.key].toFixed(decimals)} ${tunable.unit}`.trim();
+    value.textContent = tuningValueText(tunable, tuning[tunable.key]);
   }
 
   input.addEventListener('input', () => {

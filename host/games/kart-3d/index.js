@@ -27,6 +27,7 @@ import { createHostChoices, setChoice } from './host-choices.js';
 import { createSetupPanel } from './setup-panel.js';
 import { createRaceBar } from './race-bar.js';
 import { createRaceSounds } from './race-sounds.js';
+import { playTune, tuneForRace } from '/host/audio/music.js';
 import { createResultsPanel } from './results-panel.js';
 import { createTuningPanel } from './tuning-panel.js';
 import { createCourseLoader } from './course-loader.js';
@@ -254,6 +255,8 @@ export function createGame() {
       stepTimer.record(performance.now() - startedAt);
     }
     raceSounds.update(race, chosenTrack(), { engines: !standIns });
+    // Each course has its own tune, by its id (host/audio/tunes/), from GO; the results' after.
+    playTune(tuneForRace(race, choices.courseId));
     syncRoomOpen();
     sendChangedViews();
   }
@@ -342,6 +345,7 @@ export function createGame() {
   function stop() {
     clearInterval(pingTimer);
     raceSounds.stop();
+    playTune(null);
     courseLoader.stop();
     stylesheet?.remove();
     renderer.destroy();

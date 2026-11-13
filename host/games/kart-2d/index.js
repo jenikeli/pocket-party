@@ -12,6 +12,7 @@ import { controllerView, setupView, roomIsOpen } from './race-views.js';
 import { createRenderer } from './renderer.js';
 import { loadStylesheet } from '/host/kart/panel-parts.js';
 import { createRaceSounds } from './race-sounds.js';
+import { playTune, tuneForRace } from '/host/audio/music.js';
 
 // Returns a fresh race game that follows the game module interface in plan.md.
 export function createGame() {
@@ -103,6 +104,8 @@ export function createGame() {
       syncRoomOpen();
     }
     raceSounds.update(race);
+    // None on the setup screen and the countdown, the race's tune from GO, the results' after.
+    playTune(tuneForRace(race, 'kart-2d'));
     sendChangedViews();
   }
 
@@ -142,6 +145,7 @@ export function createGame() {
     stylesheet?.remove();
     // Engines are held voices: they would drone on after the game if not stopped.
     raceSounds.stop();
+    playTune(null);
     renderer.destroy();
   }
 

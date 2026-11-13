@@ -23,9 +23,9 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | merged |
 | J | 3D race sounds | opus | F I | merged |
 | K | 2D race and shell sounds | sonnet | H I | merged |
-| L | Music made in code, wired to the lobby and the races | opus | I J K | building |
+| L | Music made in code, wired to the lobby and the races | opus | I J K | merged |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | merged |
-| R | Long files split | sonnet | F G J O Q | queued |
+| R | Long files split | sonnet | F G J O Q | building |
 | T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | building |
 | Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | queued |
 
@@ -562,6 +562,11 @@ world frees), unit tests.
   maps at each build is about 15 lines in `canvas-texture.js` (the reviewer's design). Maps changed per use
   (plane skins, animated panels, sea ripples) are not cached. `kit/stilt-hut.js` still sets `repeat` on the
   shared thatch maps (harmless: one user, same value).
+- L: the sequencer is four files (`music.js`, `tune-cursor.js`, `notation.js`, `instruments.js`) and
+  `tunes/`. `tuneForRace` lives in `music.js` (both races use it). The lobby tune stops when the game shows
+  (not at Play) and when the connection is lost; setup screens and countdowns are silent. A new tune starts at
+  once while the old one fades (0.5 s). Only major and natural minor keys, diatonic notes (the tests require it).
+- R does not split the long browser test files (m4-lobby, m10-shell): T2 is working in `test/browser/`.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

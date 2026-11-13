@@ -15,6 +15,7 @@ import { confirmButton } from '/host/confirm-click.js';
 import { showPicture } from '/host/pictures.js';
 import { playGame } from '/host/game-session.js';
 import { playRosterSounds, forgetRoster, playShellSound } from '/host/shell-sounds.js';
+import { playTune } from '/host/audio/music.js';
 
 // Often enough for the "back in 0:24" countdowns to tick smoothly.
 const REFRESH_MS = 250;
@@ -52,6 +53,7 @@ export function createLobby(room) {
     },
     handleConnectionLost(closedByHost) {
       closeJoinWindow();
+      playTune(null);
       showConnectionLost(closedByHost);
     },
     hide() {
@@ -64,6 +66,7 @@ export function createLobby(room) {
       // Joins and leaves during the game were not watched here; they should not all blip at once now.
       forgetRoster();
       problem = problemText ?? '';
+      playTune('lobby');
       screen.hidden = false;
       refresh();
     },
@@ -75,6 +78,7 @@ export function createLobby(room) {
     setRoomCode(roomCode);
     hideTapToStart();
     chooseGame(room.settings.gameId);
+    playTune('lobby');
     screen.hidden = false;
     openJoinWindow(room);
   }
@@ -134,6 +138,11 @@ export function createLobby(room) {
     refresh();
     try {
       await playGame({ room, lobby, gameInfo: game });
+      // The lobby's tune plays on through the loading screen and stops once the game runs (a race plays its
+      // own from GO, the input lab none). A game that failed in start() is already back in the lobby.
+      if (screen.hidden) {
+        playTune(null);
+      }
     } catch (error) {
       console.error(`Could not load ${game.title}`, error);
       problem = `Could not load ${game.title} (details in the browser console).`;

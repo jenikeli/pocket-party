@@ -26,8 +26,8 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | L | Music made in code, wired to the lobby and the races | opus | I J K | merged |
 | Q | Kit maps drawn once per game (Seaside's load time) | sonnet | F M N | merged |
 | R | Long files split | sonnet | F G J O Q | merged |
-| T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | building |
-| Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | queued |
+| T2 | Browser tests for the 2D and 3D setup screens and the loading (m5b to m9) | sonnet | F G H | merged |
+| Z | Main session: previews re-shot, full browser suite, docs, handoff | | all | in progress |
 
 Order: A, B, C first. D, E, M take the free places. T1 runs when A to D are merged, with only H and I building
 beside it (they do not draw). Then F, with O, P, N beside it (browser tests wait while they draw). Then G, J, K,
@@ -574,6 +574,12 @@ world frees), unit tests.
   (212, one rejoin state machine); and the files a few lines over that the task left. The race's four stages
   stay four (the tuning and Measure panels need their own). Both 3D stylesheets are awaited in `load()` and
   taken off the page in `stop()` and when a load fails.
+- T2: no bug found in game, shell or phone code. The new 3D setup checks live in m6b (picture, nothing drawn
+  before Start race, the loading bar, late joiners, the fifth phone refused, a join refused during the race).
+  m5b and m5c read the HTML panels instead of panel pixels. New helpers: `tapToStart` (browser.js),
+  `watchDrawCalls`, `watchLoadingScreen` (kart-3d-host.js). Run times alone on the machine: m1 46 s, m5b 69,
+  m5c 28, m6b 100, m6c 80, m7a 70, m7b 120, m7c 168, m7d2 98, m7d4b 244, m8 232, m9 437. T2 ran before R, L and
+  the synth fix were merged: the full suite in Z is the proof of the final state.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

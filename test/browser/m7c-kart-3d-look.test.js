@@ -14,7 +14,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { startGame, clickNow, GAME_END_BUTTON } from '../helpers/host-buttons.js';
-import { clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { clickStartRace, openTools, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -58,7 +58,9 @@ describe('M7c 3D look', () => {
     return hostPage.$eval('#game-container canvas', (canvas) => ({ width: canvas.width, height: canvas.height }));
   }
 
+  // The quality buttons sit in the setup screen's "Display and tools" drawer, so it is opened to see them press.
   async function chooseQuality(level) {
+    await openTools(hostPage);
     await clickNow(hostPage, `[data-quality="${level}"]`);
     await hostPage.waitForSelector(`[data-quality="${level}"][aria-pressed="true"]`);
   }
@@ -105,7 +107,7 @@ describe('M7c 3D look', () => {
 
   // Every click and screenshot waits for CPU-drawn WebGL frames, which are slowest at High, so this test gets
   // longer than the usual 60 s: a margin kept from when a High frame took about 2 s.
-  test('on High the race is drawn through bloom, and the gap between the two views stays black', { timeout: 180000 }, async () => {
+  test('on High the race is drawn through bloom, and the gap between the two views stays black', { timeout: STARTING_TIMEOUT + 120000 }, async () => {
     for (const player of [ana, cy]) {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');

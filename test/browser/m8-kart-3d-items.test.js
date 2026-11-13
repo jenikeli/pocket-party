@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES, KART_ITEMS } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -143,7 +143,7 @@ describe('M8 items', () => {
   ];
 
   ITEM_CHECKS.forEach(({ id, shows }, index) => {
-    test(`${id}: picked up, used once, shows ${shows}; the game keeps running`, async () => {
+    test(`${id}: picked up, used once, shows ${shows}; the game keeps running`, { timeout: STARTING_TIMEOUT }, async () => {
       const viewAfterPress = await useItem(id, index === 0);
       const effects = viewAfterPress.item.effects;
       if (shows === TIMED_EFFECT) {

@@ -9,7 +9,7 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, tapToStart, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor, readDarkPoints } from '../helpers/screenshot-pixels.js';
 import { startGame } from '../helpers/host-buttons.js';
 import { QUIET_ZONE_MODULES } from '../../host/qr-code.js';
@@ -95,11 +95,13 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     test('Tap to start opens the room; the join window shows its code, the address and a QR code for the join link', async () => {
       hostMessages = watchServerMessages(hostPage);
       await hostPage.goto(`${server.baseUrl}/host`);
-      // Nothing is created before the tap: the room (and its code) comes after it.
+      // Nothing is created before the tap: the room (and its code) comes after it, so no message arrives first.
       assert.equal(await hostPage.isVisible('#tap-to-start'), true);
       assert.equal(await hostPage.isVisible('#lobby'), false);
+      const beforeTap = await hostMessages.collectFor(1500);
+      assert.equal(beforeTap.some((message) => message.type === MESSAGE_TYPES.ROOM_CREATED), false);
       await saveScreenshot(hostPage, `${name}-1-host-tap-to-start`);
-      roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+      roomCode = await tapToStart(hostPage, hostMessages);
 
       assert.equal(await hostPage.isVisible('#tap-to-start'), false);
       assert.equal(await hostPage.isVisible('#lobby'), true);

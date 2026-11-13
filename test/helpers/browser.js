@@ -40,16 +40,21 @@ export function watchServerMessages(page) {
   return queue;
 }
 
-// Opens the host page, taps Tap to start (the room is created only after the tap) and resolves with the room code
-// once the lobby shows. The join window opens by itself on an empty room and is left open, for the tests that
-// look at it; startGame and chooseGame in host-buttons.js close it. `hostMessages` comes from
-// watchServerMessages(hostPage), called before this.
-export async function openHost(hostPage, baseUrl, hostMessages) {
-  await hostPage.goto(`${baseUrl}/host`);
+// Taps Tap to start on an already opened host page and resolves with the room code once the lobby shows (the room
+// is created only after the tap). The join window opens by itself on an empty room and is left open, for the
+// tests that look at it; startGame and chooseGame in host-buttons.js close it. `hostMessages` comes from
+// watchServerMessages(hostPage), called before the page's goto.
+export async function tapToStart(hostPage, hostMessages) {
   await hostPage.click('#tap-to-start-button');
   const { roomCode } = await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000);
   await hostPage.waitForSelector('#join-window:not([hidden])');
   return roomCode;
+}
+
+// Opens the host page (once) and taps Tap to start.
+export async function openHost(hostPage, baseUrl, hostMessages) {
+  await hostPage.goto(`${baseUrl}/host`);
+  return tapToStart(hostPage, hostMessages);
 }
 
 // Calls `check` until it returns something truthy, and returns that. Rendering happens on the next

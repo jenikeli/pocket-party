@@ -1,6 +1,6 @@
 // Browser tests for M7d2, the 3D race's kit of building blocks shown on the Test track: the course builds and
 // draws with every piece (the textured road, the panels, the barriers, the gate, the decks and their props)
-// without a WebGL or shader error, on the setup screen's overview and in a race; and the start lights over the
+// without a WebGL or shader error, in a race built after Start race; and the start lights over the
 // grid follow the countdown, lighting red one by one and then green at GO. Ana is an Android phone (Chromium).
 // Headless Chromium draws WebGL in software, so the host page is half the usual size and starts at Medium
 // quality (test/helpers/kart-3d-host.js). Whether the pieces look right is for a person to see: the screenshots
@@ -97,16 +97,16 @@ describe('M7d2 3D kit on the Test track', () => {
     await server?.stop();
   });
 
-  test('the Test track is dressed with the kit and shows on the setup screen', async () => {
+  test('the setup shows the Test track\'s saved picture; the course is built, dressed with the kit, after Start race', async () => {
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
-    // A few frames of the overview, so the new course is drawn.
-    await hostPage.waitForTimeout(2000);
+    assert.equal(await hostPage.textContent('#kart-3d-course-name'), 'Test track');
+    assert.match(await hostPage.getAttribute('.k3d-setup-picture', 'src'), /test-track\.jpg$/);
     await saveScreenshot(hostPage, 'm7d2-1-host-setup-test-track');
   });
 
   // Every screenshot waits for a CPU-drawn frame, so this test gets longer than the usual 60 s.
-  test('the start lights light red one by one with the countdown, then green at GO', { timeout: 120000 }, async () => {
+  test('the start lights light red one by one with the countdown, then green at GO', { timeout: STARTING_TIMEOUT + 60000 }, async () => {
     await ana.click('#kart-ready-button');
     await clickStartRace(hostPage, 'test-track');
     const samples = new Map();

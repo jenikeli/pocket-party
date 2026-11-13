@@ -16,9 +16,6 @@ import { startGame, startRace, clickNow, LAPS_MINUS_BUTTON, START_RACE_BUTTON, R
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
-// The setup and results panels' colour (host/games/kart-2d/setup-panel.js), and the middle of the screen it covers.
-const PANEL_COLOR = 0x1c2130;
-const MIDDLE = { left: 500, top: 300, right: 1420, bottom: 780 };
 const ANA_COLOR = 0xe74c3c;
 const LOWER_HALF = { left: 0, top: 540, right: 1920, bottom: 1080 };
 const RACE_TIMEOUT = { timeout: 120000 };
@@ -110,7 +107,7 @@ describe('M5c 2D race setup screen and control styles', () => {
   }
 
   async function panelOnHost() {
-    return (await findColor(pixelReader, await hostPage.screenshot(), PANEL_COLOR, MIDDLE)).count > 100000;
+    return hostPage.isVisible('#kart-2d-setup');
   }
 
   before(async () => {

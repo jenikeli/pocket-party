@@ -17,7 +17,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, clickWatch, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -94,7 +94,7 @@ describe('M7b 3D race', () => {
     // Since M9 Palm Bay Airport is first, and so chosen when a game starts.
     assert.deepEqual(await hostPage.locator('[data-course-id]').allTextContents(), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
-    // The overview behind the setup screen changes to the chosen course, and on.
+    // The setup's picture and name change to the chosen course, and on.
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'false');
@@ -107,7 +107,7 @@ describe('M7b 3D race', () => {
     await hostPage.waitForSelector('[data-engine-class="200"][aria-pressed="true"]');
     assert.equal(await hostPage.textContent('#kart-3d-laps'), '4');
     const view = await nextView(bo, (each) => each.phase === 'setup' && each.engineClass === 200);
-    assert.deepEqual(view, { phase: 'setup', laps: 4, engineClass: 200, steering: 'stick', autoAccelerate: false, ready: false });
+    assert.deepEqual(view, { phase: 'setup', laps: 4, engineClass: 200, courseName: 'Seaside Skyway', steering: 'stick', autoAccelerate: false, ready: false });
     for (const player of [ana, bo]) {
       await waitUntil(async () => (await player.page.textContent('#kart-setup-laps')) === '4 laps, 200cc', { message: `${player.name}'s laps line` });
     }
@@ -115,8 +115,8 @@ describe('M7b 3D race', () => {
   });
 
   // M7d4c1: Watch races stand-ins that drive themselves, a view each, with no phone needed.
-  test('Watch with 4 views races four self-driving stand-ins while the phones wait; Back to setup ends it', async () => {
-    await clickNow(hostPage, '[data-watch-views="4"]');
+  test('Watch with 4 views races four self-driving stand-ins while the phones wait; Back to setup ends it', { timeout: STARTING_TIMEOUT }, async () => {
+    await clickWatch(hostPage, 4);
     await waitUntil(async () => (await hudTexts('label')).length === 4, { ...RACE_TIMEOUT, message: 'four views' });
     assert.deepEqual(await hudTexts('label'), ['View 1', 'View 2', 'View 3', 'View 4']);
     assert.deepEqual(await hudTexts('lap'), Array(4).fill('Lap 1/4'));
@@ -209,7 +209,7 @@ describe('M7b 3D race', () => {
       let raceAgainClicks = 0;
       const panel = createResultsPanel(container, { onRaceAgain: () => (raceAgainClicks += 1), onBackToLobby: () => {} });
       panel.show([{ place: 1, playerId: 'p1', finishTime: 101.256 }, { place: 2, playerId: null, finishTime: null }], players);
-      const rows = [...container.querySelectorAll('li')].map((row) => ({ text: row.textContent, color: row.querySelector('.name').style.color }));
+      const rows = [...container.querySelectorAll('li')].map((row) => ({ text: row.textContent, color: row.querySelector('.name .pp-dot').style.getPropertyValue('--pp-dot-color') }));
       container.querySelector('#kart-3d-race-again-button').click();
       container.remove();
       return { rows, raceAgainClicks };
@@ -219,7 +219,7 @@ describe('M7b 3D race', () => {
     assert.equal(shown.raceAgainClicks, 1);
   });
 
-  test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', async () => {
+  test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', { timeout: STARTING_TIMEOUT }, async () => {
     // The room reopened after the game; a new player joins so the race can start again.
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
     await startGame(hostPage, cy.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });

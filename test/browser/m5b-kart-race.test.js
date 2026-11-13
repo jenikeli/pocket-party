@@ -26,7 +26,6 @@ const BOTTOM_STRAIGHT = { left: 0, top: 790, right: 1920, bottom: 1010 };
 // The lower half of the screen: the bottom straight and the lower halves of the bends, below the infield's
 // standings (which show each name in the player's colour).
 const LOWER_HALF = { left: 0, top: 540, right: 1920, bottom: 1080 };
-const RESULTS_PANEL_COLOR = 0x1c2130;
 const RACE_TIMEOUT = { timeout: 120000 };
 // drag.js counts 80 px as a full push.
 const STICK_LEFT_PX = Math.round(-STEADY_LEFT.steer * 80);
@@ -206,7 +205,8 @@ describe('M5b 2D kart race', () => {
     assert.ok(views.every((view) => view.finished && view.lap === 3));
     assert.equal(await ana.page.textContent('#kart-line'), 'Race over');
     assert.equal(await ana.page.textContent('#kart-big'), views[0].place === 1 ? '1st' : '2nd');
-    await waitUntil(async () => (await findOnHost(RESULTS_PANEL_COLOR, LOWER_HALF)).count > 100000, { message: 'the results panel' });
+    await hostPage.waitForSelector('#kart-2d-results:not([hidden])');
+    assert.equal(await hostPage.locator('#kart-2d-results-rows li').count(), 2);
     await saveScreenshot(hostPage, 'm5b-7-host-results');
     await saveScreenshot(ana.page, 'm5b-8-phone-results');
   });
@@ -221,10 +221,7 @@ describe('M5b 2D kart race', () => {
     for (const player of [ana, bo]) {
       await nextView(player, (view) => view.phase === 'countdown');
     }
-    // A few anti-aliased pixels at a kart's outline come close to the panel's colour, so not exactly 0.
-    await waitUntil(async () => (await findOnHost(RESULTS_PANEL_COLOR, LOWER_HALF)).count < 1000, {
-      message: 'the results to close',
-    });
+    await hostPage.waitForSelector('#kart-2d-results', { state: 'hidden' });
     const anaOnGrid = await findOnHost(ANA_COLOR, BOTTOM_STRAIGHT);
     assert.ok(anaOnGrid.count > 0 && anaOnGrid.centerX < 960, 'Ana is back behind the start line');
   });

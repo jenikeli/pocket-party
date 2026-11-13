@@ -76,3 +76,62 @@ export async function clickWatch(hostPage, viewCount) {
   await clickNow(hostPage, `[data-watch-views="${viewCount}"]`);
   await waitForCourseBuilt(hostPage);
 }
+
+// Makes the host page count the WebGL draw calls it makes, from the page's start (call before goto). The setup
+// screen draws nothing in 3D, so a count that stays still there proves no course is built or drawn (the renderer
+// draws its sky reflection map once when it starts, so the count is not 0); read it with drawCallCount.
+export function watchDrawCalls(page) {
+  return page.addInitScript(() => {
+    window.pocketPartyDrawCalls = 0;
+    for (const context of [WebGLRenderingContext, WebGL2RenderingContext]) {
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced']) {
+        const original = context.prototype[name];
+        if (!original) {
+          continue;
+        }
+        context.prototype[name] = function countedDraw(...args) {
+          window.pocketPartyDrawCalls += 1;
+          return original.apply(this, args);
+        };
+      }
+    }
+  });
+}
+
+export function drawCallCount(hostPage) {
+  return hostPage.evaluate(() => window.pocketPartyDrawCalls);
+}
+
+// Makes the host page log what the loading screen does, from the page's start (call before goto): each time it
+// is shown or hidden, its title when shown, and every width the bar had. The course build blocks the page for
+// seconds at a time, so polling would miss the screen; an observer's records arrive after each blocked stretch
+// with the old values, so none is lost. Read it with loadingLog.
+export function watchLoadingScreen(page) {
+  return page.addInitScript(() => {
+    window.pocketPartyLoading = { events: [], titles: [], barWidths: [] };
+    const log = window.pocketPartyLoading;
+    document.addEventListener('DOMContentLoaded', () => {
+      const screen = document.getElementById('loading-screen');
+      const bar = document.getElementById('loading-bar');
+      new MutationObserver((records) => {
+        for (const record of records) {
+          // The attribute was absent before when the screen was shown at the time, so it has just been hidden.
+          log.events.push(record.oldValue === null ? 'hidden' : 'shown');
+          if (record.oldValue !== null) {
+            log.titles.push(document.getElementById('loading-title').textContent);
+          }
+        }
+      }).observe(screen, { attributes: true, attributeFilter: ['hidden'], attributeOldValue: true });
+      new MutationObserver((records) => {
+        for (const record of records) {
+          log.barWidths.push(parseFloat(record.oldValue?.match(/width:\s*([\d.]+)%/)?.[1] ?? '0'));
+        }
+        log.barWidths.push(parseFloat(bar.style.width) || 0);
+      }).observe(bar, { attributes: true, attributeFilter: ['style'], attributeOldValue: true });
+    });
+  });
+}
+
+export function loadingLog(hostPage) {
+  return hostPage.evaluate(() => window.pocketPartyLoading);
+}

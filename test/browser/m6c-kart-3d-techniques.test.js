@@ -13,7 +13,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { startGame, clickNow } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, pickCourse, GAME_START_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, pickCourse, waitForCourseBuilt, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -102,7 +102,8 @@ describe('M6c 3D techniques', () => {
       setTuning('rocketFrom', 0);
     });
     await clickNow(hostPage, '#kart-3d-start-button');
-  });
+    await waitForCourseBuilt(hostPage);
+  }, { timeout: STARTING_TIMEOUT });
 
   after(async () => {
     await chromium?.close();
@@ -170,7 +171,7 @@ describe('M6c 3D techniques', () => {
       }
       return backgrounds;
     });
-    assert.deepEqual(colors, ['rgb(74, 84, 112)', 'rgb(47, 128, 237)', 'rgb(230, 126, 34)', 'rgb(155, 81, 224)']);
+    assert.deepEqual(colors, ['rgb(42, 49, 69)', 'rgb(47, 128, 237)', 'rgb(230, 126, 34)', 'rgb(155, 81, 224)']);
   });
 
   test('Restart puts everyone back on the grid for another countdown', async () => {

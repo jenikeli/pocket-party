@@ -53,9 +53,9 @@ describe('M7d4b 3D Measure tool', () => {
     await hostPage.waitForSelector('#lobby-players [data-player-id]');
     await startGame(hostPage, ana, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    // Seaside Skyway, which this file measures, is no longer the first course (M9): building it is part of starting.
+    // Seaside Skyway, which this file measures, is not the first course; it is built when Measure is clicked.
     await pickCourse(hostPage, 'seaside-skyway');
-  }, { timeout: STARTING_TIMEOUT + GAME_START_TIMEOUT });
+  }, { timeout: STARTING_TIMEOUT });
 
   after(async () => {
     await chromium?.close();
@@ -64,10 +64,11 @@ describe('M7d4b 3D Measure tool', () => {
 
   // Each case draws 11 software frames (about half a second each), so the first look takes about a minute. The whole
   // test took 176 s before M9, at the edge of its old 180 s, and just over it since (M9): 240 s leaves a margin.
-  test('Measure runs from the setup screen with a progress line, and Stop gives a report', { timeout: 240000 }, async () => {
+  test('Measure runs from the setup screen with a progress line, and Stop gives a report', { timeout: 240000 + GAME_START_TIMEOUT }, async () => {
     await clickNow(hostPage, '#kart-3d-measure-button');
-    await hostPage.waitForSelector('#kart-3d-measure:not([hidden])');
-    await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).startsWith('Measuring'), { message: 'the progress line' });
+    // The click first builds the course behind the loading screen, then Measure draws.
+    await hostPage.waitForSelector('#kart-3d-measure:not([hidden])', { timeout: GAME_START_TIMEOUT });
+    await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).startsWith('Measuring'), { timeoutMs: GAME_START_TIMEOUT, message: 'the progress line' });
     assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the setup panel is out of the way');
     assert.equal(await hostPage.isVisible('#kart-3d-measure-copy'), false);
     await saveScreenshot(hostPage, 'm7d4b-1-host-measuring');

@@ -31,7 +31,8 @@ You build one task of a milestone in the pocket-party repo, as planned by the ma
 ## Committing
 
 - Check `git status`: commit only your task's files. Never commit certs, keys, `.env` files or anything secret.
-- One commit on your worktree's branch, with a message in the repo's style: the milestone id, then what it does, lowercase (for example `m7d4c1 kit-shots review tool`). End it with the attribution lines your instructions give for commits.
+- **Commit early** (the user, after M10: two tasks lost their uncommitted worktrees when the usage limit paused the run): as soon as a first piece works and `npm test` passes, commit it on your branch, and commit again as each further piece works. Several commits are fine; the main session squashes them at the merge.
+- At least one commit on your worktree's branch, with a message in the repo's style: the milestone id, then what it does, lowercase (for example `m7d4c1 kit-shots review tool`). End it with the attribution lines your instructions give for commits.
 - Never push, merge or switch branches.
 
 ## Report back

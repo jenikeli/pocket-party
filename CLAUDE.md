@@ -83,6 +83,18 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 - No dead code, commented-out code, or leftover debug logging. Never swallow errors silently; log them with context.
 - Don't rewrite or reformat code unrelated to the current task.
 
+## UI design (every screen, host and phone)
+
+How I want the UI to look and behave (decided after M10's device run). When a screen is built or changed, check it against these, and show me a mockup first when the change is more than a detail.
+
+- **Minimal.** A screen shows only what is needed for the decision made on it. One main action per screen, in the accent colour; everything else is quiet. No sentence explains what the layout can show; the only status text is why the main action is off ("Waiting for Bo").
+- **Hierarchy does the talking.** Size, weight, colour and position say what matters, not boxes, borders and labels. The most important thing is the biggest (the room code in the join window, the course's name on the setup screen).
+- **Icons and pictures over words.** A control with a conventional meaning is an icon alone: back, close, remove, settings, add players, volume, leave. Words stay where an icon would have to be guessed (Start race, Ready, a player's name, a number). Every icon-only control has an `aria-label` and a `title`, since the tests and screen readers need its name. Icons are our own inline SVG in one set, drawn in `currentColor`; no emoji, no icon font, no image files.
+- **Colour carries state,** with one meaning everywhere: accent = chosen or the main action, green = ready or fine, red = armed or destructive, muted = off or away. No new colours outside the tokens (`host/ui.css`, `controller/style.css`).
+- **Confirming is a colour, not a question.** Anything that cannot be undone takes two clicks: the first arms the control (it turns red), the second does it. A click anywhere else, or 3 seconds, disarms it. No "Sure?" text, no dialogs.
+- **Joining looks the same everywhere:** the join window (the big QR code, the room code, the link), opened by the add-players icon.
+- **Sizes for where it is read:** the host from across a room (big type, few things), the phone under a thumb (targets of 44 px or more, text fields at 16 px or more).
+
 ## How to work with me
 
 - I'm building this partly to learn. When you make a non-obvious design decision (networking, state sync, reconnection, sensors), explain the mechanism briefly: what actually happens and why, not just what to type.

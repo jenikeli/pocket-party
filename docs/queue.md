@@ -560,3 +560,50 @@ world frees), unit tests.
 | Player leaves | an id removed from the room (not a disconnect) | sine slide 700 to 430 Hz | 0.18 s | 0.20 |
 | Game chosen | click on another game's thumbnail | square 1200 Hz tick | 0.035 s | 0.10 |
 | Play | Play accepted | triangle slide 260 to 1100 Hz | 0.3 s | 0.25 |
+
+### J: 3D race (volumes before the effects slider; a kart's cues are times 1/sqrt(players), race-wide cues are not)
+
+Only karts with a player make cues (in a Watch race the stand-ins do, with no engines); CPU karts are silent.
+Offline render through the limiter: nothing clips (loudest: rocket start 0.54, four boosting engines 0.53),
+nothing silent (quietest: roulette tick 0.107).
+
+| Sound | When | Made of | Length | Volume |
+|---|---|---|---|---|
+| Countdown beep | 3, 2, 1 | square tone, 440 Hz (as 2D) | 0.18 s | 0.22 |
+| GO | the countdown's 0 | square tone, 880 Hz, held (as 2D) | 0.5 s plus release | 0.25 |
+| Rocket start | the start judged a rocket | bandpass noise sweeping 400 to 2500 Hz under a triangle slide 150 to 420 Hz, plus a lowpassed square slide 120 to 480 Hz | 0.7 s | 0.42, 0.22, 0.15 |
+| Stall | the start judged a stall | three lowpassed square puffs 70, 62, 55 Hz, then a highpass hiss | about 0.75 s | 0.3, 0.25, 0.2; hiss 0.08 |
+| Hop | the Drift press hops | sine slide 300 to 600 Hz | 0.1 s | 0.15 |
+| Drift start | a drift begins | narrow bandpass noise 2600 to 2200 Hz: a tyre squeal | 0.3 s | 0.4 |
+| Mini-turbo charge | each spark level reached (blue, orange, purple) | triangle chime A5 / D6 / G6, a quiet square an octave up, a highpass crackle | 0.15 s | 0.22, 0.05, 0.1 |
+| Mini-turbo boost | the drift let go with sparks | the whoosh (as rocket start, without the square), longer for higher levels | 0.3 / 0.45 / 0.6 s | 0.9 to 1.1 times the whoosh |
+| Dash panel boost | a dash panel driven over | the whoosh plus a square chirp 600 to 1200 Hz | 0.5 s | whoosh, chirp 0.1 |
+| Trick boost | a trick lands | the whoosh | 0.35 s | whoosh times 0.9 |
+| Slipstream boost | the slipstream fires | lowpass noise opening 800 to 2000 Hz: wind | 0.6 s | 0.2 |
+| Trick | a trick starts | highpass noise swish, then triangle E6 and A6 | 0.25 s | 0.15 |
+| Glider opens | the glider opens | lowpass noise 600 to 200 Hz, triangle slide 220 to 330 Hz | 0.35 s | 0.3, 0.15 |
+| Glide landing | a glide ends on the road | thud: sine 120 to 50 Hz plus lowpass noise | 0.18 s | 0.35, 0.21 |
+| Fall | the kart falls off | sine whistle 900 to 200 Hz | 0.7 s | 0.15 |
+| Item box | a box broken starts the roulette | highpass noise crack plus a triangle G6 | 0.12 s | 0.2, 0.15 |
+| Roulette tick | every 0.08 s while it rolls | square 1500 Hz, lowpassed | 0.025 s | 0.06 |
+| Item lands | the roulette stops on an item | triangle C6 then G6 | 0.26 s | 0.2 |
+| Blocker used | the blocker dropped | thud (as glide landing) | 0.18 s | 0.3 |
+| Jump used | the jump item launches | sine boing 200 to 900 Hz | 0.3 s | 0.25 |
+| Magnet used | the magnet starts | lowpassed square rising 200 to 400 Hz, held | 0.5 s | 0.12 |
+| Push used | the push starts | bandpass noise 1500 to 300 Hz plus sine 400 to 150 Hz | 0.35 s | 0.3, 0.15 |
+| Teleport or sticky used | the kart uses one | sine pop 500 to 900 Hz | 0.08 s | 0.15 |
+| Teleport warning | anyone starts a teleport (everyone hears it) | six lowpassed square tones alternating 660 and 880 Hz | 0.7 s | 0.1 |
+| Teleport hop | the karts hop | bandpass noise 3000 to 500 Hz plus sine 1500 to 300 Hz: a zap | 0.3 s | 0.25, 0.15 |
+| Sticky walls | anyone makes the walls sticky (everyone hears it) | lowpassed square falling 400 to 150 Hz | 0.45 s | 0.2 |
+| Bump | hit by another kart | lowpass noise plus lowpassed square 110 Hz: a thunk | 0.1 s | 0.3, 0.2, times 0.4 to 1 by speed lost |
+| Wall hit | a wall hit (not a graze) | lowpass noise plus sine 90 to 60 Hz | 0.15 s | 0.3, 0.3, times 0.4 to 1 |
+| Blocker hit | bounced off a blocker | lowpass noise 600 Hz: a sand thump | 0.2 s | 0.6, times 0.4 to 1 |
+| Pushed | another kart's push shoves it | bandpass noise 1200 to 400 Hz | 0.25 s | 0.35, times 0.4 to 1 |
+| Stuck | held on a sticky wall | triangle 300 to 120 Hz plus bandpass noise: a squelch | 0.2 s | 0.25, 0.2 |
+| Spin | a spin boost | triangle 500 up to 1000 and back: a twirl | 0.36 s | 0.15 |
+| Spin post | a spin post hit | the twirl plus a clang (squares 1800 and 2700 Hz) | 0.36 s | clang 0.08, 0.06 |
+| Lap | a new lap that is not the last | triangle G5 then C6 | 0.35 s | 0.22 |
+| Final lap | the last lap begins (2 laps or more) | lowpassed squares G4 G4 G4 then C5 held | about 1 s | 0.15, last 0.17 |
+| Finish, first place | a player crosses the line in 1st | C5 E5 G5, then C6 held (as 2D) | about 1.1 s | 0.28 to 0.30 |
+| Finish, other places | a player crosses the line | C5 then E5 (as 2D) | about 0.35 s | 0.2 |
+| Engine, one per player | countdown through the race, stopped at the results (runs on after the player finishes) | sawtooth voice through a lowpass; pitch 70 to 190 Hz, lowpass 300 to 1500 Hz with speed; drifting: pitch times 1.07, duller; boosting: pitch times 1.18, brighter, 1.3 times louder; each player detuned 3.5% | held | 0.12 / sqrt(players), times 0.4 to 1.0 |

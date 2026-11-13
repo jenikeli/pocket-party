@@ -4,22 +4,22 @@ Build plan for the phone-controller party game. Work through milestones in order
 
 ## Goal
 
-A Mario Kart-style racing game for 2-9 players. A host display shows the race, and players steer with their own phones (iOS or Android) as controllers. The host can be any device with a browser. Two games are planned, both chosen from the lobby: first a **2D kart race** around a stadium track (top-down, the whole track on one screen), which is the first real game and tests the framework, then a **3D kart race** with hills and jumps and split screen. They are separate games: the 3D race is not built on the 2D one. The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it, with our own assets (see "3D kart race design"). The M3 input lab stays as a developer tool in the same game list. No other games or minigames are planned.
+A Mario Kart-style racing game for 2-9 players. A host display shows the race, and players steer with their own phones (iOS or Android) as controllers. The host can be any device with a browser. Two games are planned, both chosen on the host's game picker: first a **2D kart race** around a stadium track (top-down, the whole track on one screen), which is the first real game and tests the framework, then a **3D kart race** with hills and jumps and split screen. They are separate games: the 3D race is not built on the 2D one. The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it, with our own assets (see "3D kart race design"). The M3 input lab stays as a developer tool in the same game list. No other games or minigames are planned.
 
 ## Decisions already made
 
 - Controllers: Android Chrome, and iOS Safari or Chrome (iPhone and iPad), all verified in the spike with a self-signed cert that includes `extendedKeyUsage=serverAuth` and `keyUsage` (see `docs/spike-findings.md`). Host: Windows, Mac, iOS, or Android browser.
-- Host rendering and game logic: the shell (Tap to start, lobby, join window, loading screen) is plain HTML and CSS since M10, in the "Night" look (`host/ui.css`), sized in `em` inside a 16:9 `.pp-stage` whose font size `host/stage.js` keeps at 1/80 of its width, so one design fits every host screen. Phaser 3 (2D, 1920x1080 logical size, `FIT` scaling) draws only the 2D kart race's track and the input lab, and loads with them. A game module brings its own renderer (Phaser, Three.js) inside the container the shell gives it, and puts its HTML panels in its own `div.pp-stage`; the game framework never assumes Phaser (decided before M5).
+- Host rendering and game logic: the shell (Tap to start, the game picker, the top bar over a game, the join window, settings, the loading screen) is plain HTML and CSS since M10, in the "Night" look (`host/ui.css`), sized in `em` inside a 16:9 `.pp-stage` whose font size `host/stage.js` keeps at 1/80 of its width, so one design fits every host screen. Phaser 3 (2D, 1920x1080 logical size, `FIT` scaling) draws only the 2D kart race's track and the input lab, and loads with them. A game module brings its own renderer (Phaser, Three.js) inside the container the shell gives it, and puts its HTML panels in its own `div.pp-stage`; the game framework never assumes Phaser (decided before M5).
 - The host does the heavy lifting: rendering, physics and game rules all run on the host device. The server stays a relay; controllers send input and show what the host tells them.
-- Games are plug-in modules, decoupled from the shell. The shell (room, roster, lobby, join and reconnection) knows nothing about any one game; it loads a game module by id and runs it through one contract (see "Game module interface"). Each game owns everything from its own setup screen to its own results. The contract is designed for the 3D kart race from the start, so that it does not have to be rebuilt after the 2D race (decided before M5).
+- Games are plug-in modules, decoupled from the shell. The shell (the game picker, a game's room and roster, joining and reconnection) knows nothing about any one game; it loads a game module by id and runs it through one contract (see "Game module interface"). Each game owns everything from its own setup screen, which is also its lobby (M10b), to its own results. The contract is designed for the 3D kart race from the start, so that it does not have to be rebuilt after the 2D race (decided before M5).
 - Server: Node + `ws`, relay only. Dev on my Linux home server, production on a spare non-rooted Android phone running Node in Termux. The same code and the same `npm start` must work on both. Node is v26.3.1 on the phone; pin the same major version on the dev box via `engines` and `.nvmrc`.
 - Network: the Android phone runs a hotspot and all game devices join it. Observed on my phone: the hotspot interface is `swlan0` at `10.60.55.71` and the address stayed the same after toggling the hotspot, but changed after a phone restart, so never assume a fixed IP. The phone may also be on home Wi-Fi at the same time (`wlan0`), so the server answers on several addresses.
 - Transport: WebSockets. HTTPS/WSS is required for tilt and Wake Lock, so it is a real milestone (M2), not an afterthought.
-- Reconnection: playerId + secret token in `localStorage`. The host holds a disconnected player's slot for a grace period (default 30 seconds, configurable in the lobby; it was 2 minutes until the M4 device run), because phones often drop their socket when the screen locks and the OS, not our code, decides that.
+- Reconnection: playerId + secret token in `localStorage`. The host holds a disconnected player's slot for a grace period (default 30 seconds, set in the host's settings and kept in its localStorage since M10b; it was 2 minutes until the M4 device run), because phones often drop their socket when the screen locks and the OS, not our code, decides that.
 - Host is authoritative for game state.
 - Inputs to explore first: tap, swipe, tilt.
 - Kart controls: the phone is held sideways like a Nintendo Switch controller, its top end in the left hand: steering on the left, buttons on the right. Since M10 every phone page is laid out in portrait and the driving controls are drawn a quarter turn round on it, so a player with rotation lock on just turns the phone. Each player picks their own control style on their phone, as in Mario Kart: steering by tilt or by an on-screen stick, and auto-accelerate on or off (decided before M5).
-- Up to 9 players (`MAX_PLAYERS` in `shared/protocol.js` is the hard ceiling and the lobby's limit; while a game runs the room's limit is that game's own maximum, M10). The phone's hotspot accepts 10 clients and the host display is one of them (see `docs/spike-findings.md`). Each game also sets its own maximum: the 2D race takes 9, the 3D race 4 (split screen; see M6).
+- Up to 9 players (`MAX_PLAYERS` in `shared/protocol.js` is the hard ceiling; a room's limit is its game's own maximum, set when the room is made, M10b). The phone's hotspot accepts 10 clients and the host display is one of them (see `docs/spike-findings.md`). Each game also sets its own maximum: the 2D race takes 9, the 3D race 4 (split screen; see M6).
 - Automated tests guard every behaviour that has been built, so later changes cannot silently break earlier milestones (see "Testing" in `CLAUDE.md`). Real-device checks are kept for what automation cannot see.
 
 ## 2D kart race design
@@ -74,15 +74,15 @@ What gets built when. M6 tests the parts that could sink the plan; M7 is split i
 
 Two kinds of settings, handled in two places:
 
-- **Room settings** stay in the shell's lobby on the host screen: which game to play (its thumbnail), and behind "Room settings" the grace period and the music and effects volumes (M10; "max players" was dropped, each game's own limit applies). Changing game reloads nothing; the lobby only checks the game's player range (`minPlayers`, `maxPlayers` from the registry, `canPickGame`). Play is off, with the reason shown, if the player count does not fit the chosen game (for example 5 players and the 3D race). There is no ready step in the lobby (M10): players get ready on the game's setup screen.
-- **Game settings** belong to the game and are set inside it, after "Start game", on the game's own setup screen, as in Mario Kart:
+- **Host settings** belong to the shell, behind the gear (on the game picker and in the top bar over every game): the music and effects volumes and the hold time for a dropped player, all kept in the host's localStorage (M10b; there is no room between games to hold them). Which game to play is picked on the game picker, which shows each game's player range (`minPlayers` to `maxPlayers` from the registry) and checks nothing: no room exists there, so there are no players to count. A game's own start rule says when too few have joined (the 2D race: "Needs 2 players"), and the server refuses joins beyond the game's maximum.
+- **Game settings** belong to the game and are set inside it, on the game's own setup screen, as in Mario Kart:
   - *Race settings* (the number of laps, and in the 3D race the course and engine class) on the host screen, HTML buttons in both races since M10. One set for everyone, controlled only by the host (decided before M5).
   - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onMessage` as steering. The game shows who has chosen and is ready.
-  - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept) or "Back to lobby".
+  - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept); the shell's back arrow is the way out (M10b).
 - *Look* (the 3D race's drawing quality, M7c) sits on the host's setup screen too, but belongs to the host device rather than the race: it is saved in the host's localStorage and comes back next time.
-- So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it goes back to the lobby; saving them between games (localStorage on the host) can be added later if it gets annoying.
+- So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it ends; saving them between games (localStorage on the host) can be added later if it gets annoying.
 
-Rejected: putting game settings in the lobby. The lobby would have to draw settings that each game defines, which means a settings description language in the game contract; and per-player control choices do not fit a host screen anyway.
+Rejected: putting game settings in the shell. The shell would have to draw settings that each game defines, which means a settings description language in the game contract; and per-player control choices do not fit a host screen anyway.
 
 ## Game module interface
 
@@ -92,26 +92,27 @@ Replaces the earlier minigame interface (`{ id, assets, init, onInput, update, i
 
 Host side (`host/games/<id>/index.js`) exports `createGame()`, which returns a fresh game object (a new one for every run, so nothing is left over from the last race). As built in M5a:
 ```
-registry entry (host/games/index.js only): { id, title, blurb, minPlayers, maxPlayers, cover, background }
-  so the lobby can check the player range and show the game without loading it (M10: blurb is the line under
-  the title, cover the thumbnail '/assets/covers/<id>.svg', background a wide picture's path or null).
+registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers, cover, background }
+  so the game picker can show the game and its player range without loading it (cover is the thumbnail
+  '/assets/covers/<id>.svg', background a wide picture's path or null; M10b dropped blurb).
 {
   load(onProgress)            -> Promise. Fetch and decode assets. The shell awaits it before start(), behind its
                                  loading screen (host/loading-screen.js); it is called on Play. onProgress(0..1)
                                  is optional to call; the bar creeps when a game reports nothing (M10).
   start({ container, players, setControllerView, removePlayer, pingPlayer, setRoomOpen })
                               -> Build the game. container is an empty full-screen element the game renders into
-                                 with whatever it likes. players is the shell's roster (read-only and live:
-                                 connected, name and device change while the game runs; a player who joined just
-                                 before the room closed shows up in it). setControllerView(playerId, view) changes
+                                 with whatever it likes. players is the room's roster (read-only and live). The
+                                 room is new at start() (M10b): players is empty and fills as phones join, and
+                                 connected, name and device change while the game runs. setControllerView(playerId, view) changes
                                  what that phone shows. removePlayer(playerId) removes a player (the M4 kick; the
                                  game hears onPlayerLeft when the server confirms). pingPlayer(playerId, sentAt)
                                  sends that phone a PING; its PONG comes back to onMessage with the same sentAt.
-                                 setRoomOpen(open) (M10): the shell closes the room at Play and sets the server's
-                                 player limit to the game's maxPlayers; a game opens the room on screens where a
-                                 new player can come in (setup, results) and closes it for a race. While it is
-                                 open the game bar shows "Add players". A new player just appears in players;
-                                 the shell has already sent them the GAME screen.
+                                 setRoomOpen(open): the shell has opened the room and set the server's player
+                                 limit to the game's maxPlayers before start() (M10b); a game closes the room
+                                 for a race and opens it again on screens where a new player can come in (setup,
+                                 results). The input lab never closes it. While it is open the top bar shows
+                                 the room code and the add-players icon. A new player just appears in players;
+                                 the shell has already sent them the game's screen.
   onMessage(playerId, message)
                               -> A message from that player's phone that belongs to the game: INPUT, INPUT_MODE or
                                  PONG (GAME_MESSAGE_TYPES in host/game-session.js). The shell keeps the rest.
@@ -119,16 +120,17 @@ registry entry (host/games/index.js only): { id, title, blurb, minPlayers, maxPl
   render(alpha)               -> Draw. Called once per animation frame; alpha (0..1) is how far time has got
                                  between the last two steps, for smooth drawing on 120 Hz screens.
   onPlayerLeft(playerId)      -> A player was removed mid-game (kicked, left, grace period over).
-  isDone()                    -> true when the game wants to go back to the lobby ("Back to lobby" after a race).
-                                 The game draws its own setup, countdown and results screens; the shell has none.
+  isDone()                    -> true when the game wants to end: the shell closes the room and shows the picker.
+                                 No game uses it since M10b (all three return false): the shell's back arrow is
+                                 the one way out. The game draws its own setup, countdown and results screens.
   stop()                      -> Free everything: WebGL context, listeners, timers.
 }
 ```
-If `step` or `render` throws, or `start` throws, the shell stops the game and returns to the lobby with a message; the error goes to the console.
+If `step` or `render` throws, or `start` throws, the shell stops the game, closes its room and returns to the game picker with a message; the error goes to the console.
 
 Rules that keep complex games affordable:
 - **Fixed timestep.** The shell's runner (`host/game-runner.js`) owns the frame loop: each animation frame it adds the real elapsed time to an accumulator, calls `step(1/60)` as many times as fits, then calls `render(alpha)`. So a game behaves the same at 30, 60 and 120 fps, and physics stays stable. The step-counting maths is a plain module with unit tests.
-- **Rules apart from drawing.** Each game keeps its rules (state, `step`, input handling, results, physics) in DOM-free modules that run in Node, unit-tested like `host/lobby-rules.js`. The renderer only reads that state.
+- **Rules apart from drawing.** Each game keeps its rules (state, `step`, input handling, results, physics) in DOM-free modules that run in Node, unit-tested like `host/shell-rules.js`. The renderer only reads that state.
 - **State as plain data.** The game state is plain objects and numbers (no class instances, no references to renderer objects), so it can be copied, sent and compared. That costs nothing now and keeps two later ideas open: phones or a second screen drawing their own view from state the host sends, and resuming a game after the host tab reloads (see "Later ideas").
 - **The game owns its renderer.** The shell has no canvas of its own since M10 (it is HTML), so an iPad never runs two render loops or holds two busy WebGL contexts. The game creates its renderer in `start()` and destroys it in `stop()` (iOS limits how many WebGL contexts a page may hold).
 - **Controller view is state, not events.** `setControllerView(playerId, view)` stores a small game-defined object per player and sends it in `CONTROLLER_STATE` (with the game id). Because it is state, a rejoining phone gets it again through the M4 path with no extra code. One-shot cues (a vibration when hit, "lap 2!") get their own message type when a game first needs one.
@@ -141,9 +143,9 @@ start(container, send)        -> Build the controls in container and start the i
 showView(view)                -> Show what the host sent with setControllerView (null until it sends one).
 stop()                        -> Stop the input modules and timers; the shell empties the container afterwards.
 ```
-The shell keeps a top line on the phone's game screen ("In room ABCD" and a Leave button) above the container.
+The shell keeps a top line on the phone's game screen (the room code and a leave icon, two taps) above the container.
 
-Flow: Tap to start (full screen, wake lock, audio unlock, then the room is created) -> lobby (the host picks a game by its thumbnail; phones join through the "Add players" window: QR code, room code, link) -> Play -> the loading screen (await `load()`; players stay in the lobby meanwhile) -> the game: its setup screen -> race -> results -> "Race again" or "Back to lobby" -> back to the lobby, with the same room code and players, and the room open again to new players (it is also open on a game's setup and results screens, M10). The shell also shows an "End game" button (two clicks, like "Close room") during any game, for the input lab, which never ends by itself, and as a way out of any game. It and "Close room" are HTML buttons at the bottom right of the host screen (`host/game-bar.js`), so games keep that corner clear.
+Flow (M10b): Tap to start (full screen, wake lock, audio unlock) -> the game picker (no room: nobody can join) -> Play -> the loading screen (await `load()`) -> the game's room is created and the game starts on its setup screen, which is its lobby: the join window (QR code, room code, link) opens by itself, and from the add-players icon after that -> race (the room closed) -> results (open again) -> "Race again", or the back arrow. The back arrow (top left, two clicks, at any time) stops the game and closes the room: the host's socket closes, the server sends every phone `ROOM_CLOSED`, the phones show "The game ended", and the picker comes back. The next game gets a new room and a new code. The shell's top bar over every game (`host/game-bar.js`) holds the back arrow on the left and the room code, add players (both only while the room is open) and settings on the right, so games keep the top corners clear (5 em down from the top at the left and right edges).
 
 ## Pre-build spike (I run this myself before M0)
 
@@ -184,16 +186,15 @@ Finished milestones are summed up in a few lines each: what exists now and what 
 ### M4: Lobby and reconnection (done)
 - The host runs the grace timer (default 30 s) and sends `REMOVE_PLAYER` when it ends. The server frees a slot only if it is still disconnected and answers `PLAYER_LEFT`; the host removes players only on `PLAYER_LEFT`, so a rejoin that beats the timer is safe. Every disconnect, including a closed tab, gets the grace period.
 - The server runs a WebSocket ping-frame heartbeat (`server/heartbeat.js`, every 10 s) and answers a controller's own `PING` (the resume check) itself.
-- `CONTROLLER_STATE` is the single host-to-controller message, sent on join, rejoin and every change. The lobby's ready step (`SET_READY`) was removed in M10; players get ready on a game's setup screen.
-- During a game the room is closed to new players (`SET_ROOM_OPEN`; new joins get `GAME_IN_PROGRESS`), but rejoins get in. The host can remove players (`KICK_PLAYER`) and close the room; phones can leave (`LEAVE`, delivered by `controller/background-leave.js` when the socket is down).
-- `host/room.js` (created once in `host/main.js`) owns the socket and the roster, with the grace timers in `host/grace-periods.js` (M10), and passes each message to the current listener.
+- `CONTROLLER_STATE` is the single host-to-controller message, sent on join, rejoin and every change. The lobby's ready step (`SET_READY`) was removed in M10 and the lobby itself in M10b (`others` and the `lobby` screen left the message); players get ready on a game's setup screen.
+- During a race the room is closed to new players (`SET_ROOM_OPEN`; new joins get `GAME_IN_PROGRESS`), but rejoins get in. The host can remove players (`KICK_PLAYER`) and close the room (its socket closing is what closes it); phones can leave (`LEAVE`, delivered by `controller/background-leave.js` when the socket is down).
+- `host/room.js` owns one game's socket and roster (M10b: a new room per game, made by `host/game-session.js` once the game has loaded and closed when it ends), with the grace timers in `host/grace-periods.js`, and passes each message to its listener.
 - After editing `server/`, restart `npm run dev`: a stale server once ignored new message types.
 
 ### M5a: Game framework (input lab moves onto it) (done)
-- The "Game module interface" above is what was built. The registry is `host/games/index.js`; `host/game-session.js` runs one game (hides the lobby, gives the game `#game-container`, shows the HTML End game / Close room bar from `host/game-bar.js`); `host/game-runner.js` with `host/fixed-step.js` owns the 60 Hz steps (capped at 15 per frame).
+- The "Game module interface" above is what was built. The registry is `host/games/index.js`; `host/game-session.js` runs one game (loads it, opens its room, gives the game `#game-container`, shows the top bar's back arrow, room code and add players from `host/game-bar.js`, M10b); `host/game-runner.js` with `host/fixed-step.js` owns the 60 Hz steps (capped at 15 per frame).
 - Phaser can be driven by hand from `render()`: `host/hand-driven-phaser.js` (used by the input lab and the 2D race).
 - Input modules keep one callback each, so every game registers its callbacks in its controller `start()`, not when its module loads.
-- After a game everyone is set to not ready and the room reopens.
 
 ### M5b: 2D kart race (the race itself) (done)
 - Rules in `host/games/kart-2d/` (`track.js`, `kart-physics.js`, `race.js`, `race-views.js`), all DOM-free and unit tested. There is no halfway checkpoint: each kart keeps `distance` driven along the middle line, so reversing over the line subtracts.

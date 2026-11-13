@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, saveScreenshot } from '../helpers/browser.js';
+import { startGame } from '../helpers/host-buttons.js';
 import { makeTempCert } from '../helpers/temp-cert.js';
 import { listLanAddresses } from '../../server/addresses.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
@@ -26,8 +27,8 @@ async function readDeviceInfo(page) {
   return Object.fromEntries(labels.map((label, index) => [label, values[index]]));
 }
 
-// Resolves with the URL of the first WebSocket the page opens. Call before page.goto (the host's opens after the
-// Tap to start tap).
+// Resolves with the URL of the first WebSocket the page opens. Call before page.goto (the host's opens when a
+// game's Play is clicked).
 function firstSocketUrl(page) {
   return new Promise((resolve) => page.once('websocket', (socket) => resolve(socket.url())));
 }
@@ -75,8 +76,9 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       const hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 }, ignoreHTTPSErrors: true });
       const hostMessages = watchServerMessages(hostPage);
       const hostSocketUrl = firstSocketUrl(hostPage);
-      // The host's socket opens when Tap to start is tapped, so its URL is read after openHost.
-      const roomCode = await openHost(hostPage, origin, hostMessages);
+      // The host's socket opens at Play, which makes the input lab's room.
+      await openHost(hostPage, origin);
+      const roomCode = await startGame(hostPage, { gameId: 'input-lab' });
       assert.match(await hostSocketUrl, /^wss:\/\//);
 
       const page = await controllerContext.newPage();
@@ -89,7 +91,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(page, `${name}-https-2-secure-join-screen`);
 
       await page.click('#join-button');
-      await page.waitForSelector('#lobby-screen:not([hidden])');
+      await page.waitForSelector('#game-screen:not([hidden])');
       assert.match(await controllerSocketUrl, /^wss:\/\//);
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
       await page.close();

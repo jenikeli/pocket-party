@@ -1,9 +1,10 @@
-// Browser tests for M5a, the game framework: the lobby starts the chosen game (the input lab) through the
-// registry and host/game-session.js, phones load the game named in CONTROLLER_STATE, "End game" brings everyone
-// back to the lobby and reopens the room, the game can run again, and a game that fails to load leaves the lobby
-// as it was. Uses Android (Chromium) phones only; the M1 and M3 tests already run the lab on WebKit.
-// Since M10 the lobby is HTML (no shell canvas: the only canvas is the running game's), Play picks the game by its
-// thumbnail, and there is no ready step.
+// Browser tests for M5a, the game framework: the picker starts the chosen game (the input lab) through the
+// registry and host/game-session.js, phones load the game named in CONTROLLER_STATE, the back arrow brings the
+// host back to the picker and every phone to "The game ended", the game can run again in a new room, and a game
+// that fails to load leaves the picker as it was, with no room. Uses Android (Chromium) phones only; the M1 and
+// M3 tests already run the lab on WebKit.
+// Since M10b the picker is HTML (the only canvas is the running game's), a room exists only while a game runs,
+// and a phone in a room is always on the game's screen (CONTROLLER_STATE has no `others`).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,12 +12,12 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
-import { startGame, chooseGame, clickNow, confirmClick, lobbyChip, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, GAME_BACK_BUTTON } from '../helpers/host-buttons.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 // From host/games/input-lab/player-card.js: the first card's stick ring (see test/browser/m1-flow.test.js).
 const FIRST_PLAYER_COLOR = 0xe74c3c;
-const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };
+const FIRST_RING_AREA = { left: 45, top: 230, right: 196, bottom: 381 };
 
 describe('M5a game framework', () => {
   let server;
@@ -25,37 +26,26 @@ describe('M5a game framework', () => {
   let hostPage;
   let hostMessages;
   let roomCode;
+  let hostSocketCount = 0;
   // Two players, each with their own context (own localStorage) and the messages their page receives.
   let ana;
   let bo;
 
-  async function joinAs(playerName) {
+  async function joinAs(playerName, code = roomCode) {
     const context = await browser.newContext(devices['Pixel 7']);
     const page = await context.newPage();
     const messages = watchServerMessages(page);
-    await page.goto(`${server.baseUrl}/?room=${roomCode}`);
+    await page.goto(`${server.baseUrl}/?room=${code}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.waitForSelector('#lobby-screen:not([hidden])');
+    await page.waitForSelector('#pad-screen', { state: 'visible' });
     const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return { context, page, messages, playerId };
   }
 
-  // The next CONTROLLER_STATE this player's page receives that shows `screen`.
-  async function nextState(player, screen) {
-    while (true) {
-      const state = await player.messages.nextOfType(MESSAGE_TYPES.CONTROLLER_STATE);
-      if (state.screen === screen) {
-        return state;
-      }
-    }
-  }
-
-  // Two clicks on a player's chip in the lobby remove them, once the server confirms with PLAYER_LEFT.
-  async function confirmRemoveChip(playerId) {
-    const left = hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_LEFT);
-    await confirmClick(hostPage, lobbyChip(playerId));
-    assert.equal((await left).playerId, playerId);
+  // The next CONTROLLER_STATE this player's page receives.
+  function nextState(player) {
+    return player.messages.nextOfType(MESSAGE_TYPES.CONTROLLER_STATE);
   }
 
   function countCanvases() {
@@ -72,10 +62,9 @@ describe('M5a game framework', () => {
     browser = await launchBrowser('chromium');
     pixelReader = await openPixelReader(browser);
     hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    hostPage.on('websocket', () => (hostSocketCount += 1));
     hostMessages = watchServerMessages(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
-    ana = await joinAs('Ana');
-    bo = await joinAs('Bo');
+    await openHost(hostPage, server.baseUrl);
   });
 
   after(async () => {
@@ -83,87 +72,91 @@ describe('M5a game framework', () => {
     await server?.stop();
   });
 
-  test('a game that fails to load leaves everyone in the lobby, with the room open, and Play works again afterwards', async () => {
-    await chooseGame(hostPage, 'input-lab');
+  test('a game that fails to load returns to the picker with the reason, and leaves no room behind', async () => {
+    await clickNow(hostPage, '[data-game-id="input-lab"]');
+    await hostPage.waitForSelector('[data-game-id="input-lab"][aria-pressed="true"]');
     await hostPage.route('**/host/games/input-lab/index.js', (route) => route.fulfill({ status: 404 }));
     const loadError = hostPage.waitForEvent('console', (entry) => entry.text().includes('Could not load Input lab'));
     await clickNow(hostPage, '#play-button');
     await loadError;
-    await hostPage.waitForFunction(() => document.getElementById('lobby-problem').textContent !== '');
-    assert.match(await hostPage.textContent('#lobby-problem'), /Could not load Input lab/);
+    await hostPage.waitForFunction(() => document.getElementById('picker-problem').textContent !== '');
+    assert.match(await hostPage.textContent('#picker-problem'), /Could not load Input lab/);
     await saveScreenshot(hostPage, 'm5a-1-host-load-failed');
-    assert.equal(await ana.page.isVisible('#lobby-screen'), true);
-    assert.equal(await hostPage.isVisible('#lobby'), true);
+    assert.equal(await hostPage.isVisible('#game-picker'), true);
     assert.equal(await hostPage.isVisible('#loading-screen'), false);
+    assert.equal(await hostPage.isVisible('#join-window'), false);
+    assert.equal(await hostPage.isVisible('#game-back-button'), false);
     assert.equal(await countCanvases(), 0);
-    // The room closed at Play and opened again with the failure: a new player is let in.
-    const cy = await joinAs('Cy');
-    await hostPage.waitForSelector(`#lobby-players [data-player-id="${cy.playerId}"]`);
-    await cy.context.close();
+    // The room is made only after a successful load, so none was made: no socket, and Play is on again.
+    assert.equal(hostSocketCount, 0);
+    assert.equal(await hostPage.isEnabled('#play-button'), true);
     await hostPage.unroute('**/host/games/input-lab/index.js');
-    await confirmRemoveChip(cy.playerId);
   });
 
-  test('Start runs the chosen game in its own container; phones get the game id and load its controls', async () => {
-    await startGame(hostPage, ana.page);
-    const state = await nextState(ana, 'game');
+  test('Play runs the chosen game in its own container; phones get the game id and load its controls', async () => {
+    roomCode = await startGame(hostPage, { gameId: 'input-lab' });
+    ana = await joinAs('Ana');
+    bo = await joinAs('Bo');
+    const state = await nextState(ana);
+    assert.equal(state.screen, 'game');
     assert.equal(state.gameId, 'input-lab');
     assert.equal(state.view, null);
-    await bo.page.waitForSelector('#pad-screen:not([hidden])');
+    assert.equal('others' in state, false, 'the state no longer lists the other players');
 
-    // The lobby is hidden and the game draws on its own canvas, the only one on the page.
-    assert.equal(await hostPage.isVisible('#lobby'), false);
+    // The picker is hidden and the game draws on its own canvas, the only one on the page.
+    assert.equal(await hostPage.isVisible('#game-picker'), false);
     assert.equal(await hostPage.isVisible('#game-container canvas'), true);
     assert.equal(await countCanvases(), 1);
-    assert.equal(await hostPage.isVisible('#game-bar'), true);
+    assert.equal(await hostPage.isVisible(GAME_BACK_BUTTON), true);
+    assert.equal(hostSocketCount, 1);
     await waitUntil(firstDotShows, { message: 'the first player\'s card in the running game' });
     await saveScreenshot(hostPage, 'm5a-2-host-game');
   });
 
   test('a phone that reloads gets the game id again and goes straight back into the game', async () => {
     await ana.page.reload();
-    const state = await nextState(ana, 'game');
+    const state = await nextState(ana);
     assert.equal(state.gameId, 'input-lab');
-    await ana.page.waitForSelector('#pad-screen:not([hidden])');
+    await ana.page.waitForSelector('#pad-screen', { state: 'visible' });
   });
 
-  test('End game needs two clicks, then everyone is back in the lobby', async () => {
-    await hostPage.click(GAME_END_BUTTON);
-    assert.equal(await hostPage.textContent(GAME_END_BUTTON), 'End it?');
+  test('the back arrow needs two clicks, then the picker shows and every phone reads "The game ended"', async () => {
+    await hostPage.click(GAME_BACK_BUTTON);
+    assert.match(await hostPage.getAttribute(GAME_BACK_BUTTON, 'class'), /\barmed\b/);
     await hostPage.waitForTimeout(500);
     assert.equal(await ana.page.isVisible('#pad-screen'), true);
-    await saveScreenshot(hostPage, 'm5a-3-host-end-armed');
+    await saveScreenshot(hostPage, 'm5a-3-host-back-armed');
 
-    await hostPage.click(GAME_END_BUTTON);
+    await hostPage.click(GAME_BACK_BUTTON);
     for (const player of [ana, bo]) {
-      const state = await nextState(player, 'lobby');
-      assert.equal(state.gameId, null);
-      assert.equal('ready' in state, false, 'there is no ready step any more');
-      await player.page.waitForSelector('#lobby-screen:not([hidden])');
+      await player.page.waitForSelector('#ended-screen:not([hidden])');
+      assert.equal(await player.page.textContent('#ended-text'), 'The game ended');
+      assert.equal(await player.page.isVisible('#pad-screen'), false);
     }
-    assert.equal(await ana.page.isVisible('#ready-button'), false);
-    // The game's canvas and container are gone, and the lobby is back.
-    assert.equal(await hostPage.isVisible('#lobby'), true);
-    assert.equal(await hostPage.isVisible('#game-bar'), false);
+    // The game's canvas and container are gone, and the picker is back with the room closed.
+    await hostPage.waitForSelector('#game-picker:not([hidden])');
+    assert.equal(await hostPage.isVisible(GAME_BACK_BUTTON), false);
     assert.equal(await hostPage.isVisible('#game-container'), false);
     assert.equal(await countCanvases(), 0);
-    await saveScreenshot(hostPage, 'm5a-4-host-back-in-lobby');
+    await saveScreenshot(hostPage, 'm5a-4-host-back-on-picker');
   });
 
-  test('back in the lobby the room takes new players again, and the host can remove a dropped one', async () => {
-    const cy = await joinAs('Cy');
-    await cy.context.close();
-    await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_DISCONNECTED);
-    // Cy is held for the grace period, away; the chip says so until it is removed.
-    await hostPage.waitForSelector(`${lobbyChip(cy.playerId)}.away`);
-    await confirmRemoveChip(cy.playerId);
-    assert.equal(await hostPage.locator(lobbyChip(cy.playerId)).count(), 0);
-  });
+  test('the game can be played again after it ended, in a room of its own with a new code', async () => {
+    const firstCode = roomCode;
+    roomCode = await startGame(hostPage, { gameId: 'input-lab' });
+    assert.notEqual(roomCode, firstCode);
+    assert.equal(hostSocketCount, 2);
+    assert.equal(await hostPage.locator('#join-players [data-player-id]').count(), 0);
 
-  test('the game can be played again after it ended', async () => {
-    await startGame(hostPage, ana.page);
-    await bo.page.waitForSelector('#pad-screen:not([hidden])');
+    // Ana joins the new room from "Join another"; the name is kept.
+    await ana.page.click('#ended-join-button');
+    await ana.page.fill('#room-code', roomCode);
+    await ana.page.click('#join-button');
+    await ana.page.waitForSelector('#pad-screen', { state: 'visible' });
+    await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     await waitUntil(firstDotShows, { message: 'the first player\'s card in the second run' });
     assert.equal(await countCanvases(), 1);
+    await bo.context.close();
+    await ana.context.close();
   });
 });

@@ -1,7 +1,7 @@
-// Browser tests for M6b, the 3D race's driving (since M7b the race itself): it starts from the lobby, phones get
+// Browser tests for M6b, the 3D race's driving (since M7b the race itself): Play on the picker makes its room, phones get
 // the shared kart setup screen (with the laps and engine class) and controls, the host draws two split-screen views with the players' names, auto-accelerate
 // drives a kart by itself and a held Go drives another (read from the host's readout, with the physics step
-// time), a reloaded phone gets its controls back, Back to setup keeps the control styles, and End game frees
+// time), a reloaded phone gets its controls back, Back to setup keeps the control styles, and the back arrow frees
 // the WebGL canvas. Ana is an Android phone (Chromium, real touches) on the stick and Go; Bo an iPhone (WebKit)
 // on auto-accelerate. Headless Chromium draws WebGL in software, so the host page is
 // half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js). Since M10 it also checks that
@@ -15,7 +15,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker, removeRowButton } from '../helpers/host-buttons.js';
 import {
   presetQuality,
   presetPlainCourse,
@@ -55,22 +55,14 @@ describe('M6b 3D driving', () => {
     await openPlayerPage(player);
     await player.page.fill('#player-name', playerName);
     await player.page.click('#join-button');
-    await player.page.waitForSelector('#lobby-screen:not([hidden])');
+    await player.page.waitForSelector('#kart-setup:not([hidden])');
     player.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
     return player;
   }
 
-  // Joins while the game's setup screen has the room open: the phone goes straight to the game's screen, not the
-  // lobby.
-  async function joinLate(playerName) {
-    const context = await chromium.newContext(devices['Pixel 7 landscape']);
-    const player = { context, name: playerName };
-    await openPlayerPage(player);
-    await player.page.fill('#player-name', playerName);
-    await player.page.click('#join-button');
-    await player.page.waitForSelector('#kart-setup:not([hidden])');
-    player.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
-    return player;
+  // Joins while the setup screen has the room open again (after a race): the same, on an Android phone.
+  function joinLate(playerName) {
+    return joinAs(chromium, 'Pixel 7 landscape', playerName);
   }
 
   // Tries to join as one more phone and returns what its join screen says once the server has answered.
@@ -125,7 +117,8 @@ describe('M6b 3D driving', () => {
     await presetPlainCourse(hostPage);
     await watchDrawCalls(hostPage);
     await watchLoadingScreen(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
@@ -137,8 +130,7 @@ describe('M6b 3D driving', () => {
     await server?.stop();
   });
 
-  test('Start game opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
-    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
+  test('Play opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
     assert.deepEqual(view, { phase: 'setup', laps: 3, engineClass: 150, courseName: 'Palm Bay Airport', steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
@@ -146,8 +138,13 @@ describe('M6b 3D driving', () => {
     // The game's style.css only imports the shared kart styles; the setup screen's grid shows they arrived.
     assert.equal(await bo.page.evaluate(() => getComputedStyle(document.getElementById('kart-setup')).display), 'grid');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    const rows = await hostPage.locator('#kart-3d-rows li').allTextContents();
-    assert.deepEqual(rows, ['AnaStick, Go buttonChoosing...', 'BoStick, Go buttonChoosing...']);
+    // A row is the colour dot, the name, two small icons that say how they drive (named for screen readers) and a
+    // cross; nobody is ready yet.
+    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-row').allTextContents(), ['Ana', 'Bo']);
+    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-row:first-child [role="img"]').evaluateAll(
+      (icons) => icons.map((each) => each.getAttribute('aria-label')),
+    ), ['Stick', 'Go button']);
+    assert.equal(await hostPage.locator('#kart-3d-rows .kart-player-row.ready').count(), 0);
     assert.equal(await hostPage.isDisabled('#kart-3d-start-button'), true);
     await saveScreenshot(hostPage, 'm6b-1-host-setup');
   });
@@ -171,6 +168,25 @@ describe('M6b 3D driving', () => {
     const loading = await loadingLog(hostPage);
     assert.deepEqual(loading.events, ['shown', 'hidden']);
     assert.deepEqual(loading.titles, ['Kart race 3D']);
+  });
+
+  test('the setup\'s icon-only controls carry only a name and a title, and the lobby controls it used to have are gone', async () => {
+    for (const selector of ['[data-course-id]', '.k3d-item', '#kart-3d-tools-button', '#kart-3d-laps-minus', '#kart-3d-laps-plus']) {
+      const buttons = hostPage.locator(`#kart-3d-setup ${selector}`);
+      assert.ok((await buttons.count()) > 0, `${selector} exist`);
+      const shown = await buttons.evaluateAll((elements) =>
+        elements.map((each) => ({ text: each.textContent.trim(), label: each.getAttribute('aria-label'), title: each.title })));
+      for (const each of shown) {
+        assert.equal(each.text, '', `${selector} holds no text`);
+        assert.ok(each.label && each.title, `${selector} has a name and a title`);
+      }
+    }
+    assert.equal(await hostPage.getAttribute('#kart-3d-tools-button', 'aria-pressed'), 'false');
+    for (const gone of ['#kart-3d-lobby-button', '#kart-3d-setup-lobby-button', '#kart-3d-course-blurb', '#kart-3d-items-button', '#lobby']) {
+      assert.equal(await hostPage.locator(gone).count(), 0, `${gone} is gone`);
+    }
+    // The class buttons keep "cc".
+    assert.deepEqual(await hostPage.locator('[data-engine-class]').allTextContents(), ['50cc', '100cc', '150cc', '200cc']);
   });
 
   test('Bo picks auto-accelerate, both are ready, Start race gives the phones their controls and the host two views', { timeout: STARTING_TIMEOUT }, async () => {
@@ -248,11 +264,31 @@ describe('M6b 3D driving', () => {
   test('on the setup screen two more phones join and get rows; a fifth is refused, the race takes 4', async () => {
     cy = await joinLate('Cy');
     dee = await joinLate('Dee');
-    await waitUntil(async () => (await hostPage.locator('#kart-3d-rows li').count()) === 4, { message: 'a row for each of the four players' });
+    await waitUntil(async () => (await hostPage.locator('#kart-3d-rows .kart-player-row').count()) === 4, { message: 'a row for each of the four players' });
     assert.equal(await hostPage.textContent('#kart-3d-status'), 'Waiting for Ana, Bo, Cy, Dee');
     assert.equal(await cy.page.isVisible('#kart-setup'), true);
     assert.equal(await tryToJoin(), 'That room is full.');
     await saveScreenshot(hostPage, 'm6b-4-host-setup-four-players');
+  });
+
+  test('the host removes a player from a setup row with two clicks (red first); the phone can join again', async () => {
+    const cross = removeRowButton(dee.playerId);
+    await hostPage.click(cross);
+    assert.match(await hostPage.getAttribute(cross, 'class'), /\barmed\b/);
+    assert.equal(await dee.page.isVisible('#kart-setup'), true, 'one click removes nobody');
+    await hostPage.click(cross);
+    await dee.page.waitForSelector('#join-screen:not([hidden])');
+    assert.equal(await dee.page.textContent('#join-status'), 'The host removed you from the game.');
+    await hostPage.waitForSelector(cross, { state: 'detached' });
+    assert.equal(await hostPage.textContent('#kart-3d-status'), 'Waiting for Ana, Bo, Cy');
+
+    // The room is still open on the setup screen, so Dee comes in again as a new player.
+    await dee.page.click('#join-button');
+    await dee.page.waitForSelector('#kart-setup:not([hidden])');
+    dee.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
+    await waitUntil(async () => (await hostPage.textContent('#kart-3d-status')) === 'Waiting for Ana, Bo, Cy, Dee', {
+      message: 'Dee\'s new row',
+    });
   });
 
   test('the late joiners get karts in the next race, the built course is not built again, and a phone that tries during it is refused', { timeout: STARTING_TIMEOUT }, async () => {
@@ -274,13 +310,12 @@ describe('M6b 3D driving', () => {
     assert.deepEqual(pageErrors, []);
   });
 
-  test('End game frees the WebGL canvas and returns everyone to the lobby', async () => {
-    // Twice in a row: the first click arms the button, the second ends the game.
-    await clickNow(hostPage, GAME_END_BUTTON, 2);
-    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
+  test('the back arrow frees the WebGL canvas, shows the picker and ends the game on every phone', async () => {
+    // Twice in a row: the first click arms the arrow, the second goes back.
+    await goBackToPicker(hostPage);
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0);
     for (const player of [ana, bo]) {
-      await player.page.waitForSelector('#lobby-screen:not([hidden])');
+      await player.page.waitForSelector('#ended-screen:not([hidden])');
     }
     assert.deepEqual(pageErrors, []);
   });

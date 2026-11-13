@@ -2,7 +2,8 @@
 // (stick or tilt) and auto-accelerate, Ready and Start race, tilt steering in landscape, a rejoining phone
 // keeping its style, tilt falling back to the stick when refused, and Race again keeping the settings.
 // Ana is an Android phone (Chromium, real touches from test/helpers/touch.js) on the stick with auto-accelerate;
-// Bo is an iPhone (WebKit) steering by tilt. Headless browsers have no motion sensor, so Bo's page gets the iOS
+// Bo is an iPhone (WebKit) steering by tilt. Since M10b the room is made by Play on the picker, so Ana joins the
+// 2D race's setup screen alone first (it needs two players), then Bo. Headless browsers have no motion sensor, so Bo's page gets the iOS
 // permission API stubbed and deviceorientation events fired by hand, as in the M3 tests.
 
 import { describe, test, before, after } from 'node:test';
@@ -51,7 +52,7 @@ describe('M5c 2D race setup screen and control styles', () => {
     await openPlayerPage(player);
     await player.page.fill('#player-name', playerName);
     await player.page.click('#join-button');
-    await player.page.waitForSelector('#lobby-screen:not([hidden])');
+    await player.page.waitForSelector('#kart-setup', { state: 'visible' });
     player.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
     return player;
   }
@@ -117,10 +118,10 @@ describe('M5c 2D race setup screen and control styles', () => {
     pixelReader = await openPixelReader(chromium);
     hostPage = await chromium.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-2d' });
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
-    bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo', 'granted');
   });
 
   after(async () => {
@@ -129,8 +130,38 @@ describe('M5c 2D race setup screen and control styles', () => {
     await server?.stop();
   });
 
-  test('Start game opens the setup screen: phones show the defaults, the host shows the setup panel', async () => {
-    await startGame(hostPage, ana.page, { gameId: 'kart-2d', controlsSelector: '#kart-setup' });
+  test('the race refuses to start with one player: the line says it needs 2, Start race is off, and a forced click starts nothing', async () => {
+    await waitUntil(panelOnHost, { message: 'the setup panel on the host' });
+    assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Needs 2 players');
+    assert.equal(await hostPage.isDisabled(START_RACE_BUTTON), true);
+    // Ready turns green with a tick, and still says "Ready".
+    assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
+    await ana.page.click('#kart-ready-button');
+    await ana.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+    assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
+    assert.equal(await ana.page.locator('#kart-ready-button svg').count(), 1, 'a tick once ready');
+    await saveScreenshot(ana.page, 'm5c-0-android-ready');
+    // Everyone present is ready, yet it still needs a second player.
+    await hostPage.waitForTimeout(500);
+    assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Needs 2 players');
+    assert.equal(await hostPage.isDisabled(START_RACE_BUTTON), true);
+    await hostPage.evaluate((selector) => {
+      const button = document.querySelector(selector);
+      button.disabled = false;
+      button.click();
+    }, START_RACE_BUTTON);
+    await hostPage.waitForTimeout(500);
+    assert.equal(await ana.page.isVisible('#kart-setup'), true, 'still on the setup screen');
+    assert.equal(await panelOnHost(), true);
+    await ana.page.click('#kart-ready-button');
+    await ana.page.waitForSelector('#kart-ready-button[aria-pressed="false"]');
+    bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo', 'granted');
+    await waitUntil(async () => (await hostPage.textContent('#kart-2d-setup-status')) === 'Waiting for Ana, Bo', {
+      message: 'the line to wait for both players',
+    });
+  });
+
+  test('the setup screen shows the defaults on the phones and the setup panel on the host', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
     assert.deepEqual(view, { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');

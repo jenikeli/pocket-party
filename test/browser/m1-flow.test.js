@@ -1,17 +1,16 @@
 // Browser tests for M1 end to end: the real host page (desktop Chromium) and the real controller page on an
 // emulated Android phone (Chromium) and iPhone (WebKit, Safari's engine). Screenshots go to test-results/screenshots/.
 // Since M3 the host shows the input lab, so "the player's square" is the stick dot on that player's card.
-// Since M4 players join a lobby first, and the host starts the lab from it once two players are in, so a second
-// phone helps. Since M10 the host page starts with Tap to start, the lobby and the join window are HTML (read by
-// id, and the QR code read from its drawn pixels), and there is no ready step.
+// Since M10b the host page starts with Tap to start, then the game picker (no room yet); Play opens the input
+// lab's room and its join window, the phone joins after that (read by id, the QR code from its drawn pixels).
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, tapToStart, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, watchServerMessages, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor, readDarkPoints } from '../helpers/screenshot-pixels.js';
-import { startGame } from '../helpers/host-buttons.js';
+import { startGame, closeJoinWindow } from '../helpers/host-buttons.js';
 import { QUIET_ZONE_MODULES } from '../../host/qr-code.js';
 import { qrcode } from '../../host/vendor/qrcode-generator-2.0.4.mjs';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
@@ -23,9 +22,9 @@ const CONTROLLER_DEVICES = [
 
 // Layout from host/games/input-lab/player-card.js, at 1:1 scale (1920x1080 viewport).
 const FIRST_PLAYER_COLOR = 0xe74c3c;
-// The first card's top-left corner is (15, 15); its stick ring is centered 105, 195 inside it, radius 75.
-const FIRST_DOT_START = { x: 120, y: 210 };
-const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };
+// The first card's top-left corner is (15, 110); its stick ring is centered 105, 195 inside it, radius 75.
+const FIRST_DOT_START = { x: 120, y: 305 };
+const FIRST_RING_AREA = { left: 45, top: 230, right: 196, bottom: 381 };
 
 // The center of every QR module in the join window, as [x, y] page points, plus the dark/light pattern the code
 // should have. The QR is an SVG whose viewBox counts modules (the quiet zone included), so a module is the
@@ -61,7 +60,6 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
     let hostMessages;
     let controllerContext;
     let controllerPage;
-    let helperContext;
     let roomCode;
 
     // The first player's stick dot on the host, or null when it is not on screen.
@@ -83,7 +81,6 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       pixelReader = await openPixelReader(hostBrowser);
       hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 } });
       controllerContext = await controllerBrowser.newContext(device);
-      helperContext = await hostBrowser.newContext(devices['Pixel 7']);
     });
 
     after(async () => {
@@ -92,19 +89,22 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await server?.stop();
     });
 
-    test('Tap to start opens the room; the join window shows its code, the address and a QR code for the join link', async () => {
+    test('the picker has no room; Play opens the input lab\'s room and the join window shows its code, the address and a QR code for the join link', async () => {
       hostMessages = watchServerMessages(hostPage);
       await hostPage.goto(`${server.baseUrl}/host`);
-      // Nothing is created before the tap: the room (and its code) comes after it, so no message arrives first.
       assert.equal(await hostPage.isVisible('#tap-to-start'), true);
-      assert.equal(await hostPage.isVisible('#lobby'), false);
-      const beforeTap = await hostMessages.collectFor(1500);
-      assert.equal(beforeTap.some((message) => message.type === MESSAGE_TYPES.ROOM_CREATED), false);
+      assert.equal(await hostPage.isVisible('#game-picker'), false);
       await saveScreenshot(hostPage, `${name}-1-host-tap-to-start`);
-      roomCode = await tapToStart(hostPage, hostMessages);
+      await hostPage.click('#tap-to-start-button');
+      await hostPage.waitForSelector('#game-picker:not([hidden])');
+      // Nothing is created before Play: the room (and its code) comes after it, so no message arrives first.
+      const beforePlay = await hostMessages.collectFor(1500);
+      assert.equal(beforePlay.some((message) => message.type === MESSAGE_TYPES.ROOM_CREATED), false);
+      assert.equal(await hostPage.isVisible('#join-window'), false);
 
+      roomCode = await startGame(hostPage, { gameId: 'input-lab', keepJoinWindow: true });
       assert.equal(await hostPage.isVisible('#tap-to-start'), false);
-      assert.equal(await hostPage.isVisible('#lobby'), true);
+      assert.equal(await hostPage.isVisible('#join-window'), true);
       assert.equal(await hostPage.textContent('#join-code'), roomCode);
       assert.equal(await hostPage.textContent('#join-url'), server.baseUrl);
 
@@ -120,23 +120,15 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-1-host-join-window`);
     });
 
-    test('controller fills in the code from the ?room= link and joins', async () => {
+    test('controller fills in the code from the ?room= link and joins; the lab shows its card at once', async () => {
       controllerPage = await openController();
       assert.equal(await controllerPage.inputValue('#room-code'), roomCode);
 
       await controllerPage.click('#join-button');
-      await controllerPage.waitForSelector('#lobby-screen:not([hidden])');
-      assert.equal(await controllerPage.textContent('#lobby-room'), `Room ${roomCode}`);
+      await controllerPage.waitForSelector('#pad-screen', { state: 'visible' });
+      assert.equal(await controllerPage.textContent('#game-status'), roomCode);
       await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-    });
-
-    test('once a second player has joined, Play starts the lab and shows the first player\'s dot', async () => {
-      const helperPage = await helperContext.newPage();
-      await helperPage.goto(`${server.baseUrl}/?room=${roomCode}`);
-      await helperPage.click('#join-button');
-      await helperPage.waitForSelector('#lobby-screen:not([hidden])');
-      await startGame(hostPage, controllerPage);
-      assert.equal(await controllerPage.textContent('#game-status'), `In room ${roomCode}`);
+      await closeJoinWindow(hostPage);
 
       const dot = await waitUntil(findFirstDot, { message: 'the first player\'s dot on the host' });
       assert.ok(Math.abs(dot.centerX - FIRST_DOT_START.x) < 3, `dot x ${dot.centerX}`);
@@ -189,14 +181,14 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-4-host-after-leave`);
     });
 
-    test('closing the host sends the controller back to the join screen', async () => {
+    test('closing the host page ends the game on the phone', async () => {
       // The phone saved its place, so opening the link again rejoins straight into the lab.
       controllerPage = await openController();
-      await controllerPage.waitForSelector('#pad-screen:not([hidden])');
+      await controllerPage.waitForSelector('#pad-screen', { state: 'visible' });
 
       await hostPage.close();
-      await controllerPage.waitForSelector('#join-screen:not([hidden])');
-      assert.equal(await controllerPage.textContent('#join-status'), 'The host left the game.');
+      await controllerPage.waitForSelector('#ended-screen:not([hidden])');
+      assert.equal(await controllerPage.textContent('#ended-text'), 'The game ended');
       await saveScreenshot(controllerPage, `${name}-5-controller-host-left`);
     });
   });

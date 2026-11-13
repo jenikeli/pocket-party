@@ -1,11 +1,13 @@
-// Browser tests for M5b, the 2D kart race: picking it in the lobby, starting from the setup screen (M5c) with
-// the default controls, the landscape controls (the portrait phone's turned layout is in m10-turned-controls.test.js), real touches driving a kart, a dropped player's kart stopping and driving on after the rejoin, whole
-// races to the results, Race again and Back to lobby. Two Android (Chromium) phones held sideways; fingers come
-// from test/helpers/touch.js, because a kart needs the stick and a pedal held at once.
+// Browser tests for M5b, the 2D kart race: picking it on the picker (Play makes its room, the phones join it),
+// starting from the setup screen (M5c) with the default controls, the landscape controls (the portrait phone's
+// turned layout is in m10-turned-controls.test.js), real touches driving a kart, a dropped player's kart stopping
+// and driving on after the rejoin, whole races to the results, Race again and the back arrow. Two Android
+// (Chromium) phones held sideways; fingers come from test/helpers/touch.js, because a kart needs the stick and a
+// pedal held at once.
 //
 // The phones cannot see the track, so to finish a race they hold accelerate with the stick a fifth of the way
 // left (STEADY_LEFT in test/helpers/kart-drivers.js): the walls guide them round. A 3-lap race takes about 35 s,
-// so the second race, which only has to show that Race again and Back to lobby work, is set to 1 lap.
+// so the second race, which only has to show that Race again and the back arrow work, is set to 1 lap.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,7 +16,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, startRace, clickNow, RACE_AGAIN_BUTTON, BACK_TO_LOBBY_BUTTON, LAPS_MINUS_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, startRace, clickNow, goBackToPicker, removeRowButton, RACE_AGAIN_BUTTON, LAPS_MINUS_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -47,7 +49,7 @@ describe('M5b 2D kart race', () => {
     await openPlayerPage(player);
     await player.page.fill('#player-name', playerName);
     await player.page.click('#join-button');
-    await player.page.waitForSelector('#lobby-screen:not([hidden])');
+    await player.page.waitForSelector('#kart-screen', { state: 'visible' });
     player.playerId = (await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED)).playerId;
     return player;
   }
@@ -124,7 +126,8 @@ describe('M5b 2D kart race', () => {
     pixelReader = await openPixelReader(browser);
     hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-2d' });
     ana = await joinAs('Ana');
     bo = await joinAs('Bo');
   });
@@ -134,8 +137,7 @@ describe('M5b 2D kart race', () => {
     await server?.stop();
   });
 
-  test('picked in the lobby, the race puts both phones on the kart controls with the countdown', async () => {
-    await startGame(hostPage, ana.page, { gameId: 'kart-2d', controlsSelector: '#kart-screen' });
+  test('picked on the picker, the race puts both phones on the kart controls with the countdown', async () => {
     await startRace(hostPage, [ana.page, bo.page]);
     const state = await nextView(bo, (view) => view.phase === 'countdown');
     assert.equal(state.gameId, 'kart-2d');
@@ -211,8 +213,28 @@ describe('M5b 2D kart race', () => {
     await saveScreenshot(ana.page, 'm5b-8-phone-results');
   });
 
-  test('Race again goes to the setup screen, then puts everyone back on the grid with a new countdown', async () => {
+  test('the room is open again on the results screen: a late joiner gets in, and the host removes them from the setup row', async () => {
+    assert.equal(await hostPage.isVisible('#game-add-players-button'), true);
+    const cy = await joinAs('Cy');
     await clickNow(hostPage, RACE_AGAIN_BUTTON);
+    await hostPage.waitForSelector(`#kart-2d-setup .kart-player-row[data-player-id="${cy.playerId}"]`);
+    assert.equal(await hostPage.locator('#kart-2d-players .kart-player-row').count(), 3);
+    assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Waiting for Ana, Bo, Cy');
+
+    // The cross turns red on the first click and removes on the second; a phone still on its setup is told.
+    const cross = removeRowButton(cy.playerId);
+    await hostPage.click(cross);
+    assert.match(await hostPage.getAttribute(cross, 'class'), /\barmed\b/);
+    assert.equal(await cy.page.isVisible('#kart-setup'), true);
+    await hostPage.click(cross);
+    await cy.page.waitForSelector('#join-screen:not([hidden])');
+    assert.equal(await cy.page.textContent('#join-status'), 'The host removed you from the game.');
+    await hostPage.waitForSelector(cross, { state: 'detached' });
+    assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Waiting for Ana, Bo');
+    await cy.context.close();
+  });
+
+  test('Race again goes to the setup screen, then puts everyone back on the grid with a new countdown', async () => {
     await ana.page.waitForSelector('#kart-setup:not([hidden])');
     // 3 laps down to 1, so the second race is short.
     await clickNow(hostPage, LAPS_MINUS_BUTTON, 2);
@@ -226,14 +248,14 @@ describe('M5b 2D kart race', () => {
     assert.ok(anaOnGrid.count > 0 && anaOnGrid.centerX < 960, 'Ana is back behind the start line');
   });
 
-  test('after the second race (1 lap), Back to lobby returns everyone to the lobby', RACE_TIMEOUT, async () => {
+  test('after the second race (1 lap), the back arrow returns the host to the picker and ends the game on both phones', RACE_TIMEOUT, async () => {
     const views = await driveRaceToResults();
     assert.ok(views.every((view) => view.finished && view.lap === 1));
-    await clickNow(hostPage, BACK_TO_LOBBY_BUTTON);
+    await goBackToPicker(hostPage);
     for (const player of [ana, bo]) {
-      await player.page.waitForSelector('#lobby-screen:not([hidden])');
+      await player.page.waitForSelector('#ended-screen:not([hidden])');
     }
-    assert.equal(await hostPage.isVisible('#lobby'), true);
+    assert.equal(await hostPage.isVisible('#game-picker'), true);
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0);
   });
 });

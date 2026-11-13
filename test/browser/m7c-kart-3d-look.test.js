@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
-import { startGame, clickNow, GAME_END_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
 import { clickStartRace, openTools, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
@@ -43,13 +43,14 @@ describe('M7c 3D look', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
+    await page.waitForSelector('#kart-setup:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return { page, name: playerName };
   }
 
-  // The host picks the 3D race in the lobby and starts its setup screen.
+  // The host picks the 3D race on the picker and starts its setup screen, in a new room.
   async function startTheGame() {
-    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
   }
 
@@ -77,10 +78,10 @@ describe('M7c 3D look', () => {
       }
     });
     hostMessages = watchServerMessages(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    await startTheGame();
     ana = await joinAs('Ana');
     cy = await joinAs('Cy');
-    await startTheGame();
   }, { timeout: STARTING_TIMEOUT });
 
   after(async () => {
@@ -127,10 +128,9 @@ describe('M7c 3D look', () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await chooseQuality('low');
     await saveScreenshot(hostPage, 'm7c-3-host-setup-low');
-    await clickNow(hostPage, GAME_END_BUTTON, 2);
-    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
+    await goBackToPicker(hostPage);
     for (const player of [ana, cy]) {
-      await player.page.waitForSelector('#lobby-screen:not([hidden])');
+      await player.page.waitForSelector('#ended-screen:not([hidden])');
     }
     await startTheGame();
     assert.equal(await hostPage.getAttribute('[data-quality="low"]', 'aria-pressed'), 'true');

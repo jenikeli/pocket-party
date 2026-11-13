@@ -1,33 +1,30 @@
-// Clicks on the host's buttons, for the browser tests. The shell (lobby, join window, game bar) and the 2D race's
+// Clicks on the host's buttons, for the browser tests. The shell (picker, top bar, join window) and the races'
 // panels are HTML, so they are found by id. Only the input lab's cards are still drawn on a canvas: their point is
 // copied from host/games/input-lab/player-card.js at 1:1 scale (1920x1080 viewport); update it when that layout
 // changes on purpose.
 
 import { waitUntil } from './browser.js';
 
-export const GAME_END_BUTTON = '#end-game-button';
-export const GAME_CLOSE_ROOM_BUTTON = '#close-room-button';
-export const LOBBY_CLOSE_ROOM_BUTTON = '#lobby-close-room-button';
+export const GAME_BACK_BUTTON = '#game-back-button';
 export const RACE_AGAIN_BUTTON = '#kart-2d-race-again-button';
-export const BACK_TO_LOBBY_BUTTON = '#kart-2d-lobby-button';
 export const LAPS_MINUS_BUTTON = '#kart-2d-laps-minus';
 export const LAPS_PLUS_BUTTON = '#kart-2d-laps-plus';
 export const START_RACE_BUTTON = '#kart-2d-start-button';
 
-// The chip of one player in the lobby's list (a button: two clicks remove the player).
-export function lobbyChip(playerId) {
-  return `#lobby-players [data-player-id="${playerId}"]`;
+// The cross on one player's row in a race's setup screen (two clicks remove the player).
+export function removeRowButton(playerId) {
+  return `[data-remove-player="${playerId}"]`;
 }
 
-// The Remove button on the input lab card for color slot `slotIndex` (0-8): cards are 440x340 with 15 px gaps,
-// 3 per row, and the button sits 80 px in from the card's right edge, 36 px down.
+// The Remove button on the input lab card for color slot `slotIndex` (0-8): cards are 440x310 with 15 px gaps,
+// 3 per row from (15, 110); the close mark sits 36 px in from the card's right edge and 36 px down.
 export function cardRemoveButton(slotIndex) {
-  return { x: 15 + (slotIndex % 3) * 455 + 360, y: 15 + Math.floor(slotIndex / 3) * 355 + 36 };
+  return { x: 15 + (slotIndex % 3) * 455 + 404, y: 110 + Math.floor(slotIndex / 3) * 325 + 36 };
 }
 
 // Clicks an HTML button on the host `times` times in a row through the page itself. Playwright's own click
 // first waits for the button to stay still over two animation frames, and software-drawn WebGL (the 3D race)
-// gives a frame every few seconds, which pushes End game's second click past its 3 s confirm window.
+// gives a frame every few seconds, which pushes the back arrow's second click past its 3 s confirm window.
 export function clickNow(hostPage, selector, times = 1) {
   return hostPage.$eval(selector, (button, count) => {
     for (let i = 0; i < count; i += 1) {
@@ -36,36 +33,40 @@ export function clickNow(hostPage, selector, times = 1) {
   }, times);
 }
 
-// Clicks "Done" if the join window is open: it opens by itself with the lobby and covers it, so every click on
-// the lobby would wait behind it.
+// Closes the join window if it is open: it opens by itself when a game's room opens and covers the game, so
+// every click on the game would wait behind it.
 export async function closeJoinWindow(hostPage) {
   if (await hostPage.isVisible('#join-window')) {
-    await clickNow(hostPage, '#join-done-button');
+    await clickNow(hostPage, '#join-close-button');
     await hostPage.waitForSelector('#join-window', { state: 'hidden' });
   }
 }
 
-// Picks a game in the lobby by its thumbnail (`gameId` is an id from host/games/index.js) and waits until it
-// shows pressed.
-export async function chooseGame(hostPage, gameId) {
-  await closeJoinWindow(hostPage);
+// From the game picker: picks `gameId` (an id from host/games/index.js), clicks Play, waits for the game's room
+// and resolves with its room code, read from the join window that opens by itself. The window is closed again
+// unless `keepJoinWindow` is set (for the tests that look at it). `timeoutMs` is how long the game may take to
+// load and open its room: the 3D race loads its code and sounds before the room is made.
+export async function startGame(hostPage, { gameId = 'input-lab', timeoutMs = 30000, keepJoinWindow = false } = {}) {
   const tile = `[data-game-id="${gameId}"]`;
   await clickNow(hostPage, tile);
   await hostPage.waitForSelector(`${tile}[aria-pressed="true"]`);
-}
-
-// From the lobby: picks `gameId`, clicks Play once it is enabled (the player count fits) and waits until
-// `controllerPage` shows the game's controls (`controlsSelector`, the input lab's by default). `timeoutMs` is how
-// long the game may take to start: the 3D race builds its world and draws a first frame in software WebGL,
-// which takes several seconds.
-export async function startGame(hostPage, controllerPage, { gameId = 'input-lab', controlsSelector = '#pad-screen', timeoutMs = 5000 } = {}) {
-  await chooseGame(hostPage, gameId);
-  await hostPage.waitForSelector('#play-button:not([disabled])');
   await clickNow(hostPage, '#play-button');
-  await controllerPage.waitForSelector(controlsSelector, { state: 'visible', timeout: timeoutMs });
+  await hostPage.waitForSelector('#join-window:not([hidden])', { timeout: timeoutMs });
+  const roomCode = await hostPage.textContent('#join-code');
+  if (!keepJoinWindow) {
+    await closeJoinWindow(hostPage);
+  }
+  return roomCode;
 }
 
-// Clicks a confirm button twice ("Remove", then "Sure?"), with a pause between so the two are separate clicks.
+// Goes back to the picker the way the host does: two clicks on the back arrow (the first arms it), then waits
+// for the picker.
+export async function goBackToPicker(hostPage) {
+  await clickNow(hostPage, GAME_BACK_BUTTON, 2);
+  await hostPage.waitForSelector('#game-picker:not([hidden])');
+}
+
+// Clicks a confirm button twice (a pause between, so the two are separate clicks; the first arms it).
 // `button` is the selector of an HTML button, or a canvas point { x, y } (the input lab's cards).
 export async function confirmClick(hostPage, button) {
   const click = () => (typeof button === 'string' ? hostPage.click(button) : hostPage.mouse.click(button.x, button.y));

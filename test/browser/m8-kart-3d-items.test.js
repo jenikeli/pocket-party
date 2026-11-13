@@ -68,7 +68,8 @@ describe('M8 items', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     const context = await chromium.newContext(devices['Pixel 7 landscape']);
     const page = await context.newPage();
     page.on('pageerror', (error) => pageErrors.push(error));
@@ -76,9 +77,8 @@ describe('M8 items', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', 'Ana');
     await page.click('#join-button');
-    await page.waitForSelector('#lobby-screen:not([hidden])');
+    await page.waitForSelector('#kart-setup:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-    await startGame(hostPage, page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
   });
@@ -90,15 +90,19 @@ describe('M8 items', () => {
 
   test('the setup screen\'s Items row has a button for each of the six items; one lap is set', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    assert.equal(await hostPage.getAttribute('#kart-3d-items-button', 'aria-pressed'), 'true');
     const ids = await hostPage.locator('[data-item-id]').evaluateAll((buttons) => buttons.map((button) => button.dataset.itemId));
     assert.deepEqual([...ids].sort(), Object.values(KART_ITEMS).sort());
+    // Each item is an icon alone, named by its aria-label and title; there is no separate On switch any more.
+    const named = await hostPage.locator('[data-item-id]').evaluateAll((buttons) =>
+      buttons.every((button) => button.textContent.trim() === '' && button.getAttribute('aria-label') && button.title));
+    assert.equal(named, true, 'the item buttons hold no text and have a name');
+    assert.equal(await hostPage.locator('#kart-3d-items-button').count(), 0);
     await clickNow(hostPage, '#kart-3d-laps-minus', 5);
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-laps')) === '1', { message: 'one lap' });
     await saveScreenshot(hostPage, 'm8-0-host-setup-items');
   });
 
-  // Allows only `id` on the setup screen (the buttons keep their state from race to race). The row redraws on
+  // Allows only `id` on the setup screen (none at all for null: every item off is items off) (the buttons keep their state from race to race). The row redraws on
   // the host's next frame, which software drawing makes slow, so each click waits for its button to change.
   async function allowOnly(id) {
     for (const each of Object.values(KART_ITEMS)) {
@@ -171,12 +175,11 @@ describe('M8 items', () => {
     });
   });
 
-  test('with Items off the view\'s item is null and the phone has no Item button', async () => {
+  test('with every item off (items off) the view\'s item is null and the phone has no Item button', async () => {
     await clickNow(hostPage, '#kart-3d-setup-button');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await ana.page.waitForSelector('#kart-setup:not([hidden])');
-    await clickNow(hostPage, '#kart-3d-items-button');
-    await hostPage.waitForSelector('#kart-3d-items-button[aria-pressed="false"]');
+    await allowOnly(null);
     await startRace();
     // Views of the earlier race may still be queued; the first racing view with no item is this race's.
     const view = await nextView((each) => each.phase === 'racing' && each.item === null);

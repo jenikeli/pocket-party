@@ -1,8 +1,8 @@
 // Browser tests for M7b, the 3D race on its courses: the setup screen offers the courses, and its laps and
 // engine class reach the phones; Start race counts down on both screens, then each split-screen view shows its
-// player's name, lap and place (clear of the shell's game bar), the phones show their place and lap, and the
+// player's name, lap and place, the phones show their place and lap, and the
 // race clock runs; the readout shows only with the tuning panel; when every player has left mid-race the
-// results list the CPU karts and Back to lobby ends the game; the results panel lists players in their colours
+// results list the CPU karts and the back arrow ends the game; the results panel lists players in their colours
 // with their times and its Race again button works; a race on the Test track; and a lost WebGL context ends
 // the game through the shell's error path. Since M7d4c1, Watch on the setup screen races four self-driving
 // stand-ins with a view each while the phones wait. Ana is an
@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, clickWatch, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -42,7 +42,7 @@ describe('M7b 3D race', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.waitForSelector('#lobby-screen:not([hidden])');
+    await page.waitForSelector('#kart-setup:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return player;
   }
@@ -61,9 +61,10 @@ describe('M7b 3D race', () => {
     return hostPage.locator(`.kart-3d-view-hud:not([hidden]) .kart-3d-view-${className}`).allTextContents();
   }
 
+  // Leave takes two taps: the first turns the icon red, the second leaves.
   async function leave(player) {
-    player.page.once('dialog', (dialog) => dialog.accept());
-    await player.page.click('#game-screen .leave-button');
+    await player.page.click('#game-top .leave-button');
+    await player.page.click('#game-top .leave-button');
     await player.page.waitForSelector('#join-screen:not([hidden])');
   }
 
@@ -76,10 +77,10 @@ describe('M7b 3D race', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
   });
 
@@ -92,7 +93,11 @@ describe('M7b 3D race', () => {
   test('the setup screen offers the courses; the host\'s laps and engine class reach the phones', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     // Since M9 Palm Bay Airport is first, and so chosen when a game starts.
-    assert.deepEqual(await hostPage.locator('[data-course-id]').allTextContents(), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
+    // The course pictures carry no text: each one is named by its aria-label.
+    assert.deepEqual(
+      await hostPage.locator('[data-course-id]').evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('aria-label'))),
+      ['Palm Bay Airport', 'Seaside Skyway', 'Test track'],
+    );
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
     // The setup's picture and name change to the chosen course, and on.
     await clickNow(hostPage, '[data-course-id="test-track"]');
@@ -150,11 +155,29 @@ describe('M7b 3D race', () => {
     assert.deepEqual(await hudTexts('lap'), ['Lap 1/4', 'Lap 1/4']);
     // The players start at the back of the grid, Bo last.
     assert.deepEqual(await hudTexts('place'), ['11th', '12th']);
-    // Bo's view is the bottom one, in the corner of the shell's End game and Close room buttons.
-    const lifts = await hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-place').evaluateAll((places) => places.map((place) => place.style.bottom));
-    assert.deepEqual(lifts, ['0px', '80px']);
     await hostPage.waitForSelector('#kart-3d-countdown:not([hidden])');
     await saveScreenshot(hostPage, 'm7b-2-host-countdown');
+  });
+
+  // The bottom-right bar (End game, Close room) is gone since M10b, but views.js still lifts the place in the
+  // bottom-right view by GAME_BAR_CLEARANCE (80 px) for it.
+  test('no view lifts its place for the old bottom-right bar', { todo: 'host/games/kart-3d/views.js still lifts the bottom-right view\'s place 80 px for the removed game bar' }, async () => {
+    const lifts = await hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-place').evaluateAll((places) => places.map((place) => place.style.bottom));
+    assert.deepEqual(lifts, ['0px', '0px']);
+  });
+
+  // CLAUDE.md and the queue: games keep the top corners clear for the shell's top bar. The top view's name label
+  // and the race clock are in those corners; the screenshot m7b-3-host-racing.png shows the back arrow over the
+  // label and the gear over the clock.
+  test('the top bar\'s back arrow and gear sit clear of the first view\'s name label and the race clock', { todo: 'the first view\'s label is under the back arrow, and the race clock under the gear' }, async () => {
+    const overlaps = async (first, second) => {
+      const a = await hostPage.locator(first).first().boundingBox();
+      const b = await hostPage.locator(second).first().boundingBox();
+      return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+    };
+    await hostPage.waitForSelector('#kart-3d-clock:not([hidden])');
+    assert.equal(await overlaps('#game-back-button', '.kart-3d-view-hud:not([hidden]) .kart-3d-view-label'), false, 'the back arrow covers the label');
+    assert.equal(await overlaps('#settings-button', '#kart-3d-clock'), false, 'the gear covers the clock');
   });
 
   test('after GO the phones show their place and lap, and the race clock runs', async () => {
@@ -180,7 +203,7 @@ describe('M7b 3D race', () => {
     await hostPage.waitForSelector('#kart-3d-readout', { state: 'hidden' });
   });
 
-  test('when every player has left mid-race the race is over: the results list the CPU karts, Back to lobby ends the game', async () => {
+  test('when every player has left mid-race the race is over: the results list the CPU karts, the back arrow ends the game', async () => {
     await leave(bo);
     await waitUntil(async () => (await hudTexts('label')).length === 1, { ...RACE_TIMEOUT, message: 'Bo\'s view gone' });
     assert.equal(await hostPage.isVisible('#kart-3d-results'), false, 'Ana is still racing');
@@ -191,8 +214,8 @@ describe('M7b 3D race', () => {
     assert.equal(rows.length, 10);
     rows.forEach((row, index) => assert.equal(row, `${['1st', '2nd', '3rd'][index] ?? `${index + 1}th`}CPU--`));
     await saveScreenshot(hostPage, 'm7b-5-host-results');
-    await clickNow(hostPage, '#kart-3d-lobby-button');
-    await hostPage.waitForSelector('#lobby:not([hidden])', { timeout: 20000 });
+    assert.equal(await hostPage.locator('#kart-3d-lobby-button').count(), 0, 'the results have no Back to lobby button any more');
+    await goBackToPicker(hostPage);
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0, 'the race\'s canvas is gone');
   });
 
@@ -207,7 +230,7 @@ describe('M7b 3D race', () => {
       addPlayer(players, 'p1');
       players.get('p1').name = 'Cy';
       let raceAgainClicks = 0;
-      const panel = createResultsPanel(container, { onRaceAgain: () => (raceAgainClicks += 1), onBackToLobby: () => {} });
+      const panel = createResultsPanel(container, { onRaceAgain: () => (raceAgainClicks += 1) });
       panel.show([{ place: 1, playerId: 'p1', finishTime: 101.256 }, { place: 2, playerId: null, finishTime: null }], players);
       const rows = [...container.querySelectorAll('li')].map((row) => ({ text: row.textContent, color: row.querySelector('.name .pp-dot').style.getPropertyValue('--pp-dot-color') }));
       container.querySelector('#kart-3d-race-again-button').click();
@@ -220,9 +243,9 @@ describe('M7b 3D race', () => {
   });
 
   test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', { timeout: STARTING_TIMEOUT }, async () => {
-    // The room reopened after the game; a new player joins so the race can start again.
+    // The last game ended with the back arrow; a new game has a new room, and a new player joins it.
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
-    await startGame(hostPage, cy.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true', 'a new game starts on the first course');
     await clickNow(hostPage, '[data-course-id="test-track"]');
@@ -238,8 +261,9 @@ describe('M7b 3D race', () => {
       document.querySelector('#game-container canvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext();
     });
     await stopped;
-    await hostPage.waitForSelector('#lobby:not([hidden])');
-    await cy.page.waitForSelector('#lobby-screen:not([hidden])');
+    await hostPage.waitForSelector('#game-picker:not([hidden])');
+    assert.match(await hostPage.textContent('#picker-problem'), /^Kart race 3D stopped with an error/);
+    await cy.page.waitForSelector('#ended-screen:not([hidden])');
     assert.deepEqual(pageErrors, []);
   });
 });

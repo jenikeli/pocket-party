@@ -10,7 +10,7 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 
@@ -29,7 +29,6 @@ describe('M7d2 3D kit on the Test track', () => {
   let server;
   let chromium;
   let hostPage;
-  let hostMessages;
   let ana;
   const pageErrors = [];
   // Three.js reports shader compile and WebGL errors on the console.
@@ -45,20 +44,19 @@ describe('M7d2 3D kit on the Test track', () => {
         consoleErrors.push(message.text());
       }
     });
-    hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
-    const roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    const roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
+    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     const context = await chromium.newContext(devices['Pixel 7 landscape']);
     ana = await context.newPage();
     ana.on('pageerror', (error) => pageErrors.push(error));
     await ana.goto(`${server.baseUrl}/?room=${roomCode}`);
     await ana.fill('#player-name', 'Ana');
     await ana.click('#join-button');
-    await ana.waitForSelector('#lobby-screen:not([hidden])');
-    // The host lists the player before Play, so the game starts with them in the room.
-    await hostPage.waitForSelector('#lobby-players [data-player-id]');
-    await startGame(hostPage, ana, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
-    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
+    await ana.waitForSelector('#kart-setup:not([hidden])');
+    // The host lists the player on its setup screen.
+    await hostPage.waitForSelector('#kart-3d-rows .kart-player-row');
   }, { timeout: STARTING_TIMEOUT });
 
   // The countdown's number and how many pixels of LIGHTS_AREA look like a lit red or a lit green lamp, read in
@@ -122,10 +120,16 @@ describe('M7d2 3D kit on the Test track', () => {
       },
       { timeoutMs: 90000, message: 'the countdown to reach GO' },
     );
+    // Frames take seconds here, and each sample waits for one, so the first sample can land on "3" or already on
+    // "2" or "1" depending on how the frames fall. The lamps are compared from the first number seen: one more
+    // lamp is lit for each number the countdown has gone down.
     const at = (number) => samples.get(number) ?? assert.fail(`no frame showed "${number}" (saw ${[...samples.keys()].join(', ')})`);
-    assert.ok(at('1').red >= at('3').red + 2 * LAMP_PIXELS, `three lamps lit at "1" (${at('1').red} red pixels) against one at "3" (${at('3').red})`);
-    assert.ok(at('GO!').green >= at('3').green + 3 * LAMP_PIXELS, `all green at GO (${at('GO!').green} green pixels, ${at('3').green} before)`);
-    assert.ok(at('GO!').red <= at('3').red, 'and no red lamp left');
+    const [firstNumber, first] = [...samples.entries()][0];
+    assert.ok(Number(firstNumber) >= 2, `the first frame shows "3" or "2" (it showed "${firstNumber}")`);
+    const lampsLit = (Number(firstNumber) - 1) * LAMP_PIXELS;
+    assert.ok(at('1').red >= first.red + lampsLit, `more lamps lit at "1" (${at('1').red} red pixels) than at "${firstNumber}" (${first.red})`);
+    assert.ok(at('GO!').green >= first.green + 3 * LAMP_PIXELS, `all green at GO (${at('GO!').green} green pixels, ${first.green} before)`);
+    assert.ok(at('GO!').red <= first.red, 'and no red lamp left');
   });
 
   test('the race draws on through the course with no page or WebGL errors', async () => {

@@ -32,15 +32,15 @@ async function startAtSetup(server, chromium, prepare) {
   const hostPage = await chromium.newPage({ viewport: HOST_SIZE });
   const hostMessages = watchServerMessages(hostPage);
   await prepare(hostPage);
-  const roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+  await openHost(hostPage, server.baseUrl);
+  const roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
   const context = await chromium.newContext(devices['Pixel 7 landscape']);
   const anaPage = await context.newPage();
   await anaPage.goto(`${server.baseUrl}/?room=${roomCode}`);
   await anaPage.fill('#player-name', 'Ana');
   await anaPage.click('#join-button');
-  await anaPage.waitForSelector('#lobby-screen:not([hidden])');
+  await anaPage.waitForSelector('#kart-setup:not([hidden])');
   await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-  await startGame(hostPage, anaPage, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
   await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
   return hostPage;
 }
@@ -67,7 +67,7 @@ describe('M9 Palm Bay Airport', () => {
       await presetQuality(page, 'medium');
       await presetPlainCourse(page);
     });
-    const names = await hostPage.locator('[data-course-id]').allTextContents();
+    const names = await hostPage.locator('[data-course-id]').evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('aria-label')));
     assert.equal(names[0], 'Palm Bay Airport');
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
     await saveScreenshot(hostPage, 'm9-0-host-setup');

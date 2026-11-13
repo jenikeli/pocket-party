@@ -30,7 +30,7 @@ describe('M10 kart controls on a portrait phone', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.waitForSelector('#lobby-screen:not([hidden])');
+    await page.waitForSelector('#kart-setup', { state: 'visible' });
     const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return { page, touch, playerId };
   }
@@ -67,10 +67,10 @@ describe('M10 kart controls on a portrait phone', () => {
     browser = await launchBrowser('chromium');
     const hostPage = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     hostMessages = watchServerMessages(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-2d' });
     ana = await joinAs('Ana');
     bo = await joinAs('Bo');
-    await startGame(hostPage, ana.page, { gameId: 'kart-2d', controlsSelector: '#kart-setup' });
     await startRace(hostPage, [ana.page, bo.page]);
   });
 

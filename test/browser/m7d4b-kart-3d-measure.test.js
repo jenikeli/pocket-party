@@ -11,7 +11,7 @@ import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
-import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
+import { launchBrowser, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow } from '../helpers/host-buttons.js';
 import { presetQuality, pickCourse, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 
@@ -21,7 +21,6 @@ describe('M7d4b 3D Measure tool', () => {
   let server;
   let chromium;
   let hostPage;
-  let hostMessages;
   const pageErrors = [];
   // Three.js reports shader compile and WebGL errors on the console.
   const consoleErrors = [];
@@ -39,20 +38,19 @@ describe('M7d4b 3D Measure tool', () => {
         consoleErrors.push(message.text());
       }
     });
-    hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
-    const roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    const roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
+    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     const context = await chromium.newContext(devices['Pixel 7 landscape']);
     const ana = await context.newPage();
     ana.on('pageerror', (error) => pageErrors.push(error));
     await ana.goto(`${server.baseUrl}/?room=${roomCode}`);
     await ana.fill('#player-name', 'Ana');
     await ana.click('#join-button');
-    await ana.waitForSelector('#lobby-screen:not([hidden])');
-    // The host lists the player before Play, so the game starts with them in the room.
-    await hostPage.waitForSelector('#lobby-players [data-player-id]');
-    await startGame(hostPage, ana, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
-    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
+    await ana.waitForSelector('#kart-setup:not([hidden])');
+    // The host lists the player on its setup screen.
+    await hostPage.waitForSelector('#kart-3d-rows .kart-player-row');
     // Seaside Skyway, which this file measures, is not the first course; it is built when Measure is clicked.
     await pickCourse(hostPage, 'seaside-skyway');
   }, { timeout: STARTING_TIMEOUT });

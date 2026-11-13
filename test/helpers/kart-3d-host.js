@@ -9,6 +9,8 @@
 // These margins were set when frames took over a second (SwiftShader) and are kept on purpose.
 // Since M9 every 3D test picks its course on the setup screen before it starts (clickStartRace), Seaside Skyway
 // unless it says otherwise, so the tests stay on the course they were written for while Palm Bay Airport is first.
+// Since M10b every 3D test starts its game with Play on the picker (startGame in host-buttons.js, which resolves
+// with the room code) and joins its phones to that room afterwards.
 // Since M10 the game starts with no course built: Start race, Watch and Measure build the chosen one behind the
 // loading screen (#loading-screen), so the long wait moved from starting the game to those clicks
 // (waitForCourseBuilt). Look, Measure and Watch sit in the "Display and tools" drawer (openTools).

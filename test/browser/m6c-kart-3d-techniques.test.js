@@ -44,7 +44,7 @@ describe('M6c 3D techniques', () => {
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
-    await page.waitForSelector('#lobby-screen:not([hidden])');
+    await page.waitForSelector('#kart-setup:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return player;
   }
@@ -80,11 +80,11 @@ describe('M6c 3D techniques', () => {
     hostMessages = watchServerMessages(hostPage);
     await presetQuality(hostPage, 'medium');
     await presetPlainCourse(hostPage);
-    roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+    await openHost(hostPage, server.baseUrl);
+    roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
-    await startGame(hostPage, ana.page, { gameId: 'kart-3d', controlsSelector: '#kart-setup', timeoutMs: GAME_START_TIMEOUT });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');

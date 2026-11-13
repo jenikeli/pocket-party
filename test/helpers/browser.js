@@ -6,7 +6,6 @@ import path from 'node:path';
 import { chromium, webkit } from 'playwright';
 import { ROOT_DIR } from './start-server.js';
 import { createMessageQueue } from './message-queue.js';
-import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const SCREENSHOT_DIR = path.join(ROOT_DIR, 'test-results', 'screenshots');
 const ENGINES = { chromium, webkit };
@@ -40,21 +39,13 @@ export function watchServerMessages(page) {
   return queue;
 }
 
-// Taps Tap to start on an already opened host page and resolves with the room code once the lobby shows (the room
-// is created only after the tap). The join window opens by itself on an empty room and is left open, for the
-// tests that look at it; startGame and chooseGame in host-buttons.js close it. `hostMessages` comes from
-// watchServerMessages(hostPage), called before the page's goto.
-export async function tapToStart(hostPage, hostMessages) {
-  await hostPage.click('#tap-to-start-button');
-  const { roomCode } = await hostMessages.nextOfType(MESSAGE_TYPES.ROOM_CREATED, 10000);
-  await hostPage.waitForSelector('#join-window:not([hidden])');
-  return roomCode;
-}
-
-// Opens the host page (once) and taps Tap to start.
-export async function openHost(hostPage, baseUrl, hostMessages) {
+// Opens the host page and taps Tap to start, then waits for the game picker. No room exists there: the socket
+// opens only when a game's Play is clicked (startGame in host-buttons.js). Call watchServerMessages(hostPage)
+// before this to see the messages of the game's room.
+export async function openHost(hostPage, baseUrl) {
   await hostPage.goto(`${baseUrl}/host`);
-  return tapToStart(hostPage, hostMessages);
+  await hostPage.click('#tap-to-start-button');
+  await hostPage.waitForSelector('#game-picker:not([hidden])');
 }
 
 // Calls `check` until it returns something truthy, and returns that. Rendering happens on the next

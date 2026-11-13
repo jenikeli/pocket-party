@@ -1,8 +1,8 @@
 // Browser tests for M3, the input lab: the real controller page on an emulated Android phone (Chromium) and
 // iPhone (WebKit) against the real host page. Headless browsers have no motion sensor, so the tilt tests stub
 // DeviceOrientationEvent.requestPermission and fire deviceorientation events by hand.
-// Since M4 the host starts the lab from the lobby (since M10 with Play, once two players are in). The tested phone joins first (so it has
-// the first card), a helper phone joins second, and each test then reopens the tested phone's tab, which
+// Since M10b the host starts the lab from the picker with Play, which opens its room; the tested phone joins
+// after that (so it has the first card), leaves, and each test then reopens the tested phone's tab, which
 // rejoins as the same player straight into the lab.
 
 import { describe, test, before, after } from 'node:test';
@@ -21,8 +21,8 @@ const CONTROLLER_DEVICES = [
 
 // From host/games/input-lab/player-card.js: the first card's stick ring (see test/browser/m1-flow.test.js).
 const FIRST_PLAYER_COLOR = 0xe74c3c;
-const FIRST_DOT_START = { x: 120, y: 210 };
-const FIRST_RING_AREA = { left: 45, top: 135, right: 196, bottom: 286 };
+const FIRST_DOT_START = { x: 120, y: 305 };
+const FIRST_RING_AREA = { left: 45, top: 230, right: 196, bottom: 381 };
 
 // Runs in the controller page before its scripts, so the lab sees this answer to the permission prompt.
 function stubTiltPermission(answer) {
@@ -60,7 +60,7 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
         await page.addInitScript(stubTiltPermission, permissionAnswer);
       }
       await page.goto(`${server.baseUrl}/?room=${roomCode}`);
-      await page.waitForSelector('#pad-screen:not([hidden])');
+      await page.waitForSelector('#pad-screen', { state: 'visible' });
       const { playerId } = await nextFromTested(MESSAGE_TYPES.PLAYER_RECONNECTED);
       const deviceInfo = await nextFromTested(MESSAGE_TYPES.DEVICE_INFO);
       const firstMode = await nextFromTested(MESSAGE_TYPES.INPUT_MODE);
@@ -82,12 +82,12 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       }
     }
 
-    // Joins `context`'s phone to the lobby and returns its page and playerId.
-    async function joinLobby(context) {
+    // Joins `context`'s phone to the lab's room and returns its page and playerId.
+    async function joinRoom(context) {
       const page = await context.newPage();
       await page.goto(`${server.baseUrl}/?room=${roomCode}`);
       await page.click('#join-button');
-      await page.waitForSelector('#lobby-screen:not([hidden])');
+      await page.waitForSelector('#pad-screen', { state: 'visible' });
       const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
       return { page, playerId };
     }
@@ -111,13 +111,12 @@ for (const { name, engine, device, platform } of CONTROLLER_DEVICES) {
       pixelReader = await openPixelReader(hostBrowser);
       hostPage = await hostBrowser.newPage({ viewport: { width: 1920, height: 1080 } });
       hostMessages = watchServerMessages(hostPage);
-      roomCode = await openHost(hostPage, server.baseUrl, hostMessages);
+      await openHost(hostPage, server.baseUrl);
+      roomCode = await startGame(hostPage, { gameId: 'input-lab' });
 
       controllerContext = await controllerBrowser.newContext(device);
-      const tested = await joinLobby(controllerContext);
+      const tested = await joinRoom(controllerContext);
       testedPlayerId = tested.playerId;
-      await joinLobby(await hostBrowser.newContext(devices['Pixel 7']));
-      await startGame(hostPage, tested.page);
       await leave(tested.page);
     });
 

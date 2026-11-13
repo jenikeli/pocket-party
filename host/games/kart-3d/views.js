@@ -10,9 +10,9 @@ import { tuning } from './tuning.js';
 import { createViewHud } from './view-hud.js';
 
 const MAX_VIEWS = 4;
-// The shell's game bar (End game, Close room) sits in the canvas's bottom right corner, about 66 px tall with its
-// margin (host/index.html); the view in that corner lifts its place above it.
-const GAME_BAR_CLEARANCE = 80;
+// The shell's back arrow sits in the top left corner of the screen, its lower edge 4.1 em down the 80 x 45 em
+// stage (host/top-bar.css); the view in that corner starts its name and item frame this many em down, below it.
+const BACK_ARROW_CLEARANCE_EM = 4.4;
 
 // Returns { draw(renderer, scene, targets, dt, renderTarget, beforeView), drawOne(renderer, scene, camera,
 // renderTarget), clearGaps(renderer, viewCount), destroy() }. renderTarget is where to draw: null for the canvas,
@@ -47,11 +47,18 @@ export function createViews(container) {
       view.camera.lookAt(look.x, look.y, look.z);
       beforeView(view.camera);
       drawRect(renderer, scene, view.camera, rects[index], renderTarget);
-      const inBarCorner = rects[index].y === 0 && rects[index].x + rects[index].width === size.x;
-      view.hud.show(target, rects[index], size.y, inBarCorner ? GAME_BAR_CLEARANCE : 0);
+      // A rect's y counts from the bottom, so the top row is the one that reaches the canvas's height.
+      const inBackArrowCorner = rects[index].x === 0 && rects[index].y + rects[index].height === size.y;
+      view.hud.show(target, rects[index], size.y, inBackArrowCorner ? backArrowClearance(size) : 0);
     });
     endScissor(renderer, renderTarget);
     views.slice(targets.length).forEach((view) => view.hud.hide());
+  }
+
+  // The clearance in pixels: one stage em is 1/80 of the width or 1/45 of the height, whichever is smaller
+  // (--pp-em in host/ui.css).
+  function backArrowClearance(size) {
+    return Math.round(BACK_ARROW_CLEARANCE_EM * Math.min(size.x / 80, size.y / 45));
   }
 
   // One view over the whole canvas from `camera`, with no HUD (renderer.js: the frame that builds a new course's

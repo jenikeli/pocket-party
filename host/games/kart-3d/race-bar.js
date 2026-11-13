@@ -1,8 +1,8 @@
 // What the 3D race shows over the canvas while karts race, in the host's look (host/ui.css): a small bar at the
-// top (Back to setup, Restart and Tuning, which opens tuning-panel.js and the readout), the race clock top right,
+// top (Back to setup, Restart and Tuning, which opens tuning-panel.js and the readout), the race clock top right (under the shell's gear),
 // and the countdown in big letters in the middle. The setup screen is setup-panel.js's, the results
 // results-panel.js's. Used by host/games/kart-3d/index.js, which owns the state; the bar only shows it and reports
-// clicks. The bottom right stays clear for the shell's game bar.
+// clicks. The top corners stay clear for the shell's top bar.
 
 import { setText, setPressed } from '../../kart/panel-parts.js';
 import { createRaceStage } from './race-stage.js';

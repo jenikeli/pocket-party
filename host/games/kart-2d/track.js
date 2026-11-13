@@ -3,7 +3,7 @@
 // the road. No Phaser, no DOM, so it is unit tested in Node. Used by the race rules and the renderer.
 
 // The track fills the 1920x1080 design: the outer edge reaches 70 px from the top and bottom, and the bottom
-// right corner (the shell's End game and Close room buttons) stays clear of the road.
+// right corner stays clear of the road (the shell's buttons sat there until M10b).
 export const TRACK = Object.freeze({
   centerX: 960,
   centerY: 540,

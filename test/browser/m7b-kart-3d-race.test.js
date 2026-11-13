@@ -159,17 +159,16 @@ describe('M7b 3D race', () => {
     await saveScreenshot(hostPage, 'm7b-2-host-countdown');
   });
 
-  // The bottom-right bar (End game, Close room) is gone since M10b, but views.js still lifts the place in the
-  // bottom-right view by GAME_BAR_CLEARANCE (80 px) for it.
-  test('no view lifts its place for the old bottom-right bar', { todo: 'host/games/kart-3d/views.js still lifts the bottom-right view\'s place 80 px for the removed game bar' }, async () => {
+  // The bottom-right bar (End game, Close room) is gone since M10b, and with it the lift of the place in the
+  // bottom-right view.
+  test('no view lifts its place for the old bottom-right bar', async () => {
     const lifts = await hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-place').evaluateAll((places) => places.map((place) => place.style.bottom));
-    assert.deepEqual(lifts, ['0px', '0px']);
+    assert.deepEqual(lifts, ['', '']);
   });
 
   // CLAUDE.md and the queue: games keep the top corners clear for the shell's top bar. The top view's name label
-  // and the race clock are in those corners; the screenshot m7b-3-host-racing.png shows the back arrow over the
-  // label and the gear over the clock.
-  test('the top bar\'s back arrow and gear sit clear of the first view\'s name label and the race clock', { todo: 'the first view\'s label is under the back arrow, and the race clock under the gear' }, async () => {
+  // and the race clock are in those corners, so both start below the bar.
+  test('the top bar\'s back arrow and gear sit clear of the first view\'s name label and the race clock', async () => {
     const overlaps = async (first, second) => {
       const a = await hostPage.locator(first).first().boundingBox();
       const b = await hostPage.locator(second).first().boundingBox();

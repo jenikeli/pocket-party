@@ -1,7 +1,7 @@
 /* The 3D race's panels over the canvas, in the host's look (host/ui.css): the race bar, the clock and the
    countdown (race-bar.js), the results (results-panel.js), and the developer panels, tuning and Measure
-   (tuning-panel.js, measure-panel.js). Sizes are in em of each panel's .pp-stage (80 x 45). The bottom right is
-   left clear for the shell's game bar. Loaded by index.js. */
+   (tuning-panel.js, measure-panel.js). Sizes are in em of each panel's .pp-stage (80 x 45). The top corners are
+   left clear for the shell's top bar (host/top-bar.css). Loaded by index.js. */
 
 /* Every panel's own stage lets clicks through where it is empty (host/ui.css); its children take them. */
 .k3d-race-stage > * {
@@ -44,9 +44,10 @@
 
 /* The clock and the countdown are not clickable, which overrides the stage's "children take clicks" (hence the
    .pp-stage > selector). */
+/* Under the shell's gear (top right, its lower edge 4.1 em down the stage; this is 3 of the clock's own em). */
 .pp-stage > .k3d-clock {
-  right: 1em;
-  top: 0.6em;
+  right: 1.25em;
+  top: 3em;
   margin: 0;
   pointer-events: none;
   text-align: right;

@@ -13,8 +13,8 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
 | C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | merged |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | merged |
-| T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | building |
-| Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
+| T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | merged |
+| Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | building |
 
 Order: 0 by the main session first (it fixes the names the others build on). Then A, B and C together (no shared
 files; checked pair by pair below), D when a place frees. T alone when A to D are merged and nothing draws. Then
@@ -245,6 +245,11 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- After T: its tests found the 3D race's first view label under the back arrow and the clock under the gear;
+  the top-left view's name and item frame now start below the arrow (`views.js`, `view-hud.js`) and the clock sits
+  under the gear. The old 80 px lift of the bottom-right view's place (for the removed bar) is gone.
+- Task T: m7d2's start-lights test now compares the lamps from the first countdown number it sees (3 or 2),
+  since a software frame can take longer than the first second.
 - After A's review: a closed room drops late messages, its listener and its grace timers (`room.close()`), a
   late `setRoomOpen` from a stopped game is ignored, and a throw while a game's screen is set up ends the game
   like any other error. Not done: a timeout for a server that accepts the socket but never answers

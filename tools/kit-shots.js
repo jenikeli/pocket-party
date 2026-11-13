@@ -14,13 +14,11 @@ import { pathToFileURL } from 'node:url';
 import { ROOT_DIR, startServer } from '../test/helpers/start-server.js';
 import { launchBrowser } from '../test/helpers/browser.js';
 import { takeSlot } from './machine-slots.js';
+import { loadShot } from './load-shot.js';
 
 const REVIEW_DIR = path.join(ROOT_DIR, 'test-results', 'review');
 const SHOTS_DIR = path.join(REVIEW_DIR, 'shots');
 const VIEWS = ['near', 'above'];
-// Building the course and drawing in software takes 20-60 s a shot on the dev box; a whole course's build and bake
-// (Seaside's about 35 s) come before its first shot.
-const SHOT_TIMEOUT_MS = 180000;
 const SHEET_WIDTH = 1340;
 // Each run is a headless Chromium drawing on the CPU: the dev box (4 threads, 7 GB) takes two at once.
 const SHOT_SLOTS = 2;
@@ -58,28 +56,6 @@ export function parseArguments(args) {
   }
   const nameParts = [...(course === null ? [] : [course]), ...pieces, ...(bloom ? ['bloom'] : [])];
   return { pieces, bloom, name: name ?? nameParts.join('-'), course };
-}
-
-// Opens a page and waits for its picture. Fails with the page's own message when it reports an error (an unknown
-// piece or course, or building threw) or throws one.
-async function loadShot(page, url, label) {
-  const pageErrors = [];
-  const onPageError = (error) => pageErrors.push(error.message);
-  page.on('pageerror', onPageError);
-  try {
-    // Not waiting for "load": the page's module builds the whole course before it finishes loading.
-    await page.goto(url, { waitUntil: 'commit' });
-    const outcome = await page.waitForFunction(
-      () => window.kitShotReady === true || window.kitShotError || null,
-      null,
-      { timeout: SHOT_TIMEOUT_MS },
-    ).then((handle) => handle.jsonValue());
-    if (outcome !== true || pageErrors.length > 0) {
-      throw new Error(`${label}: ${pageErrors[0] ?? outcome}`);
-    }
-  } finally {
-    page.off('pageerror', onPageError);
-  }
 }
 
 async function savePicture(page, fileName) {

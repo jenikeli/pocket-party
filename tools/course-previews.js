@@ -9,13 +9,12 @@ import { pathToFileURL } from 'node:url';
 import { ROOT_DIR, startServer } from '../test/helpers/start-server.js';
 import { launchBrowser } from '../test/helpers/browser.js';
 import { takeSlot } from './machine-slots.js';
+import { loadShot } from './load-shot.js';
 import { COURSES } from '../host/games/kart-3d/courses.js';
 import { COURSE_PREVIEWS } from '../host/games/kart-3d/course-previews.js';
 
 const PREVIEWS_DIR = path.join(ROOT_DIR, 'assets', 'kart-3d', 'previews');
 const JPEG_QUALITY = 80;
-// Building a course and drawing in software takes minutes (Seaside about 2.5, more while other runs share the CPU).
-const BUILD_TIMEOUT_MS = 900000;
 // The same slots as kit-shots: the two tools draw the same way and must not run beside each other.
 const SHOT_SLOTS = 2;
 
@@ -27,18 +26,7 @@ export function previewFile(courseId) {
 // Opens the course's near view at its preview distance, waits for the page's picture, and saves it as a JPEG.
 async function shootPreview(page, baseUrl, course) {
   const { s } = COURSE_PREVIEWS[course.id];
-  const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(error.message));
-  // Not waiting for "load": the page's module builds the whole course before it finishes loading.
-  await page.goto(`${baseUrl}/host/kit-shots/index.html?course=${course.id}&view=near&s=${s}`, { waitUntil: 'commit' });
-  const outcome = await page.waitForFunction(
-    () => window.kitShotReady === true || window.kitShotError || null,
-    null,
-    { timeout: BUILD_TIMEOUT_MS },
-  ).then((handle) => handle.jsonValue());
-  if (outcome !== true || pageErrors.length > 0) {
-    throw new Error(`${course.id}: ${pageErrors[0] ?? outcome}`);
-  }
+  await loadShot(page, `${baseUrl}/host/kit-shots/index.html?course=${course.id}&view=near&s=${s}`, course.id);
   const file = previewFile(course.id);
   await page.screenshot({ path: file, type: 'jpeg', quality: JPEG_QUALITY });
   console.log(`saved ${path.relative(ROOT_DIR, file)} (${fs.statSync(file).size} bytes)`);

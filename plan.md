@@ -482,6 +482,13 @@ of 20 tasks run without the user (2026-11-12 and 13); every task, interface and 
   after all three courses, trimming designed in the history if the iPad needs it); `index.js` (232 lines) and
   `renderer.js` (212) of the 3D race are still a little long.
 
+### M10b: Each game runs its own lobby, and the icon UI (planned)
+Asked for after M10's device run. The plan, with the user's decisions and every task, is `docs/queue.md`: the host
+page only picks a game (no room there); a room per game, created when the game has loaded and closed by the back
+arrow; joining through the big QR window in every game; Remove in every game's lobby; icons instead of words and
+colour as the confirmation (`CLAUDE.md`, "UI design"); engine sounds removed. Run it in a fresh chat with
+`/loop run the M10b queue in docs/queue.md`.
+
 ### M11: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin
 - [ ] Check the hotspot does not auto-switch off when idle

@@ -11,7 +11,7 @@ Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end 
 | 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
 | A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | building |
 | B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
-| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | building |
+| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | built, in review (branch worktree-agent-a7243f7bc1a718b76) |
 | D | Input lab on the host: always open, Remove by colour | sonnet | 0 | building |
 | T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | queued |
 | Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | queued |
@@ -245,6 +245,9 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
   replace those screens and their tests anyway.
 - Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
   `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- Task C: the 2D race's "Needs 2 players" rule is `MIN_PLAYERS` in its own `race.js`; both races' `isDone()`
+  return false (the shell's back arrow is the only way out); no "Results" heading; the 3D tools icon sits under
+  the shell's top bar, 5 em down on the right.
 - Task B: the phone still takes the wake lock but no longer shows its status (the lobby line that showed it is
   gone, and the UI rules say show only what the decision needs).
 - Task 0: `--pp-danger` keeps its value (`#8e2b22`); the mockup's brighter red was not taken as a token change.

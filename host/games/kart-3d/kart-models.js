@@ -5,8 +5,9 @@
 // (karts/anti-gravity.js). Since M8 a model is drawn at the size items/kart-effect-looks.js gives it (the
 // teleport's pop), standing on the road. Since M9 each model holds a glider (karts/glider.js) in its design's
 // colours, which unfolds while its kart glides and folds away after it lands; it banks with the body, since the
-// glide's bank is the body's roll (kart.bodyRoll). Used by host/games/kart-3d/renderer.js and the kit-shots kart
-// and item pieces.
+// glide's bank is the body's roll (kart.bodyRoll). Since M10 O a kart's shadow comes from one stand-in of boxes
+// (karts/shadow-stand-in.js), not from its own meshes, which cast nothing; the glider casts, while it is open.
+// Used by host/games/kart-3d/renderer.js and the kit-shots kart and item pieces.
 
 import * as THREE from 'three';
 import { forwardSpeed } from './kart-physics.js';
@@ -19,6 +20,7 @@ import { MATERIAL_KINDS } from './karts/part-shapes.js';
 import { nextAntiGravityShare, easedShare } from './karts/anti-gravity.js';
 import { buildGliderCanopy, buildGliderFrame, nextGliderShare, placeGlider } from './karts/glider.js';
 import { createGliderMaterials } from './karts/glider-maps.js';
+import { buildShadowStandIn, createShadowCaster, createStandInMaterial } from './karts/shadow-stand-in.js';
 
 // How far the front wheels turn at full steering.
 const WHEEL_TURN_ANGLE = (25 * Math.PI) / 180;
@@ -40,11 +42,15 @@ export function createKartModels(count) {
   const canopyShape = buildGliderCanopy();
   const frameShapes = KART_DESIGNS.map((design) => buildGliderFrame(design.palette));
   const gliderMaterials = createGliderMaterials(KART_DESIGNS);
+  const standInShapes = designShapes.map(buildShadowStandIn);
+  const standInMaterial = createStandInMaterial();
   const karts = [];
   // For each model: its meshes by material kind, its wheels, the design it shows, how far its wheels have rolled
   // along the road (units, from which each wheel's turn follows by its own size) and how far they have turned
   // flat (karts/anti-gravity.js, not yet eased), and its glider and how far that is open (karts/glider.js).
+  // `shadowCasters` are the stand-ins, which cast the karts' shadows.
   const bodies = [];
+  const shadowCasters = [];
   const wheelSets = [];
   const shownDesigns = [];
   const rolled = [];
@@ -67,10 +73,13 @@ export function createKartModels(count) {
     // shader while the game starts with renderer.compile, which skips hidden objects, and a shader first built
     // mid-race stalls the frame (M6a).
     placeGlider(glider, 1);
-    kart.add(...Object.values(body), ...wheels, glider);
-    kart.traverse((part) => (part.castShadow = true));
+    // The glider's shadow is its own (a big one, but only while it is open); the kart's other meshes do not cast.
+    glider.children.forEach((part) => (part.castShadow = true));
+    const shadowCaster = createShadowCaster(standInShapes[0], standInMaterial);
+    kart.add(...Object.values(body), ...wheels, glider, shadowCaster);
     karts.push(kart);
     bodies.push(body);
+    shadowCasters.push(shadowCaster);
     wheelSets.push(wheels);
     shownDesigns.push(0);
     rolled.push(0);
@@ -129,6 +138,7 @@ export function createKartModels(count) {
       mesh.geometry = designShapes[designIndex][kind];
       mesh.material = materialFor(kind, designIndex);
     });
+    shadowCasters[index].geometry = standInShapes[designIndex];
     const [canopy, frame] = gliders[index].children;
     canopy.material = gliderMaterials.canopies[designIndex];
     frame.geometry = frameShapes[designIndex];
@@ -142,7 +152,8 @@ export function createKartModels(count) {
   function dispose() {
     designShapes.forEach((shapes) => Object.values(shapes).forEach((shape) => shape.dispose()));
     wheelShapes.forEach((shape) => shape.dispose());
-    [canopyShape, ...frameShapes].forEach((shape) => shape.dispose());
+    [canopyShape, ...frameShapes, ...standInShapes].forEach((shape) => shape.dispose());
+    standInMaterial.dispose();
     materials.dispose();
     gliderMaterials.dispose();
   }

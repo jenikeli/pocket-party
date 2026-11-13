@@ -17,10 +17,10 @@ the user is away"). The user reviews once, at the end: one handoff, one device r
 | H | 2D race: setup and results as HTML in the look | sonnet | A | merged |
 | I | Audio core: unlock, volumes, synth helpers | sonnet | A | merged |
 | F | 3D setup screen (full picture), course built after Start race, tools drawer | opus | A E T1 | merged |
-| O | Kart shadows from one stand-in mesh per kart | sonnet | | building |
+| O | Kart shadows from one stand-in mesh per kart | sonnet | | merged |
 | P | Bloom's clamp folded into its first pass | sonnet | | dropped (already done, see decisions) |
 | N | Palm Bay Airport's leftovers | sonnet | M | building |
-| G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | queued |
+| G | 3D race bar, countdown, results, tuning and measure panels in the look | sonnet | F | building |
 | J | 3D race sounds | opus | F I | building |
 | K | 2D race and shell sounds | sonnet | H I | merged |
 | L | Music made in code, wired to the lobby and the races | opus | I J K | queued |
@@ -522,6 +522,13 @@ world frees), unit tests.
   m8, m9, m7d4b must wait for the build after Start race, Watch or Measure (`waitForCourseBuilt`, `clickWatch`,
   `openTools` in kart-3d-host.js); nothing is drawn behind the setup any more.
 - O: first implementer lost its worktree in the interruption before changing anything; respawned.
+- O: the stand-in is boxes cut from each design's own shape (320 to 392 triangles), kept out of the colour pass
+  by a negative draw range opened only around its shadow draw (relies on the vendored three 0.186.1), with
+  `shadowSide: FrontSide` against acne stripes. Measured in a scratch page (12 karts, 4 views), not on Seaside
+  with the Measure tool (a whole race would not start in software under load): shadow passes 480 draw calls and
+  1.17 M triangles before, 48 and 17 k after; colour passes unchanged. The shadow's outline and size match the
+  old one; its lighter gaps between head, body and wheels are filled, the hat's shadow is stepped, and a faint
+  darker patch sits behind the kart. Wheel prisms do not steer, roll or tuck. Sheets: `o-before`, `o-after`.
 - Interrupted again 2026-11-13 by the usage limit (resets 9:10 Singapore time): F stopped mid-build in its
   worktree (`agent-a85570239d32222f4`, setup panel written, `index.js` next); O and P were building. On resume:
   send each implementer on with SendMessage, or follow the skill's "After an interruption".

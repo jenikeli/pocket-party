@@ -8,7 +8,7 @@ import { confirmOnSecondClick } from '../../shared/confirm-click.js';
 
 test('every icon of the set is an SVG in currentColor, hidden from screen readers', () => {
   const expected = ['back', 'close', 'gear', 'add-players', 'user', 'check', 'stick', 'tilt', 'go-button', 'auto'];
-  expected.push('flag', 'tools', 'again', 'music', 'volume', 'clock', 'minus', 'plus', 'play');
+  expected.push('flag', 'tools', 'again', 'music', 'volume', 'clock', 'minus', 'plus', 'play', 'leave');
   assert.deepEqual([...ICON_NAMES].sort(), expected.sort());
   for (const name of ICON_NAMES) {
     const svg = icon(name);

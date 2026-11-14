@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createControlsTable, NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { controllerView, setupView, standingRows } from '../../host/games/kart-2d/race-views.js';
-import { formatRaceTime } from '../../host/kart/race-time.js';
+import { formatRaceTime, formatGap } from '../../host/kart/race-time.js';
 import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { ordinal } from '../../shared/ordinal.js';
@@ -112,4 +112,12 @@ test('race times show minutes, seconds and hundredths', () => {
 
 test('places read 1st, 2nd, 3rd, then th', () => {
   assert.deepEqual([1, 2, 3, 4, 9, 11, 12].map(ordinal), ['1st', '2nd', '3rd', '4th', '9th', '11th', '12th']);
+});
+
+test('a gap to the winner is the difference of the two times as shown', () => {
+  assert.equal(formatGap(64.9, 62.41), '+2.49');
+  assert.equal(formatGap(62.41, 62.41), '+0.00');
+  // 62.419 shows as 1:02.41 and 63.411 as 1:03.41, so the gap reads a whole second.
+  assert.equal(formatGap(63.411, 62.419), '+1.00');
+  assert.equal(formatGap(135.05, 62.41), '+72.64');
 });

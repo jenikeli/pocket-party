@@ -17,6 +17,8 @@
   /* host/stage.js sets this from the window's size as soon as it runs; until then this CSS guess holds
      (vh is the tallest viewport on phones, which is why the script measures it instead). */
   --pp-em: min(1.25vw, 2.2222vh);
+  /* The height of the strip a game may dock the shell's bar into, along the bottom (host/game-bar.js). */
+  --pp-strip: calc(4 * var(--pp-em));
 }
 
 /* A 16:9 box centred on the screen, 80 em wide. Its empty parts let clicks through to what is under it (a

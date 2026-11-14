@@ -20,11 +20,8 @@ export function setupRows(setup, players) {
   });
 }
 
-// The two small icons that say how a row's player drives, each { icon, label } (an icon name from
-// shared/icons.js, and its words for the tooltip and screen readers).
-export function styleIcons({ steering, autoAccelerate }) {
-  return [
-    steering === KART_STEERING.TILT ? { icon: 'tilt', label: 'Tilt' } : { icon: 'stick', label: 'Stick' },
-    autoAccelerate ? { icon: 'auto', label: 'Auto-accelerate' } : { icon: 'go-button', label: 'Go button' },
-  ];
+// How a row's player drives, in words: "Tilt · Auto", "Stick · Go button".
+export function styleWords({ steering, autoAccelerate }) {
+  const steeringWord = steering === KART_STEERING.TILT ? 'Tilt' : 'Stick';
+  return `${steeringWord} · ${autoAccelerate ? 'Auto' : 'Go button'}`;
 }

@@ -48,13 +48,13 @@ export function setPressed(button, pressed) {
   }
 }
 
-// The laps control of both races' setup screens: a flag, then minus, the number and plus. Returns markup with the
-// ids the race gives it; the race wires the two buttons and writes the number. The icons and words are our own,
-// so it can go into innerHTML.
+// The laps control of both races' setup screens: the word Laps, then minus, the number and plus. Returns markup with
+// the ids the race gives it; the race wires the two buttons and writes the number. The icons and words are our
+// own, so it can go into innerHTML.
 export function lapsStepperMarkup({ minusId, valueId, plusId }) {
   return `
     <div class="kart-laps">
-      <span role="img" aria-label="Laps" title="Laps">${icon('flag')}</span>
+      <span class="pp-muted kart-laps-label">Laps</span>
       <button type="button" id="${minusId}" class="pp-icon-button" aria-label="Fewer laps" title="Fewer laps">${icon('minus')}</button>
       <span id="${valueId}" class="kart-laps-value"></span>
       <button type="button" id="${plusId}" class="pp-icon-button" aria-label="More laps" title="More laps">${icon('plus')}</button>

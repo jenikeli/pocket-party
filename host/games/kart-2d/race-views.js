@@ -6,6 +6,7 @@
 import { kartsInPlaceOrder, currentLap, countdownNumber, RACE_PHASES } from './race.js';
 import { playerSetup } from '../../kart/setup.js';
 import { SETUP_PHASE } from '../../kart/setup-rows.js';
+import { formatGap } from '../../kart/race-time.js';
 
 // Whether new players may join: on the setup screen (no race) and the results, not while karts are racing.
 export function roomIsOpen(race) {
@@ -51,4 +52,20 @@ export function standingRows(race) {
     lap: currentLap(race, kart),
     finishTime: kart.finishTime,
   }));
+}
+
+// The results panel's rows: standingRows plus `gap`, the text of how far behind the winner (first place) a kart
+// finished ('+2.49'). The winner and a kart that never finished have none ('').
+export function resultRows(race) {
+  const rows = standingRows(race);
+  const winnerTime = rows[0]?.finishTime ?? null;
+  return rows.map((row) => {
+    const hasGap = row.place > 1 && row.finishTime !== null && winnerTime !== null;
+    return { ...row, gap: hasGap ? formatGap(row.finishTime, winnerTime) : '' };
+  });
+}
+
+// What was raced, for the results heading: '1 lap', '3 laps'.
+export function lapsText(laps) {
+  return laps === 1 ? '1 lap' : `${laps} laps`;
 }

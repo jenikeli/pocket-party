@@ -12,7 +12,7 @@
   gap: 0.4em;
 }
 
-/* A green edge says ready; the edge is always there, transparent, so a row does not shift when it turns. */
+/* A green edge and a tick with "Ready" say ready; the edge is always there, transparent, so a row does not shift when it turns. */
 .kart-player-row {
   display: flex;
   align-items: center;
@@ -46,15 +46,16 @@
 }
 
 .kart-player-style {
-  display: flex;
-  align-items: center;
-  gap: 0.35em;
   color: var(--pp-muted);
+  white-space: nowrap;
 }
 
 .kart-player-tick {
   display: flex;
+  align-items: center;
+  gap: 0.3em;
   color: var(--pp-ok);
+  font-weight: 700;
 }
 
 .kart-player-row:not(.ready) .kart-player-tick {
@@ -73,16 +74,11 @@
   border-radius: 0.4em;
 }
 
-/* Flag, minus, the number, plus. */
+/* Laps, minus, the number, plus. */
 .kart-laps {
   display: flex;
   align-items: center;
   gap: 0.6em;
-}
-
-.kart-laps > span:first-child {
-  display: flex;
-  color: var(--pp-muted);
 }
 
 .kart-laps .pp-icon-button {

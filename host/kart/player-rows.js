@@ -1,12 +1,12 @@
-// The player rows of both kart races' setup screens (mockup screens 3 and 4): colour dot, name, how they drive as
-// two small icons, a tick when ready, and a cross that removes them on its second click. A dropped player is
-// dimmed, with a clock and the time left instead of the icons. Styled by host/kart/panels.css. Used by
+// The player rows of both kart races' setup screens: colour dot, name, how they drive in words ("Tilt · Auto"),
+// a tick and "Ready" when ready, and a cross that removes them on its second click. A dropped player is dimmed,
+// with "back in 0:24" in place of the words. Styled by host/kart/panels.css. Used by
 // host/games/kart-2d/setup-panel.js and host/games/kart-3d/setup-panel.js.
 
 import { icon } from '/shared/icons.js';
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
 import { displayName, colorText, secondsUntilFreed, formatMinutes } from '/host/roster.js';
-import { styleIcons } from '/host/kart/setup-rows.js';
+import { styleWords } from '/host/kart/setup-rows.js';
 import { setText } from '/host/kart/panel-parts.js';
 
 // Fills `list` (a <ul>) with one row per player. `onRemove(playerId)` runs when a row's cross is confirmed (the
@@ -28,7 +28,7 @@ export function createPlayerRows(list, { onRemove }) {
     style.className = 'kart-player-style';
     const tick = document.createElement('span');
     tick.className = 'kart-player-tick';
-    tick.innerHTML = icon('check');
+    tick.innerHTML = `${icon('check')}<span>Ready</span>`;
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
     removeButton.className = 'pp-icon-button kart-remove-button';
@@ -36,7 +36,7 @@ export function createPlayerRows(list, { onRemove }) {
     removeButton.innerHTML = icon('close');
     const confirm = confirmOnSecondClick(removeButton, () => onRemove(playerId));
     row.append(dot, name, style, tick, removeButton);
-    const entry = { row, dot, name, style, removeButton, confirm, shownStyle: null };
+    const entry = { row, dot, name, style, removeButton, confirm };
     entries.set(playerId, entry);
     return entry;
   }
@@ -80,24 +80,11 @@ function showRow(entry, { player, steering, autoAccelerate, ready, away }) {
   }
 }
 
-// The driving icons, or for a dropped player the clock and the time their slot is held. Written only when it
-// changes, since this runs every frame. The labels are our own constants and the time is text made of digits.
+// How the player drives, or for a dropped player the time their slot is held. setText writes only when the text
+// changes, since this runs every frame.
 function showStyle(entry, { player, steering, autoAccelerate, away }) {
-  const timeLeft = away ? formatMinutes(secondsUntilFreed(player, Date.now())) : '';
-  const shown = away ? `away ${timeLeft}` : `${steering} ${autoAccelerate}`;
-  if (shown === entry.shownStyle) {
-    return;
-  }
-  entry.shownStyle = shown;
-  if (away) {
-    entry.style.innerHTML = `${labelled(icon('clock'), 'Away')}<span>${timeLeft}</span>`;
-    return;
-  }
-  entry.style.innerHTML = styleIcons({ steering, autoAccelerate })
-    .map(({ icon: name, label }) => labelled(icon(name), label))
-    .join('');
-}
-
-function labelled(iconMarkup, label) {
-  return `<span role="img" aria-label="${label}" title="${label}">${iconMarkup}</span>`;
+  const words = away
+    ? `back in ${formatMinutes(secondsUntilFreed(player, Date.now()))}`
+    : styleWords({ steering, autoAccelerate });
+  setText(entry.style, words);
 }

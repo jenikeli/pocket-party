@@ -1,10 +1,11 @@
 // Unit tests for what the 2D race's HTML panels are built from (host/kart/setup-rows.js and
-// host/games/kart-2d/race-views.js): the setup screen's rows, and when the room is open to new players.
+// host/games/kart-2d/race-views.js): the setup screen's rows and the words on them, the results rows, and when the
+// room is open to new players.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { roomIsOpen } from '../../host/games/kart-2d/race-views.js';
-import { setupRows, styleIcons } from '../../host/kart/setup-rows.js';
+import { roomIsOpen, resultRows, lapsText } from '../../host/games/kart-2d/race-views.js';
+import { setupRows, styleWords } from '../../host/kart/setup-rows.js';
 import { createRace, stepRace, RACE_PHASES } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
 import { KART_CHOICES, KART_STEERING } from '../../shared/protocol.js';
@@ -50,15 +51,28 @@ test('a dropped player is shown as away even when they were ready', () => {
   assert.equal(row.ready, false);
 });
 
-test('a row shows two icons: how the player steers and how they accelerate', () => {
-  assert.deepEqual(styleIcons({ steering: 'stick', autoAccelerate: false }), [
-    { icon: 'stick', label: 'Stick' },
-    { icon: 'go-button', label: 'Go button' },
-  ]);
-  assert.deepEqual(styleIcons({ steering: 'tilt', autoAccelerate: true }), [
-    { icon: 'tilt', label: 'Tilt' },
-    { icon: 'auto', label: 'Auto-accelerate' },
-  ]);
+test('a row says in words how the player steers and accelerates', () => {
+  assert.equal(styleWords({ steering: 'stick', autoAccelerate: false }), 'Stick · Go button');
+  assert.equal(styleWords({ steering: 'tilt', autoAccelerate: true }), 'Tilt · Auto');
+});
+
+test('the results rows carry each kart\'s gap to the winner, none for the winner or an unfinished kart', () => {
+  const race = createRace(['p0', 'p1', 'p2', 'p3'], 3);
+  race.karts[0].finishTime = 62.41;
+  race.karts[1].finishTime = 64.9;
+  race.karts[2].finishTime = 65.125;
+  const rows = resultRows(race);
+  assert.deepEqual(rows.map((row) => row.gap), ['', '+2.49', '+2.71', '']);
+  assert.equal(rows[3].finishTime, null);
+});
+
+test('a race nobody finished has no gaps', () => {
+  assert.deepEqual(resultRows(createRace(['p0', 'p1'], 1)).map((row) => row.gap), ['', '']);
+});
+
+test('the laps raced are worded for the results heading', () => {
+  assert.equal(lapsText(1), '1 lap');
+  assert.equal(lapsText(3), '3 laps');
 });
 
 test('the room is open on the setup screen and the results, closed while the karts race', () => {

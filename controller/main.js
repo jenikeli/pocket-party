@@ -20,6 +20,7 @@ const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
 const gameScreen = document.getElementById('game-screen');
 const gameRoomCode = document.getElementById('game-status');
+const wakeNote = document.getElementById('wake-note');
 const endedScreen = document.getElementById('ended-screen');
 const endedJoinButton = document.getElementById('ended-join-button');
 const reconnectOverlay = document.getElementById('reconnect-overlay');
@@ -156,7 +157,7 @@ joinForm.addEventListener('submit', (event) => {
 endedJoinButton.addEventListener('click', () => showJoinScreen(''));
 reconnectButton.addEventListener('click', () => connection.reconnect());
 // Leaving takes two taps: the first turns the button red, the second leaves. Your place is then given to someone else.
-document.querySelector('#game-top .leave-button').innerHTML = icon('close');
+document.querySelector('#game-top .leave-button').innerHTML = icon('leave');
 for (const leaveButton of document.querySelectorAll('.leave-button')) {
   confirmOnSecondClick(leaveButton, () => connection.leave());
 }
@@ -180,8 +181,11 @@ const linkRoomCode = (new URLSearchParams(location.search).get('room') || '').to
 roomCodeInput.value = linkRoomCode;
 nameInput.value = loadName();
 showDeviceInfo();
-// The phone shows no wake-lock status (a screen shows only what the player needs); the lock is still taken.
-keepScreenAwake(() => {});
+// The lock is taken quietly; only when the browser refuses it or has none does the game screen say the screen may
+// sleep. A lock released because the page went hidden is retaken on return, so "off" says nothing.
+keepScreenAwake((status) => {
+  wakeNote.hidden = !(status.startsWith('not supported') || status.startsWith('refused'));
+});
 
 // A saved place in the same room (a reload, or the tab was closed and the link opened again): take it back.
 // A link to a different room means a new game, so that player joins normally.

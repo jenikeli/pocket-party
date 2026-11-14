@@ -81,6 +81,13 @@ dd {
   letter-spacing: 0.1em;
 }
 
+/* One small line, only when the phone cannot keep its screen awake. */
+#wake-note {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+}
+
 /* "Connected", until the host's first state names the game. */
 #game-container > .game-connected {
   margin: auto;

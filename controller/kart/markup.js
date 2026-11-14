@@ -28,6 +28,7 @@ export const MARKUP = `
         <p id="kart-steering-note" hidden></p>
       </div>
       <div id="kart-ready-area">
+        <p id="kart-turn-note" class="pp-muted">Turn your phone sideways when the race starts</p>
         <button id="kart-ready-button" class="pp-button pp-primary" aria-pressed="false">Ready</button>
       </div>
     </div>

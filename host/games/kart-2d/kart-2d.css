@@ -25,11 +25,21 @@
   border: 0.1em solid var(--pp-line);
 }
 
-/* The title on the left, the laps on the right. */
+/* The title on the left, the laps (setup) or what was raced (results) on the right. */
 .k2d-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+}
+
+.k2d-subheading {
+  margin: 0.2em 0 0;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.k2d-join-line {
+  margin: 0;
 }
 
 .k2d-heading {
@@ -47,13 +57,35 @@
 
 .k2d-result {
   display: grid;
-  grid-template-columns: 2.5em 1fr auto;
+  grid-template-columns: 2.5em 1fr auto 4.2em;
   align-items: center;
   gap: 0.8em;
   padding: 0.2em 0.5em;
   border-radius: var(--pp-radius);
   background: var(--pp-panel-2);
   font-size: 1.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.k2d-place {
+  color: var(--pp-muted);
+}
+
+/* The winner: a larger row, outlined, with its place in the accent. */
+.k2d-winner {
+  padding: 0.4em 0.5em;
+  outline: 0.1em solid var(--pp-accent);
+  font-size: 1.4em;
+}
+
+.k2d-winner .k2d-place {
+  color: var(--pp-accent);
+  font-weight: 800;
+}
+
+.k2d-gap {
+  text-align: right;
+  font-size: 0.9em;
 }
 
 /* Reserves the line, so Start race does not move when the reason comes and goes. */
@@ -64,6 +96,11 @@
 
 .k2d-panel .pp-big {
   align-self: flex-start;
+}
+
+/* Race again runs across the whole panel. */
+.k2d-panel #kart-2d-race-again-button {
+  align-self: stretch;
 }
 
 /* The readout in the infield, left clear of the road (the infield is 860 x 500 design pixels round the middle of

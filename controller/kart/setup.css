@@ -89,6 +89,10 @@
   text-align: center;
 }
 
+#kart-turn-note {
+  font-size: 14px;
+}
+
 /* The primary action until pressed; once ready it turns green with a tick. */
 #kart-setup #kart-ready-button {
   display: flex;
@@ -111,6 +115,11 @@
   #kart-setup {
     grid-template-rows: none;
     grid-template-columns: 1fr minmax(160px, 30%);
+  }
+
+  /* Already turned sideways, so the line has done its job. */
+  #kart-turn-note {
+    display: none;
   }
 
   /* A landscape page is short: a smaller title and tighter rows keep the choices in view. */

@@ -1,12 +1,14 @@
 // The phone's steering for both kart races: the on-screen stick or the phone turned like a wheel (tilt),
 // whichever the host's view says this player chose. Owns the tilt flow (permission, first reading, falling back
 // to the stick) and the tilt panel (Enable tilt, Recenter), and turns both inputs to match the controls'
-// turned layout (controller/kart/turned-layout.js). Used by controller/kart/controls.js.
+// turned layout (controller/kart/turned-layout.js). The stick is drawn by controller/kart/floating-stick.js.
+// Used by controller/kart/controls.js.
 
 import { KART_CHOICES, KART_STEERING, INPUT_FALLBACK_REASONS } from '/shared/protocol.js';
 import * as dragInput from '/controller/inputs/drag.js';
 import * as tiltInput from '/controller/inputs/tilt.js';
 import { stickFromDrag, TURNED_HELD_ANGLE } from '/controller/kart/turned-layout.js';
+import { createFloatingStick } from '/controller/kart/floating-stick.js';
 
 const TILT_PROBLEM_TEXT = {
   [INPUT_FALLBACK_REASONS.UNSUPPORTED]: 'not supported (is the page on https?)',
@@ -16,10 +18,10 @@ const TILT_PROBLEM_TEXT = {
 
 // How far the wheel picture turns when the phone is turned all the way.
 const WHEEL_TURN_DEGREES = 60;
-// How far (CSS px) the knob moves when the stick is all the way over.
-const KNOB_TRAVEL_PX = 45;
 
-let elements = null; // { stickZone, stickKnob, tiltZone, wheel, enableTiltButton, recenterButton, note }
+// { stickZone, stickRing, stickKnob, steerAmount, tiltZone, wheel, enableTiltButton, recenterButton, note }
+let elements = null;
+let floatingStick = null; // set by start
 let sendChoice = null; // (choice, value), set by start
 let sendInput = null; // (input), set by start
 let steering = KART_STEERING.STICK; // what this phone steers with now
@@ -38,9 +40,13 @@ export function start(pageElements, send) {
   tiltInput.onInput(onTiltInput);
   elements.enableTiltButton.addEventListener('click', enableTilt);
   elements.recenterButton.addEventListener('click', () => tiltInput.calibrate());
+  floatingStick = createFloatingStick(
+    { zone: elements.stickZone, ring: elements.stickRing, knob: elements.stickKnob, amount: elements.steerAmount },
+    () => turned,
+  );
   steering = KART_STEERING.STICK;
   requestedSteering = null;
-  dragInput.start(elements.stickZone);
+  startStick();
   showSteering();
 }
 
@@ -58,9 +64,9 @@ export function show(viewSteering) {
   steering = viewSteering;
   if (steering === KART_STEERING.STICK) {
     stopTilt();
-    dragInput.start(elements.stickZone);
+    startStick();
   } else {
-    dragInput.stop();
+    stopStick();
   }
   showSteering();
 }
@@ -124,7 +130,7 @@ export function recenterTilt() {
 }
 
 export function stop() {
-  dragInput.stop();
+  stopStick();
   stopTilt();
   setTurned(false);
   elements = null;
@@ -133,6 +139,16 @@ export function stop() {
 function request(value) {
   requestedSteering = value;
   sendChoice(KART_CHOICES.STEERING, value);
+}
+
+function startStick() {
+  dragInput.start(elements.stickZone);
+  floatingStick.start();
+}
+
+function stopStick() {
+  dragInput.stop();
+  floatingStick.stop();
 }
 
 function stopTilt() {
@@ -165,9 +181,8 @@ function showNote(text) {
 function onStickInput(input) {
   const stick = stickFromDrag(input, turned);
   sendInput(stick);
-  // Only left and right steer, so the knob only moves sideways (the player's sideways: the knob is inside the
-  // turned controls, so its own x is theirs).
-  elements.stickKnob.style.transform = `translateX(${stick.x * KNOB_TRAVEL_PX}px)`;
+  // In the player's directions: the knob is inside the turned controls, so its own x is theirs.
+  floatingStick.show(stick);
 }
 
 function onTiltInput(input) {

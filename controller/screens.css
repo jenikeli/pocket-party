@@ -145,8 +145,37 @@ dd {
   font-weight: 600;
 }
 
+/* The player's chip on the left, the room code, and Leave on the right. */
 #game-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+/* The chip may shrink, so a long name is cut short rather than pushing Leave off the line. */
+#game-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+#game-player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A ring round the dot, in its own colour with a gap, so a dark colour still shows on the dark page. */
+#game-player-dot {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--player-color);
+  box-shadow: 0 0 0 2px var(--pp-bg), 0 0 0 4px var(--player-color);
 }

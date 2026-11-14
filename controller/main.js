@@ -20,6 +20,9 @@ const joinButton = document.getElementById('join-button');
 const joinStatus = document.getElementById('join-status');
 const gameScreen = document.getElementById('game-screen');
 const gameRoomCode = document.getElementById('game-status');
+const gamePlayer = document.getElementById('game-player');
+const gamePlayerDot = document.getElementById('game-player-dot');
+const gamePlayerName = document.getElementById('game-player-name');
 const wakeNote = document.getElementById('wake-note');
 const endedScreen = document.getElementById('ended-screen');
 const endedJoinButton = document.getElementById('ended-join-button');
@@ -49,6 +52,7 @@ const connection = createConnection({
     gameRoomCode.textContent = session.roomCode;
     // After a rejoin the current screen stays up; the host's CONTROLLER_STATE follows right away either way.
     if (!joinScreen.hidden) {
+      gamePlayer.hidden = true;
       showConnected();
       showScreen(gameScreen);
     }
@@ -96,8 +100,18 @@ function handleHostMessage(message) {
   if (message.screen === CONTROLLER_SCREENS.GAME) {
     // After a rejoin the host sends the game again; a game that is still running just gets the view.
     showScreen(gameScreen);
-    showGame(message.gameId, message.view, (gameMessage) => connection.send(gameMessage));
+    showPlayer(message.name, message.color);
+    const player = { name: message.name, color: message.color };
+    showGame(message.gameId, message.view, player, (gameMessage) => connection.send(gameMessage), () => connection.leave());
   }
+}
+
+// The top line's dot and name: the colour and name the host gives this player, on every screen of a game, so the
+// phone matches its kart and its row on the big screen. Both can change (a colour picked on a setup screen).
+function showPlayer(name, color) {
+  gamePlayerDot.style.setProperty('--player-color', color);
+  gamePlayerName.textContent = name;
+  gamePlayer.hidden = false;
 }
 
 function showScreen(screen) {

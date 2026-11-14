@@ -1,7 +1,8 @@
 /* The kart races' phone screen and its setup screen (controller/kart/markup.js): laid out for portrait, the
-   race's line and the choices at the top and Ready at the bottom under the thumb; on a landscape page (rotation
-   lock off) the choices on the left and Ready on the right. Each kart game's style.css imports this file. The
-   --pp- tokens come from controller/style.css; the fallbacks are the same values. */
+   race's line and the rows of choices (Colour, Steering, Options, each with its word) at the top and Ready at the
+   bottom under the thumb; on a landscape page (rotation lock off) the choices on the left and Ready on the right.
+   The Colour and Options rows' own controls are controller/kart/setup-choices.css. Each kart game's style.css
+   imports this file. The --pp- tokens come from controller/style.css; the fallbacks are the same values. */
 
 #kart-screen {
   flex: 1;
@@ -57,8 +58,17 @@
   color: var(--pp-accent-ink, #1c2130);
 }
 
-/* A choice: its icon above its word, in the accent colour once chosen. The two rows of choices sit a little
-   apart, since no label names them any more. */
+/* A row's word, in small capitals over it. */
+#kart-setup .kart-row-word {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pp-muted, #9aa4bf);
+}
+
+/* A steering choice: its icon above its word, in the accent colour once chosen. */
 #kart-setup .kart-choice {
   display: flex;
   flex-direction: column;
@@ -71,10 +81,6 @@
 #kart-setup .kart-choice .pp-icon {
   width: 28px;
   height: 28px;
-}
-
-#kart-choices .pp-segment {
-  margin-top: 8px;
 }
 
 #kart-steering-note {
@@ -122,13 +128,9 @@
     display: none;
   }
 
-  /* A landscape page is short: a smaller title and tighter rows keep the choices in view. */
+  /* A landscape page is short: a smaller title keeps more of the choices in view. */
   #kart-setup-title {
     font-size: 22px;
-  }
-
-  #kart-choices .pp-segment {
-    margin-top: 4px;
   }
 
   #kart-setup #kart-ready-button {

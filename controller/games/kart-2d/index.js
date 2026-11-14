@@ -5,13 +5,15 @@
 import { ordinal } from '/shared/ordinal.js';
 import * as kartControls from '/controller/kart/controls.js';
 
-export function start(container, send) {
-  kartControls.start(container, send, { title: 'Kart race 2D', describeStatus, drift: false });
+// `leave()` is the shell's Leave game, for the controls' door.
+export function start(container, send, leave) {
+  kartControls.start(container, send, { title: 'Kartwheel Mini', describeStatus, drift: false }, leave);
 }
 
-// `view` is what host/games/kart-2d/race-views.js made for this player (see kartControls.showView).
-export function showView(view) {
-  kartControls.showView(view);
+// `view` is what host/games/kart-2d/race-views.js made for this player and `player` its { name, color }
+// (see kartControls.showView).
+export function showView(view, player) {
+  kartControls.showView(view, player);
 }
 
 export function stop() {

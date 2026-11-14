@@ -29,11 +29,12 @@
     </form>
   </main>
 
-  <!-- A phone in a room is always in a game: the room code and the leave icon (set in controller/main.js) are the
-       shell's; the game builds its controls in #game-container (controller/game-screen.js loads
-       controller/games/<id>/). -->
+  <!-- A phone in a room is always in a game: the player's colour dot and name, the room code and the leave icon
+       (set in controller/main.js) are the shell's; the game builds its controls in #game-container
+       (controller/game-screen.js loads controller/games/<id>/). -->
   <main id="game-screen" hidden>
     <div id="game-top">
+      <p id="game-player" hidden><span id="game-player-dot"></span><span id="game-player-name"></span></p>
       <p id="game-status"></p>
       <button type="button" class="leave-button pp-icon-button" aria-label="Leave game" title="Leave game"></button>
     </div>

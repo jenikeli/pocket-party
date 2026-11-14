@@ -2,5 +2,7 @@
    game starts; a link's load event waits for its @imports, so the controls never show unstyled. */
 
 @import url('/controller/kart/setup.css');
+@import url('/controller/kart/setup-choices.css');
 @import url('/controller/kart/controls.css');
+@import url('/controller/kart/steer-status.css');
 @import url('/controller/kart/buttons.css');

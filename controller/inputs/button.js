@@ -1,6 +1,6 @@
 // Held-button input: every element with a data-button attribute inside the surface is a button that sends
 // { kind: 'button', button, pressed: true } when a finger lands on it and { ..., pressed: false } when the last
-// finger on it lifts. Used by controller/games/kart-2d/index.js. Same shape as every input module:
+// finger on it lifts. Used by controller/kart/controls.js (both kart races). Same shape as every input module:
 // start(surface), stop(), onInput(callback).
 //
 // Press and release are separate messages, sent at once and not throttled: a player presses a button a few

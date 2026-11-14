@@ -1,23 +1,27 @@
 // Runs the controller side of the host's current game: the first time the host names a game it loads
 // controller/games/<id>/ (index.js by dynamic import(), and style.css), starts it in #game-container, and passes
-// on every view the host sends. Used by controller/main.js.
+// on every view the host sends. A game module has start(container, send, leave), showView(view, player) and
+// stop(). Used by controller/main.js.
 
 const container = document.getElementById('game-container');
 
-// The game this phone is showing: { gameId, view, module }. module is null while the files load, and view is
-// the newest view from the host, which the game gets as soon as it has started.
+// The game this phone is showing: { gameId, view, player, module }. module is null while the files load; view
+// and player are the newest from the host, which the game gets as soon as it has started.
 let current = null;
 
-// Called for every CONTROLLER_STATE on the GAME screen. `send(message)` sends one message to the server.
-export function showGame(gameId, view, send) {
+// Called for every CONTROLLER_STATE on the GAME screen. `player` is { name, color } from it. `send(message)`
+// sends one message to the server and `leave()` leaves the game (the shell's Leave, with no confirm of its own:
+// a game that offers it adds the two taps).
+export function showGame(gameId, view, player, send, leave) {
   if (current?.gameId === gameId) {
     current.view = view;
-    current.module?.showView(view);
+    current.player = player;
+    current.module?.showView(view, player);
     return;
   }
   stopGame();
-  current = { gameId, view, module: null };
-  startGame(current, send);
+  current = { gameId, view, player, module: null };
+  startGame(current, send, leave);
 }
 
 // Between joining and the host's first CONTROLLER_STATE.
@@ -39,7 +43,7 @@ export function stopGame() {
 
 // `entry` stops being `current` if the host moves on (the room closes) while the files are still loading;
 // the game is then never started.
-async function startGame(entry, send) {
+async function startGame(entry, send, leave) {
   try {
     const [module] = await Promise.all([
       import(`/controller/games/${entry.gameId}/index.js`),
@@ -49,9 +53,9 @@ async function startGame(entry, send) {
     if (current !== entry) {
       return;
     }
-    module.start(container, send);
+    module.start(container, send, leave);
     entry.module = module;
-    module.showView(entry.view);
+    module.showView(entry.view, entry.player);
   } catch (error) {
     console.error(`Could not start game "${entry.gameId}"`, error);
     if (current === entry) {

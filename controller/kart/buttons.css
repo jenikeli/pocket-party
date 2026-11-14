@@ -1,39 +1,35 @@
-/* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift with
-   its spark colours, and its Item button with the running effects. Where they sit is controller/kart/controls.css.
-   Each kart game's style.css imports this file. The --pp- tokens come from controller/style.css; the fallbacks
-   are the same values. */
-
-/* Flex, not a grid, so Brake takes the whole side when auto-accelerate hides Go. */
-#kart-pedals {
-  display: flex;
-  gap: 12px;
-}
-
-/* Border and padding are reset because the shell's rule for every button (controller/style.css) would give the
-   driving buttons an outline and inner space they never had. */
-.kart-pedal,
-#kart-drift {
-  border: none;
-  padding: 0;
-}
+/* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift (or
+   Go, with the stick) with its spark colours, and its Item button with the running effects. Where they sit is
+   controller/kart/controls.css. Each kart game's style.css imports this file. The --pp- tokens come from
+   controller/style.css; the fallbacks are the same values. */
 
 .kart-pedal {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  min-width: 0;
   border-radius: calc(var(--pp-radius, 0.45em) * 2);
   font-size: 26px;
   font-weight: 800;
+  text-align: center;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* How the button is used, small under its word. */
+.kart-pedal small {
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 #kart-brake {
-  flex: 2;
   background: #a5302a;
 }
 
 #kart-accelerate {
-  flex: 3;
   background: #1f8f4f;
 }
 
@@ -46,18 +42,20 @@
   background: var(--pp-panel-2, #2a3145);
 }
 
-/* The drift's spark level, from the host's view: blue, orange, then purple, as in MK8DX. */
-#kart-drift[data-spark="blue"] {
+/* The drift's spark level, from the host's view: blue, orange, then purple, as in the reference game. Drawn on
+   Drift with tilt, on Go with the stick (the double tap). Under #kart-controls, to win over each button's own
+   colour. */
+#kart-controls .kart-pedal[data-spark="blue"] {
   background: #2f80ed;
   box-shadow: 0 0 24px #4fb3ff;
 }
 
-#kart-drift[data-spark="orange"] {
+#kart-controls .kart-pedal[data-spark="orange"] {
   background: #e67e22;
   box-shadow: 0 0 24px #ff9a1f;
 }
 
-#kart-drift[data-spark="purple"] {
+#kart-controls .kart-pedal[data-spark="purple"] {
   background: #9b51e0;
   box-shadow: 0 0 24px #d04dff;
 }
@@ -68,7 +66,6 @@
 #kart-item-slot {
   grid-area: item;
   position: relative;
-  flex-direction: column;
   box-sizing: border-box;
   border: 3px dashed var(--pp-line, #343d57);
   overflow: hidden;

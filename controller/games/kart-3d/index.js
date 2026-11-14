@@ -1,6 +1,6 @@
-// The phone side of the 3D race, a game module: the shared kart controls (controller/kart/controls.js) with the
-// Drift and Item buttons. The middle of the controls shows the countdown, then the place, with a line for the lap, how
-// the start went (for a moment after GO), the final lap and the finish. Loaded and started by
+// The phone side of the 3D race, a game module: the shared kart controls (controller/kart/controls.js) with
+// Drift and the Item button. The middle of the controls shows the countdown, then the place, with a line for the
+// lap, how the start went (for a moment after GO), the final lap and the finish. Loaded and started by
 // controller/game-screen.js.
 
 import { ordinal } from '/shared/ordinal.js';
@@ -8,13 +8,15 @@ import * as kartControls from '/controller/kart/controls.js';
 
 const START_TEXT = { rocket: 'Rocket start!', stall: 'Too early: stalled' };
 
-export function start(container, send) {
-  kartControls.start(container, send, { title: 'Kart race 3D', describeStatus, drift: true, items: true });
+// `leave()` is the shell's Leave game, for the controls' door.
+export function start(container, send, leave) {
+  kartControls.start(container, send, { title: 'Kartwheel', describeStatus, drift: true, items: true }, leave);
 }
 
-// `view` is what host/games/kart-3d/race-views.js made for this player (see kartControls.showView).
-export function showView(view) {
-  kartControls.showView(view);
+// `view` is what host/games/kart-3d/race-views.js made for this player and `player` its { name, color }
+// (see kartControls.showView).
+export function showView(view, player) {
+  kartControls.showView(view, player);
 }
 
 export function stop() {

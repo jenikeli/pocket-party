@@ -69,6 +69,7 @@ Three input types: **tap**, **swipe**, **tilt**, each a module under `controller
 
 ## Conventions
 
+- No file names the reference game, its maker or console, or its characters, items and courses; write "the reference game" (or "console kart racers"). The look and designs we copy stay; only the names go.
 - JavaScript (ES modules), no TypeScript. Small single-purpose files, plain functions over class hierarchies.
 - A game is a self-contained module in `host/games/<id>/` with a matching controller UI in `controller/games/<id>/`, implementing the "Game module interface" in `plan.md`. The shell never imports a game directly, only through the registry `host/games/index.js`.
 - Keep game rules in plain functions that do not depend on Phaser, Three.js or the DOM, so they can be unit tested in Node.
@@ -143,8 +144,8 @@ Every behaviour that has been built must stay working. Automated tests are how w
   | Area changed | Browser test files |
   |---|---|
   | 3D look (renderer, scenery and dressings, the kit, kart models, effects, quality, views, sun, Measure, course light, baked shade, items' looks) | `m7c`, `m7b`, `m7d2`, `m7d4b`, `m8`, `m9` |
-  | 3D rules (kart physics, techniques, boosts, race, CPU drivers, tuning, `index.js` and its parts, setup screen, course loading, panels, sounds, item rules) | `m6b`, `m6c`, `m7a`, `m7b`, `m8`, `m9` |
-  | Shared kart phone controls and setup (`controller/kart/`, `host/kart/`, `shared/item-icons.js`) | `m5b`, `m5c`, `m6b`, `m6c`, `m7a`, `m8`, `m10-turned-controls` |
+  | 3D rules (kart physics, techniques, boosts, race, CPU drivers, tuning, `index.js` and its parts, setup screen, course loading, panels, sounds, item rules) | `m6b`, `m6c`, `m7a`, `m7b`, `m8`, `m9`, `m11-colour-controls` |
+  | Shared kart phone controls and setup (`controller/kart/`, `host/kart/`, `shared/item-icons.js`) | `m5b`, `m5c`, `m6b`, `m6c`, `m7a`, `m8`, `m10-turned-controls`, `m11-colour-controls` |
   | 2D race | `m5b`, `m5c` |
   | Input lab and input modules | `m3`, `m10-turned-controls` (tilt.js) |
   | Sound and music | `m10-shell`, `m5b`, `m6b` (they only prove nothing throws) |

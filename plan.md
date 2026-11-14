@@ -36,7 +36,7 @@ A racing game in the style of console kart racers for a party. A host display sh
 
 The target is a race a reference-game player recognises by feel. The reference game's numbers and our studies of its look are in `docs/kart-reference.md`; what we measured and tuned is in `docs/3d-findings.md`.
 
-- **Copy the reference game's designs freely, build them ourselves.** Private use only, never published. Every model and texture is made in code (or CC0, like the photo asphalt); nothing is extracted from the game. The 12 drivers are an original cast.
+- **Copy the reference game's designs freely, build them ourselves.** Private use only, never published. Every model and texture is made in code (or CC0, like the photo asphalt); nothing is extracted from the game. The 12 drivers are an original cast. No file uses the reference game's names (`CLAUDE.md`); signs read KARTWHEEL and our own sponsors. Kept on purpose, as designs: the mushroom-capped crowd, the cameraman on the TV van, the giant shell, warp pipes, spotted mushrooms, the flower plaques, the "?" item boxes.
 - **Kart rules written by hand,** DOM-free and unit tested, using the reference game's structure (a turn rate, a speed curve, boost multipliers). No physics library.
 - **Track from maths:** a closed centre line with width, height and roll per piece (`track-builder.js` makes stations 1 unit apart; `track.js` finds a kart by walking from its last station). Hills, jump gaps, banks, anti-gravity walls, off-road shoulders, glide gaps and spin posts all come from the course definition. On the road a kart is stuck to the surface; gravity acts only in the air.
 - **Built:** driving, hop and drift with three mini-turbo levels, rocket start, trick, dash panels, slipstream, spin boost, gliding, spin posts; countdown, laps, places, results, engine classes (50 to 200cc); CPU drivers at three levels on a racing line; six items of our own (blocker, jump, teleport, magnet, push, sticky walls); three courses (Palm Bay Airport, Seaside Skyway, Test track); the look (kit of textured pieces, baked shade, course light, bloom, three quality levels); sound and music made in code.
@@ -121,7 +121,7 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
   - Karts (`karts/`): 12 designs in `karts/drivers/`, assigned by lobby colour slot (`kart-roster.js`); about 25,000 triangles and 10 draw calls each; shadows from a box stand-in.
   - Drawing: `renderer.js`, `scenery.js`, `course-loader.js` (nothing is built until Start race, Watch or Measure; a built course is kept), `baked-shade.js`, `course-light.js`, `bloom.js`, `sun.js`, `quality.js`, `views.js`, `effects.js`.
   - Session and panels: `index.js`, `race-session.js`, `frame-drawer.js`, `phone-link.js`, `setup-panel.js`, `race-bar.js` (the strip's buttons), `tuning-panel.js`, `results-panel.js`, `view-hud.js`, `measure-*.js`, `stand-ins.js`.
-- **Phone (`controller/`):** `main.js`, `connection.js`, `session-store.js`, `game-screen.js`, `no-zoom.js`, `background-leave.js`; `inputs/` (each `start(surface)`, `stop()`, `onInput(callback)`; tilt also `requestAccess()`, `calibrate()`); `kart/` (shared controls and setup screen).
+- **Phone (`controller/`):** `main.js`, `connection.js`, `session-store.js`, `game-screen.js`, `no-zoom.js`, `background-leave.js`; `inputs/` (each `start(surface)`, `stop()`, `onInput(callback)`; tilt also `requestAccess()`, `calibrate()`); `kart/` (shared controls and setup screen: `controls.js` and `markup.js`, `setup-screen.js` with `color-picker.js`, `steering.js` with `floating-stick.js` and `turned-layout.js`, `go-drift.js` for Go's double tap).
 - **Tests:** `test/unit/`, `test/server/`, `test/browser/`; helpers in `test/helpers/` (`startServer`, `openHost`, `startGame`, `clickNow`, `kart-3d-host.js` for the 3D waits and the plain course, `touch.js` for real multi-touch, `lane-driver.js`).
 - **Tools:** `tools/kit-shots.js`, `tools/course-previews.js`.
 
@@ -144,7 +144,7 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
 
 - Bloom costs about 3.5 ms a frame with 4 views on the iPad (1.4 before the karts were rebuilt); the cause is not known.
 - The kit's drawn maps stay for the whole game: about 100 MB once all three courses were built. If the iPad shows memory trouble, trim to the current course's maps at each build (about 15 lines in `canvas-texture.js`).
-- `host/games/kart-3d/index.js` (232 lines) and `renderer.js` (212) are a little over the 200-line guideline.
+- A little over the 200-line guideline: `host/games/kart-3d/index.js` (252 lines), `renderer.js` (212), `controller/main.js` (209), `controller/kart/controls.js` (202), `controller/kart/steer-status.css` (206).
 - Measure keeps the bar at the top, where it covers the "View 1" label.
 - Heads of karts just behind the viewed kart poke into the bottom of its view.
 - Kept but unused: `drawCloseButton` in `host/buttons.js` (only the input lab's card uses it; if that card moves to HTML, delete the file and use `shared/confirm-click.js`), `isDone()` in the module interface and its call in `game-runner.js`, `isOnRoad` in `kart-2d/track.js` (only its unit test uses it).

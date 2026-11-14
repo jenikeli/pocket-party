@@ -135,6 +135,10 @@ describe('M7b 3D race', () => {
     await waitUntil(async () => /View 4: [\d.]+ units\/s/.test(await hostPage.textContent('#kart-3d-readout')), { ...RACE_TIMEOUT, message: 'the readout lists the stand-ins' });
     await saveScreenshot(hostPage, 'm7b-1b-host-watch-4');
     await clickNow(hostPage, '#kart-3d-tuning-button');
+    // Back to setup throws the race away, so the first click only arms it (red).
+    await clickNow(hostPage, '#kart-3d-setup-button');
+    assert.match(await hostPage.getAttribute('#kart-3d-setup-button', 'class'), /\barmed\b/);
+    assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'one click does not leave the race');
     await clickNow(hostPage, '#kart-3d-setup-button');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     for (const player of [ana, bo]) {
@@ -181,12 +185,15 @@ describe('M7b 3D race', () => {
     }
   });
 
-  test('the strip holds Back to games, the race\'s buttons and clock, and the gear, with the room shut', async () => {
+  test('the strip holds the race\'s buttons and clock and the gear, with no Back to games and the room shut', async () => {
     await hostPage.waitForSelector('#kart-3d-clock:not([hidden])');
     assert.equal(await hostPage.isVisible('#game-add-players-button'), false);
     assert.equal(await hostPage.isVisible('#room-code-chip'), false);
+    assert.equal(await hostPage.isVisible('#game-back-button'), false, 'the strip has no Back to games');
+    assert.equal((await hostPage.textContent('#kart-3d-setup-button')).trim(), 'Back to setup');
+    assert.equal(await hostPage.locator('#kart-3d-setup-button svg').count(), 1, 'Back to setup has the back icon');
     const strip = await hostPage.locator('#top-bar').boundingBox();
-    const selectors = ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button'];
+    const selectors = ['#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button'];
     const boxes = [];
     for (const selector of selectors) {
       const box = await hostPage.locator(selector).boundingBox();
@@ -248,6 +255,10 @@ describe('M7b 3D race', () => {
     assert.equal(await hostPage.locator('#kart-3d-results-rows li.first').count(), 1, 'the winner\'s row is marked');
     await saveScreenshot(hostPage, 'm7b-5-host-results');
     assert.equal(await hostPage.locator('#kart-3d-lobby-button').count(), 0, 'the results have no Back to lobby button any more');
+    // The results' strip has no Back to games either: Race again leads to the setup screen, which has it.
+    assert.equal(await hostPage.isVisible('#game-back-button'), false);
+    await clickNow(hostPage, '#kart-3d-race-again-button');
+    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await goBackToPicker(hostPage);
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0, 'the race\'s canvas is gone');
   });

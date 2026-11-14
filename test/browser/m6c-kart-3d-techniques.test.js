@@ -179,6 +179,9 @@ describe('M6c 3D techniques', () => {
     for (const player of [ana, bo]) {
       assert.match(await player.page.textContent('#kart-big'), /^\d+(st|nd|rd|th)$/);
     }
+    // Restart throws the race away, so the first click only arms it (red); the second restarts.
+    await clickNow(hostPage, '#kart-3d-restart-button');
+    assert.match(await hostPage.getAttribute('#kart-3d-restart-button', 'class'), /\barmed\b/);
     await clickNow(hostPage, '#kart-3d-restart-button');
     for (const player of [ana, bo]) {
       await player.page.waitForFunction(() => /^[321]$/.test(document.getElementById('kart-big').textContent), null, { timeout: 30000 });

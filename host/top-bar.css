@@ -78,6 +78,11 @@
   pointer-events: auto;
 }
 
+/* The strip has no Back to games: the game that docked it has its own way back (host/game-bar.js). */
+.top-bar.docked #game-back-button {
+  display: none;
+}
+
 .top-bar.docked .top-bar-left,
 .top-bar.docked .top-bar-right {
   position: static;

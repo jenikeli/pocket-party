@@ -1,7 +1,7 @@
 // Browser tests for M6b, the 3D race's driving (since M7b the race itself): Play on the picker makes its room, phones get
 // the shared kart setup screen (with the laps and engine class) and controls, the host draws two split-screen views with the players' names, auto-accelerate
 // drives a kart by itself and a held Go drives another (read from the host's readout, with the physics step
-// time), a reloaded phone gets its controls back, Setup keeps the control styles, and Back to games frees
+// time), a reloaded phone gets its controls back, Back to setup keeps the control styles, and Back to games frees
 // the WebGL canvas. Ana is an Android phone (Chromium, real touches) on the stick and Go; Bo an iPhone (WebKit)
 // on auto-accelerate. Headless Chromium draws WebGL in software, so the host page is
 // half the usual size and starts at Medium quality (test/helpers/kart-3d-host.js). Since M10 it also checks that
@@ -220,7 +220,7 @@ describe('M6b 3D driving', () => {
     // and the canvas ends above the strip (4 stage em: 48 px in this 540 px high window).
     assert.match(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);
     assert.equal(await hostPage.locator('#bar-slot #kart-3d-race-bar #kart-3d-clock').count(), 1);
-    assert.deepEqual(await hostPage.locator('#kart-3d-race-bar button').allTextContents(), ['Setup', 'Restart', 'Tuning']);
+    assert.deepEqual(await hostPage.locator('#kart-3d-race-bar button').allTextContents(), ['Back to setup', 'Restart', 'Tuning']);
     const strip = await hostPage.locator('#top-bar').boundingBox();
     const canvas = await hostPage.locator('#game-container canvas').boundingBox();
     assert.ok(Math.abs(strip.height - 48) <= 1 && strip.y + strip.height >= HOST_SIZE.height - 1, 'the strip is 48 px along the bottom');
@@ -263,8 +263,8 @@ describe('M6b 3D driving', () => {
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
   });
 
-  test('Setup returns the phones to the setup screen with their control styles kept and ready cleared', async () => {
-    await clickNow(hostPage, '#kart-3d-setup-button');
+  test('Back to setup returns the phones to the setup screen with their control styles kept and ready cleared', async () => {
+    await clickNow(hostPage, '#kart-3d-setup-button', 2);
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-setup:not([hidden])');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="false"]');
@@ -327,7 +327,10 @@ describe('M6b 3D driving', () => {
   });
 
   test('Back to games frees the WebGL canvas, shows the picker and ends the game on every phone', async () => {
-    // Twice in a row: the first click arms the arrow, the second goes back.
+    // Mid-race the strip has no Back to games: Back to setup first (two clicks, the first arms it), then Back to
+    // games (two clicks too).
+    await clickNow(hostPage, '#kart-3d-setup-button', 2);
+    await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await goBackToPicker(hostPage);
     assert.equal(await hostPage.evaluate(() => document.querySelectorAll('canvas').length), 0);
     for (const player of [ana, bo]) {

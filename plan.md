@@ -117,7 +117,9 @@ registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers, 
                                  games where the game may put its own controls (the shell empties it when the
                                  game ends); bar.setDocked(true) moves the bar into a strip along the bottom of
                                  the window (4 stage em, --pp-strip) and ends the container above it, so the
-                                 game's buttons do not lie on the game; false puts it back at the top. A game
+                                 game's buttons do not lie on the game; false puts it back at the top. The strip
+                                 has no Back to games: a game that docks it gives its own way back to a screen
+                                 that has it (the 3D race's Back to setup). A game
                                  that never calls it keeps the bar at the top. Only the 3D kart race docks it,
                                  while a race exists (its setup screen keeps the bar at the top).
   onMessage(playerId, message)
@@ -152,7 +154,7 @@ stop()                        -> Stop the input modules and timers; the shell em
 ```
 The shell keeps a top line on the phone's game screen (the room code and the leave door icon, two taps) above the container, and a muted line under it when the phone cannot keep its screen awake (M10c).
 
-Flow (M10b): Tap to start (full screen, wake lock, audio unlock) -> the game picker (no room: nobody can join) -> Play -> the loading screen (await `load()`) -> the game's room is created and the game starts on its setup screen, which is its lobby: the join window (QR code, room code, link) opens by itself, and from Add players after that -> race (the room closed) -> results (open again) -> "Race again", or Back to games. Back to games (top left, or at the left of the strip when a game docks the bar; two clicks, at any time) stops the game and closes the room: the host's socket closes, the server sends every phone `ROOM_CLOSED`, the phones show "The game ended", and the picker comes back. The next game gets a new room and a new code. The shell's top bar over every game (`host/game-bar.js`) holds Back to games and the game's slot on the left and the room code, Add players (both only while the room is open) and settings on the right, so games keep the top corners clear (5 em down from the top at the left and right edges) unless they dock the bar (M10c).
+Flow (M10b): Tap to start (full screen, wake lock, audio unlock) -> the game picker (no room: nobody can join) -> Play -> the loading screen (await `load()`) -> the game's room is created and the game starts on its setup screen, which is its lobby: the join window (QR code, room code, link) opens by itself, and from Add players after that -> race (the room closed) -> results (open again) -> "Race again", or Back to games. Back to games (top left; two clicks; not in a docked strip, where the game has its own way back) stops the game and closes the room: the host's socket closes, the server sends every phone `ROOM_CLOSED`, the phones show "The game ended", and the picker comes back. The next game gets a new room and a new code. The shell's top bar over every game (`host/game-bar.js`) holds Back to games and the game's slot on the left and the room code, Add players (both only while the room is open) and settings on the right, so games keep the top corners clear (5 em down from the top at the left and right edges) unless they dock the bar (M10c).
 
 ## Pre-build spike (I run this myself before M0)
 
@@ -526,7 +528,8 @@ every task, decision and the device run (one run for M10b and M10c) are in "M10c
 - **The join window** is the one from before M10b again ("Join the party", the hint, chips, Done).
 - **The bar can dock** (`bar` in the game module interface, `host/game-bar.js`, `top-bar.css`): the 3D kart
   race docks it as a strip under its views while a race exists, with Setup, Restart, Tuning and the clock in its
-  slot; Settings and the one Tuning popup (Stats on top, then the sliders) open upward from the strip.
+  slot (no Back to games in the strip: Back to setup and Restart, both confirmed by colour, lead out); Settings
+  and the one Tuning popup (Stats on top, then the sliders) open upward from the strip.
 - **The 3D setup** sits at the bottom (course name, its description, 16:9 pictures with names; the card), the
   results in both races have a heading, what was raced, the winner larger, gaps (`formatGap` in
   `host/kart/race-time.js`) and Race again across the panel.

@@ -48,7 +48,11 @@ export function showRoomOpen(open) {
 }
 
 // Docked, the bar is a strip along the bottom of the window (class `docked`, host/top-bar.css); the game's
-// container is shortened to match by host/game-session.js.
+// container is shortened to match by host/game-session.js. The strip has no Back to games (the user, after
+// M10c): a game that docks the bar offers its own way back to a screen that has it (the 3D race's Back to setup).
 export function setBarDocked(docked) {
   bar.classList.toggle('docked', docked);
+  if (docked) {
+    back.disarm();
+  }
 }

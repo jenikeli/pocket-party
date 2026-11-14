@@ -122,7 +122,7 @@ describe('M7c 3D look', () => {
   });
 
   test('the saved choice comes back the next time the game starts', { timeout: STARTING_TIMEOUT }, async () => {
-    await clickNow(hostPage, '#kart-3d-setup-button');
+    await clickNow(hostPage, '#kart-3d-setup-button', 2);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await chooseQuality('low');
     await saveScreenshot(hostPage, 'm7c-3-host-setup-low');

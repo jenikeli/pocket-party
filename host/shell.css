@@ -200,7 +200,8 @@ p {
   pointer-events: none;
 }
 
-/* Above the strip while a game has docked the bar there, so it never lies over Back to games. */
+/* Hidden while a game has docked the bar: in the strip it would lie on the bar's buttons, above it on the game's
+   HUD (the 3D race's lap count). */
 .top-bar.docked ~ #wake-status {
-  bottom: calc(var(--pp-strip) + 4px);
+  display: none;
 }

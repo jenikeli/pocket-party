@@ -70,13 +70,13 @@ function toolsDrawer() {
     <div id="kart-3d-tools" class="pp-panel k3d-tools" hidden>
       <div class="k3d-tools-row"><span class="pp-muted">Look</span><div class="pp-segment">${qualityButtons}</div></div>
       <div class="k3d-tools-row">
-        <button type="button" id="kart-3d-measure-button" class="pp-button">Measure</button>
-        <span class="pp-muted">times each look on this course</span>
-      </div>
-      <div class="k3d-tools-row">
         <span class="pp-muted">Watch</span>
         <div class="pp-segment">${watchButtons}</div>
         <span class="pp-muted">views, no phones</span>
+      </div>
+      <div class="k3d-tools-row">
+        <button type="button" id="kart-3d-measure-button" class="pp-button">Measure</button>
+        <span class="pp-muted">times each look on this course</span>
       </div>
     </div>`;
 }

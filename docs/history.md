@@ -3480,6 +3480,20 @@ was asked about (A to M in the mockup) were built as recommended: yes to A, C, D
 - Left as is: Measure keeps the bar at the top, so it covers the first view's name ("View 1") in the corner,
   next to Measure's own box; Measure is a developer tool. `m7d4b` took about 243 s of its 330 s timeout.
 
+### After the handoff (the user, the same day)
+
+- The Display drawer lists Watch above Measure.
+- The strip has no Back to games (the shell hides it while docked, `host/game-bar.js`, `top-bar.css`). The race's
+  first button is "Back to setup" with the back icon, and it and Restart take two clicks confirmed by colour
+  (`confirmOnSecondClick` in `race-bar.js`): both throw the race away. From a race the way out is Back to setup,
+  then Back to games; from the results, Race again, then Back to games.
+- The winner's row border was cut at the top on the iPad (an `outline` is drawn outside the row, and the
+  scrolling list clips it): both races draw it as an inset `box-shadow` now.
+- The host's wake-lock status line is hidden while the bar is docked (above the strip it lay on the lap count).
+- Tests changed on purpose: every click of Back to setup and Restart is two; m7b checks the first click only
+  arms Back to setup, m6c the same for Restart; the strip test checks there is no Back to games; m6b and m7b go
+  back to the picker through Back to setup or Race again first.
+
 ### Device run procedure (iPad host, an iPhone and an Android phone, HTTPS on the LAN; covers M10b too)
 
 The browser tests prove the flows. This run is for real touch, real Safari, how the screens read from across
@@ -3513,7 +3527,8 @@ the room, and the iPhone checks left over from M10. Nothing here is tuned in cod
     CPU, Items, Players with the rows ("Scan the code to join" before anyone joins), Start race. Display, under
     the gear, opens Look, Measure and Watch.
 11. **3D race with the strip (iPad, Medium, Palm Bay Airport, 2 phones).** Race: the strip along the bottom
-    holds Back to games, Setup, Restart, Tuning, the clock and the gear, and no button lies on the views. Both
+    holds Back to setup, Restart, Tuning, the clock and the gear, and no button lies on the views. Back to setup
+    and Restart each turn red on the first tap and act on the second. Both
     views' names sit at their top left. Is the strip easy to hit and not in the way? Open Tuning: Stats on top,
     the sliders scroll under it, the race keeps running behind. Open the gear: Settings opens upward. The
     results: heading, "Palm Bay Airport · 150cc · 3 laps", the winner larger, gaps, Race again across the panel;

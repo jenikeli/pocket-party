@@ -122,7 +122,7 @@ describe('M8 items', () => {
   // what the item did (an effect, or the item gone for items that put something on the road).
   async function useItem(id, firstRace) {
     if (!firstRace) {
-      await clickNow(hostPage, '#kart-3d-setup-button');
+      await clickNow(hostPage, '#kart-3d-setup-button', 2);
       await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
       await ana.page.waitForSelector('#kart-setup:not([hidden])');
     }
@@ -178,7 +178,7 @@ describe('M8 items', () => {
   });
 
   test('with every item off (items off) the view\'s item is null and the phone has no Item button', async () => {
-    await clickNow(hostPage, '#kart-3d-setup-button');
+    await clickNow(hostPage, '#kart-3d-setup-button', 2);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     await ana.page.waitForSelector('#kart-setup:not([hidden])');
     await allowOnly(null);

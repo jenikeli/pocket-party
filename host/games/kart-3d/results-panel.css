@@ -83,7 +83,8 @@
   padding: 0.4em 0.6em;
   font-size: 1.35em;
   background: rgba(243, 156, 18, 0.16);
-  outline: 0.1em solid var(--pp-accent);
+  /* Inside the row, not an outline: the scrolling list clips whatever is drawn outside its rows. */
+  box-shadow: inset 0 0 0 0.1em var(--pp-accent);
 }
 
 .k3d-result.first .place {

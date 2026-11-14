@@ -151,7 +151,7 @@ describe('M7a 3D feel', () => {
     assert.match(await hostPage.inputValue('#kart-3d-tuning-text'), /topSpeed = 44/);
   });
 
-  test('Reset puts the defaults back, Close closes the panel, and Setup hides it', async () => {
+  test('Reset puts the defaults back, Close closes the panel, and Back to setup hides it', async () => {
     await clickNow(hostPage, '#kart-3d-tuning-reset');
     assert.equal(await hostPage.locator('#kart-3d-tuning .tuning-value').first().textContent(), '32.0 units/s');
     await clickNow(hostPage, '#kart-3d-tuning-close');
@@ -159,7 +159,7 @@ describe('M7a 3D feel', () => {
     assert.equal(await hostPage.isVisible('#kart-3d-readout'), false);
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await hostPage.waitForSelector('#kart-3d-tuning:not([hidden])');
-    await clickNow(hostPage, '#kart-3d-setup-button');
+    await clickNow(hostPage, '#kart-3d-setup-button', 2);
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     assert.equal(await hostPage.isVisible('#kart-3d-tuning'), false);
     // The phones are on the setup screen now; the next tests show driving views on them by hand.

@@ -54,11 +54,11 @@ test('names are trimmed, stripped of control characters and cut to 12 characters
   assert.equal(cleanName(42), '42');
 });
 
-test('a player without a name is called by their slot number', () => {
+test('a player without a name is called by their colour\'s name', () => {
   const players = new Map();
   addPlayer(players, 'a');
   const second = addPlayer(players, 'b');
-  assert.equal(displayName(second), 'Player 2');
+  assert.equal(displayName(second), 'Blue');
   second.name = 'Ana';
   assert.equal(displayName(second), 'Ana');
 });

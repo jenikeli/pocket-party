@@ -1,7 +1,7 @@
-// The player rows of both kart races' setup screens: colour dot, name, how they drive in words ("Tilt · Auto"),
-// a tick and "Ready" when ready, and a cross that removes them on its second click. A dropped player is dimmed,
-// with "back in 0:24" in place of the words. Styled by host/kart/panels.css. Used by
-// host/games/kart-2d/setup-panel.js and host/games/kart-3d/setup-panel.js.
+// The player rows of both kart races' setup screens: colour dot, name, how they drive in words
+// ("Tilt · Auto · Left-handed"), a tick and "Ready" when ready, and a cross that removes them on its second
+// click. A dropped player is dimmed, with "back in 0:24" in place of the words. Styled by host/kart/panels.css.
+// Used by host/games/kart-2d/setup-panel.js and host/games/kart-3d/setup-panel.js.
 
 import { icon } from '/shared/icons.js';
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
@@ -64,7 +64,7 @@ export function createPlayerRows(list, { onRemove }) {
 }
 
 // Names come from phones, so they only ever go in as text (and as an attribute value, never as markup).
-function showRow(entry, { player, steering, autoAccelerate, ready, away }) {
+function showRow(entry, { player, steering, autoAccelerate, leftHanded, ready, away }) {
   const color = colorText(player);
   if (entry.dot.style.getPropertyValue('--pp-dot-color') !== color) {
     entry.dot.style.setProperty('--pp-dot-color', color);
@@ -72,7 +72,7 @@ function showRow(entry, { player, steering, autoAccelerate, ready, away }) {
   setText(entry.name, displayName(player));
   entry.row.classList.toggle('ready', ready);
   entry.row.classList.toggle('away', away);
-  showStyle(entry, { player, steering, autoAccelerate, away });
+  showStyle(entry, { player, steering, autoAccelerate, leftHanded, away });
   const removeLabel = `Remove ${displayName(player)}`;
   if (entry.removeButton.getAttribute('aria-label') !== removeLabel) {
     entry.removeButton.setAttribute('aria-label', removeLabel);
@@ -82,9 +82,9 @@ function showRow(entry, { player, steering, autoAccelerate, ready, away }) {
 
 // How the player drives, or for a dropped player the time their slot is held. setText writes only when the text
 // changes, since this runs every frame.
-function showStyle(entry, { player, steering, autoAccelerate, away }) {
+function showStyle(entry, { player, steering, autoAccelerate, leftHanded, away }) {
   const words = away
     ? `back in ${formatMinutes(secondsUntilFreed(player, Date.now()))}`
-    : styleWords({ steering, autoAccelerate });
+    : styleWords({ steering, autoAccelerate, leftHanded });
   setText(entry.style, words);
 }

@@ -8,6 +8,7 @@ import { controllerView, setupView, standingRows } from '../../host/games/kart-2
 import { formatRaceTime, formatGap } from '../../host/kart/race-time.js';
 import { createRace, stepRace } from '../../host/games/kart-2d/race.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
+import { addPlayer, colorChoices } from '../../host/roster.js';
 import { ordinal } from '../../shared/ordinal.js';
 
 const connected = { playerId: 'p1', connected: true };
@@ -83,6 +84,7 @@ test('each phone sees its countdown, lap, place and control style, and null if i
     finished: false,
     steering: 'tilt',
     autoAccelerate: false,
+    leftHanded: false,
   });
   assert.equal(controllerView(race, setup, 'late-joiner'), null);
 
@@ -95,12 +97,30 @@ test('each phone sees its countdown, lap, place and control style, and null if i
   assert.deepEqual(standingRows(race).map((row) => row.playerId), ['p2', 'p1']);
 });
 
-test('on the setup screen each phone sees the laps, its control style and whether it is ready', () => {
+test('on the setup screen each phone sees the laps, its control style, colour and whether it is ready', () => {
   const setup = createSetup();
-  assert.deepEqual(setupView(setup, 'p1'), { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false });
+  const players = new Map();
+  addPlayer(players, 'p1');
+  addPlayer(players, 'p2');
+  assert.deepEqual(setupView(setup, players, 'p1'), {
+    phase: 'setup',
+    laps: 3,
+    steering: 'stick',
+    autoAccelerate: false,
+    leftHanded: false,
+    ready: false,
+    colorIndex: 0,
+    colors: colorChoices(players, 'p1'),
+  });
   applyChoice(setup, 'p1', { choice: 'autoAccelerate', value: true }, true);
+  applyChoice(setup, 'p1', { choice: 'leftHanded', value: true }, true);
   applyChoice(setup, 'p1', { choice: 'ready', value: true }, true);
-  assert.deepEqual(setupView(setup, 'p1'), { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: true, ready: true });
+  const view = setupView(setup, players, 'p1');
+  assert.equal(view.autoAccelerate, true);
+  assert.equal(view.leftHanded, true);
+  assert.equal(view.ready, true);
+  assert.equal(setupView(setup, players, 'p2').colors[0].takenBy, 'Red', 'the other phone sees who holds Red');
+  assert.equal(view.colors[0].takenBy, null, 'a phone does not see its own colour as taken');
 });
 
 test('race times show minutes, seconds and hundredths', () => {

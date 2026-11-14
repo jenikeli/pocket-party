@@ -9,7 +9,7 @@ One milestone (m11), built as tasks by `implementer` agents (`.claude/skills/mil
 | P | Protocol constants (main session) | - | - | merged |
 | A | Name clean-up: Kartwheel, no Mario Kart references | sonnet | P | building |
 | B | Phone: new layouts, double tap, colour, Leave | opus | P | building |
-| C | Host: colour picking, left-handed, views | sonnet | P | building |
+| C | Host: colour picking, left-handed, views | sonnet | P | merged |
 | R | Course previews again, manifest (main session) | - | A | queued |
 | D | Browser test file for m11 | sonnet | A, B, C merged, suite run | queued |
 
@@ -129,7 +129,10 @@ After A, B and C are merged and the main session has run the full browser suite 
 
 ## Decisions made during the run
 
-(none yet)
+- C: the setup views take the roster: 2D `setupView(setup, players, playerId)`, 3D `setupView(setup, engineClass, courseName, players, playerId)`. `driverName` comes from `DRIVER_NAMES` in `karts/kart-roster.js` (the designs need Three.js), checked against `KART_DESIGNS` by a unit test.
+- C: in the 3D race a colour pick is still accepted while the course builds after Start race (the race is not yet made); the kart is chosen when the karts go on the grid, so it is right. Left as it is.
+- B told: a colour held by an unnamed player has `takenBy` equal to its own name, so the label reads "Red, taken".
+- For the handoff: `plan.md`'s Game module interface gains `pickColor` in `start()` and the phone's `start(container, send, leave)` / `showView(view, player)` (plan.md is A's while A builds).
 
 ## Parked for the user
 

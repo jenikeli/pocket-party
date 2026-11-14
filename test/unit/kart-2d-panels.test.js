@@ -29,6 +29,7 @@ test('the setup rows come in slot order with each player\'s control style and st
   assert.deepEqual(rows.map((row) => row.steering), ['tilt', 'stick', 'stick']);
   assert.deepEqual(rows.map((row) => row.autoAccelerate), [true, false, false]);
   assert.deepEqual(rows.map((row) => row.ready), [true, false, false]);
+  assert.deepEqual(rows.map((row) => row.leftHanded), [false, false, false]);
   assert.deepEqual(rows.map((row) => row.away), [false, true, false]);
 });
 
@@ -54,6 +55,7 @@ test('a dropped player is shown as away even when they were ready', () => {
 test('a row says in words how the player steers and accelerates', () => {
   assert.equal(styleWords({ steering: 'stick', autoAccelerate: false }), 'Stick · Go button');
   assert.equal(styleWords({ steering: 'tilt', autoAccelerate: true }), 'Tilt · Auto');
+  assert.equal(styleWords({ steering: 'stick', autoAccelerate: false, leftHanded: true }), 'Stick · Go button · Left-handed');
 });
 
 test('the results rows carry each kart\'s gap to the winner, none for the winner or an unfinished kart', () => {

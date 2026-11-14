@@ -5,6 +5,7 @@
 
 import { kartsInPlaceOrder, currentLap, countdownNumber, RACE_PHASES } from './race.js';
 import { playerSetup } from '../../kart/setup.js';
+import { colorChoices } from '../../roster.js';
 import { SETUP_PHASE } from '../../kart/setup-rows.js';
 import { formatGap } from '../../kart/race-time.js';
 
@@ -13,14 +14,26 @@ export function roomIsOpen(race) {
   return race === null || race.phase === RACE_PHASES.RESULTS;
 }
 
-// The view for one player's phone on the setup screen: { phase: 'setup', laps, steering, autoAccelerate, ready }.
-export function setupView(setup, playerId) {
-  const { steering, autoAccelerate, ready } = playerSetup(setup, playerId);
-  return { phase: SETUP_PHASE, laps: setup.laps, steering, autoAccelerate, ready };
+// The view for one player's phone on the setup screen: { phase: 'setup', laps, steering, autoAccelerate,
+// leftHanded, ready, colorIndex, colors }. colors is the roster's colorChoices, to pick a color from; the view
+// is sent again whenever anyone's color changes, since that changes who holds what.
+export function setupView(setup, players, playerId) {
+  const { steering, autoAccelerate, leftHanded, ready } = playerSetup(setup, playerId);
+  const colorIndex = players.get(playerId).colorIndex;
+  return {
+    phase: SETUP_PHASE,
+    laps: setup.laps,
+    steering,
+    autoAccelerate,
+    leftHanded,
+    ready,
+    colorIndex,
+    colors: colorChoices(players, playerId),
+  };
 }
 
 // The view for one player's phone during the race, or null if they have no kart in it (they joined after it
-// started). { phase, countdown, lap, laps, place, finished, steering, autoAccelerate }: countdown as
+// started). { phase, countdown, lap, laps, place, finished, steering, autoAccelerate, leftHanded }: countdown as
 // countdownNumber, place 1 = first. The control style is in every view, so a phone that reloads mid-race shows
 // the right controls again. It only changes when something on the phone should change, so the host sends it
 // rarely.
@@ -31,7 +44,7 @@ export function controllerView(race, setup, playerId) {
     return null;
   }
   const kart = order[index];
-  const { steering, autoAccelerate } = playerSetup(setup, playerId);
+  const { steering, autoAccelerate, leftHanded } = playerSetup(setup, playerId);
   return {
     phase: race.phase,
     countdown: countdownNumber(race),
@@ -41,6 +54,7 @@ export function controllerView(race, setup, playerId) {
     finished: kart.finishTime !== null,
     steering,
     autoAccelerate,
+    leftHanded,
   };
 }
 

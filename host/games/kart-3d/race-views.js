@@ -10,7 +10,8 @@ import { sparkLevel, SPARK_COLORS } from './kart-techniques.js';
 import { countdownNumber, GO_AT } from './rocket-start.js';
 import { playerSetup } from '../../kart/setup.js';
 import { SETUP_PHASE } from '../../kart/setup-rows.js';
-import { playersInSlotOrder } from '../../roster.js';
+import { playersInSlotOrder, colorChoices } from '../../roster.js';
+import { DRIVER_NAMES } from './karts/kart-roster.js';
 import { playerKart, kartsInPlaceOrder, RACE_PHASES } from './race.js';
 import { raceClock, FINISH_TIME_LIMIT_SECONDS } from './race-finish.js';
 import { formatRaceTime } from '../../kart/race-time.js';
@@ -19,15 +20,31 @@ import { itemHud, itemPhoneView } from './items/item-views.js';
 // How long after GO the phone says how the start went, and after the last lap starts that it is the last.
 const START_SHOWN_FOR = 2;
 const FINAL_LAP_SHOWN_FOR = 3;
-// A kart is 2 units long; the readout gives speeds in kart lengths too, to compare with MK8DX footage.
+// A kart is 2 units long; the readout gives speeds in kart lengths too, to compare with footage of the reference game.
 const KART_LENGTH = 2;
 export const BANNERS = Object.freeze({ FINAL_LAP: 'Final lap!', FINISH: 'Finish!', TELEPORT: 'Teleport!' });
 
 // The setup view for one player's phone: { phase: 'setup', laps, engineClass, courseName, steering,
-// autoAccelerate, ready }; the phone shows the course's name as the race's title.
-export function setupView(setup, engineClass, courseName, playerId) {
-  const { steering, autoAccelerate, ready } = playerSetup(setup, playerId);
-  return { phase: SETUP_PHASE, laps: setup.laps, engineClass, courseName, steering, autoAccelerate, ready };
+// autoAccelerate, leftHanded, ready, colorIndex, colors, driverName }; the phone shows the course's name as the
+// race's title. colors is the roster's colorChoices, to pick a color from; driverName the kart design that
+// color drives (a player always drives the design of their color slot, kart-roster.js). The view is sent again
+// whenever anyone's color changes, since that changes who holds what.
+export function setupView(setup, engineClass, courseName, players, playerId) {
+  const { steering, autoAccelerate, leftHanded, ready } = playerSetup(setup, playerId);
+  const colorIndex = players.get(playerId).colorIndex;
+  return {
+    phase: SETUP_PHASE,
+    laps: setup.laps,
+    engineClass,
+    courseName,
+    steering,
+    autoAccelerate,
+    leftHanded,
+    ready,
+    colorIndex,
+    colors: colorChoices(players, playerId),
+    driverName: DRIVER_NAMES[colorIndex],
+  };
 }
 
 // Whether new players may join: on the setup screen and the results, not while a course is built for a race
@@ -37,8 +54,8 @@ export function roomIsOpen(race, buildingCourse) {
 }
 
 // The view during the race, or null if the player has no kart (they joined after the race started):
-// { phase, steering, autoAccelerate, countdown, spark, start, lap, laps, place, finalLap, finished, item }. It
-// carries the control style so a phone that reloads shows the right controls again. countdown is
+// { phase, steering, autoAccelerate, leftHanded, countdown, spark, start, lap, laps, place, finalLap, finished,
+// item }. It carries the control style so a phone that reloads shows the right controls again. countdown is
 // countdownNumber's (3, 2, 1, 0 for GO, or null); spark the drift's spark colour (SPARK_COLORS) or null, shown
 // on the Drift button; start the start's outcome (START_OUTCOMES) for a moment after GO, null otherwise;
 // finalLap true for a moment after the last lap starts; item the kart's items for the phone (item-views.js's
@@ -49,12 +66,13 @@ export function raceView(race, setup, playerId) {
   if (!kart) {
     return null;
   }
-  const { steering, autoAccelerate } = playerSetup(setup, playerId);
+  const { steering, autoAccelerate, leftHanded } = playerSetup(setup, playerId);
   const showStart = race.phase !== RACE_PHASES.COUNTDOWN && race.time < GO_AT + START_SHOWN_FOR;
   return {
     phase: race.phase,
     steering,
     autoAccelerate,
+    leftHanded,
     countdown: countdownNumber(race.time),
     spark: SPARK_COLORS[sparkLevel(kart)],
     start: showStart ? kart.startResult.outcome : null,
@@ -130,7 +148,7 @@ export function standingRows(race) {
 }
 
 // The split-screen views during the race, in order (top left first): [{ kart, player }]. One per player with a
-// kart, in slot order. 3 players get quarters with a CPU kart in the fourth, as MK8DX fills its empty quarter;
+// kart, in slot order. 3 players get quarters with a CPU kart in the fourth, as the reference game fills its empty quarter;
 // with no player kart left, the view follows a CPU kart. player is null for a CPU kart's view.
 export function viewTargets(race, players) {
   const targets = playersInSlotOrder(players)

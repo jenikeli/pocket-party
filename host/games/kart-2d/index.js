@@ -18,6 +18,7 @@ import { playTune, tuneForRace } from '/host/audio/music.js';
 export function createGame() {
   let players = null;
   let setControllerView = null;
+  let pickColor = null;
   let setRoomOpen = null;
   let renderer = null;
   const raceSounds = createRaceSounds();
@@ -43,6 +44,7 @@ export function createGame() {
   function start(shell) {
     players = shell.players;
     setControllerView = shell.setControllerView;
+    pickColor = shell.pickColor;
     setRoomOpen = shell.setRoomOpen;
     renderer = createRenderer(shell.container, {
       onLapsStep: (lapsStep) => stepLaps(setup, lapsStep),
@@ -89,7 +91,7 @@ export function createGame() {
       return;
     }
     if (message.input?.kind === INPUT_KINDS.CHOICE) {
-      applyChoice(setup, playerId, message.input, race === null);
+      applyChoice(setup, playerId, message.input, race === null, pickColor);
     } else {
       controls.handleInput(playerId, message.input);
     }
@@ -115,7 +117,7 @@ export function createGame() {
   function sendChangedViews() {
     const playerIds = race ? race.karts.map((kart) => kart.playerId) : [...players.keys()];
     for (const playerId of playerIds) {
-      const view = race ? controllerView(race, setup, playerId) : setupView(setup, playerId);
+      const view = race ? controllerView(race, setup, playerId) : setupView(setup, players, playerId);
       const viewText = JSON.stringify(view);
       if (sentViews.get(playerId) !== viewText) {
         sentViews.set(playerId, viewText);

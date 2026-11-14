@@ -33,12 +33,12 @@ test('laps start at 3 and stay between 1 and 9', () => {
 
 test('a player starts on the stick with the Go button, not ready, and keeps what they choose', () => {
   const setup = createSetup();
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
   applyChoice(setup, 'ana', { choice: 'steering', value: 'tilt' }, true);
   applyChoice(setup, 'ana', { choice: 'autoAccelerate', value: true }, true);
   applyChoice(setup, 'ana', { choice: 'ready', value: true }, true);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: true, ready: true });
-  assert.deepEqual(playerSetup(setup, 'bo'), { steering: 'stick', autoAccelerate: false, ready: false }, 'others are not affected');
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: true, leftHanded: false, ready: true });
+  assert.deepEqual(playerSetup(setup, 'bo'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false }, 'others are not affected');
 });
 
 test('odd choices from a phone are ignored', () => {
@@ -48,7 +48,7 @@ test('odd choices from a phone are ignored', () => {
   applyChoice(setup, 'ana', { choice: 'ready', value: 1 }, true);
   applyChoice(setup, 'ana', { choice: 'laps', value: 20 }, true);
   applyChoice(setup, 'ana', {}, true);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
   assert.equal(setup.laps, 3, 'phones cannot set the laps');
 });
 
@@ -56,7 +56,7 @@ test('steering can change during a race (tilt failing after a reload), ready can
   const setup = createSetup();
   applyChoice(setup, 'ana', { choice: 'steering', value: 'tilt' }, false);
   applyChoice(setup, 'ana', { choice: 'ready', value: true }, false);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false });
 });
 
 test('the race can start once everyone is connected and ready', () => {
@@ -98,7 +98,7 @@ test('before the next race everyone is not ready again, with their control style
   applyChoice(setup, 'ana', { choice: 'ready', value: true }, true);
   stepLaps(setup, 1);
   clearReady(setup);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false });
   assert.equal(setup.laps, 4);
 });
 
@@ -106,5 +106,24 @@ test('a player who left is forgotten', () => {
   const setup = createSetup();
   applyChoice(setup, 'ana', { choice: 'steering', value: 'tilt' }, true);
   forgetPlayer(setup, 'ana');
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
+});
+
+test('left-handed can change at any time, and only a true or false counts', () => {
+  const setup = createSetup();
+  applyChoice(setup, 'ana', { choice: 'leftHanded', value: true }, true);
+  assert.equal(playerSetup(setup, 'ana').leftHanded, true);
+  applyChoice(setup, 'ana', { choice: 'leftHanded', value: 'yes' }, true);
+  assert.equal(playerSetup(setup, 'ana').leftHanded, true, 'odd values are ignored');
+  applyChoice(setup, 'ana', { choice: 'leftHanded', value: false }, false);
+  assert.equal(playerSetup(setup, 'ana').leftHanded, false, 'also during a race');
+});
+
+test('a colour is picked through the shell only on the setup screen', () => {
+  const setup = createSetup();
+  const picks = [];
+  const pickColor = (playerId, colorIndex) => picks.push([playerId, colorIndex]);
+  applyChoice(setup, 'ana', { choice: 'color', value: 4 }, true, pickColor);
+  applyChoice(setup, 'ana', { choice: 'color', value: 5 }, false, pickColor);
+  assert.deepEqual(picks, [['ana', 4]]);
 });

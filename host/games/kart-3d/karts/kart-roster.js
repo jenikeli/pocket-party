@@ -2,6 +2,11 @@
 // lobby colour slot, and the CPU karts take the designs nobody holds, so every kart looks different. Plain data,
 // no Three.js, so it is unit tested in Node. Used by host/games/kart-3d/renderer.js.
 
+// The driver of each colour slot, in slot order, for the setup view (the phone shows "You drive Blaze"). A plain
+// list, since kart-designs.js needs Three.js and so cannot load where the views are tested in Node; a unit test
+// (test/unit/kart-3d-driver-names.test.js) checks it matches KART_DESIGNS.
+export const DRIVER_NAMES = ['Blaze', 'Pip', 'Fern', 'Bolt', 'Grimble', 'Rusty', 'Inky', 'Mochi', 'Sprout'];
+
 // `karts` is race.karts (each with playerId, null for a CPU kart), `players` the room's Map(playerId -> player)
 // (each with colorIndex), `designs` the list of designs, each with its colour `slot`. Returns, for each kart in
 // order, an index into `designs`. Players come first, so a CPU kart never takes a player's design. A kart whose

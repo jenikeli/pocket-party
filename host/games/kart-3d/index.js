@@ -1,7 +1,7 @@
 // The 3D kart race (M6 to M10), a game module: a setup screen (setup-panel.js: the course from saved pictures,
 // laps, engine class, CPU level and the items on the host, the drawing quality, the Measure tool and Watch behind
 // the Display button, and control style and ready on each phone), then the chosen course is built behind the
-// loading screen (M10: nothing is built before), a countdown with MK8DX's rocket start, and 1-4 players race
+// loading screen (M10: nothing is built before), a countdown with a rocket start, and 1-4 players race
 // their laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results,
 // and Race again. While karts race the shell's bar docks as a strip along the bottom (bar.setDocked), with the
 // race's own buttons and clock in it (race-bar.js). Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
@@ -73,7 +73,13 @@ export function createGame() {
   const plainCourse = loadPlainCourse();
   // Builds the chosen course when a race, Watch or Measure needs it (course-loader.js).
   let courseLoader = null;
-  const session = createRaceSession({ getPlayers: () => shell.players, setup, choices, chosenTrack });
+  const session = createRaceSession({
+    getPlayers: () => shell.players,
+    setup,
+    choices,
+    pickColor: (playerId, colorIndex) => shell.pickColor(playerId, colorIndex),
+    chosenTrack,
+  });
   // Whether the shell has been told the room is open; null until the first time.
   let roomOpen = null;
   // Whether the shell's bar is docked as the strip (the bar starts at the top).

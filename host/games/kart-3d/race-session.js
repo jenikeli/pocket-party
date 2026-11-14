@@ -13,9 +13,9 @@ import { freshItemSeed } from './items/item-rules.js';
 import { allowedItems } from './items/item-settings.js';
 
 // `getPlayers()` is the shell's roster, `setup` the laps and control styles (host/kart/setup.js), `choices` the
-// host's own choices (host-choices.js) and `chosenTrack()` the track of the chosen course. Returns the state
-// (`race`, `standIns`, `stepTimer`) and the actions index.js calls.
-export function createRaceSession({ getPlayers, setup, choices, chosenTrack }) {
+// host's own choices (host-choices.js), `pickColor(playerId, colorIndex)` the shell's and `chosenTrack()` the
+// track of the chosen course. Returns the state (`race`, `standIns`, `stepTimer`) and the actions index.js calls.
+export function createRaceSession({ getPlayers, setup, choices, pickColor, chosenTrack }) {
   // null while the setup screen shows.
   let race = null;
   // While a watched race runs (the setup screen's Watch), its stand-ins by playerId, who race in the players'
@@ -64,7 +64,7 @@ export function createRaceSession({ getPlayers, setup, choices, chosenTrack }) {
 
   function handleInput(playerId, input) {
     if (input?.kind === INPUT_KINDS.CHOICE) {
-      applyChoice(setup, playerId, input, race === null);
+      applyChoice(setup, playerId, input, race === null, pickColor);
     } else {
       controls.handleInput(playerId, input);
     }

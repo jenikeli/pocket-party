@@ -28,8 +28,8 @@ import { createChaseCamera, followKart } from '../../host/games/kart-3d/chase-ca
 import { createStepTimer } from '../../host/games/kart-3d/step-timer.js';
 import { createReadout, describeTimings } from '../../host/games/kart-3d/readout.js';
 import { GO_AT } from '../../host/games/kart-3d/rocket-start.js';
-import { addPlayer } from '../../host/roster.js';
 import { createSetup, applyChoice } from '../../host/kart/setup.js';
+import { addPlayer, changeColor, colorChoices } from '../../host/roster.js';
 import { NEUTRAL_CONTROLS } from '../../host/kart/kart-controls.js';
 import { vec, subtract, length, dot, normalize, addScaled, rotate } from '../../host/games/kart-3d/vector.js';
 
@@ -47,20 +47,27 @@ function runRace(race, controlsFor, seconds) {
 test('phone views: the setup view has the laps, engine class and course; the race view carries the control style', () => {
   const setup = createSetup();
   applyChoice(setup, 'p1', { choice: 'steering', value: 'tilt' }, true);
-  assert.deepEqual(setupView(setup, 200, 'Seaside Skyway', 'p1'), {
+  const players = new Map();
+  addPlayer(players, 'p1');
+  assert.deepEqual(setupView(setup, 200, 'Seaside Skyway', players, 'p1'), {
     phase: 'setup',
     laps: 3,
     engineClass: 200,
     courseName: 'Seaside Skyway',
     steering: 'tilt',
     autoAccelerate: false,
+    leftHanded: false,
     ready: false,
+    colorIndex: 0,
+    colors: colorChoices(players, 'p1'),
+    driverName: 'Blaze',
   });
   const race = createRace(track, ['p1'], 3, 200, 'normal');
   assert.deepEqual(raceView(race, setup, 'p1'), {
     phase: 'countdown',
     steering: 'tilt',
     autoAccelerate: false,
+    leftHanded: false,
     countdown: 3,
     spark: null,
     start: null,
@@ -72,6 +79,20 @@ test('phone views: the setup view has the laps, engine class and course; the rac
     item: null,
   });
   assert.equal(raceView(race, setup, 'late'), null, 'a player with no kart waits for the next race');
+  applyChoice(setup, 'p1', { choice: 'leftHanded', value: true }, false);
+  assert.equal(raceView(race, setup, 'p1').leftHanded, true);
+});
+
+test('the setup view follows the colour: the driver changes with it, and the others see it taken', () => {
+  const setup = createSetup();
+  const players = new Map();
+  addPlayer(players, 'p1');
+  addPlayer(players, 'p2');
+  assert.equal(changeColor(players, 'p1', 8), true);
+  const view = setupView(setup, 200, 'Seaside Skyway', players, 'p1');
+  assert.equal(view.colorIndex, 8);
+  assert.equal(view.driverName, 'Sprout');
+  assert.equal(setupView(setup, 200, 'Seaside Skyway', players, 'p2').colors[8].takenBy, 'Lime');
 });
 
 test('phone views count down, then show the drift\'s spark colour and, for a moment after GO, the start', () => {

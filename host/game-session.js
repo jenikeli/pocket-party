@@ -110,7 +110,8 @@ function runGame({ game, room, roomCode, gameInfo, onStart, onEnd }) {
     showGameControls({ roomCode, onBack: () => endGame(null), onAddPlayers: () => openJoinWindow(room) });
     // Open before start(), as the game module interface promises; the game closes it for a race.
     setRoomOpen(true);
-    // game.start() gets, besides the container and the room's players and calls: `bar`, the shell's top bar. Its
+    // game.start() gets, besides the container and the room's players and calls (pickColor(playerId, colorIndex)
+    // changes a player's color if it is free, and tells their phone): `bar`, the shell's top bar. Its
     // `slot` is an empty element in the bar, right after Back to games, where the game puts its own controls
     // (the shell empties it when the game ends). `bar.setDocked(true)` makes the bar a strip along the bottom of
     // the window, with the slot, the room code, Add players and the gear in a row, and ends the container above
@@ -120,6 +121,7 @@ function runGame({ game, room, roomCode, gameInfo, onStart, onEnd }) {
       bar: { slot: barSlot, setDocked: setBarDocking },
       players: room.players,
       setControllerView: room.setControllerView,
+      pickColor: room.pickColor,
       removePlayer: room.kickPlayer,
       // The PONG comes back to the game's onMessage with the same sentAt.
       pingPlayer: (playerId, sentAt) => room.send({ type: MESSAGE_TYPES.PING, playerId, sentAt }),

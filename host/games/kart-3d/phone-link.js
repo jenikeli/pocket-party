@@ -32,7 +32,7 @@ export function createPhoneViews({ shell, session, setup, choices, courseName })
   function sendChanged() {
     const { race, standIns } = session;
     for (const playerId of shell.players.keys()) {
-      const view = !race ? setupView(setup, choices.engineClass, courseName(), playerId) : standIns ? null : raceView(race, setup, playerId);
+      const view = !race ? setupView(setup, choices.engineClass, courseName(), shell.players, playerId) : standIns ? null : raceView(race, setup, playerId);
       const viewText = JSON.stringify(view);
       if (sentViews.get(playerId) !== viewText) {
         sentViews.set(playerId, viewText);

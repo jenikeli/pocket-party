@@ -10,18 +10,20 @@ import { KART_STEERING } from '../../shared/protocol.js';
 // name); each race's own phases are its RACE_PHASES.
 export const SETUP_PHASE = 'setup';
 
-// One row per player on the host's setup screen, in slot order: { player, steering, autoAccelerate, ready, away }.
+// One row per player on the host's setup screen, in slot order:
+// { player, steering, autoAccelerate, leftHanded, ready, away }.
 // A player who joined while the screen was up is in `players`, so they get a row (and a kart) like the rest. A
 // dropped player is `away`, and never counts as ready, even if they were.
 export function setupRows(setup, players) {
   return playersInSlotOrder(players).map((player) => {
-    const { steering, autoAccelerate, ready } = playerSetup(setup, player.playerId);
-    return { player, steering, autoAccelerate, ready: player.connected && ready, away: !player.connected };
+    const { steering, autoAccelerate, leftHanded, ready } = playerSetup(setup, player.playerId);
+    return { player, steering, autoAccelerate, leftHanded, ready: player.connected && ready, away: !player.connected };
   });
 }
 
-// How a row's player drives, in words: "Tilt · Auto", "Stick · Go button".
-export function styleWords({ steering, autoAccelerate }) {
+// How a row's player drives, in words: "Tilt · Auto", "Stick · Go button · Left-handed".
+export function styleWords({ steering, autoAccelerate, leftHanded }) {
   const steeringWord = steering === KART_STEERING.TILT ? 'Tilt' : 'Stick';
-  return `${steeringWord} · ${autoAccelerate ? 'Auto' : 'Go button'}`;
+  const words = `${steeringWord} · ${autoAccelerate ? 'Auto' : 'Go button'}`;
+  return leftHanded ? `${words} · Left-handed` : words;
 }

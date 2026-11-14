@@ -8,6 +8,11 @@ export const PLAYER_COLORS = [
   0x1abc9c, 0xff79b0, 0xa3e048,
 ];
 
+// The colours' names, in slot order. A player with no name is called by theirs, so the name matches their dot.
+export const PLAYER_COLOR_NAMES = [
+  'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Teal', 'Pink', 'Lime',
+];
+
 const MAX_NAME_LENGTH = 12;
 
 // `players` is a Map(playerId -> player). A player is
@@ -42,7 +47,33 @@ export function cleanName(rawName) {
 }
 
 export function displayName(player) {
-  return player.name || `Player ${player.colorIndex + 1}`;
+  return player.name || PLAYER_COLOR_NAMES[player.colorIndex];
+}
+
+// Gives the player the color in slot `colorIndex`. Returns true when they now hold it (also when it was theirs
+// already), false when there is no such player, the index is not a slot, or another player holds it. A dropped
+// player in their grace period still holds theirs, so it cannot be taken while they may come back.
+export function changeColor(players, playerId, colorIndex) {
+  const player = players.get(playerId);
+  if (!player || !Number.isInteger(colorIndex) || colorIndex < 0 || colorIndex >= PLAYER_COLORS.length) {
+    return false;
+  }
+  const holder = [...players.values()].find((other) => other.colorIndex === colorIndex);
+  if (holder && holder !== player) {
+    return false;
+  }
+  player.colorIndex = colorIndex;
+  return true;
+}
+
+// What `playerId`'s phone shows to pick from, one per slot in order: { color, name, takenBy }. color is CSS text,
+// takenBy the holder's display name, or null when the color is free or the player's own.
+export function colorChoices(players, playerId) {
+  return PLAYER_COLORS.map((color, index) => {
+    const holder = [...players.values()].find((player) => player.colorIndex === index);
+    const takenBy = holder && holder.playerId !== playerId ? displayName(holder) : null;
+    return { color: colorText({ colorIndex: index }), name: PLAYER_COLOR_NAMES[index], takenBy };
+  });
 }
 
 // The player's color as CSS text, e.g. '#e74c3c', for the host's pages and Phaser text, and the controller.

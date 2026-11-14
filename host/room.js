@@ -5,7 +5,7 @@
 
 import { MESSAGE_TYPES, CONTROLLER_SCREENS } from '/shared/protocol.js';
 import { openSocket } from '/shared/socket.js';
-import { addPlayer, cleanName, displayName, colorText } from '/host/roster.js';
+import { addPlayer, changeColor, cleanName, displayName, colorText } from '/host/roster.js';
 import { browserStorage, readGraceSeconds } from '/host/shell-rules.js';
 import { createGracePeriods } from '/host/grace-periods.js';
 
@@ -34,6 +34,7 @@ export function createRoom(gameId) {
     setListener: (newListener) => (listener = newListener),
     send: (message) => socket.send(message),
     setControllerView,
+    pickColor,
     setRoomOpen,
     setPlayerLimit,
     kickPlayer,
@@ -157,6 +158,16 @@ export function createRoom(gameId) {
     if (player.connected) {
       sendControllerState(player);
     }
+  }
+
+  // A player's phone asks for another color. When they get it, their phone is told its new color (and its name,
+  // if that came from the color). The game decides when picking is allowed; this only keeps the roster right.
+  function pickColor(playerId, colorIndex) {
+    const changed = changeColor(room.players, playerId, colorIndex);
+    if (changed) {
+      sendControllerState(room.players.get(playerId));
+    }
+    return changed;
   }
 
   // Whether the server lets new players in. Someone joining in the middle of a race would have no kart, so a

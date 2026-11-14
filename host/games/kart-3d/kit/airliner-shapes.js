@@ -1,4 +1,4 @@
-// The airliner's body (M9), after a narrow-body jet (test-results/reference/m9/I/) made fat and toy-like as
+// The airliner's body (M9), after a narrow-body jet made fat and toy-like as
 // MK8DX's Sunshine Airport planes are: a round fuselage 45 long with a blunt nose and a tail cone sweeping up,
 // the fairing under its wings, and its tail: a swept fin and tail planes. It stands on its gear (kit/airliner-
 // gear.js) facing +x, its left side toward -z. Returns shapes by part, as kit/terminal-body.js does; the

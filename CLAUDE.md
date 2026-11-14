@@ -5,7 +5,6 @@ Project context for Claude Code. Read this first every session, then `plan.md` (
 - `docs/spike-findings.md`, `docs/input-findings.md`: tests on my real devices (HTTPS, latency, sockets when a screen locks, tilt). Measured facts that override general assumptions; single runs on a few devices.
 - `docs/3d-findings.md`: what was measured and learned building the 3D race (what the iPad carries, what costs frame time, pitfalls, the feel).
 - `docs/mk8dx-reference.md`: MK8DX's numbers and how its courses and objects look. Fan-wiki data, so measured findings win.
-- `docs/unused.md`: code, assets and tools kept but not used, with what to delete for each. Keep it up to date.
 
 Docs are organised by topic and kept short: they hold what the code and the commits do not say. Milestone ids live in commit messages.
 

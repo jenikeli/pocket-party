@@ -1,4 +1,4 @@
-// The item box's shapes and maps (M8), our own after MK8DX's (test-results/reference/m8/): a rounded cube of
+// The item box's shapes and maps (M8), our own after MK8DX's: a rounded cube of
 // clear glass dotted with rings of circles, its edges bright, a rainbow running over it, and inside a blocky "?"
 // with a white face and a blue bevelled rim. Built once when the race's drawing is made. Used by
 // item-box-look.js.

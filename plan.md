@@ -78,7 +78,7 @@ onMessage(playerId, message) -> INPUT, INPUT_MODE or PONG from that phone.
 step(dt)               -> Advance the rules by exactly 1/60 s. No DOM, no drawing.
 render(alpha)          -> Draw, once per animation frame; alpha (0..1) is the time between the last two steps.
 onPlayerLeft(playerId) -> A player was removed (kicked, left, grace period over).
-isDone()               -> Unused: every game returns false (see docs/unused.md). Back to games is the way out.
+isDone()               -> Unused: every game returns false (dead code, to delete when touched). Back to games is the way out.
 stop()                 -> Free everything: WebGL context (renderer.forceContextLoss(): iOS allows few), listeners, timers.
 ```
 
@@ -139,6 +139,7 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
 - `host/games/kart-3d/index.js` (232 lines) and `renderer.js` (212) are a little over the 200-line guideline.
 - Measure keeps the bar at the top, where it covers the "View 1" label.
 - Heads of karts just behind the viewed kart poke into the bottom of its view.
+- Kept but unused: `drawCloseButton` in `host/buttons.js` (only the input lab's card uses it; if that card moves to HTML, delete the file and use `shared/confirm-click.js`), `isDone()` in the module interface and its call in `game-runner.js`, `isOnRoad` in `kart-2d/track.js` (only its unit test uses it).
 
 ## Later ideas (not now)
 
@@ -151,4 +152,4 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
 - **Phone vibration.** A 15 ms `navigator.vibrate` on every press was built and not felt on Android; iOS Safari has no `navigator.vibrate`. Before trying again: a longer pulse, the phone's vibration settings, a test page calling `navigator.vibrate(200)` from a tap.
 - **For the 2D race:** items, drifting, more tracks. **For both:** character and kart selection (MK8DX's stat system is in `docs/mk8dx-reference.md`).
 - **For the 3D race:** Smart Steering, underwater sections, Grand Prix (4 races with points), path splits (needs a second route in the track model), bloom at half resolution (would make High usable on integrated graphics), hiding karts very close to the camera.
-- **A new course built in Blender** was tried and dropped (every look is JS); see `docs/unused.md`.
+- **A new course built in Blender** was tried and dropped (every look is JS; the pipeline is in git before the commit "blender removed").

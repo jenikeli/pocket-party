@@ -1,6 +1,5 @@
-// The airport's small parked prop plane (M9), a landmark about 14 long, after a high-wing four-seater
-// (test-results/reference/m9/I/cessna-172-side.jpg) made fat and toy-like: a fuselage with its cabin windows and
-// windscreen, a wing on top braced by struts, a swept fin, a propeller with a spinner, and fixed gear with open
+// The airport's small parked prop plane (M9), a landmark about 14 long, after a high-wing four-seater made fat and toy-like:
+// a fuselage with its cabin windows and windscreen, a wing on top braced by struts, a swept fin, a propeller with a spinner, and fixed gear with open
 // wheels, in white with coral and navy stripes. It stands on its wheels on its origin, facing +x. Every prop
 // plane on a course shares its fuselage's geometry and its materials; the parts coloured per vertex are copied
 // per plane, so each takes the course's baked shade of its own place (baked-shade.js bakes a colour buffer

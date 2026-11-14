@@ -1,5 +1,4 @@
-// A small hangar for the taxiway's side (M9), after the references' blister and general-aviation hangars
-// (test-results/reference/m9/H/): white corrugated walls under a curved roof in the airline's colour, a big
+// A small hangar for the taxiway's side (M9), after the references' blister and general-aviation hangars: white corrugated walls under a curved roof in the airline's colour, a big
 // two-leaf door on the front with one leaf slid half open on a dark inside, the airline's name on a sign over
 // it, a band of the airline's second colour round the foot, windows and a small door along the sides. A landmark:
 // it stands on its own origin, its door facing +x, `width` across (z) and `depth` deep (x). Used by the airport's dressing (airport-scenery.js) and kit-shots.

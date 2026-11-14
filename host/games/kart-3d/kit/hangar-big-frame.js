@@ -1,4 +1,4 @@
-// The big hangar's steel (M9), after the references' hangars (test-results/reference/m9/H/): arched lattice ribs
+// The big hangar's steel (M9), after the references' hangars: arched lattice ribs
 // across the span on fat coral columns, lattice girders along the eaves, purlins under the roof, crossed braces
 // in the end bays of the open sides, the door headers and the posts of the door pockets, and the glazed gables'
 // mullions. All one geometry, coloured per vertex, in the hangar's frame (kit/hangar-plan.js). Used by

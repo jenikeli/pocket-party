@@ -1,5 +1,5 @@
-// The glider every kart opens over a glide gap (M9), in the style of MK8DX's Super Glider
-// (test-results/reference/m9/F/): a wide, shallow delta of cloth over the kart, drooping at its tips, on a frame of
+// The glider every kart opens over a glide gap (M9), in the style of MK8DX's Super Glider:
+// a wide, shallow delta of cloth over the kart, drooping at its tips, on a frame of
 // tubes (leading edges, keel and crossbar), a grey nose cap and yellow tip caps, held up by one strut from behind
 // the driver's seat. Its shapes, how far it is open, and how it unfolds. Geometry only (the canopy's picture is in
 // glider-maps.js), so it is unit tested in Node. Used by kart-models.js.

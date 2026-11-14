@@ -1,4 +1,4 @@
-// The back of our go-kart (M7d5), in the style of MK8DX's Standard Kart (test-results/reference/m7d5/): an engine
+// The back of our go-kart (M7d5), in the style of MK8DX's Standard Kart: an engine
 // block with chrome bolts and fins
 // behind the seat, two long black exhaust pipes reaching up and back over the rear wheels, a chrome clamp near
 // their ends and wide flared gold bells for tips, the

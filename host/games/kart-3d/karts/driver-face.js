@@ -1,4 +1,4 @@
-// A driver's face (M7d5), in the style of MK8DX's art (test-results/reference/m7d5/), not any one character's:
+// A driver's face (M7d5), in the style of MK8DX's art, not any one character's:
 // large tall eyes set close together, mostly iris, with a black pupil, two crisp highlights and a smooth upper lid
 // line, sitting in the face; thick smooth arched brows; a big soft nose; soft blush and freckles; and a friendly
 // open smile that curves up with the cheeks, dark inside, with one smooth band of teeth and a tongue. Each part is

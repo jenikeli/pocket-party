@@ -1,4 +1,4 @@
-// The terminal's jet bridges (M9), after real ones (test-results/reference/m9/G/): a stub out of the hall's glass
+// The terminal's jet bridges (M9), after real ones: a stub out of the hall's glass
 // to a round rotunda on a pillar, a ribbed steel tunnel with a band of windows sloping down toward the plane, a
 // drive leg on two fat wheels under its far end, and the cab with its dark bellows hood and a coral gate box on
 // top. Each reaches straight out along +x from the terminal's front. Returns shapes by part, as

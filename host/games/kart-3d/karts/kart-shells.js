@@ -1,5 +1,5 @@
 // Our go-kart's two smooth shells (M7d5, round 3), each lofted through cross-sections (curved-shapes.js's loft) so
-// it is one smooth form, as MK8DX's Standard Kart's are (test-results/reference/m7d5/): the long nose, a rounded
+// it is one smooth form, as MK8DX's Standard Kart's are: the long nose, a rounded
 // box in section that slopes down from the cockpit to a round tip, its paint split into a top in the main colour,
 // sides in the second and a skirt in the third along crisp lines (each band its own surface, meeting edge to
 // edge); and the cowl, a curved blade sweeping round the driver's legs, tall at the front, thinner and lower round

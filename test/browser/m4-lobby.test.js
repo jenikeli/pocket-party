@@ -2,7 +2,7 @@
 // pages on an emulated Android phone (Chromium) and iPhone (WebKit), in the input lab's room. Dead and unreachable
 // sockets are faked by routing the controller's WebSocket through Playwright (page.routeWebSocket), which can
 // stop passing frames. Since M10b a phone that joins lands on the game's screen at once (no lobby page, no Change
-// name), Leave and the host's Remove are two clicks confirmed by colour (no dialog), and the back arrow ends the
+// name), Leave and the host's Remove are two clicks confirmed by colour (no dialog), and Back to games ends the
 // game for every phone. The picker, join window and settings are in m10-shell.test.js, the races' rows in m5c.
 
 import { describe, test, before, after } from 'node:test';
@@ -283,7 +283,7 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
       await saveScreenshot(hostPage, `${name}-m4-7-host-after-remove`);
     });
 
-    test('the back arrow sends every phone to "The game ended", with the old code cleared', async () => {
+    test('Back to games sends every phone to "The game ended", with the old code cleared', async () => {
       await goBackToPicker(hostPage);
       await ana.page.waitForSelector('#ended-screen:not([hidden])');
       assert.equal(await ana.page.textContent('#ended-text'), 'The game ended');

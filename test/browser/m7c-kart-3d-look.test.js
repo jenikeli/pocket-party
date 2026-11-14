@@ -57,7 +57,7 @@ describe('M7c 3D look', () => {
     return hostPage.$eval('#game-container canvas', (canvas) => ({ width: canvas.width, height: canvas.height }));
   }
 
-  // The quality buttons sit in the setup screen's "Display and tools" drawer, so it is opened to see them press.
+  // The quality buttons sit in the setup screen's "Display" drawer, so it is opened to see them press.
   async function chooseQuality(level) {
     await openTools(hostPage);
     await clickNow(hostPage, `[data-quality="${level}"]`);

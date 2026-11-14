@@ -2,7 +2,7 @@
 // engine class reach the phones; Start race counts down on both screens, then each split-screen view shows its
 // player's name, lap and place, the phones show their place and lap, and the
 // race clock runs; the readout shows only with the tuning panel; when every player has left mid-race the
-// results list the CPU karts and the back arrow ends the game; the results panel lists players in their colours
+// results list the CPU karts and Back to games ends the game; the results panel lists players in their colours
 // with their times and its Race again button works; a race on the Test track; and a lost WebGL context ends
 // the game through the shell's error path. Since M7d4c1, Watch on the setup screen races four self-driving
 // stand-ins with a view each while the phones wait. Ana is an
@@ -17,7 +17,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
-import { presetQuality, presetPlainCourse, clickStartRace, clickWatch, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { presetQuality, presetPlainCourse, clickStartRace, clickWatch, GAME_START_TIMEOUT, STARTING_TIMEOUT, RACE_VIEW_GAP } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
@@ -121,7 +121,7 @@ describe('M7b 3D race', () => {
   });
 
   // M7d4c1: Watch races stand-ins that drive themselves, a view each, with no phone needed.
-  test('Watch with 4 views races four self-driving stand-ins while the phones wait; Back to setup ends it', { timeout: STARTING_TIMEOUT }, async () => {
+  test('Watch with 4 views races four self-driving stand-ins while the phones wait; Setup ends it', { timeout: STARTING_TIMEOUT }, async () => {
     await clickWatch(hostPage, 4);
     await waitUntil(async () => (await hudTexts('label')).length === 4, { ...RACE_TIMEOUT, message: 'four views' });
     assert.deepEqual(await hudTexts('label'), ['View 1', 'View 2', 'View 3', 'View 4']);
@@ -170,11 +170,14 @@ describe('M7b 3D race', () => {
     const huds = hostPage.locator('.kart-3d-view-hud:not([hidden])');
     const firstLabel = await huds.nth(0).locator('.kart-3d-view-label').boundingBox();
     assert.ok(firstLabel.y - canvas.y < 12 && firstLabel.x - canvas.x < 12, 'the first view\'s name is in its top-left corner');
+    // The two views are stacked: the second starts below the first view's half of the canvas and the gap.
     const secondLabel = await huds.nth(1).locator('.kart-3d-view-label').boundingBox();
+    const secondViewTop = canvas.y + RACE_VIEW_GAP.bottom;
+    assert.ok(secondLabel.y >= secondViewTop && secondLabel.y - secondViewTop < 12, 'the second view\'s name is at its top');
     assert.ok(Math.abs(secondLabel.x - firstLabel.x) < 1, 'both names start at the left edge');
-    for (const place of await huds.locator('.kart-3d-view-place').all()) {
-      const box = await place.boundingBox();
-      assert.ok(box.y + box.height <= strip.y + 1, 'a place number ends above the strip');
+    for (const part of await huds.locator(':scope > *:visible').all()) {
+      const box = await part.boundingBox();
+      assert.ok(box.y + box.height <= strip.y + 1, 'no part of a view\'s HUD reaches the strip');
     }
   });
 
@@ -183,17 +186,16 @@ describe('M7b 3D race', () => {
     assert.equal(await hostPage.isVisible('#game-add-players-button'), false);
     assert.equal(await hostPage.isVisible('#room-code-chip'), false);
     const strip = await hostPage.locator('#top-bar').boundingBox();
-    for (const selector of ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button']) {
+    const selectors = ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button'];
+    const boxes = [];
+    for (const selector of selectors) {
       const box = await hostPage.locator(selector).boundingBox();
       assert.ok(box.y >= strip.y - 1 && box.y + box.height <= strip.y + strip.height + 1, `${selector} is inside the strip`);
       assert.ok(box.x >= strip.x - 1 && box.x + box.width <= strip.x + strip.width + 1, `${selector} is inside the strip's width`);
+      boxes.push(box);
     }
     // Next to each other without overlap, left to right: the buttons, then the clock, then the gear.
-    const lefts = [];
-    for (const selector of ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button']) {
-      lefts.push(await hostPage.locator(selector).boundingBox());
-    }
-    lefts.slice(1).forEach((box, index) => assert.ok(box.x >= lefts[index].x + lefts[index].width - 1, 'the strip\'s controls do not overlap'));
+    boxes.slice(1).forEach((box, index) => assert.ok(box.x >= boxes[index].x + boxes[index].width - 1, 'the strip\'s controls do not overlap'));
 
     // With the bar docked, the settings open upward from the gear, above the strip, and the gear closes them.
     await clickNow(hostPage, '#settings-button');
@@ -230,7 +232,7 @@ describe('M7b 3D race', () => {
     await hostPage.waitForSelector('#kart-3d-readout', { state: 'hidden' });
   });
 
-  test('when every player has left mid-race the race is over: the results list the CPU karts, the back arrow ends the game', async () => {
+  test('when every player has left mid-race the race is over: the results list the CPU karts, Back to games ends the game', async () => {
     await leave(bo);
     await waitUntil(async () => (await hudTexts('label')).length === 1, { ...RACE_TIMEOUT, message: 'Bo\'s view gone' });
     assert.equal(await hostPage.isVisible('#kart-3d-results'), false, 'Ana is still racing');
@@ -281,7 +283,7 @@ describe('M7b 3D race', () => {
   });
 
   test('a race on the Test track; a lost WebGL context ends it through the shell\'s error path', { timeout: STARTING_TIMEOUT }, async () => {
-    // The last game ended with the back arrow; a new game has a new room, and a new player joins it.
+    // The last game ended with Back to games; a new game has a new room, and a new player joins it.
     roomCode = await startGame(hostPage, { gameId: 'kart-3d', timeoutMs: GAME_START_TIMEOUT });
     const cy = await joinAs(chromium, 'Pixel 7 landscape', 'Cy');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');

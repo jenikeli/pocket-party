@@ -140,7 +140,8 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.equal(await hostPage.textContent('.kart-laps-label'), 'Laps');
     // The phone says to turn it sideways, and (headless browsers refuse the wake lock) that its screen may sleep.
     assert.equal(await ana.page.textContent('#kart-turn-note'), 'Turn your phone sideways when the race starts');
-    assert.equal(await ana.page.isVisible('#wake-note'), true);
+    // Shown once the wake lock's refusal comes back, which is asynchronous.
+    await ana.page.waitForSelector('#wake-note:not([hidden])');
     // Ready turns green with a tick, and still says "Ready".
     assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
     await ana.page.click('#kart-ready-button');

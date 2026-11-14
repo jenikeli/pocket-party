@@ -151,7 +151,7 @@ describe('M7a 3D feel', () => {
     assert.match(await hostPage.inputValue('#kart-3d-tuning-text'), /topSpeed = 44/);
   });
 
-  test('Reset puts the defaults back, Close closes the panel, and Back to setup hides it', async () => {
+  test('Reset puts the defaults back, Close closes the panel, and Setup hides it', async () => {
     await clickNow(hostPage, '#kart-3d-tuning-reset');
     assert.equal(await hostPage.locator('#kart-3d-tuning .tuning-value').first().textContent(), '32.0 units/s');
     await clickNow(hostPage, '#kart-3d-tuning-close');

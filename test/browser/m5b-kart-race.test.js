@@ -1,13 +1,13 @@
 // Browser tests for M5b, the 2D kart race: picking it on the picker (Play makes its room, the phones join it),
 // starting from the setup screen (M5c) with the default controls, the landscape controls (the portrait phone's
 // turned layout is in m10-turned-controls.test.js), real touches driving a kart, a dropped player's kart stopping
-// and driving on after the rejoin, whole races to the results, Race again and the back arrow. Two Android
+// and driving on after the rejoin, whole races to the results, Race again and Back to games. Two Android
 // (Chromium) phones held sideways; fingers come from test/helpers/touch.js, because a kart needs the stick and a
 // pedal held at once.
 //
 // The phones cannot see the track, so to finish a race they hold accelerate with the stick a fifth of the way
 // left (STEADY_LEFT in test/helpers/kart-drivers.js): the walls guide them round. A 3-lap race takes about 35 s,
-// so the second race, which only has to show that Race again and the back arrow work, is set to 1 lap.
+// so the second race, which only has to show that Race again and Back to games work, is set to 1 lap.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -254,7 +254,7 @@ describe('M5b 2D kart race', () => {
     assert.ok(anaOnGrid.count > 0 && anaOnGrid.centerX < 960, 'Ana is back behind the start line');
   });
 
-  test('after the second race (1 lap), the back arrow returns the host to the picker and ends the game on both phones', RACE_TIMEOUT, async () => {
+  test('after the second race (1 lap), Back to games returns the host to the picker and ends the game on both phones', RACE_TIMEOUT, async () => {
     const views = await driveRaceToResults();
     assert.ok(views.every((view) => view.finished && view.lap === 1));
     await goBackToPicker(hostPage);

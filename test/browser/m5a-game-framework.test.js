@@ -1,5 +1,5 @@
 // Browser tests for M5a, the game framework: the picker starts the chosen game (the input lab) through the
-// registry and host/game-session.js, phones load the game named in CONTROLLER_STATE, the back arrow brings the
+// registry and host/game-session.js, phones load the game named in CONTROLLER_STATE, Back to games brings the
 // host back to the picker and every phone to "The game ended", the game can run again in a new room, and a game
 // that fails to load leaves the picker as it was, with no room. Uses Android (Chromium) phones only; the M1 and
 // M3 tests already run the lab on WebKit.
@@ -120,7 +120,7 @@ describe('M5a game framework', () => {
     await ana.page.waitForSelector('#pad-screen', { state: 'visible' });
   });
 
-  test('the back arrow needs two clicks, then the picker shows and every phone reads "The game ended"', async () => {
+  test('Back to games needs two clicks, then the picker shows and every phone reads "The game ended"', async () => {
     await hostPage.click(GAME_BACK_BUTTON);
     assert.match(await hostPage.getAttribute(GAME_BACK_BUTTON, 'class'), /\barmed\b/);
     await hostPage.waitForTimeout(500);

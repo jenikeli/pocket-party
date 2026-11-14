@@ -1,6 +1,6 @@
 // Browser tests for the host shell since M10b: the game picker (no room, no socket), Play (the room is made
 // after the load, the join window opens by itself and closes on a click outside), the settings (the hold time),
-// the back arrow (two clicks, then every phone reads "The game ended"; a second game gets a new code), the room
+// Back to games (two clicks, then every phone reads "The game ended"; a second game gets a new code), the room
 // open on a race's setup screen and shut during a race (late joiners), the fifth phone refused in the 3D race, a
 // name on every icon-only control, and the connection lost. The host is the real page in desktop Chromium, the
 // phones emulated Pixel 7s. The QR code is proved in m1, reconnection in m4, a game that fails to load in m5a.
@@ -206,6 +206,7 @@ describe('M10b host shell', () => {
 
     // Add players has its icon and its words.
     assert.equal((await hostPage.textContent('#game-add-players-button')).trim(), 'Add players');
+    assert.equal(await hostPage.locator('#game-add-players-button svg').count(), 1);
     await hostPage.click('#game-add-players-button');
     await hostPage.waitForSelector('#join-window:not([hidden])');
     // The corner of the screen is on the window's dark backdrop, outside the panel.
@@ -244,7 +245,7 @@ describe('M10b host shell', () => {
     assert.deepEqual(await unnamedIconButtons(), []);
   });
 
-  test('the back arrow needs two clicks: the first turns it red, a press elsewhere disarms it', async () => {
+  test('Back to games needs two clicks: the first turns it red, a press elsewhere disarms it', async () => {
     // The back button has words now, so no aria-label or title.
     assert.equal((await hostPage.textContent(GAME_BACK_BUTTON)).trim(), 'Back to games');
     await hostPage.click(GAME_BACK_BUTTON);
@@ -253,7 +254,7 @@ describe('M10b host shell', () => {
     // A press elsewhere disarms it; the race goes on.
     await hostPage.mouse.click(960, 540);
     await waitUntil(async () => !/\barmed\b/.test(await hostPage.getAttribute(GAME_BACK_BUTTON, 'class')), {
-      message: 'the back arrow to disarm on a press elsewhere',
+      message: 'Back to games to disarm on a press elsewhere',
     });
     // So does the 3 s window running out.
     await hostPage.click(GAME_BACK_BUTTON);

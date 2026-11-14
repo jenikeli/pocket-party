@@ -1,4 +1,4 @@
-// What grows on and lies round a rocky island (M9, from "M9: rock study" in docs/3d-findings.md): each mass's
+// What grows on and lies round a rocky island (M9, from "Rock study" in docs/3d-findings.md): each mass's
 // grass cap, a thick mat whose lip overhangs the rock and hangs down the cliff in tongues; bushes along its rim and
 // on it; and the beach of sand in the lee (the water round it is kit/rock-island-water.js). Vegetation only on the
 // tops, as on the study's islands; soft and rounded, against the rock's planes. Used by kit/rock-island.js.

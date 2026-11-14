@@ -1,4 +1,4 @@
-// The bay's rocky islands (M9, Palm Bay Airport; built to "M9: rock study" in docs/3d-findings.md), a landmark:
+// The bay's rocky islands (M9, Palm Bay Airport; built to "Rock study" in docs/3d-findings.md), a landmark:
 // limestone masses of flat facets stacked in strata, notched at the waterline with fallen blocks round the foot,
 // a thick grass cap hanging over the cliffs with bushes and a few palms, a beach in the lee, and turquoise
 // shallows and foam round it. Each seed gives its own island: a sea stack with smaller stacks (seed 1, 4, ...), a

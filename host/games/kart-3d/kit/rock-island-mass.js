@@ -1,4 +1,4 @@
-// One mass of rock of a rocky island (M9, from "M9: rock study" in docs/3d-findings.md): its outline and its
+// One mass of rock of a rocky island (M9, from "Rock study" in docs/3d-findings.md): its outline and its
 // strata, from below the water to its top, as rings of corners. The outline's corners stand far apart, so its walls
 // are long flat faces: two slow waves round it make headlands and bays, jitter roughens it, a few corners pulled well
 // in are clefts down a joint, and a corner between each two breaks each face at a joint. Most strata stand flush

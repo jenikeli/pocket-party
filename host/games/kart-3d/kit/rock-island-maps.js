@@ -1,4 +1,4 @@
-// The rocky islands' rock (M9, from "M9: rock study" in docs/3d-findings.md): layered limestone, drawn as colour,
+// The rocky islands' rock (M9, from "Rock study" in docs/3d-findings.md): layered limestone, drawn as colour,
 // relief, shade and roughness maps in a tile that repeats without a seam, and the one material made from them per
 // course. The fine scale of the study's rock: level bands of rock (strata) a little apart in tone, a soft band
 // now and then worn back, fine lines (laminae) in each, upright cracks (joints) cutting each band into blocks, and

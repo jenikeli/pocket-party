@@ -1,5 +1,5 @@
 // A list of flat facets for a rocky island's rock (M9): triangles each with its own corners, so the rock is
-// flat-shaded (planes, not blobs, as "M9: rock study" in docs/3d-findings.md found), with texture coordinates laid
+// flat-shaded (planes, not blobs, as "Rock study" in docs/3d-findings.md found), with texture coordinates laid
 // on from the side each facet faces most, so the rock's strata (kit/rock-island-maps.js) stay level across the
 // walls. Used by kit/rock-island-cliffs.js.
 

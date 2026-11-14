@@ -1,4 +1,4 @@
-// The plan of a rocky island in the bay (M9, from "M9: rock study" in docs/3d-findings.md): from a seed and a size,
+// The plan of a rocky island in the bay (M9, from "Rock study" in docs/3d-findings.md): from a seed and a size,
 // the kind of island, its masses of rock (each an outline stacked in strata, kit/rock-island-mass.js), its grass
 // cap's shape, its beach and where its palms stand. Plain maths, seeded, unit tested in Node.
 // Used by kit/rock-island.js and the shapes it builds (kit/rock-island-cliffs.js, kit/rock-island-top.js).

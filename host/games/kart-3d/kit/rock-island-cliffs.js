@@ -1,4 +1,4 @@
-// A rocky island's rock (M9, from "M9: rock study" in docs/3d-findings.md): every mass's cliffs as flat facets
+// A rocky island's rock (M9, from "Rock study" in docs/3d-findings.md): every mass's cliffs as flat facets
 // (kit/rock-island-facets.js), stratum by stratum, with ledges and overhangs where one stratum is set back or out
 // from the next, the notch at the waterline, and fallen blocks at the foot, all in one geometry. A stratum's top and
 // bottom rings are roughened differently, so every face between them breaks into two flat triangles at slightly

@@ -1,7 +1,6 @@
 // The airport's control tower (M9), a landmark about 40 tall: a tapering clad shaft on a round podium, a round
-// glass cab with a gallery, a coral roof with a dome, antennas, and a radar turning on top (docs/queue.md's task
-// G). Its shapes are built in kit/control-tower-shapes.js; here each part gets its material. It stands on its
-// origin, its door toward +x. Used by the airport's dressing (airport-scenery.js) and kit-shots
+// glass cab with a gallery, a coral roof with a dome, antennas, and a radar turning on top. Its shapes are
+// built in kit/control-tower-shapes.js; here each part gets its material. It stands on its origin, its door toward +x. Used by the airport's dressing (airport-scenery.js) and kit-shots
 // (host/kit-shots/airport-g-pieces.js).
 
 import * as THREE from 'three';

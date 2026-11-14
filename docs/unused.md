@@ -2,7 +2,7 @@
 
 Code, assets and tools that the game itself does not use, kept on purpose. Each entry lists what to delete, so a
 cleanup is quick when it is wanted. Add an entry whenever something is kept but unused; remove it once it is
-deleted or used again. Last checked 2026-11-14 (end of M10b).
+deleted or used again. Last checked 2026-11-14 (after M10c).
 
 ## Deleted
 
@@ -23,10 +23,9 @@ deleted or used again. Last checked 2026-11-14 (end of M10b).
 - `isDone()` in the game module interface: all three games return false since M10b (the shell's Back to games
   is the one way out), and `host/game-runner.js` still asks every frame. To delete: the call in `game-runner.js`,
   the three games' functions, the entry in `plan.md`'s interface.
-- `test-results/reference/m10b/mockup.html` and `test-results/reference/m10c/mockup.html` (ignored by git): the
-  mockups M10b and M10c were built from. Delete them once M10c's device run is done.
-- `test-results/reference/m10/` (ignored by git): the chosen design's pictures and prototype page, used by M10's
-  tasks. Delete the folder once the device run is done.
+- `test-results/reference/` (ignored by git, 47 MB): the reference pictures and mockups the looks were built
+  from (`m7d5` karts, `m8` items, `m9` airport and rock, `m10` design, `m10b` and `m10c` mockups). Every device
+  run is done, so the folder can be deleted; a few code comments name pictures in it.
 
 - `isOnRoad` in `host/games/kart-2d/track.js`: used only by its unit test (`test/unit/kart-track.test.js`); the
   2D race's rules use `wallContact` and `lapPosition`.

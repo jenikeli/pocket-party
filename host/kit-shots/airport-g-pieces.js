@@ -1,4 +1,4 @@
-// The kit-shots pieces for the airport's terminal and control tower (M9, docs/queue.md's task G): terminal (the
+// The kit-shots pieces for the airport's terminal and control tower (M9): terminal (the
 // whole building from the apron at kart height, and from above as a glider sees it), terminal-close (a jet
 // bridge and the hall's glass), control-tower and control-tower-cab. Each stands on a pale apron slab left of the
 // straight, facing the road, with cameras placed in the landmark's own frame (x toward the road, z along it), on

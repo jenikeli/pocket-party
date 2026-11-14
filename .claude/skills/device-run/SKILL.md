@@ -5,7 +5,7 @@ description: Write the device-run procedure for a pocket-party milestone, the st
 
 # Writing a device-run procedure
 
-The user tests each milestone on real devices; automation cannot. The procedure goes in the milestone's section of `docs/3d-findings.md` (3D work) or the milestone's notes, and a short version in the chat's handoff.
+The user tests each milestone on real devices; automation cannot. The procedure goes in `docs/device-run.md` (made when a run is pending, holding only runs still to do, under a heading with the milestone id), and a short version in the chat's handoff.
 
 ## What goes in
 
@@ -29,4 +29,4 @@ In the chat summary, list the **Tune:** steps so the user can find them at a gla
 
 ## After the run
 
-The user's results go into the milestone's "Device run" notes (numbers, what was tuned and to what, what was seen), the tuned values become the defaults in code, and the milestone's heading in `plan.md` changes from "(built, device run pending)" to "(done)".
+The tuned values become the defaults in code. What the run found goes where it belongs by topic: measurements and pitfalls into `docs/3d-findings.md`, changed decisions and open issues into `plan.md`. Then the run's section is removed from `docs/device-run.md` (the file is deleted when it is empty). Steps that simply passed are not recorded.

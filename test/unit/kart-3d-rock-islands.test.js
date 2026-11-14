@@ -1,4 +1,4 @@
-// Unit tests for the bay's rocky islands (M9, docs/queue.md's task L: kit/rock-island.js and its plan, shapes and
+// Unit tests for the bay's rocky islands (M9: kit/rock-island.js and its plan, shapes and
 // maps), which run without a browser: every island fits its triangle budget, is whole, the same for the same seed
 // and different for another, stays inside the footprint it reports, its rock wound to face out (no face culled
 // into a see-through gap), its palms on dry ground; the kinds have their beaches; the rock's tile repeats without

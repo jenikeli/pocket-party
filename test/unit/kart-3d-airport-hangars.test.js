@@ -31,7 +31,7 @@ const { roofShapes, doorShapes, signShapes, floorDecal } = await import('../../h
 const { buildFittingsGeometry, buildRingTowers, infieldSpots, lampSpots, LAMP_DROP } = await import('../../host/games/kart-3d/kit/hangar-big-fittings.js');
 const { buildHangar, hangarShapes, AIRLINES } = await import('../../host/games/kart-3d/kit/hangar.js');
 
-// The ring's anti-gravity stretch, in the track's own s (docs/queue.md's "Decisions made during the run").
+// The ring's anti-gravity stretch, in the track's own s.
 const RING = { fromS: 654, toS: 771 };
 const track = buildTrack(PALM_BAY_AIRPORT);
 const plan = planBigHangar(track, RING);

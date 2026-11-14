@@ -1,6 +1,6 @@
 // The items' tuned numbers (M8), in the same shape as tuning.js's TUNABLES, which spreads them into its list so
 // the tuning panel shows them in the group Items and the rules read them from `tuning` like every other number.
-// The values are plan.md's M8 guesses, to be tuned on the device run.
+// The values are guesses that the device runs left as they are.
 
 export const ITEM_TUNABLES = Object.freeze([
   // How long a timed item lasts (magnet, push, the blocker, sticky walls).

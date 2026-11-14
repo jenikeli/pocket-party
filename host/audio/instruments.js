@@ -1,7 +1,7 @@
 // How each of the music's voices sounds: the lead, the bass, the chords (held, arpeggio or offbeat stabs) and
 // three drums, all built from the synth's tones and noise (host/audio/synth.js). Used by the sequencer
 // (host/audio/music.js), which passes each event's exact start on the audio clock.
-// The volumes sit a little under the effects' (0.2 to 0.3 for a beep, docs/queue.md's sound tables), so the
+// The volumes sit a little under the effects' (0.2 to 0.3 for a beep), so the
 // race's cues stay on top; the music's own slider scales them all.
 
 import { tone, noise } from './synth.js';

@@ -1,7 +1,6 @@
 // Palm Bay Airport's look (M9): its road and its dressing, for scenery.js. The road is the kit's in airport
-// colours (dark asphalt, a white edge line, orange and white curbs), set into the airfield's ground (task D of
-// docs/queue.md): the land, paving and sea bed of airport-ground.js's plan (kit/terrain.js), the runway's and
-// taxiways' paint, the cutting's retaining walls and the tunnel under the runway, the seawalls, and the shallows
+// colours (dark asphalt, a white edge line, orange and white curbs), set into the airfield's ground:
+// the land, paving and sea bed of airport-ground.js's plan (kit/terrain.js), the runway's and taxiways' paint, the cutting's retaining walls and the tunnel under the runway, the seawalls, and the shallows
 // and foam along the shore. Its dressing (task M): the airport's barriers (airport-layout.js) with turn boards round
 // the corners, the start gate in the airport's colours, the props along the road (airport-props.js), the spin-boost
 // posts in the hangar's ring, and the landmarks: buildings, planes, the conveyor, islands and boats

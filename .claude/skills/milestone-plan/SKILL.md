@@ -1,6 +1,6 @@
 ---
 name: milestone-plan
-description: Plan a pocket-party milestone and build it with parallel implementer subagents. Use at the start of every milestone chat, after reading CLAUDE.md and the milestone in plan.md, and whenever a milestone's work is split into tasks.
+description: Plan a pocket-party milestone and build it with parallel implementer subagents. Use at the start of every milestone chat, after reading CLAUDE.md and plan.md, and whenever a milestone's work is split into tasks.
 ---
 
 # Planning a milestone and building it in parallel
@@ -9,7 +9,7 @@ The main session (Opus) plans, integrates and hands off; `implementer` subagents
 
 ## 1. Plan
 
-1. Read the milestone in `plan.md`, the notes it points to, and the code it touches. Look up only what the plan needs.
+1. Read the request, the parts of `plan.md` and the docs it touches, and the code. Look up only what the plan needs.
 2. If the milestone is too big for one chat, propose a split (`CLAUDE.md`: one milestone per chat) and stop.
 3. Split the milestone into tasks. For each task write:
    - **Goal:** what it builds, in a sentence or two.
@@ -54,7 +54,7 @@ When the user asks for several similar milestones in one chat (CLAUDE.md), plan 
 - Before writing the order, check every pair of tasks meant to run at the same time against each other's file lists: tasks that share a file do not run together (the user, after M10, where H and T1 both owned `test/helpers/host-buttons.js`). Give the shared file to one of them, or put them in order.
 - At most 3 subagents at once, reviewers included; when an implementer finishes, its reviewer takes its place, then the next queued task whose dependencies are merged.
 - Implementers judge their own work (kit-shots before and after) and report; a `reviewer` reads each diff (step 3); the main session reads both and the after sheet, merges, and sends the user the after sheet (SendUserFile) for feedback, or, when the user reviews only at the end (M8), keeps the sheets for the handoff.
-- Browser tests when no implementer is drawing (they time out beside kit-shots runs); while they run, only tasks that do not draw build. The census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is folded into `docs/history.md` and deleted.
+- Browser tests when no implementer is drawing (they time out beside kit-shots runs); while they run, only tasks that do not draw build. The census at the end of each part; one handoff and one device run at the end, after which `docs/queue.md` is deleted (the `handoff` skill moves its lasting decisions into the docs first). Code comments never point at `docs/queue.md`: a comment says the thing itself.
 
 ## The main session's context
 

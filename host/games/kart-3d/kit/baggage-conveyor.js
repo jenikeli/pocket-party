@@ -1,4 +1,4 @@
-// The baggage conveyor (M9 task K), a landmark (docs/queue.md's "Pieces for the dressing"): a belt at ground level
+// The baggage conveyor (M9 task K), a landmark: a belt at ground level
 // under the airport's jump, running into a housing at each end, with suitcases and crates riding it. It lies along
 // its own z, centred on its origin on y = 0 (M turns it across the road), `length` long over its housings. In
 // `update` the belt's cleats scroll and the cargo moves along it at the same speed, to vanish into one housing

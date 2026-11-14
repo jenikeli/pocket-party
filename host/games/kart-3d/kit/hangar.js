@@ -1,9 +1,8 @@
 // A small hangar for the taxiway's side (M9), after the references' blister and general-aviation hangars
 // (test-results/reference/m9/H/): white corrugated walls under a curved roof in the airline's colour, a big
 // two-leaf door on the front with one leaf slid half open on a dark inside, the airline's name on a sign over
-// it, a band of the airline's second colour round the foot, windows and a small door along the sides. A landmark
-// (docs/queue.md's "Pieces for the dressing"): it stands on its own origin, its door facing +x, `width` across
-// (z) and `depth` deep (x). Used by the airport's dressing (airport-scenery.js) and kit-shots.
+// it, a band of the airline's second colour round the foot, windows and a small door along the sides. A landmark:
+// it stands on its own origin, its door facing +x, `width` across (z) and `depth` deep (x). Used by the airport's dressing (airport-scenery.js) and kit-shots.
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes, roundedBox } from '../shape-utils.js';
@@ -12,7 +11,7 @@ import { archShape } from './hangar-plan.js';
 import { archSheet, archTrim, hangarMaterials, hangarMesh, inSheetTiles, member } from './hangar-parts.js';
 import { createSignTexture, CORAL, NAVY, SUN_YELLOW } from './hangar-maps.js';
 
-// Our airlines (docs/queue.md's "Decisions"): the roof and sign in the first colour, the foot band in the second.
+// Our airlines: the roof and sign in the first colour, the foot band in the second.
 export const AIRLINES = Object.freeze({
   'Palm Air': [0x1f9e6e, SUN_YELLOW],
   'Coral Wings': [CORAL, NAVY],

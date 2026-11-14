@@ -18,7 +18,7 @@ import { createFloorMarkings, createSignTexture, CORAL, NAVY } from './hangar-ma
 // The floor markings are drawn at this many pixels a unit.
 const MARKING_PIXELS = 16;
 
-// A landmark (docs/queue.md's "Pieces for the dressing"): { object, update(dt, race), spot }. `object` stands on
+// A landmark: { object, update(dt, race), spot }. `object` stands on
 // its own origin, its doors facing +x; `spot` ({ x, y, z, heading }) is where it goes on the course, for
 // placeLandmark. Nothing moves, so update does nothing.
 export function buildBigHangar(kit, { fromS, toS }) {

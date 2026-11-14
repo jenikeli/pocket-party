@@ -20,7 +20,7 @@ const ROW_LATERALS = [-5.4, -1.8, 1.8, 5.4];
 // Which design each shown kart draws (indexes into KART_DESIGNS): a different one beside it.
 const DESIGNS = [0, 1];
 
-// A race as the item drawing reads it (queue.md's "State"), racing, standing still at PIECE_S: `karts` is
+// A race as the item drawing reads it, racing, standing still at PIECE_S: `karts` is
 // [{ lateral, effect }] (effect { item, left } or null), `boxes` [{ s, lateral, returnLeft }].
 export function itemShowRace(track, { karts = [], boxes = [] }) {
   return {

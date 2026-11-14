@@ -1,4 +1,4 @@
-// The kit-shots pieces for the airport's planes (M9, docs/queue.md's task I): an airliner in each livery
+// The kit-shots pieces for the airport's planes (M9): an airliner in each livery
 // (airliner, airliner-coral, airliner-skipjack) side on to the road as the karts see it, airliner-nose (its nose,
 // emblem, front door and gear), airliner-gate (parked at the terminal's middle jet bridge, its front door at the
 // bridge's cab), prop-plane, and take-off-plane (lifting off over the road, seen from a kart's eye looking back

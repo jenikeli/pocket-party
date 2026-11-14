@@ -1,4 +1,4 @@
-// The kit-shots pieces for the bay's rocky islands (M9, docs/queue.md's task L): rock-island-stack,
+// The kit-shots pieces for the bay's rocky islands (M9): rock-island-stack,
 // rock-island-mesa and rock-island-karst (seeds 1, 2 and 3, one of each kind) in the sea off the straight, seen
 // from the road's edge at kart height and from above as a glider sees them; rock-island-close, the stack's cliff
 // from near the water and its grass lip from above, to judge them up close; and rock-islands, three more seeds

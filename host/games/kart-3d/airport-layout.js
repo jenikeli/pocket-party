@@ -41,7 +41,7 @@ export const GATE_LIVERIES = Object.freeze(['skipjack-air', 'coral-wings', 'palm
 
 // The spot of a plane parked at `gate` ({ x, z } in the terminal's frame) of a terminal at `terminal`: turned a
 // quarter turn from the terminal, so it lies along the glass with its right side to the road, its front left door
-// (`door`, { x, z } in the plane's own frame) at the bridge's cab. As task I's buildGate (docs/queue.md).
+// (`door`, { x, z } in the plane's own frame) at the bridge's cab.
 export function gatePlaneSpot(terminal, gate, door) {
   // The door turned a quarter turn about up: (x, z) becomes (z, -x).
   const local = { x: gate.x - door.z, z: gate.z + door.x };

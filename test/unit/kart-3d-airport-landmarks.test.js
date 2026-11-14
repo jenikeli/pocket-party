@@ -1,4 +1,4 @@
-// Unit tests for the airport's terminal and control tower (M9, docs/queue.md's task G), which run without a browser
+// Unit tests for the airport's terminal and control tower (M9), which run without a browser
 // (their maps and pictures need a canvas, so the shapes are checked): every part is whole (positions, colours,
 // texture coordinates, no NaN), each fits its triangle budget, stands on y = 0 and stays inside the footprint it
 // reports, and the terminal's gates stand in front of it.

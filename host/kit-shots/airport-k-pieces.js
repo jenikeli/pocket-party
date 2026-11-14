@@ -1,4 +1,4 @@
-// The kit-shots pieces for the airfield's fittings and conveyor (M9, docs/queue.md's task K): the props runway-light,
+// The kit-shots pieces for the airfield's fittings and conveyor (M9): the props runway-light,
 // taxiway-sign, windsock and airport-floodlight by their names, and baggage-conveyor (a short one beside the road,
 // lying along it). The barrier styles apron-rail and padded-barrier need no entry: pieces.js makes one for each
 // style in BARRIER_STYLES. Used by pieces.js.

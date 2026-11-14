@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Hand off a finished pocket-party milestone - tests, plan.md and docs/history.md updated, the device-run procedure, commits, the walkthrough, and a check on whether the workflow should change. Use at the end of every milestone chat, after the work is merged and tested.
+description: Hand off a finished pocket-party milestone - tests, plan.md and the docs updated by topic, the device-run procedure, commits, the walkthrough, and a check on whether the workflow should change. Use at the end of every milestone chat, after the work is merged and tested.
 ---
 
 # Handing off a milestone
@@ -14,13 +14,15 @@ The next chat starts with no memory of this one, so everything it needs must be 
 
 ## 2. The docs
 
-1. Tick the milestone's finished checkboxes in `plan.md`.
-2. Move the milestone's whole section (checklist, "done when", and detailed notes on files, decisions, deviations and tests changed on purpose) to the end of `docs/history.md`.
-3. In `plan.md`, leave a summary of a few bullets under the milestone's heading ending in "(built, device run pending)" (or "(done)" if it needs no device run): what exists now, and only what later milestones must know.
-4. Update `plan.md`'s design sections if a decision changed them.
-5. Update `CLAUDE.md`'s Commands section for any new or changed command, and its Testing map for any new browser test file.
-6. For 3D work, the milestone's section in `docs/3d-findings.md`: what was built, what was measured without a device, and the device-run procedure (the `device-run` skill).
-7. `docs/unused.md`: add anything the milestone left unused but kept (a tool, an asset, a spike's pieces), with what to delete; remove entries for what it deleted or put back to use.
+The docs are organised by topic and kept short (`CLAUDE.md`): they hold what the code and the commit messages do not say. There is no per-milestone history; the commits carry the milestone id. Write what the next chat needs, not what happened.
+
+1. `plan.md`: update the section the work changed (a decision, a design section, the game module interface, "Where things live" for new files or patterns, "Things to know" for a pitfall that cost time, "Open issues", "Later ideas"). Edit in place; do not add a milestone section.
+2. `docs/3d-findings.md` (3D work): new measurements and pitfalls under their topic, replacing numbers they supersede.
+3. `docs/mk8dx-reference.md`: only new research about MK8DX itself.
+4. `docs/device-run.md`: the device-run procedure, if the work needs one (the `device-run` skill). It holds only runs still to do.
+5. `CLAUDE.md`: Commands for any new or changed command, the Testing map for any new browser test file.
+6. `docs/unused.md`: add anything left unused but kept, with what to delete; remove entries for what was deleted or put back to use.
+7. In a queue: move the lasting decisions from `docs/queue.md` into the docs above, then delete it.
 
 ## 3. Commit
 

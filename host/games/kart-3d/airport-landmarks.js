@@ -1,7 +1,7 @@
 // Palm Bay Airport's landmarks (M9), placed where airport-layout.js says: the terminal with an airliner at each jet
 // bridge, another airliner and two small prop planes on the apron, the control tower, the taxiway's hangars, the
 // big hangar round the anti-gravity ring, the baggage conveyor under the jump, the plane taking off each lap, and
-// out in the sea the rocky islands and boats. Each landmark (docs/queue.md's "Pieces for the dressing") stands on
+// out in the sea the rocky islands and boats. Each landmark stands on
 // its own origin facing +x and adds itself to no part: here each goes into one (buildings, planes and the conveyor
 // with the props, the islands and boats with the surroundings, the flying plane with the sky). Used by
 // airport-scenery.js.

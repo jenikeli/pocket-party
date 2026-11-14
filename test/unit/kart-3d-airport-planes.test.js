@@ -1,4 +1,4 @@
-// Unit tests for the airport's planes (M9, docs/queue.md's task I), which run without a browser (their liveries
+// Unit tests for the airport's planes (M9), which run without a browser (their liveries
 // are drawn on canvases, so the shapes are checked): every part is whole, each plane fits its triangle budget,
 // stands on its wheels at y = 0 inside the footprint it reports and faces out, the airliner's front door is at
 // the jet bridges' sill, and the take-off plane's path is right on the runway, rising, low and gone.

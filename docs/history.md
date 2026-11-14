@@ -3493,6 +3493,13 @@ was asked about (A to M in the mockup) were built as recommended: yes to A, C, D
 - Tests changed on purpose: every click of Back to setup and Restart is two; m7b checks the first click only
   arms Back to setup, m6c the same for Restart; the strip test checks there is no Back to games; m6b and m7b go
   back to the picker through Back to setup or Race again first.
+- The iPad still showed Back to games in the strip after that, though Chromium's test found it hidden. The
+  stylesheet rule was replaced by the `hidden` attribute, set by `host/game-bar.js` whenever the bar docks or a
+  game starts or ends (`showBackButton`), so no stylesheet decides it.
+- Housekeeping: `.pp-small` (host and phone styles, unused since M10b), an unused `VEHICLES` list in
+  `host/kit-shots/airport-j-pieces.js`, an unused `BASE_SHADE` in `kit/leaf-scale.js` and an unused import in
+  `kit/bunting-pennant.js` were removed. A scan found nothing else unused: no CSS selector or variable that no
+  file uses, no unused import, function or constant, no unused test helper.
 
 ### Device run procedure (iPad host, an iPhone and an Android phone, HTTPS on the LAN; covers M10b too)
 

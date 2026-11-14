@@ -8,7 +8,6 @@ import * as THREE from 'three';
 // Rows from the base to the tip (a share of the length) and points across (-1 to 1, left to right).
 const ROWS = [0, 0.45, 0.8, 1];
 const ACROSS = [-1, -0.35, 0.35, 1];
-const BASE_SHADE = 0.5;
 
 // A scale `length` long and up to `width` wide, standing at `position` ([x, y, z]) with its tip pointing away
 // from the middle at `turn` radians (round y), tipped up by `pitch` radians (down when negative). The plate is

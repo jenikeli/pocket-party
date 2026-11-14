@@ -14,6 +14,8 @@ const addPlayersButton = document.getElementById('game-add-players-button');
 // the game ends.
 export const barSlot = document.getElementById('bar-slot');
 let handlers = { onBack: () => {}, onAddPlayers: () => {} };
+// Whether a game is running (Back to games belongs to it), kept apart from docking, which hides the button too.
+let gameRunning = false;
 
 addPlayersButton.addEventListener('click', () => handlers.onAddPlayers());
 const back = confirmOnSecondClick(backButton, () => handlers.onBack());
@@ -28,13 +30,13 @@ export function showTopBar() {
 export function showGameControls({ roomCode, onBack, onAddPlayers }) {
   handlers = { onBack, onAddPlayers };
   roomCodeChip.textContent = roomCode;
-  backButton.hidden = false;
+  gameRunning = true;
+  showBackButton();
 }
 
 // The game is over: its controls go, the slot is emptied and the bar is back at the top.
 export function hideGameControls() {
-  back.disarm();
-  backButton.hidden = true;
+  gameRunning = false;
   showRoomOpen(false);
   barSlot.replaceChildren();
   setBarDocked(false);
@@ -52,7 +54,15 @@ export function showRoomOpen(open) {
 // M10c): a game that docks the bar offers its own way back to a screen that has it (the 3D race's Back to setup).
 export function setBarDocked(docked) {
   bar.classList.toggle('docked', docked);
-  if (docked) {
+  showBackButton();
+}
+
+// Back to games shows over a running game while the bar is at the top. Hidden with the hidden attribute rather
+// than a stylesheet rule, which an iPad kept showing it past; hiding it also disarms it.
+function showBackButton() {
+  const shown = gameRunning && !bar.classList.contains('docked');
+  backButton.hidden = !shown;
+  if (!shown) {
     back.disarm();
   }
 }

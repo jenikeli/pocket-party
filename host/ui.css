@@ -68,10 +68,6 @@
   color: var(--pp-accent-ink);
 }
 
-.pp-button.pp-small {
-  font-size: 0.9em;
-}
-
 .pp-button.pp-big {
   font-size: 1.35em;
   padding: 0.55em 1.6em;

@@ -97,11 +97,6 @@ button, .pp-button {
   border-color: var(--pp-accent);
 }
 
-.pp-small {
-  font-size: 16px;
-  padding: 10px 16px;
-}
-
 button:disabled {
   opacity: 0.5;
 }

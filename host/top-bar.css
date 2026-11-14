@@ -62,7 +62,7 @@
 }
 
 /* Docked (bar.setDocked(true), for the 3D race): a strip along the bottom of the window, the full width and
-   --pp-strip high, in a row: Back to games, the game's slot (which takes the room left over), then the room
+   --pp-strip high, in a row: the game's slot (which takes the room left over), then the room
    code, Add players and the gear. The game's container ends above it (host/shell.css). */
 .top-bar.docked {
   inset: auto 0 0 0;
@@ -76,11 +76,6 @@
   background: var(--pp-panel);
   border-top: 0.1em solid var(--pp-line);
   pointer-events: auto;
-}
-
-/* The strip has no Back to games: the game that docked it has its own way back (host/game-bar.js). */
-.top-bar.docked #game-back-button {
-  display: none;
 }
 
 .top-bar.docked .top-bar-left,

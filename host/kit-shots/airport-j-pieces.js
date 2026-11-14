@@ -7,7 +7,6 @@ import { kitPart } from '../games/kart-3d/kit/kit.js';
 import { KIT_PARTS, PROP_REACH } from '../games/kart-3d/kit/layout-rules.js';
 import { PIECE_S } from './landmark-pieces.js';
 
-const VEHICLES = ['baggage-train', 'uld-dolly', 'stair-truck', 'belt-loader', 'fuel-truck', 'follow-me-car'];
 // Vehicles stand clear of the road's edge by their reach, plus this; turned 90 degrees so they lie along the road.
 const CLEARANCE = 0.5;
 const SIDE_ON = 90;

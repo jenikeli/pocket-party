@@ -1,7 +1,8 @@
 // The 3D race's results, a panel in the host's look over the views once the race is over (the karts drive on
 // behind it): a "Results" heading with what was raced beside it, every kart's place, name, finish time and gap to
 // the winner (the winner's row larger, its place in the accent), a player's colour as a dot beside the name and CPU
-// karts' in grey, and the Race again button across the panel. Leaving the game is the shell's Back to games.
+// karts' in grey, and the Race again button across the panel. The strip under the views has no Back to
+// games: Race again leads to the setup screen, which has it.
 // Used by host/games/kart-3d/index.js.
 
 import { displayName, colorText } from '../../roster.js';

@@ -2,7 +2,7 @@
 // top edge, and the weave drawn as a normal map. Used by kit/bunting.js.
 
 import * as THREE from 'three';
-import { coloured, mergeShapes, roundedCylinder } from '../shape-utils.js';
+import { coloured, mergeShapes } from '../shape-utils.js';
 import { createPixelImage } from './pixel-image.js';
 
 const ROWS = 4;

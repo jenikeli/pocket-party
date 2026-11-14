@@ -66,24 +66,24 @@
     },
     {
       "path": "kart-3d/previews/palm-bay-airport.jpg",
-      "sha256": "233f0f7e147be0075ba3ce8dcdadf448240f41faa2e4e2174e2a033fb8ae38f1",
-      "bytes": 165743,
+      "sha256": "0d60d978e7ce6c238979ce2212fd114c21681f553d2b893f59ec11fd67b4ae6f",
+      "bytes": 165528,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen) and host/games/index.js (the lobby background of Kartwheel)"
     },
     {
       "path": "kart-3d/previews/seaside-skyway.jpg",
-      "sha256": "804b42d10fc4d4bc2e6235b90da12a861d6bcbcfe65a29ee6bad1e6f075297eb",
-      "bytes": 143982,
+      "sha256": "9c1ab42c27356f1a99eaf056d574289d073235ee0fe0d3ba4cb8c97aafc9076a",
+      "bytes": 143935,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen)"
     },
     {
       "path": "kart-3d/previews/test-track.jpg",
-      "sha256": "a8eb9adc3705ba4df659db8b2ad2e21c871662b6b9ce73ca6d603edc104fc5b3",
-      "bytes": 112176,
+      "sha256": "838e576547a0eb9355a2099677713976ba02a162b719cc249b1d3ba00ba37748",
+      "bytes": 112196,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen)"

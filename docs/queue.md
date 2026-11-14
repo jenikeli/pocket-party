@@ -6,10 +6,10 @@ One milestone (m11), built as tasks by `implementer` agents (`.claude/skills/mil
 
 | Task | What | Model | Depends on | Status |
 |---|---|---|---|---|
-| P | Protocol constants (main session) | - | - | queued |
-| A | Name clean-up: Kartwheel, no Mario Kart references | sonnet | P | queued |
-| B | Phone: new layouts, double tap, colour, Leave | opus | P | queued |
-| C | Host: colour picking, left-handed, views | sonnet | P | queued |
+| P | Protocol constants (main session) | - | - | merged |
+| A | Name clean-up: Kartwheel, no Mario Kart references | sonnet | P | building |
+| B | Phone: new layouts, double tap, colour, Leave | opus | P | building |
+| C | Host: colour picking, left-handed, views | sonnet | P | building |
 | R | Course previews again, manifest (main session) | - | A | queued |
 | D | Browser test file for m11 | sonnet | A, B, C merged, suite run | queued |
 

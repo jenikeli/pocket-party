@@ -14,7 +14,7 @@ stage). Where this file and the mockup disagree, this file wins.
 | A | host shell | merged |
 | B | 3D kart race | merged |
 | C | player rows, 2D race, phone | merged |
-| T | browser tests (alone, after A to C) | building |
+| T | browser tests (alone, after A to C) | merged |
 | Z | full browser suite, docs, handoff (main session) | queued |
 
 A, B and C share no files and build at the same time. A is merged first (B uses its `bar`).

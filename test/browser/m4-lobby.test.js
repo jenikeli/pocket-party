@@ -167,6 +167,8 @@ for (const { name, engine, device } of CONTROLLER_DEVICES) {
 
       const leave = '#game-top .leave-button';
       assert.equal(await page.getAttribute(leave, 'aria-label'), 'Leave game');
+      assert.equal(await page.getAttribute(leave, 'title'), 'Leave game');
+      assert.equal(await page.locator(`${leave} svg`).count(), 1, 'the leave button holds the door icon');
       await page.click(leave);
       assert.match(await page.getAttribute(leave, 'class'), /\barmed\b/);
       await saveScreenshot(page, `${name}-m4-2-controller-leave-armed`);

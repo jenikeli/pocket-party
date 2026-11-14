@@ -26,12 +26,11 @@ import {
   loadingLog,
   GAME_START_TIMEOUT,
   STARTING_TIMEOUT,
+  RACE_VIEW_GAP,
 } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// From host/games/kart-3d/view-layout.js at 960x540: two views stacked, with a 4 px gap (rows 268-271).
-const VIEW_GAP = { left: 0, top: 268, right: 960, bottom: 272 };
 const DRIVE_TIMEOUT = { timeoutMs: 30000 };
 
 describe('M6b 3D driving', () => {
@@ -138,12 +137,12 @@ describe('M6b 3D driving', () => {
     // The game's style.css only imports the shared kart styles; the setup screen's grid shows they arrived.
     assert.equal(await bo.page.evaluate(() => getComputedStyle(document.getElementById('kart-setup')).display), 'grid');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
-    // A row is the colour dot, the name, two small icons that say how they drive (named for screen readers) and a
-    // cross; nobody is ready yet.
-    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-row').allTextContents(), ['Ana', 'Bo']);
-    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-row:first-child [role="img"]').evaluateAll(
-      (icons) => icons.map((each) => each.getAttribute('aria-label')),
-    ), ['Stick', 'Go button']);
+    // A row is the colour dot, the name, how they drive in words and a cross; "Ready" is on it only once they are.
+    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-name').allTextContents(), ['Ana', 'Bo']);
+    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-style').allTextContents(), ['Stick · Go button', 'Stick · Go button']);
+    // The setup lists its players under a heading, and the line for an empty room is gone.
+    assert.equal(await hostPage.textContent('.k3d-card-heading'), 'Players');
+    assert.equal(await hostPage.isVisible('#kart-3d-no-players'), false);
     assert.equal(await hostPage.locator('#kart-3d-rows .kart-player-row.ready').count(), 0);
     assert.equal(await hostPage.isDisabled('#kart-3d-start-button'), true);
     await saveScreenshot(hostPage, 'm6b-1-host-setup');
@@ -170,8 +169,13 @@ describe('M6b 3D driving', () => {
     assert.deepEqual(loading.titles, ['Kart race 3D']);
   });
 
-  test('the setup\'s icon-only controls carry only a name and a title, and the lobby controls it used to have are gone', async () => {
-    for (const selector of ['[data-course-id]', '.k3d-item', '#kart-3d-tools-button', '#kart-3d-laps-minus', '#kart-3d-laps-plus']) {
+  test('the setup\'s controls with words say them, its icon-only ones carry a name and a title, and the old lobby controls are gone', async () => {
+    // The course tiles are the course's name, the Display button says so, and the card has a row for each setting.
+    assert.deepEqual(await hostPage.locator('.k3d-course-tile-name').allTextContents(), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
+    assert.equal((await hostPage.textContent('#kart-3d-tools-button')).trim(), 'Display');
+    assert.match(await hostPage.textContent('#kart-3d-course-blurb'), /\S/);
+    assert.deepEqual(await hostPage.locator('.k3d-card .k3d-rule > span.pp-muted, .k3d-card .kart-laps-label').allTextContents(), ['Laps', 'Speed', 'CPU', 'Items']);
+    for (const selector of ['.k3d-item', '#kart-3d-laps-minus', '#kart-3d-laps-plus']) {
       const buttons = hostPage.locator(`#kart-3d-setup ${selector}`);
       assert.ok((await buttons.count()) > 0, `${selector} exist`);
       const shown = await buttons.evaluateAll((elements) =>
@@ -182,7 +186,7 @@ describe('M6b 3D driving', () => {
       }
     }
     assert.equal(await hostPage.getAttribute('#kart-3d-tools-button', 'aria-pressed'), 'false');
-    for (const gone of ['#kart-3d-lobby-button', '#kart-3d-setup-lobby-button', '#kart-3d-course-blurb', '#kart-3d-items-button', '#lobby']) {
+    for (const gone of ['#kart-3d-lobby-button', '#kart-3d-setup-lobby-button', '#kart-3d-items-button', '#lobby']) {
       assert.equal(await hostPage.locator(gone).count(), 0, `${gone} is gone`);
     }
     // The class buttons keep "cc".
@@ -212,10 +216,19 @@ describe('M6b 3D driving', () => {
     assert.equal(await bo.page.isVisible('#kart-accelerate'), false, 'auto-accelerate hides Go');
     assert.equal(await ana.page.isVisible('#kart-accelerate'), true);
     await hostPage.waitForSelector('#kart-3d-race-bar:not([hidden])');
+    // During a race the shell's bar is a strip along the bottom, the race's buttons and clock are in its slot,
+    // and the canvas ends above the strip (4 stage em: 48 px in this 540 px high window).
+    assert.match(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);
+    assert.equal(await hostPage.locator('#bar-slot #kart-3d-race-bar #kart-3d-clock').count(), 1);
+    assert.deepEqual(await hostPage.locator('#kart-3d-race-bar button').allTextContents(), ['Setup', 'Restart', 'Tuning']);
+    const strip = await hostPage.locator('#top-bar').boundingBox();
+    const canvas = await hostPage.locator('#game-container canvas').boundingBox();
+    assert.ok(Math.abs(strip.height - 48) <= 1 && strip.y + strip.height >= HOST_SIZE.height - 1, 'the strip is 48 px along the bottom');
+    assert.ok(canvas.y + canvas.height <= strip.y + 1, 'the views end above the strip');
     const labels = hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-label');
     await waitUntil(async () => (await labels.count()) === 2, { message: 'a label on each view' });
     assert.deepEqual(await labels.allTextContents(), ['Ana', 'Bo']);
-    await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, VIEW_GAP)).count === 960 * 4, {
+    await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, RACE_VIEW_GAP)).count === 960 * 4, {
       ...DRIVE_TIMEOUT,
       message: 'a black gap between the two views',
     });
@@ -258,6 +271,9 @@ describe('M6b 3D driving', () => {
     }
     assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"][data-value="true"]', 'aria-pressed'), 'true');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
+    // The bar goes back to the top, with the race's buttons out of its slot.
+    assert.doesNotMatch(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);
+    assert.equal(await hostPage.isVisible('#kart-3d-race-bar'), false);
     assert.equal(await hostPage.locator('.kart-3d-view-hud:not([hidden])').count(), 0);
   });
 

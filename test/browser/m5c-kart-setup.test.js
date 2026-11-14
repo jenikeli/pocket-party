@@ -134,6 +134,13 @@ describe('M5c 2D race setup screen and control styles', () => {
     await waitUntil(panelOnHost, { message: 'the setup panel on the host' });
     assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Needs 2 players');
     assert.equal(await hostPage.isDisabled(START_RACE_BUTTON), true);
+    // The setup lists the players under a heading; the "Scan the code to join" line is only for an empty room.
+    assert.equal(await hostPage.textContent('.k2d-subheading'), 'Players');
+    assert.equal(await hostPage.isVisible('#kart-2d-join-line'), false);
+    assert.equal(await hostPage.textContent('.kart-laps-label'), 'Laps');
+    // The phone says to turn it sideways, and (headless browsers refuse the wake lock) that its screen may sleep.
+    assert.equal(await ana.page.textContent('#kart-turn-note'), 'Turn your phone sideways when the race starts');
+    assert.equal(await ana.page.isVisible('#wake-note'), true);
     // Ready turns green with a tick, and still says "Ready".
     assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
     await ana.page.click('#kart-ready-button');
@@ -141,6 +148,10 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
     assert.equal(await ana.page.locator('#kart-ready-button svg').count(), 1, 'a tick once ready');
     await saveScreenshot(ana.page, 'm5c-0-android-ready');
+    // On the host her row shows a tick and "Ready" (hidden while the player is not ready).
+    await hostPage.waitForSelector('.kart-player-row.ready .kart-player-tick');
+    assert.equal(await hostPage.isVisible('.kart-player-row.ready .kart-player-tick'), true);
+    assert.equal(await hostPage.textContent('.kart-player-row.ready .kart-player-tick'), 'Ready');
     // Everyone present is ready, yet it still needs a second player.
     await hostPage.waitForTimeout(500);
     assert.equal(await hostPage.textContent('#kart-2d-setup-status'), 'Needs 2 players');
@@ -190,6 +201,10 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.deepEqual(await nextHostInput(bo, (input) => input.kind === 'choice'), { kind: 'choice', choice: 'steering', value: 'tilt' });
     await bo.page.waitForSelector('[data-value="tilt"][aria-pressed="true"]');
     assert.equal(await bo.page.isVisible('#kart-steering-note'), false);
+    // A row says in words how each player drives.
+    await waitUntil(async () => (await hostPage.locator('.kart-player-style').allTextContents()).join('|') === 'Stick · Auto|Tilt · Go button', {
+      message: 'the rows to name each player\'s controls',
+    });
     await saveScreenshot(bo.page, 'm5c-1-iphone-setup');
     await saveScreenshot(hostPage, 'm5c-2-host-setup');
   });

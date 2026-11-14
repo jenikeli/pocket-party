@@ -112,8 +112,12 @@ describe('M7a 3D feel', () => {
 
   test('the Tuning button opens a slider for every tuned number, each showing its value', async () => {
     assert.equal(await hostPage.isVisible('#kart-3d-tuning'), false);
+    assert.equal(await hostPage.isVisible('#kart-3d-readout'), false, 'the readout is hidden with the popup');
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await hostPage.waitForSelector('#kart-3d-tuning:not([hidden])');
+    // The readout lives in the popup and shows exactly while it is open.
+    assert.equal(await hostPage.locator('#kart-3d-tuning #kart-3d-readout').count(), 1);
+    assert.equal(await hostPage.isVisible('#kart-3d-readout'), true);
     assert.equal(await hostPage.locator('#kart-3d-tuning input[type="range"]').count(), TUNABLES.length);
     const firstRow = await hostPage.locator('#kart-3d-tuning label').first().textContent();
     assert.equal(firstRow, 'Top speed32.0 units/s');
@@ -152,6 +156,7 @@ describe('M7a 3D feel', () => {
     assert.equal(await hostPage.locator('#kart-3d-tuning .tuning-value').first().textContent(), '32.0 units/s');
     await clickNow(hostPage, '#kart-3d-tuning-close');
     assert.equal(await hostPage.isVisible('#kart-3d-tuning'), false);
+    assert.equal(await hostPage.isVisible('#kart-3d-readout'), false);
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await hostPage.waitForSelector('#kart-3d-tuning:not([hidden])');
     await clickNow(hostPage, '#kart-3d-setup-button');

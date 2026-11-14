@@ -14,13 +14,11 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
-import { clickStartRace, openTools, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
+import { clickStartRace, openTools, GAME_START_TIMEOUT, STARTING_TIMEOUT, RACE_VIEW_GAP } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
 const HOST_SIZE = { width: 960, height: 540 };
-// From host/games/kart-3d/view-layout.js at 960x540: two views stacked, with a 4 px gap (rows 268-271).
-const VIEW_GAP = { left: 0, top: 268, right: 960, bottom: 272 };
 const RACE_TIMEOUT = { timeoutMs: 60000 };
 
 describe('M7c 3D look', () => {
@@ -116,7 +114,7 @@ describe('M7c 3D look', () => {
     await clickStartRace(hostPage);
     const labels = hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-label');
     await waitUntil(async () => (await labels.count()) === 2, { ...RACE_TIMEOUT, message: 'a label on each view' });
-    await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, VIEW_GAP)).count === 960 * 4, {
+    await waitUntil(async () => (await findColor(pixelReader, await hostPage.screenshot(), 0x000000, RACE_VIEW_GAP)).count === 960 * 4, {
       ...RACE_TIMEOUT,
       message: 'a black gap between the two views',
     });

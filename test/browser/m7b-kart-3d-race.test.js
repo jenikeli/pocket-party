@@ -93,16 +93,17 @@ describe('M7b 3D race', () => {
   test('the setup screen offers the courses; the host\'s laps and engine class reach the phones', async () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     // Since M9 Palm Bay Airport is first, and so chosen when a game starts.
-    // The course pictures carry no text: each one is named by its aria-label.
-    assert.deepEqual(
-      await hostPage.locator('[data-course-id]').evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('aria-label'))),
-      ['Palm Bay Airport', 'Seaside Skyway', 'Test track'],
-    );
+    // Each course's picture has its name under it, and the chosen course has its one-line description.
+    assert.deepEqual(await hostPage.locator('.k3d-course-tile-name').allTextContents(), ['Palm Bay Airport', 'Seaside Skyway', 'Test track']);
+    assert.equal(await hostPage.textContent('#kart-3d-course-name'), 'Palm Bay Airport');
+    const airportBlurb = await hostPage.textContent('#kart-3d-course-blurb');
+    assert.match(airportBlurb, /\S/);
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
     // The setup's picture and name change to the chosen course, and on.
     await clickNow(hostPage, '[data-course-id="test-track"]');
     await hostPage.waitForSelector('[data-course-id="test-track"][aria-pressed="true"]');
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'false');
+    assert.notEqual(await hostPage.textContent('#kart-3d-course-blurb'), airportBlurb, 'the description follows the course');
     await saveScreenshot(hostPage, 'm7b-0-host-setup-test-track');
     await clickNow(hostPage, '[data-course-id="seaside-skyway"]');
     await hostPage.waitForSelector('[data-course-id="seaside-skyway"][aria-pressed="true"]');
@@ -128,6 +129,8 @@ describe('M7b 3D race', () => {
     for (const player of [ana, bo]) {
       await waitUntil(async () => (await player.page.textContent('#kart-line')) === 'Waiting for the next race', { message: `${player.name} waits` });
     }
+    // The race's bar is docked while Watch runs, with its buttons in the strip.
+    assert.match(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await waitUntil(async () => /View 4: [\d.]+ units\/s/.test(await hostPage.textContent('#kart-3d-readout')), { ...RACE_TIMEOUT, message: 'the readout lists the stand-ins' });
     await saveScreenshot(hostPage, 'm7b-1b-host-watch-4');
@@ -159,24 +162,48 @@ describe('M7b 3D race', () => {
     await saveScreenshot(hostPage, 'm7b-2-host-countdown');
   });
 
-  // The bottom-right bar (End game, Close room) is gone since M10b, and with it the lift of the place in the
-  // bottom-right view.
-  test('no view lifts its place for the old bottom-right bar', async () => {
-    const lifts = await hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-place').evaluateAll((places) => places.map((place) => place.style.bottom));
-    assert.deepEqual(lifts, ['', '']);
+  // Since M10c the bar is a strip under the views, so nothing makes room for a back arrow: the first view's name
+  // sits in its top-left corner like every other view's, and no view's HUD reaches the strip.
+  test('every view\'s name sits at the top of its view, and the strip under the views covers no view\'s HUD', async () => {
+    const canvas = await hostPage.locator('#game-container canvas').boundingBox();
+    const strip = await hostPage.locator('#top-bar').boundingBox();
+    const huds = hostPage.locator('.kart-3d-view-hud:not([hidden])');
+    const firstLabel = await huds.nth(0).locator('.kart-3d-view-label').boundingBox();
+    assert.ok(firstLabel.y - canvas.y < 12 && firstLabel.x - canvas.x < 12, 'the first view\'s name is in its top-left corner');
+    const secondLabel = await huds.nth(1).locator('.kart-3d-view-label').boundingBox();
+    assert.ok(Math.abs(secondLabel.x - firstLabel.x) < 1, 'both names start at the left edge');
+    for (const place of await huds.locator('.kart-3d-view-place').all()) {
+      const box = await place.boundingBox();
+      assert.ok(box.y + box.height <= strip.y + 1, 'a place number ends above the strip');
+    }
   });
 
-  // CLAUDE.md and the queue: games keep the top corners clear for the shell's top bar. The top view's name label
-  // and the race clock are in those corners, so both start below the bar.
-  test('the top bar\'s back arrow and gear sit clear of the first view\'s name label and the race clock', async () => {
-    const overlaps = async (first, second) => {
-      const a = await hostPage.locator(first).first().boundingBox();
-      const b = await hostPage.locator(second).first().boundingBox();
-      return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-    };
+  test('the strip holds Back to games, the race\'s buttons and clock, and the gear, with the room shut', async () => {
     await hostPage.waitForSelector('#kart-3d-clock:not([hidden])');
-    assert.equal(await overlaps('#game-back-button', '.kart-3d-view-hud:not([hidden]) .kart-3d-view-label'), false, 'the back arrow covers the label');
-    assert.equal(await overlaps('#settings-button', '#kart-3d-clock'), false, 'the gear covers the clock');
+    assert.equal(await hostPage.isVisible('#game-add-players-button'), false);
+    assert.equal(await hostPage.isVisible('#room-code-chip'), false);
+    const strip = await hostPage.locator('#top-bar').boundingBox();
+    for (const selector of ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button']) {
+      const box = await hostPage.locator(selector).boundingBox();
+      assert.ok(box.y >= strip.y - 1 && box.y + box.height <= strip.y + strip.height + 1, `${selector} is inside the strip`);
+      assert.ok(box.x >= strip.x - 1 && box.x + box.width <= strip.x + strip.width + 1, `${selector} is inside the strip's width`);
+    }
+    // Next to each other without overlap, left to right: the buttons, then the clock, then the gear.
+    const lefts = [];
+    for (const selector of ['#game-back-button', '#kart-3d-setup-button', '#kart-3d-restart-button', '#kart-3d-tuning-button', '#kart-3d-clock', '#settings-button']) {
+      lefts.push(await hostPage.locator(selector).boundingBox());
+    }
+    lefts.slice(1).forEach((box, index) => assert.ok(box.x >= lefts[index].x + lefts[index].width - 1, 'the strip\'s controls do not overlap'));
+
+    // With the bar docked, the settings open upward from the gear, above the strip, and the gear closes them.
+    await clickNow(hostPage, '#settings-button');
+    await hostPage.waitForSelector('#settings:not([hidden])');
+    const settings = await hostPage.locator('#settings').boundingBox();
+    assert.ok(settings.y + settings.height <= strip.y + 1, 'the settings panel opens above the strip');
+    assert.ok(settings.y >= 0, 'and fits on the page');
+    await saveScreenshot(hostPage, 'm7b-3b-host-racing-settings');
+    await clickNow(hostPage, '#settings-button');
+    await hostPage.waitForSelector('#settings', { state: 'hidden' });
   });
 
   test('after GO the phones show their place and lap, and the race clock runs', async () => {
@@ -197,6 +224,7 @@ describe('M7b 3D race', () => {
     assert.equal(await hostPage.isVisible('#kart-3d-readout'), false);
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await hostPage.waitForSelector('#kart-3d-readout:not([hidden])');
+    assert.equal(await hostPage.locator('#kart-3d-tuning #kart-3d-readout').count(), 1, 'the readout is in the popup');
     assert.match(await hostPage.textContent('#kart-3d-readout'), /Ana: [\d.]+ units\/s/);
     await clickNow(hostPage, '#kart-3d-tuning-button');
     await hostPage.waitForSelector('#kart-3d-readout', { state: 'hidden' });
@@ -211,7 +239,11 @@ describe('M7b 3D race', () => {
     assert.equal(await hostPage.isVisible('#kart-3d-race-bar'), false, 'the race bar makes way for the results');
     const rows = await hostPage.locator('#kart-3d-results-rows li').allTextContents();
     assert.equal(rows.length, 10);
+    // No kart finished, so no row has a time or a gap.
     rows.forEach((row, index) => assert.equal(row, `${['1st', '2nd', '3rd'][index] ?? `${index + 1}th`}CPU--`));
+    assert.equal(await hostPage.textContent('#kart-3d-results .k3d-results-heading h2'), 'Results');
+    assert.match(await hostPage.textContent('#kart-3d-results-summary'), /^Seaside Skyway · 200cc · 4 laps$/);
+    assert.equal(await hostPage.locator('#kart-3d-results-rows li.first').count(), 1, 'the winner\'s row is marked');
     await saveScreenshot(hostPage, 'm7b-5-host-results');
     assert.equal(await hostPage.locator('#kart-3d-lobby-button').count(), 0, 'the results have no Back to lobby button any more');
     await goBackToPicker(hostPage);
@@ -230,13 +262,20 @@ describe('M7b 3D race', () => {
       players.get('p1').name = 'Cy';
       let raceAgainClicks = 0;
       const panel = createResultsPanel(container, { onRaceAgain: () => (raceAgainClicks += 1) });
-      panel.show([{ place: 1, playerId: 'p1', finishTime: 101.256 }, { place: 2, playerId: null, finishTime: null }], players);
+      panel.show(
+        [{ place: 1, playerId: 'p1', finishTime: 101.256 }, { place: 2, playerId: null, finishTime: 103.746 }, { place: 3, playerId: null, finishTime: null }],
+        players,
+        'Seaside Skyway · 150cc · 3 laps',
+      );
+      const summary = container.querySelector('#kart-3d-results-summary').textContent;
       const rows = [...container.querySelectorAll('li')].map((row) => ({ text: row.textContent, color: row.querySelector('.name .pp-dot').style.getPropertyValue('--pp-dot-color') }));
       container.querySelector('#kart-3d-race-again-button').click();
       container.remove();
-      return { rows, raceAgainClicks };
+      return { rows, summary, raceAgainClicks };
     });
-    assert.deepEqual(shown.rows.map((row) => row.text), ['1stCy1:41.25', '2ndCPU--']);
+    // Place, name, time and the gap to the winner (the winner and a kart that did not finish have none).
+    assert.deepEqual(shown.rows.map((row) => row.text), ['1stCy1:41.25', '2ndCPU1:43.74+2.49', '3rdCPU--']);
+    assert.equal(shown.summary, 'Seaside Skyway · 150cc · 3 laps');
     assert.notEqual(shown.rows[0].color, shown.rows[1].color, 'the player in their colour, CPU karts in grey');
     assert.equal(shown.raceAgainClicks, 1);
   });

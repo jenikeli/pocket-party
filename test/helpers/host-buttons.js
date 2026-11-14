@@ -36,7 +36,7 @@ export function clickNow(hostPage, selector, times = 1) {
 // every click on the game would wait behind it.
 export async function closeJoinWindow(hostPage) {
   if (await hostPage.isVisible('#join-window')) {
-    await clickNow(hostPage, '#join-close-button');
+    await clickNow(hostPage, '#join-done-button');
     await hostPage.waitForSelector('#join-window', { state: 'hidden' });
   }
 }

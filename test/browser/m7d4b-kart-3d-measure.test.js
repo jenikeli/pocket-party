@@ -69,6 +69,9 @@ describe('M7d4b 3D Measure tool', () => {
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).startsWith('Measuring'), { timeoutMs: GAME_START_TIMEOUT, message: 'the progress line' });
     assert.equal(await hostPage.isVisible('#kart-3d-setup'), false, 'the setup panel is out of the way');
     assert.equal(await hostPage.isVisible('#kart-3d-measure-copy'), false);
+    // Measure keeps the shell's bar at the top (not docked as a strip), so its canvas is the whole 960x540 window.
+    assert.doesNotMatch(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);
+    assert.deepEqual(await hostPage.locator('#game-container canvas').evaluate((canvas) => [canvas.clientWidth, canvas.clientHeight]), [960, 540]);
     await saveScreenshot(hostPage, 'm7d4b-1-host-measuring');
     // Every case of the first look (High), 1 and 4 views, then Stop.
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-measure-progress')).includes(': Medium,'), {

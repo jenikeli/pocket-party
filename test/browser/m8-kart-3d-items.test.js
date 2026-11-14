@@ -97,6 +97,8 @@ describe('M8 items', () => {
       buttons.every((button) => button.textContent.trim() === '' && button.getAttribute('aria-label') && button.title));
     assert.equal(named, true, 'the item buttons hold no text and have a name');
     assert.equal(await hostPage.locator('#kart-3d-items-button').count(), 0);
+    // The row has its word, like the card's other rows.
+    assert.equal(await hostPage.textContent('.k3d-rule:has([data-item-id]) > span'), 'Items');
     await clickNow(hostPage, '#kart-3d-laps-minus', 5);
     await waitUntil(async () => (await hostPage.textContent('#kart-3d-laps')) === '1', { message: 'one lap' });
     await saveScreenshot(hostPage, 'm8-0-host-setup-items');

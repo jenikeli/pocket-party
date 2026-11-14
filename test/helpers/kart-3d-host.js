@@ -13,7 +13,7 @@
 // with the room code) and joins its phones to that room afterwards.
 // Since M10 the game starts with no course built: Start race, Watch and Measure build the chosen one behind the
 // loading screen (#loading-screen), so the long wait moved from starting the game to those clicks
-// (waitForCourseBuilt). Look, Measure and Watch sit in the "Display and tools" drawer (openTools).
+// (waitForCourseBuilt). Look, Measure and Watch sit in the Display drawer (openTools).
 
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { PLAIN_COURSE_STORAGE_KEY } from '../../host/games/kart-3d/plain-course.js';
@@ -28,6 +28,11 @@ import { clickNow } from './host-buttons.js';
 // course build (waitForCourseBuilt).
 export const GAME_START_TIMEOUT = 90000;
 export const STARTING_TIMEOUT = GAME_START_TIMEOUT + 30000;
+
+// Where the 4 px gap between two stacked views lies in the host page at 960x540 during a race (the pixel rows of
+// a screenshot): the race docks the shell's bar as a strip, 4 stage em (48 px) high, so the canvas is 492 px high
+// and each view (host/games/kart-3d/view-layout.js) floor((492 - 4) / 2) = 244 px: the gap is rows 244-247.
+export const RACE_VIEW_GAP = { left: 0, top: 244, right: 960, bottom: 248 };
 
 // Makes the host page load with `level` (a key of QUALITY_LEVELS) saved, as if chosen on an earlier visit.
 // Call before the page's goto; it applies to every later load of that page too.
@@ -64,7 +69,7 @@ export async function waitForCourseBuilt(hostPage) {
   await hostPage.waitForSelector('#loading-screen', { state: 'hidden', timeout: GAME_START_TIMEOUT });
 }
 
-// Opens the setup screen's "Display and tools" drawer (Look, Measure, Watch), if it is not open. Its buttons
+// Opens the setup screen's Display drawer (Look, Measure, Watch), if it is not open. Its buttons
 // can be clicked with clickNow while it is closed too; open it for screenshots and visibility checks.
 export async function openTools(hostPage) {
   if (!(await hostPage.isVisible('#kart-3d-tools'))) {

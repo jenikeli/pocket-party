@@ -67,8 +67,10 @@ describe('M9 Palm Bay Airport', () => {
       await presetQuality(page, 'medium');
       await presetPlainCourse(page);
     });
-    const names = await hostPage.locator('[data-course-id]').evaluateAll((tiles) => tiles.map((tile) => tile.getAttribute('aria-label')));
+    const names = await hostPage.locator('.k3d-course-tile-name').allTextContents();
     assert.equal(names[0], 'Palm Bay Airport');
+    assert.equal(await hostPage.textContent('#kart-3d-course-name'), 'Palm Bay Airport');
+    assert.match(await hostPage.textContent('#kart-3d-course-blurb'), /airport|apron|runway/i);
     assert.equal(await hostPage.getAttribute('[data-course-id="palm-bay-airport"]', 'aria-pressed'), 'true');
     await saveScreenshot(hostPage, 'm9-0-host-setup');
   });

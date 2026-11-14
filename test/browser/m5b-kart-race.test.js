@@ -209,6 +209,12 @@ describe('M5b 2D kart race', () => {
     assert.equal(await ana.page.textContent('#kart-big'), views[0].place === 1 ? '1st' : '2nd');
     await hostPage.waitForSelector('#kart-2d-results:not([hidden])');
     assert.equal(await hostPage.locator('#kart-2d-results-rows li').count(), 2);
+    // The results have their heading, a summary of the race, the winner's row marked and a gap on the others.
+    assert.equal(await hostPage.textContent('#kart-2d-results .k2d-heading'), 'Results');
+    assert.equal(await hostPage.textContent('#kart-2d-results-summary'), '3 laps');
+    assert.equal(await hostPage.locator('#kart-2d-results-rows li.k2d-winner').count(), 1);
+    assert.equal(await hostPage.textContent('#kart-2d-results-rows li.k2d-winner .k2d-place'), '1st');
+    assert.match(await hostPage.locator('#kart-2d-results-rows li:not(.k2d-winner) .k2d-gap').textContent(), /^\+\d+\.\d+$/);
     await saveScreenshot(hostPage, 'm5b-7-host-results');
     await saveScreenshot(ana.page, 'm5b-8-phone-results');
   });

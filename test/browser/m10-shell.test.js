@@ -112,14 +112,17 @@ describe('M10b host shell', () => {
     await saveScreenshot(hostPage, 'm10b-1-host-picker');
   });
 
-  test('the picker shows the chosen game, how many play it, and its thumbnails', async () => {
+  test('the picker shows the chosen game, its blurb, how many play it, and its thumbnails', async () => {
     assert.equal(await hostPage.getAttribute('[data-game-id="kart-3d"]', 'aria-pressed'), 'true');
     assert.equal(await hostPage.textContent('#picker-game-title'), 'Kart race 3D');
     assert.equal(await hostPage.textContent('#picker-player-range'), '1 to 4');
+    // The one line about the game is back under its name (from the registry's blurb).
+    assert.match(await hostPage.textContent('#picker-game-blurb'), /\S/);
     await clickNow(hostPage, '[data-game-id="kart-2d"]');
     await hostPage.waitForSelector('[data-game-id="kart-2d"][aria-pressed="true"]');
     assert.equal(await hostPage.getAttribute('[data-game-id="kart-3d"]', 'aria-pressed'), 'false');
     assert.equal(await hostPage.textContent('#picker-game-title'), 'Kart race 2D');
+    assert.match(await hostPage.textContent('#picker-game-blurb'), /\S/);
     assert.equal(await hostPage.textContent('#picker-player-range'), '2 to 9');
     await clickNow(hostPage, '[data-game-id="input-lab"]');
     await hostPage.waitForSelector('[data-game-id="input-lab"][aria-pressed="true"]');
@@ -134,6 +137,12 @@ describe('M10b host shell', () => {
     assert.equal(await hostPage.getAttribute('#settings-button', 'aria-pressed'), 'true');
     assert.equal(await hostPage.isVisible('#music-volume'), true);
     assert.equal(await hostPage.isVisible('#effects-volume'), true);
+    // Each row has words in place of an icon.
+    assert.deepEqual(await hostPage.locator('#settings .settings-label').allTextContents(), [
+      'Music',
+      'Sound effects',
+      'Hold a dropped player',
+    ]);
     assert.equal(await hostPage.textContent('#grace-value'), '0:30');
     await saveScreenshot(hostPage, 'm10b-2-host-settings');
 
@@ -179,25 +188,29 @@ describe('M10b host shell', () => {
     assert.equal(await hostPage.isVisible('#join-lan-warning'), true);
   });
 
-  test('the join window lists who joins, closes on its close icon and on a click outside, and the add-players icon opens it', async () => {
+  test('the join window lists who joins, closes on Done and on a click outside, and Add players opens it', async () => {
     phones.push(await joinPhone('Ana'));
     await hostPage.waitForSelector(`#join-players [data-player-id="${phones[0].playerId}"]`);
     assert.equal(await hostPage.textContent(`#join-players [data-player-id="${phones[0].playerId}"]`), 'Ana');
     await saveScreenshot(hostPage, 'm10b-4-host-join-window');
 
-    // The window's own close icon is only on the page while it is open, so it is checked here.
+    // The window has its title and hint again, and a Done button with words (no cross).
+    assert.equal(await hostPage.textContent('.join-title'), 'Join the party');
+    assert.match(await hostPage.textContent('.join-hint'), /room code/);
+    assert.equal(await hostPage.textContent('#join-done-button'), 'Done');
+    assert.equal(await hostPage.locator('#join-close-button').count(), 0);
     assert.deepEqual(await unnamedIconButtons(), []);
-    await clickNow(hostPage, '#join-close-button');
+    await clickNow(hostPage, '#join-done-button');
     await hostPage.waitForSelector('#join-window', { state: 'hidden' });
     assert.equal(await hostPage.isVisible('#kart-2d-setup'), true);
 
+    // Add players has its icon and its words.
+    assert.equal((await hostPage.textContent('#game-add-players-button')).trim(), 'Add players');
     await hostPage.click('#game-add-players-button');
     await hostPage.waitForSelector('#join-window:not([hidden])');
     // The corner of the screen is on the window's dark backdrop, outside the panel.
     await hostPage.mouse.click(5, 300);
     await hostPage.waitForSelector('#join-window', { state: 'hidden' });
-    // Nothing in the window says "Done" any more.
-    assert.equal(await hostPage.locator('#join-done-button').count(), 0);
   });
 
   test('a phone that drops is counted down from the saved hold time in its setup row, and its cross removes it', async () => {
@@ -208,7 +221,7 @@ describe('M10b host shell', () => {
     const row = `.kart-player-row.away[data-player-id="${dropped.playerId}"]`;
     await hostPage.waitForSelector(row);
     // The hold time was set to a minute in the settings test.
-    await waitUntil(async () => /^(1:00|0:5\d)$/.test(await hostPage.textContent(`${row} .kart-player-style span:last-child`)), {
+    await waitUntil(async () => /^back in (1:00|0:5\d)$/.test(await hostPage.textContent(`${row} .kart-player-style`)), {
       message: 'the dropped player\'s row to count down from a minute',
     });
     await saveScreenshot(hostPage, 'm10b-5-host-away-row');
@@ -232,7 +245,8 @@ describe('M10b host shell', () => {
   });
 
   test('the back arrow needs two clicks: the first turns it red, a press elsewhere disarms it', async () => {
-    assert.equal(await hostPage.getAttribute(GAME_BACK_BUTTON, 'aria-label'), 'Back to the games');
+    // The back button has words now, so no aria-label or title.
+    assert.equal((await hostPage.textContent(GAME_BACK_BUTTON)).trim(), 'Back to games');
     await hostPage.click(GAME_BACK_BUTTON);
     assert.match(await hostPage.getAttribute(GAME_BACK_BUTTON, 'class'), /\barmed\b/);
     await saveScreenshot(hostPage, 'm10b-6-host-back-armed');
@@ -292,6 +306,9 @@ describe('M10b host shell', () => {
 
   test('every icon-only control in a game has a name and a title', async () => {
     assert.deepEqual(await unnamedIconButtons(), []);
+    // The gear stays an icon, with its name.
+    assert.equal(await hostPage.getAttribute('#settings-button', 'aria-label'), 'Settings');
+    assert.equal(await hostPage.getAttribute('#settings-button', 'title'), 'Settings');
     await hostPage.click('#settings-button');
     await hostPage.waitForSelector('#settings:not([hidden])');
     assert.deepEqual(await unnamedIconButtons(), []);
@@ -327,6 +344,13 @@ describe('M10b host shell, the 3D race takes four', () => {
     await server?.stop();
   });
 
+  test('the setup says "Scan the code to join" until the first phone joins', async () => {
+    assert.equal(await hostPage.textContent('#kart-3d-no-players'), 'Scan the code to join');
+    assert.equal(await hostPage.isVisible('#kart-3d-no-players'), true);
+    assert.equal(await hostPage.isVisible('#kart-3d-rows'), false);
+    assert.equal(await hostPage.textContent('.k3d-card-heading'), 'Players');
+  });
+
   test('four phones join and the fifth is told the room is full', async () => {
     for (const playerName of ['Ana', 'Bo', 'Cy', 'Di']) {
       const context = await browser.newContext(devices['Pixel 7']);
@@ -346,6 +370,8 @@ describe('M10b host shell, the 3D race takes four', () => {
     await page.waitForFunction(() => document.getElementById('join-status').textContent !== 'Joining...');
     assert.equal(await page.textContent('#join-status'), 'That room is full.');
     assert.equal(await hostPage.locator('#kart-3d-rows .kart-player-row').count(), 4);
+    assert.equal(await hostPage.isVisible('#kart-3d-no-players'), false);
+    assert.equal(await hostPage.isVisible('#kart-3d-rows'), true);
   });
 });
 
@@ -374,7 +400,7 @@ describe('M10b host shell, the join window fits every screen', () => {
       assert.equal(await fits('.join-panel', '#join-window'), true, `the panel fits ${size.width}x${size.height}`);
       assert.equal(await fits('#join-code', '.join-panel'), true, `the code fits ${size.width}x${size.height}`);
       assert.equal(await fits('#join-qr', '.join-panel'), true, `the QR fits ${size.width}x${size.height}`);
-      assert.equal(await fits('#join-close-button', '.join-panel'), true, `the close icon fits ${size.width}x${size.height}`);
+      assert.equal(await fits('#join-done-button', '.join-panel'), true, `Done fits ${size.width}x${size.height}`);
       await page.close();
     }
   });

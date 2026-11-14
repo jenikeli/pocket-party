@@ -79,8 +79,8 @@ describe('M8 items', () => {
     await page.click('#join-button');
     await page.waitForSelector('#kart-setup:not([hidden])');
     await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
-    await page.click('[data-choice="autoAccelerate"][data-value="true"]');
-    await page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
+    await page.click('[data-choice="autoAccelerate"]');
+    await page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
   });
 
   after(async () => {

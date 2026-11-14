@@ -143,7 +143,7 @@ describe('M5b 2D kart race', () => {
     assert.equal(state.gameId, 'kart-2d');
     assert.deepEqual(
       { ...state.view, countdown: 0 },
-      { phase: 'countdown', countdown: 0, lap: 1, laps: 3, place: 2, finished: false, steering: 'stick', autoAccelerate: false },
+      { phase: 'countdown', countdown: 0, lap: 1, laps: 3, place: 2, finished: false, steering: 'stick', autoAccelerate: false, leftHanded: false },
     );
     assert.equal(await bo.page.textContent('#kart-line'), 'Get ready!');
     await saveScreenshot(bo.page, 'm5b-1-phone-countdown');

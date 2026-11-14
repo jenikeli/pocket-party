@@ -24,6 +24,13 @@ const RACE_TIMEOUT = { timeout: 120000 };
 const STICK_LEFT_PX = Math.round(-STEADY_LEFT.steer * 80);
 const TILT_LEFT_DEGREES = STEADY_LEFT.steer * 25;
 
+// A setup view without its colour fields (colorIndex and the nine colors), which m11-colour-controls checks.
+function withoutColors({ colors, colorIndex, ...rest }) {
+  assert.equal(colors.length, 9);
+  assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
+  return rest;
+}
+
 // Runs in Bo's pages before their scripts: the permission prompt iOS Safari has, answered with `answer`.
 function stubTiltPermission(answer) {
   DeviceOrientationEvent.requestPermission = async () => answer;
@@ -175,11 +182,11 @@ describe('M5c 2D race setup screen and control styles', () => {
 
   test('the setup screen shows the defaults on the phones and the setup panel on the host', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
-    assert.deepEqual(view, { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false });
+    assert.deepEqual(withoutColors(view), { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-controls'), false);
     assert.equal(await bo.page.getAttribute('[data-value="stick"]', 'aria-pressed'), 'true');
-    assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"][data-value="false"]', 'aria-pressed'), 'true');
+    assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"]', 'aria-pressed'), 'false');
     await waitUntil(panelOnHost, { message: 'the setup panel on the host' });
   });
 
@@ -190,13 +197,13 @@ describe('M5c 2D race setup screen and control styles', () => {
   });
 
   test('each phone picks its control style: Ana auto-accelerate, Bo tilt', async () => {
-    await ana.page.click('[data-choice="autoAccelerate"][data-value="true"]');
+    await ana.page.click('[data-choice="autoAccelerate"]');
     assert.deepEqual(await nextHostInput(ana, (input) => input.kind === 'choice'), {
       kind: 'choice',
       choice: 'autoAccelerate',
       value: true,
     });
-    await ana.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
+    await ana.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
 
     await turnTiltOn(bo, '[data-value="tilt"]');
     assert.deepEqual(await nextHostInput(bo, (input) => input.kind === 'choice'), { kind: 'choice', choice: 'steering', value: 'tilt' });
@@ -233,6 +240,7 @@ describe('M5c 2D race setup screen and control styles', () => {
       finished: false,
       steering: 'stick',
       autoAccelerate: true,
+      leftHanded: false,
     });
     assert.equal((await nextView(bo, (view) => view.phase === 'countdown')).steering, 'tilt');
     await waitUntil(async () => !(await panelOnHost()), { message: 'the setup panel to close' });
@@ -302,9 +310,9 @@ describe('M5c 2D race setup screen and control styles', () => {
   test('Race again returns to the setup screen with the laps and styles kept and nobody ready', async () => {
     await clickNow(hostPage, RACE_AGAIN_BUTTON);
     const anaView = await nextView(ana, (view) => view.phase === 'setup');
-    assert.deepEqual(anaView, { phase: 'setup', laps: 1, steering: 'stick', autoAccelerate: true, ready: false });
+    assert.deepEqual(withoutColors(anaView), { phase: 'setup', laps: 1, steering: 'stick', autoAccelerate: true, ready: false, leftHanded: false });
     const boView = await nextView(bo, (view) => view.phase === 'setup');
-    assert.deepEqual(boView, { phase: 'setup', laps: 1, steering: 'tilt', autoAccelerate: false, ready: false });
+    assert.deepEqual(withoutColors(boView), { phase: 'setup', laps: 1, steering: 'tilt', autoAccelerate: false, ready: false, leftHanded: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     assert.equal(await bo.page.getAttribute('#kart-ready-button', 'aria-pressed'), 'false');
   });

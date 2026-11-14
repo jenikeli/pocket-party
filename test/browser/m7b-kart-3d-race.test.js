@@ -61,10 +61,11 @@ describe('M7b 3D race', () => {
     return hostPage.locator(`.kart-3d-view-hud:not([hidden]) .kart-3d-view-${className}`).allTextContents();
   }
 
-  // Leave takes two taps: the first turns the icon red, the second leaves.
+  // Leave mid-race is the driving controls' own button (they cover the top line during a race). It takes two
+  // taps: the first turns the icon red, the second leaves.
   async function leave(player) {
-    await player.page.click('#game-top .leave-button');
-    await player.page.click('#game-top .leave-button');
+    await player.page.click('#kart-leave');
+    await player.page.click('#kart-leave');
     await player.page.waitForSelector('#join-screen:not([hidden])');
   }
 
@@ -113,7 +114,11 @@ describe('M7b 3D race', () => {
     await hostPage.waitForSelector('[data-engine-class="200"][aria-pressed="true"]');
     assert.equal(await hostPage.textContent('#kart-3d-laps'), '4');
     const view = await nextView(bo, (each) => each.phase === 'setup' && each.engineClass === 200);
-    assert.deepEqual(view, { phase: 'setup', laps: 4, engineClass: 200, courseName: 'Seaside Skyway', steering: 'stick', autoAccelerate: false, ready: false });
+    const { colors, colorIndex, driverName, ...rest } = view;
+    assert.deepEqual(rest, { phase: 'setup', laps: 4, engineClass: 200, courseName: 'Seaside Skyway', steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
+    assert.equal(colors.length, 9);
+    assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
+    assert.equal(typeof driverName, 'string');
     for (const player of [ana, bo]) {
       await waitUntil(async () => (await player.page.textContent('#kart-setup-laps')) === '4 laps, 200cc', { message: `${player.name}'s laps line` });
     }

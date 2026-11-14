@@ -23,7 +23,6 @@ const STICK_FULL_PX = 80;
 // Fingers on Ana's touchscreen.
 const GO_FINGER = 1;
 const STICK_FINGER = 2;
-const DRIFT_FINGER = 3;
 
 describe('M6c 3D techniques', () => {
   let server;
@@ -40,7 +39,14 @@ describe('M6c 3D techniques', () => {
     const context = await browser.newContext(devices[device]);
     const page = await context.newPage();
     page.on('pageerror', (error) => pageErrors.push(error));
-    const player = { page, messages: watchServerMessages(page), name: playerName };
+    const player = { page, messages: watchServerMessages(page), sentButtons: [], name: playerName };
+    // The button inputs the phone sends, in order, to see what Go's double tap became.
+    page.on('websocket', (socket) => socket.on('framesent', ({ payload }) => {
+      const message = JSON.parse(payload);
+      if (message.input?.kind === 'button') {
+        player.sentButtons.push(`${message.input.button} ${message.input.pressed ? 'down' : 'up'}`);
+      }
+    }));
     await page.goto(`${server.baseUrl}/?room=${roomCode}`);
     await page.fill('#player-name', playerName);
     await page.click('#join-button');
@@ -86,8 +92,8 @@ describe('M6c 3D techniques', () => {
     ana.touch = await openTouchscreen(ana.page);
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
-    await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
-    await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
+    await bo.page.click('[data-choice="autoAccelerate"]');
+    await bo.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
     for (const player of [ana, bo]) {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
@@ -111,20 +117,20 @@ describe('M6c 3D techniques', () => {
     await server?.stop();
   });
 
-  test('the phones show Drift above Go with the Item place free; with auto-accelerate Drift takes the whole right side', async () => {
+  test('with the stick there is no Drift button: Go drifts on a double tap, Brake left of it, the Item place above both', async () => {
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
-      assert.equal(await player.page.isVisible('#kart-drift'), true);
+      assert.equal(await player.page.isVisible('#kart-drift'), false);
       assert.equal(await player.page.isVisible('#kart-item-slot'), true);
+      // With auto-accelerate too (Bo), since Go is also the drift.
+      assert.equal(await player.page.isVisible('#kart-accelerate'), true);
     }
-    const [item, drift, brake, go] = await Promise.all(['#kart-item-slot', '#kart-drift', '#kart-brake', '#kart-accelerate'].map((selector) => boxOf(ana, selector)));
-    assert.ok(drift.y + drift.height <= go.y + 1 && Math.abs(drift.x - go.x) < 1, 'Drift sits right above Go');
-    assert.ok(item.x + item.width <= drift.x + 1 && Math.abs(item.y - drift.y) < 1, 'the Item place is left of Drift');
-    assert.ok(Math.abs(brake.x - item.x) < 1 && brake.y >= item.y + item.height - 1, 'Brake is under the Item place');
-    assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
-    const [boDrift, boBrake] = await Promise.all(['#kart-drift', '#kart-brake'].map((selector) => boxOf(bo, selector)));
-    assert.ok(boDrift.height > 1.8 * boBrake.height, 'Bo\'s Drift is two rows tall');
-    await saveScreenshot(ana.page, 'm6c-1-phone-drift-button');
+    const [item, brake, go] = await Promise.all(['#kart-item-slot', '#kart-brake', '#kart-accelerate'].map((selector) => boxOf(ana, selector)));
+    assert.ok(brake.x + brake.width <= go.x + 1 && Math.abs(brake.y - go.y) < 1, 'Brake sits left of Go');
+    assert.ok(item.y + item.height <= go.y + 1, 'the Item place is above Go');
+    assert.ok(Math.abs(item.x - brake.x) < 1 && Math.abs(item.x + item.width - (go.x + go.width)) < 1, 'the Item place spans Brake and Go');
+    assert.match(await ana.page.textContent('#kart-accelerate'), /tap, then hold: drift/);
+    await saveScreenshot(ana.page, 'm6c-1-phone-stick-layout');
   });
 
   test('both screens count down; Go pressed once the phone shows "2" is judged at GO and its arrival logged', async () => {
@@ -141,7 +147,7 @@ describe('M6c 3D techniques', () => {
     assert.match(await readout(), /round trip \d+ ms/);
   });
 
-  test('holding Drift with the stick right hops Ana\'s kart into a right drift', async () => {
+  test('a tap then a held press on Go with the stick right hops Ana\'s kart into a right drift', async () => {
     await waitUntil(async () => Number((await readout()).match(/Ana: ([\d.]+) units\/s/)?.[1]) > 10, {
       ...DRIVE_TIMEOUT,
       message: 'Ana\'s kart up to speed',
@@ -150,28 +156,35 @@ describe('M6c 3D techniques', () => {
     await ana.touch.press(STICK_FINGER, stick.x, stick.y);
     await ana.touch.move(STICK_FINGER, stick.x + STICK_FULL_PX / 2, stick.y);
     await ana.touch.move(STICK_FINGER, stick.x + STICK_FULL_PX, stick.y);
-    const drift = await centerOf(ana, '#kart-drift');
-    await ana.touch.press(DRIFT_FINGER, drift.x, drift.y);
-    assert.equal(await ana.page.getAttribute('#kart-drift', 'class'), 'kart-pedal held');
+    // Go has been held since the countdown: let go, tap, and hold again within the double tap's window. The tap
+    // and the press are sent without waiting between them: one awaited call can take longer than the window here.
+    const go = await centerOf(ana, '#kart-accelerate');
+    await ana.touch.release(GO_FINGER);
+    await Promise.all([ana.touch.press(GO_FINGER, go.x, go.y), ana.touch.release(GO_FINGER), ana.touch.press(GO_FINGER, go.x, go.y)]);
+    assert.equal(await ana.page.getAttribute('#kart-accelerate', 'class'), 'kart-pedal held');
+    await waitUntil(() => ana.sentButtons.at(-1) === 'drift down', { message: 'Go\'s drift press sent' }).catch((error) => {
+      throw new Error(`${error.message}; Ana sent: ${ana.sentButtons.join(', ')}`);
+    });
     await waitUntil(async () => /Ana: [^\n]*drifting right/.test(await readout()), { ...DRIVE_TIMEOUT, message: 'Ana drifting right' });
     await saveScreenshot(hostPage, 'm6c-2-host-drifting');
-    for (const finger of [DRIFT_FINGER, STICK_FINGER, GO_FINGER]) {
+    for (const finger of [STICK_FINGER, GO_FINGER]) {
       await ana.touch.release(finger);
     }
   });
 
-  test('the Drift button takes the colour of the spark level in the view', async () => {
+  test('with the stick Go takes the colour of the spark level in the view', async () => {
     // Called on the page's own controls module, the one the game screen uses, with a view as the host makes it.
     const colors = await ana.page.evaluate(async () => {
       const controls = await import('/controller/kart/controls.js');
       const backgrounds = [];
       for (const spark of [null, 'blue', 'orange', 'purple']) {
-        controls.showView({ phase: 'racing', steering: 'stick', autoAccelerate: false, countdown: null, spark: spark, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
-        backgrounds.push(getComputedStyle(document.getElementById('kart-drift')).backgroundColor);
+        const view = { phase: 'racing', steering: 'stick', autoAccelerate: false, leftHanded: false, countdown: null, spark: spark, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false };
+        controls.showView(view, { name: 'Ana', color: '#e74c3c' });
+        backgrounds.push(getComputedStyle(document.getElementById('kart-accelerate')).backgroundColor);
       }
       return backgrounds;
     });
-    assert.deepEqual(colors, ['rgb(42, 49, 69)', 'rgb(47, 128, 237)', 'rgb(230, 126, 34)', 'rgb(155, 81, 224)']);
+    assert.deepEqual(colors, ['rgb(31, 143, 79)', 'rgb(47, 128, 237)', 'rgb(230, 126, 34)', 'rgb(155, 81, 224)']);
   });
 
   test('Restart puts everyone back on the grid for another countdown', async () => {

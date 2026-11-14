@@ -11,7 +11,7 @@ One milestone (m11), built as tasks by `implementer` agents (`.claude/skills/mil
 | B | Phone: new layouts, double tap, colour, Leave | opus | P | merged |
 | C | Host: colour picking, left-handed, views | sonnet | P | merged |
 | R | Course previews again, manifest (main session) | - | A | merged |
-| D | Browser test file for m11 | sonnet | A, B, C merged, suite run | queued |
+| D | Browser test file for m11 | sonnet | A, B, C merged, suite run | building |
 
 ## Rules for every task
 
@@ -132,7 +132,10 @@ After A, B and C are merged and the main session has run the full browser suite 
 - C: the setup views take the roster: 2D `setupView(setup, players, playerId)`, 3D `setupView(setup, engineClass, courseName, players, playerId)`. `driverName` comes from `DRIVER_NAMES` in `karts/kart-roster.js` (the designs need Three.js), checked against `KART_DESIGNS` by a unit test.
 - C: in the 3D race a colour pick is still accepted while the course builds after Start race (the race is not yet made); the kart is chosen when the karts go on the grid, so it is right. Left as it is.
 - B told: a colour held by an unnamed player has `takenBy` equal to its own name, so the label reads "Red, taken".
-- For the handoff: `plan.md`'s Game module interface gains `pickColor` in `start()` and the phone's `start(container, send, leave)` / `showView(view, player)` (plan.md is A's while A builds).
+- `plan.md`'s Game module interface gained `pickColor` and the phone's `leave` and `player` (done after A merged).
+- B: on a landscape page the driving controls cover the shell's top line too, as in the mockup (one Leave, one chip); the colour row is 5 then 4 in both orientations (nine in a row did not fit a 667x375 page); Left-handed is `direction: rtl` on the controls grid; the 3D tilt's Enable tilt and Recenter are 44 px.
+- Browser tests changed on purpose: the Auto-accelerate toggle (no `data-value`), setup views compared without their colour fields (m11's file checks them), race views gain `leftHanded`, m7b leaves mid-race by `#kart-leave`, m6c's 3D stick layout has no Drift button and drifts by a double tap on Go, Go keeps the spark colour, m6b's Bo (stick, auto) keeps Go, m7a's 3D tilt layout puts Drift on the whole left and the tilt panel in the status column.
+- Found while fixing m6c: `test/helpers/touch.js` lifted the wrong finger (a CDP `touchEnd` lists the touches that lift, not the ones still down); fixed. A double tap on Go in a browser test sends the tap and the press without awaiting between them (`Promise.all` of press, release, press), since one awaited touch call can outlast the 220 ms window under headless WebGL (m6c shows it). Task D uses the same.
 
 ## Parked for the user
 

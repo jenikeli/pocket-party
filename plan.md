@@ -45,7 +45,11 @@ The target is a race a reference-game player recognises by feel. The reference g
 
 ## Kart controller (both races, `controller/kart/`)
 
-- **Left:** a stick, or the phone tilted like a wheel. **Right:** Go and Brake (held: press and release are separate inputs). The 3D race adds Drift (hop, drift, trick) and Item. With tilt, Drift moves to the left thumb. With auto-accelerate Go is hidden; without it a held Drift also accelerates (one thumb cannot hold both).
+- **Left:** a floating stick (the whole steer area takes the thumb; the ring appears where it lands, a bar on top shows the amount), or the phone tilted like a wheel. **Right:** Brake and Go (held: press and release are separate inputs). Left-handed mirrors the layout (`direction: rtl` on the grid); the status column stays in the middle.
+- **3D race:** Item above Brake and Go. With the stick there is no Drift button: a tap then a held press on Go sends Drift's press and release (`go-drift.js`, 300 ms window after a tap shorter than 220 ms, both tunable), so the host rules see the same Drift button; Go stays with auto-accelerate for that reason. With tilt, Drift takes the whole left side and the tilt wheel, Recenter and Enable tilt sit small in the status column; auto-accelerate hides Go. A held Drift also accelerates (`host/kart/kart-controls.js`). The spark colour shows on whichever button drifts.
+- **2D race:** stick, Brake, Go in one row (auto-accelerate hides Go); with tilt the tilt panel is on the left.
+- **Colour:** each player's colour (the dot, the kart in 3D) is picked on the phone's setup screen from nine swatches; a colour another player holds (also one in their grace time) is taken. Players with no name are called by their colour ("Red"). The phone shows its dot and name on the top line, a chip in the race's status column and a thin edge in its colour round the controls.
+- **Leave** during a race: a button at the top of the status column, two taps (`shared/confirm-click.js`); the controls cover the shell's top line in a race, in both orientations.
 - **Portrait page, controls turned.** A page cannot lock orientation on iOS. So every phone page is laid out in portrait, and in portrait the driving controls are drawn a quarter turn round (`controls.css`, `turned-layout.js`), read with the phone's top end in the left hand; on a landscape page they are drawn straight. The stick's drag is turned the same way and tilt is told the phone is held at 90 degrees (`tilt.js` `setHeldAngle`); tilt is re-centred at GO.
 - **Tilt** falls back to the stick when denied, unsupported or silent for 2 s (`steering.js`). 25 degrees is a full turn.
 - **The phone shows** countdown, lap, place, the held item, final place.
@@ -54,7 +58,7 @@ The target is a race a reference-game player recognises by feel. The reference g
 
 - **Host settings** (the gear, in the shell): music and effects volumes, hold time for a dropped player; in the host's localStorage.
 - **Race settings** on the game's setup screen on the host: laps; in 3D also course, Speed (engine class), CPU level, items. They last while the game runs.
-- **Control style** on each phone, sent as an `INPUT` of kind `choice`.
+- **Control style, colour and hand** on each phone (steering, auto-accelerate, left-handed, colour), sent as an `INPUT` of kind `choice`; the colour only on the setup screen.
 - **Display** (3D setup): Look (quality, saved in localStorage), Watch (a race of self-driving stand-ins, no phones), Measure (a scripted timing run whose report is pasted back to Claude).
 - Rejected: game settings drawn by the shell (it would need a settings description language).
 
@@ -131,6 +135,7 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
 - Input modules keep one callback each, so a game registers its callbacks in its controller `start()`.
 - Phaser `Graphics` re-triangulates every frame: draw static things once into a texture.
 - Headless Chromium draws WebGL in software (about 0.3 s a frame), too slow for Playwright's own clicks on a two-click confirm, so browser tests click host buttons through the DOM (`clickNow`). The 3D rules tests use the plain course (`presetPlainCourse`).
+- Browser tests touch with `test/helpers/touch.js` (CDP touches): a `touchEnd` lists the fingers that lift. Timed gestures (Go's double tap) send their touches without awaiting each, since one awaited call can take longer than 220 ms beside headless WebGL.
 - Hide shell elements with the `hidden` attribute, not only a stylesheet rule: the iPad kept showing a button past a cached stylesheet.
 - A border drawn outside a row (`outline`) is clipped by a scrolling list; use an inset `box-shadow`.
 - Three.js r0.186.1 is vendored unminified in `host/vendor/three-0.186.1/` with an import map in `host/index.html`; Phaser 3.90 and the QR generator are there too.

@@ -131,7 +131,11 @@ describe('M6b 3D driving', () => {
 
   test('Play opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
-    assert.deepEqual(view, { phase: 'setup', laps: 3, engineClass: 150, courseName: 'Palm Bay Airport', steering: 'stick', autoAccelerate: false, ready: false });
+    const { colors, colorIndex, driverName, ...rest } = view;
+    assert.deepEqual(rest, { phase: 'setup', laps: 3, engineClass: 150, courseName: 'Palm Bay Airport', steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
+    assert.equal(colors.length, 9);
+    assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
+    assert.equal(typeof driverName, 'string');
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     await waitUntil(async () => (await bo.page.textContent('#kart-setup-laps')) === '3 laps, 150cc', { message: 'Bo\'s laps line' });
     // The game's style.css only imports the shared kart styles; the setup screen's grid shows they arrived.
@@ -194,8 +198,8 @@ describe('M6b 3D driving', () => {
   });
 
   test('Bo picks auto-accelerate, both are ready, Start race gives the phones their controls and the host two views', { timeout: STARTING_TIMEOUT }, async () => {
-    await bo.page.click('[data-choice="autoAccelerate"][data-value="true"]');
-    await bo.page.waitForSelector('[data-choice="autoAccelerate"][data-value="true"][aria-pressed="true"]');
+    await bo.page.click('[data-choice="autoAccelerate"]');
+    await bo.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
     for (const player of [ana, bo]) {
       await player.page.click('#kart-ready-button');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
@@ -213,7 +217,7 @@ describe('M6b 3D driving', () => {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
       assert.match(await player.page.textContent('#kart-line'), /^(Get ready!|Lap 1\/3)$/);
     }
-    assert.equal(await bo.page.isVisible('#kart-accelerate'), false, 'auto-accelerate hides Go');
+    assert.equal(await bo.page.isVisible('#kart-accelerate'), true, 'with the stick Go stays, for its double tap, auto-accelerate or not');
     assert.equal(await ana.page.isVisible('#kart-accelerate'), true);
     await hostPage.waitForSelector('#kart-3d-race-bar:not([hidden])');
     // During a race the shell's bar is a strip along the bottom, the race's buttons and clock are in its slot,
@@ -257,10 +261,11 @@ describe('M6b 3D driving', () => {
     const view = await nextView(bo, (each) => each.phase === 'racing' && each.start === null);
     // Items are on (M8): what Bo holds depends on the boxes Bo's kart has met by now, so only its presence is checked.
     const { item, ...rest } = view;
-    assert.deepEqual({ ...rest, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
+    assert.deepEqual({ ...rest, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, leftHanded: false, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
     assert.notEqual(item, null, 'items are on');
     await bo.page.waitForSelector('#kart-controls:not([hidden])');
-    assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
+    // Go stays with auto-accelerate and the stick: it is also the drift (a double tap).
+    assert.equal(await bo.page.isVisible('#kart-accelerate'), true);
   });
 
   test('Back to setup returns the phones to the setup screen with their control styles kept and ready cleared', async () => {
@@ -269,7 +274,7 @@ describe('M6b 3D driving', () => {
       await player.page.waitForSelector('#kart-setup:not([hidden])');
       await player.page.waitForSelector('#kart-ready-button[aria-pressed="false"]');
     }
-    assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"][data-value="true"]', 'aria-pressed'), 'true');
+    assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"]', 'aria-pressed'), 'true');
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     // The bar goes back to the top, with the race's buttons out of its slot.
     assert.doesNotMatch(await hostPage.getAttribute('#top-bar', 'class'), /\bdocked\b/);

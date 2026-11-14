@@ -25,9 +25,12 @@ export async function openTouchscreen(page) {
       fingers.set(finger, { x, y });
       return send('touchMove');
     },
+    // A touchEnd lists the touches that lift, not the ones still down (as Puppeteer's touch handles send it);
+    // listing the others lifted them instead of this one.
     release(finger) {
+      const { x, y } = fingers.get(finger);
       fingers.delete(finger);
-      return send('touchEnd');
+      return session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ id: finger, x, y }] });
     },
   };
 }

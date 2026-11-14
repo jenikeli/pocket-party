@@ -73,8 +73,8 @@ describe('M7a 3D feel', () => {
     const item = { held: null, rolling: false, effects: [] };
     return player.page.evaluate(async (view) => {
       const controls = await import('/controller/kart/controls.js');
-      controls.showView(view);
-    }, { phase: 'racing', steering: steering, autoAccelerate: autoAccelerate, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false, item });
+      controls.showView(view, { name: 'Ana', color: '#e74c3c' });
+    }, { phase: 'racing', steering: steering, autoAccelerate: autoAccelerate, leftHanded: false, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false, item });
   }
 
   before(async () => {
@@ -168,16 +168,17 @@ describe('M7a 3D feel', () => {
     }
   });
 
-  test('with tilt, Drift moves under the left thumb; on the right Brake stands left of Go, the Item place above Go', async () => {
+  test('with tilt, Drift takes the left side; the tilt panel sits in the status; Brake left of Go, the Item place above both', async () => {
     for (const player of [ana, bo]) {
       await showView(player, 'tilt', false);
       const [tilt, status, item, drift, brake, go] = await Promise.all(
         ['#kart-tilt-zone', '#kart-status', '#kart-item-slot', '#kart-drift', '#kart-brake', '#kart-accelerate'].map((selector) => boxOf(player, selector)),
       );
-      assert.ok(drift.x + drift.width <= status.x + 1 && drift.y >= tilt.y + tilt.height - 1, `${player.name}: Drift under the tilt panel, left of the status`);
+      assert.ok(drift.x + drift.width <= status.x + 1, `${player.name}: Drift left of the status`);
+      assert.ok(drift.height > 1.8 * brake.height, `${player.name}: Drift two rows tall`);
+      assert.ok(tilt.x >= status.x - 1 && tilt.x + tilt.width <= status.x + status.width + 1, `${player.name}: the tilt panel in the status column`);
       assert.ok(brake.x + brake.width <= go.x + 1 && brake.x >= status.x + status.width - 1, `${player.name}: Brake left of Go, on the right`);
-      assert.ok(Math.abs(item.x - go.x) < 1 && item.y + item.height <= go.y + 1, `${player.name}: the Item place above Go`);
-      assert.ok(brake.height > 1.8 * go.height, `${player.name}: Brake two rows tall`);
+      assert.ok(Math.abs(item.x - brake.x) < 1 && item.y + item.height <= go.y + 1, `${player.name}: the Item place above Brake and Go`);
       await showView(player, 'tilt', true);
       const [autoItem, autoBrake] = await Promise.all(['#kart-item-slot', '#kart-brake'].map((selector) => boxOf(player, selector)));
       assert.ok(Math.abs(autoItem.x - autoBrake.x) < 1 && autoBrake.y >= autoItem.y + autoItem.height - 1, `${player.name}: with auto-accelerate Brake under the Item place`);

@@ -24,8 +24,9 @@
   right: 2em;
 }
 
-/* A bar button with words is as tall as the icon buttons beside it. */
-.top-bar-button {
+/* A bar button with words is as tall as the icon buttons beside it, a game's own in the slot included. */
+.top-bar-button,
+.bar-slot .pp-button {
   height: 2.6em;
   padding: 0 0.9em;
 }

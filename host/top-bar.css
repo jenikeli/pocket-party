@@ -1,24 +1,45 @@
 /* The top bar over the game picker and every game (host/game-bar.js) and its settings panel (host/settings.js),
    plus the icon slots host/main.js fills. Loaded by host/index.html. */
 
-/* The top bar (host/game-bar.js): the back arrow top left, the room code, add players and the gear top right,
-   inside the stage like a game's own panels. Over the game, under the loading screen. */
+/* The top bar: Back to games top left, the room code, Add players and the gear top right, inside the stage like
+   a game's own panels. Over the game, under the loading screen. A game may dock it (see .docked below). */
 .top-bar {
   z-index: 10;
 }
 
-.top-bar-back {
+.top-bar-left,
+.top-bar-right {
   position: absolute;
   top: 1.5em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.top-bar-left {
   left: 2em;
 }
 
 .top-bar-right {
-  position: absolute;
-  top: 1.5em;
   right: 2em;
+}
+
+/* A bar button with words is as tall as the icon buttons beside it. */
+.top-bar-button {
+  height: 2.6em;
+  padding: 0 0.9em;
+}
+
+/* Where a game puts its own controls (bar.slot); nothing takes room while it is empty. */
+.bar-slot {
   display: flex;
+  align-items: center;
   gap: 0.6em;
+  min-width: 0;
+}
+
+.bar-slot:empty {
+  display: none;
 }
 
 /* The gear is in the accent while its panel is open. */
@@ -27,7 +48,7 @@
   color: var(--pp-accent-ink);
 }
 
-/* The room code, as a quiet label beside the add-players icon. */
+/* The room code, as a quiet label beside Add players. */
 .room-code-chip {
   display: inline-flex;
   align-items: center;
@@ -39,23 +60,67 @@
   background: var(--pp-panel-2);
 }
 
-/* Settings: a small panel under the top right buttons, a row per setting, each an icon and its control. */
+/* Docked (bar.setDocked(true), for the 3D race): a strip along the bottom of the window, the full width and
+   --pp-strip high, in a row: Back to games, the game's slot (which takes the room left over), then the room
+   code, Add players and the gear. The game's container ends above it (host/shell.css). */
+.top-bar.docked {
+  inset: auto 0 0 0;
+  width: auto;
+  height: var(--pp-strip);
+  margin: 0;
+  padding: 0 1.2em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  background: var(--pp-panel);
+  border-top: 0.1em solid var(--pp-line);
+  pointer-events: auto;
+}
+
+.top-bar.docked .top-bar-left,
+.top-bar.docked .top-bar-right {
+  position: static;
+}
+
+.top-bar.docked .top-bar-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.top-bar.docked .bar-slot {
+  flex: 1;
+}
+
+/* Settings: a small panel under the top right buttons (above the gear when the bar is docked), a row per
+   setting, each its name and its control. */
 .settings {
   position: absolute;
   top: 5em;
   right: 2em;
-  width: 21em;
+  width: 27em;
   padding: 1em 1.2em;
   display: flex;
   flex-direction: column;
   gap: 0.8em;
 }
 
+.top-bar.docked .settings {
+  top: auto;
+  bottom: calc(100% + 0.6em);
+  right: 1.2em;
+}
+
 .settings-row {
   display: flex;
   align-items: center;
   gap: 0.8em;
+}
+
+.settings-label {
+  flex: none;
+  width: 12em;
   color: var(--pp-muted);
+  white-space: nowrap;
 }
 
 .settings-row input {

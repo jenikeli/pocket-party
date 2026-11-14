@@ -19,6 +19,7 @@ import {
   readGraceSeconds,
   storeGraceSeconds,
   playerRangeText,
+  chipStatusText,
 } from '../../host/shell-rules.js';
 import { MAX_PLAYERS } from '../../shared/protocol.js';
 
@@ -127,4 +128,13 @@ test('the picker shows how many play a game, and a game that starts with nobody 
   assert.equal(playerRangeText({ minPlayers: 0, maxPlayers: 4 }), '1 to 4');
   assert.equal(playerRangeText({ minPlayers: 2, maxPlayers: MAX_PLAYERS }), `2 to ${MAX_PLAYERS}`);
   assert.equal(playerRangeText({ minPlayers: 1, maxPlayers: MAX_PLAYERS }), `1 to ${MAX_PLAYERS}`);
+});
+
+test('a join window chip says nothing for a connected player and when a dropped one is back', () => {
+  const player = addPlayer(new Map(), 'p1');
+  assert.equal(chipStatusText(player, 1000), '');
+  player.connected = false;
+  player.graceEndsAt = 25000;
+  assert.equal(chipStatusText(player, 1000), 'back in 0:24');
+  assert.equal(chipStatusText(player, 30000), 'back in 0:00');
 });

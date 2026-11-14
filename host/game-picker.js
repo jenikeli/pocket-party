@@ -1,7 +1,7 @@
 // The game picker (#game-picker), the host page's home after Tap to start: the chosen game's picture filling the
-// screen, its title, how many play it, Play, and the games as thumbnails. No room exists here, so nobody can
-// join: Play loads the game and opens its room (host/game-session.js), and the picker comes back when the game
-// ends, with the reason when it stopped on a problem. Created by host/main.js.
+// screen, its title, a line about it, how many play it, Play, and the games as thumbnails. No room exists here,
+// so nobody can join: Play loads the game and opens its room (host/game-session.js), and the picker comes back
+// when the game ends, with the reason when it stopped on a problem. Created by host/main.js.
 
 import { GAMES, findGame } from '/host/games/index.js';
 import { playerRangeText } from '/host/shell-rules.js';
@@ -39,6 +39,7 @@ export function createGamePicker() {
     }
     showPicture(document.getElementById('picker-background'), game.background);
     document.getElementById('picker-game-title').textContent = game.title;
+    document.getElementById('picker-game-blurb').textContent = game.blurb;
     document.getElementById('picker-player-range').textContent = playerRangeText(game);
   }
 

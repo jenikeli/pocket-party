@@ -32,6 +32,7 @@
     <div class="pp-stage picker-stage">
       <div class="picker-game on-picture">
         <h1 id="picker-game-title" class="pp-title picker-game-title"></h1>
+        <p id="picker-game-blurb" class="picker-blurb"></p>
         <p class="picker-range"><span class="icon-slot" data-icon="user"></span><span id="picker-player-range"></span></p>
         <button type="button" id="play-button" class="pp-button pp-primary pp-big"><span class="icon-slot"
             data-icon="play"></span>Play</button>
@@ -41,30 +42,34 @@
     </div>
   </section>
 
-  <!-- Over the picker and every game (host/game-bar.js). Games keep the top corners clear for it. -->
+  <!-- Over the picker and every game (host/game-bar.js). Games keep the top corners clear for it, or dock it as a
+       strip along the bottom (bar.setDocked) and put their own controls in #bar-slot. -->
   <div id="top-bar" class="pp-stage top-bar" hidden>
-    <button type="button" id="game-back-button" class="pp-icon-button top-bar-back" data-icon="back"
-      aria-label="Back to the games" title="Back to the games" hidden></button>
+    <div class="top-bar-left">
+      <button type="button" id="game-back-button" class="pp-button top-bar-button" hidden><span class="icon-slot"
+          data-icon="back"></span>Back to games</button>
+      <div id="bar-slot" class="bar-slot"></div>
+    </div>
     <div class="top-bar-right">
       <span id="room-code-chip" class="room-code-chip" hidden></span>
-      <button type="button" id="game-add-players-button" class="pp-icon-button pp-primary" data-icon="add-players"
-        aria-label="Add players" title="Add players" hidden></button>
+      <button type="button" id="game-add-players-button" class="pp-button pp-primary top-bar-button" hidden><span
+          class="icon-slot" data-icon="add-players"></span>Add players</button>
       <button type="button" id="settings-button" class="pp-icon-button" data-icon="gear" aria-label="Settings"
         title="Settings" aria-pressed="false"></button>
     </div>
     <div id="settings" class="pp-panel settings" hidden>
       <div class="settings-row">
-        <span class="icon-slot" data-icon="music"></span>
+        <span class="settings-label">Music</span>
         <input type="range" id="music-volume" min="0" max="100" step="5" aria-label="Music volume"
           title="Music volume">
       </div>
       <div class="settings-row">
-        <span class="icon-slot" data-icon="volume"></span>
+        <span class="settings-label">Sound effects</span>
         <input type="range" id="effects-volume" min="0" max="100" step="5" aria-label="Effects volume"
           title="Effects volume">
       </div>
-      <div class="settings-row" title="How long a dropped player's place is held">
-        <span class="icon-slot" data-icon="clock"></span>
+      <div class="settings-row">
+        <span class="settings-label">Hold a dropped player</span>
         <button type="button" id="grace-minus" class="pp-icon-button" data-icon="minus"
           aria-label="Hold a dropped player for less time" title="Hold a dropped player for less time"></button>
         <span id="grace-value" class="settings-value"></span>
@@ -79,14 +84,15 @@
       <div class="pp-panel join-panel">
         <div id="join-qr" class="join-qr"></div>
         <div class="join-text">
+          <h2 class="pp-title join-title">Join the party</h2>
+          <p class="pp-muted join-hint">Scan the code, or open the link and type the room code</p>
           <p id="join-code" class="pp-title join-code"></p>
           <p id="join-url" class="join-url"></p>
           <p id="join-lan-warning" class="join-warning" hidden>Phones cannot reach "localhost". Open /host using
             the LAN IP instead.</p>
           <div id="join-players" class="player-chips"></div>
+          <button type="button" id="join-done-button" class="pp-button pp-primary pp-big join-done">Done</button>
         </div>
-        <button type="button" id="join-close-button" class="pp-icon-button join-close" data-icon="close"
-          aria-label="Close" title="Close"></button>
       </div>
     </div>
   </section>

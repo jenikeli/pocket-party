@@ -1,11 +1,12 @@
 // The join window (#join-window), the one way into a game: the big QR code, the room code, the link and the
 // players so far, over the running game. Opened by the game session when a game's room opens and by the top
-// bar's add-players icon; the close icon or a click outside the panel closes it. Used by host/game-session.js.
+// bar's Add players button; Done or a click outside the panel closes it. Used by host/game-session.js.
 
 import { qrCodeSvg, joinUrl } from '/host/qr-code.js';
 import { displayName, colorText, playersInSlotOrder } from '/host/roster.js';
+import { chipStatusText } from '/host/shell-rules.js';
 
-// Often enough that a phone joining shows up at once.
+// Often enough that a phone joining shows up at once and the "back in 0:24" countdowns tick smoothly.
 const REFRESH_MS = 250;
 
 const joinWindow = document.getElementById('join-window');
@@ -15,7 +16,7 @@ const playerList = document.getElementById('join-players');
 let shownRoom = null;
 let refreshTimer = null;
 
-document.getElementById('join-close-button').addEventListener('click', closeJoinWindow);
+document.getElementById('join-done-button').addEventListener('click', closeJoinWindow);
 joinWindow.addEventListener('click', (event) => {
   if (!panel.contains(event.target)) {
     closeJoinWindow();
@@ -49,9 +50,10 @@ export function closeJoinWindow() {
   refreshTimer = null;
 }
 
-// The players as chips (dot and name) in slot order, a dropped one dimmed. Redrawn whole: nothing in the list
-// is clicked, so nothing is lost by it.
+// The players as chips (dot and name) in slot order, a dropped one dimmed with "back in 0:24" beside its name.
+// Redrawn whole: nothing in the list is clicked, so nothing is lost by it.
 function refresh() {
+  const now = Date.now();
   const chips = playersInSlotOrder(shownRoom.players).map((player) => {
     const chip = document.createElement('span');
     chip.className = 'pp-chip';
@@ -63,7 +65,11 @@ function refresh() {
     const name = document.createElement('span');
     // Names come from phones, so they only ever go in as text.
     name.textContent = displayName(player);
-    chip.append(dot, name);
+    // Empty for a connected player, which the chip's CSS hides.
+    const status = document.createElement('span');
+    status.className = 'pp-muted';
+    status.textContent = chipStatusText(player, now);
+    chip.append(dot, name, status);
     return chip;
   });
   playerList.replaceChildren(...chips);

@@ -1,6 +1,9 @@
 // The shell's rules: how long a dropped player's slot is held (a setting the host keeps in its own storage, since
-// no room outlives its game) and the player range the game picker shows. Plain functions (no DOM), so they can
-// be unit tested. Used by host/room.js, host/settings.js and host/game-picker.js.
+// no room outlives its game), the player range the game picker shows and the note on a player's chip in the join
+// window. Plain functions (no DOM), so they can be unit tested. Used by host/room.js, host/settings.js,
+// host/game-picker.js and host/join-window.js.
+
+import { secondsUntilFreed, formatMinutes } from './roster.js';
 
 // How long a dropped player's slot is held for them. Short, so a phone that is really gone does not hold the
 // game up for long; the host can raise it, or remove a player at once.
@@ -55,4 +58,13 @@ export function storeGraceSeconds(storage, graceSeconds) {
 // nobody (the 3D race, for Watch) still reads from 1: a range from 0 players means nothing to whoever reads it.
 export function playerRangeText(game) {
   return `${Math.max(game.minPlayers, 1)} to ${game.maxPlayers}`;
+}
+
+// The note beside a player's name in the join window: how long a dropped player's slot is still held
+// ('back in 0:24'), empty for one who is connected.
+export function chipStatusText(player, now) {
+  if (player.connected) {
+    return '';
+  }
+  return `back in ${formatMinutes(secondsUntilFreed(player, now))}`;
 }

@@ -7,7 +7,7 @@ import { loadGame } from '/host/games/index.js';
 import { createRoom } from '/host/room.js';
 import { loadThenOpenRoom } from '/host/game-opening.js';
 import { startGameRunner } from '/host/game-runner.js';
-import { showGameControls, hideGameControls, showRoomOpen } from '/host/game-bar.js';
+import { showGameControls, hideGameControls, showRoomOpen, setBarDocked, barSlot } from '/host/game-bar.js';
 import { setRoomCode, openJoinWindow, closeJoinWindow } from '/host/join-window.js';
 import { showLoading } from '/host/loading-screen.js';
 import { playShellSound } from '/host/shell-sounds.js';
@@ -59,6 +59,17 @@ function runGame({ game, room, roomCode, gameInfo, onStart, onEnd }) {
     }
   }
 
+  // What the game calls to dock the shell's bar as a strip along the bottom (true) or put it back at the top
+  // (false). The container ends above the strip, so the game's canvas is resized by its own ResizeObserver.
+  function setBarDocking(docked) {
+    // Late calls from a stopped game must not dock the bar over the picker.
+    if (isOver) {
+      return;
+    }
+    setBarDocked(docked);
+    container.classList.toggle('above-strip', docked);
+  }
+
   // Frees everything the game holds and closes the room: the host's socket closes, so the server sends every
   // phone ROOM_CLOSED. Runs once, however the game ended (back, isDone, an error, the connection lost).
   function endGame(problem) {
@@ -99,8 +110,14 @@ function runGame({ game, room, roomCode, gameInfo, onStart, onEnd }) {
     showGameControls({ roomCode, onBack: () => endGame(null), onAddPlayers: () => openJoinWindow(room) });
     // Open before start(), as the game module interface promises; the game closes it for a race.
     setRoomOpen(true);
+    // game.start() gets, besides the container and the room's players and calls: `bar`, the shell's top bar. Its
+    // `slot` is an empty element in the bar, right after Back to games, where the game puts its own controls
+    // (the shell empties it when the game ends). `bar.setDocked(true)` makes the bar a strip along the bottom of
+    // the window, with the slot, the room code, Add players and the gear in a row, and ends the container above
+    // it; `setDocked(false)` puts it back at the top. A game that never calls it keeps the bar at the top.
     game.start({
       container,
+      bar: { slot: barSlot, setDocked: setBarDocking },
       players: room.players,
       setControllerView: room.setControllerView,
       removePlayer: room.kickPlayer,

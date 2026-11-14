@@ -21,10 +21,19 @@ p {
   margin: 0;
 }
 
-/* A running game's container (host/game-session.js), the whole screen. */
+/* A running game's container (host/game-session.js), the whole screen, or the screen above the top bar once the
+   game has docked it as a strip along the bottom. */
 #game-container {
   width: 100vw;
   height: 100dvh;
+}
+
+/* Fixed like the strip itself, so the two meet exactly whatever the iPad's toolbars do to dvh. */
+#game-container.above-strip {
+  position: fixed;
+  inset: 0 0 var(--pp-strip) 0;
+  width: auto;
+  height: auto;
 }
 
 /* Over a running game: the top bar, then the loading screen, then the join window. */
@@ -81,9 +90,12 @@ p {
   gap: 0.6em;
 }
 
-/* The join window: the QR large on the left, the code and the players on the right, the close icon in the
-   corner. In em of the stage, so it keeps its proportions on every screen and the widest code (WWWW) still fits
-   its column. */
+.join-panel .pp-chip {
+  background: var(--pp-panel-2);
+}
+
+/* The join window: the QR large on the left, the code, the players and Done on the right. In em of the stage,
+   so it keeps its proportions on every screen and the widest code (WWWW) still fits its column. */
 .join-panel {
   position: absolute;
   inset: 4em 11.2em;
@@ -118,6 +130,14 @@ p {
   gap: 0.8em;
 }
 
+.join-title {
+  font-size: 2.2em;
+}
+
+.join-hint {
+  font-size: 1.05em;
+}
+
 .join-code {
   font-size: 4.2em;
   letter-spacing: 0.1em;
@@ -134,12 +154,9 @@ p {
   color: var(--pp-accent);
 }
 
-.join-close {
-  position: absolute;
-  top: 0.8em;
-  right: 0.8em;
-  background: none;
-  color: var(--pp-muted);
+.join-done {
+  align-self: flex-end;
+  margin-top: auto;
 }
 
 /* Loading: the picture under a dark veil, the title and the bar in the middle. */

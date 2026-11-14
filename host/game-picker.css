@@ -1,5 +1,5 @@
-/* The game picker's layout (host/game-picker.js): the chosen game's picture behind, its title, player range and
-   Play at the bottom left, the thumbnails at the bottom right. Loaded by host/index.html. */
+/* The game picker's layout (host/game-picker.js): the chosen game's picture behind, its title, blurb, player
+   range and Play at the bottom left, the thumbnails at the bottom right. Loaded by host/index.html. */
 
 /* The chosen game's picture fills the screen; a plain dark fade when it has none. */
 .picker-picture {
@@ -39,6 +39,12 @@
   white-space: nowrap;
 }
 
+.picker-blurb {
+  max-width: 24em;
+  font-size: 1.3em;
+  line-height: 1.3;
+}
+
 .picker-range {
   display: flex;
   align-items: center;
@@ -62,7 +68,7 @@
 .game-tile {
   display: flex;
   flex-direction: column;
-  width: 14.5em;
+  width: 13em;
   margin: 0;
   padding: 0;
   border: 0.2em solid transparent;
@@ -75,12 +81,13 @@
   cursor: pointer;
 }
 
-/* The covers are drawn 4:3 and cropped a little (a fixed height, since the iPad's Safari may not have
-   aspect-ratio). */
+/* The covers are drawn 4:3 (400 x 300), so the box is too and nothing is cropped: the tile is 13em wide with
+   0.2em of border each side, so the picture is 12.6em by 9.45em (a fixed height, since the iPad's Safari may not
+   have aspect-ratio). */
 .game-tile img {
   display: block;
   width: 100%;
-  height: 8em;
+  height: 9.45em;
   object-fit: cover;
 }
 

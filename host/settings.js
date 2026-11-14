@@ -1,5 +1,6 @@
-// Settings (#settings): a small panel under the top bar's gear, with the music and effects volumes and how long
-// a dropped player's slot is held. The gear opens and closes it, on the game picker and over a game alike; a
+// Settings (#settings): a small panel under the top bar's gear (above it while a game has the bar docked), with
+// the music and effects volumes and how long a dropped player's slot is held. The gear opens and closes it, on
+// the game picker and over a game alike; a
 // press anywhere else closes it. Set up once by host/main.js.
 
 import { formatMinutes } from '/host/roster.js';

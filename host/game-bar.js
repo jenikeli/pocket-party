@@ -1,7 +1,8 @@
 // The shell's top bar (#top-bar): the settings gear top right on the game picker, and over a running game also
-// the back arrow top left and, while the game has its room open, the room code and the add-players icon beside
-// the gear. Back closes the room, so it takes two clicks: the first arms it (red), the second goes back
-// (shared/confirm-click.js). Shown by host/main.js; the game's part by host/game-session.js.
+// "Back to games" top left and, while the game has its room open, the room code and Add players beside the
+// gear. Back closes the room, so it takes two clicks: the first arms it (red), the second goes back
+// (shared/confirm-click.js). A game may dock the bar as a strip along the bottom and put its own controls in
+// the bar's slot. Shown by host/main.js; the game's part by host/game-session.js.
 
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
 
@@ -9,6 +10,9 @@ const bar = document.getElementById('top-bar');
 const backButton = document.getElementById('game-back-button');
 const roomCodeChip = document.getElementById('room-code-chip');
 const addPlayersButton = document.getElementById('game-add-players-button');
+// Where a running game puts its own controls (`bar.slot` in game.start()); empty at the top, and emptied when
+// the game ends.
+export const barSlot = document.getElementById('bar-slot');
 let handlers = { onBack: () => {}, onAddPlayers: () => {} };
 
 addPlayersButton.addEventListener('click', () => handlers.onAddPlayers());
@@ -27,10 +31,13 @@ export function showGameControls({ roomCode, onBack, onAddPlayers }) {
   backButton.hidden = false;
 }
 
+// The game is over: its controls go, the slot is emptied and the bar is back at the top.
 export function hideGameControls() {
   back.disarm();
   backButton.hidden = true;
   showRoomOpen(false);
+  barSlot.replaceChildren();
+  setBarDocked(false);
 }
 
 // Shown while the game has its room open to new players (its setup and results screens), hidden during a race:
@@ -38,4 +45,10 @@ export function hideGameControls() {
 export function showRoomOpen(open) {
   roomCodeChip.hidden = !open;
   addPlayersButton.hidden = !open;
+}
+
+// Docked, the bar is a strip along the bottom of the window (class `docked`, host/top-bar.css); the game's
+// container is shortened to match by host/game-session.js.
+export function setBarDocked(docked) {
+  bar.classList.toggle('docked', docked);
 }

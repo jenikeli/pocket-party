@@ -14,7 +14,7 @@ stage). Where this file and the mockup disagree, this file wins.
 | A | host shell | merged |
 | B | 3D kart race | merged |
 | C | player rows, 2D race, phone | merged |
-| T | browser tests (alone, after A to C) | queued |
+| T | browser tests (alone, after A to C) | building |
 | Z | full browser suite, docs, handoff (main session) | queued |
 
 A, B and C share no files and build at the same time. A is merged first (B uses its `bar`).
@@ -170,3 +170,46 @@ Files: `test/browser/*`, `test/helpers/*`. It may run browser files, one at a ti
 ## Parked for the user
 
 (nothing)
+
+## What A, B and C changed, for task T (from their reports and reviews)
+
+Shell (A):
+- Removed: `#join-close-button`. The join window is closed with `#join-done-button` ("Done"); it has
+  `h2.join-title` "Join the party" and `p.join-hint`; a chip's status span reads "back in 0:24" for a dropped player.
+- `#game-back-button`: a `.pp-button` with the back icon and "Back to games", no aria-label or title (was
+  "Back to the games"); two clicks, class `armed`. `#game-add-players-button`: a `.pp-button.pp-primary` with
+  its icon and "Add players", no aria-label. `#settings-button` unchanged (aria-label "Settings").
+- Settings rows have words in `span.settings-label` (Music, Sound effects, Hold a dropped player); the sliders'
+  and the grace buttons' ids and labels are unchanged.
+- Picker: `#picker-game-blurb`; tiles 13em wide, the picture 12.6em by 9.45em (4:3).
+- `#bar-slot` inside `.top-bar-left`; class `docked` on `#top-bar` and `above-strip` on `#game-container` while a
+  game has docked the bar (the strip is `--pp-strip` high, 4 stage em, along the window's bottom).
+
+3D race (B):
+- Setup: `#kart-3d-course-blurb`; the course tiles have no aria-label or title any more, their text is the
+  course's name (`.k3d-course-tile-name`); rows Laps, Speed, CPU, Items; `.k3d-card-heading` "Players";
+  `#kart-3d-no-players` "Scan the code to join" (shown, and `#kart-3d-rows` hidden, while nobody has joined);
+  `#kart-3d-tools-button` says "Display" and has no aria-label.
+- Race: the bar is docked whenever a race exists (grid, countdown, racing, results, Watch) and undocked on the
+  setup screen and during Measure. `#kart-3d-race-bar` is a wrapper in `#bar-slot` with `#kart-3d-setup-button`
+  ("Setup", was "Back to setup"), `-restart-button`, `-tuning-button` and `#kart-3d-clock`; hidden over the
+  results. `#kart-3d-readout` is inside `#kart-3d-tuning` (visible exactly while the popup is open). The view
+  names no longer make room for a back arrow (`--top-inset` is gone).
+- Results: `.k3d-results-heading`, `#kart-3d-results-summary` ("Seaside Skyway · 150cc · 3 laps"), the rows have
+  a fourth `.gap` span and the winner's row the class `first` (the `.player` and `.place.pp-muted` classes are
+  gone); Race again spans the panel.
+
+Rows, 2D, phone (C):
+- `.kart-player-style` is plain text: "Tilt · Auto", "Stick · Go button", or "back in 0:24" for a dropped
+  player (no child spans, no icons with aria-labels; `m10-shell.test.js` near line 211 reads the old span).
+  `.kart-player-tick` holds the tick and "Ready". The laps control has `span.kart-laps-label` "Laps" (no flag).
+- 2D setup: `h2.k2d-subheading` "Players", `#kart-2d-join-line`. 2D results: a "Results" heading,
+  `#kart-2d-results-summary` ("3 laps"), rows `li.k2d-result` with `.k2d-place`, the chip, the time, `.k2d-gap`;
+  the winner `k2d-winner`.
+- Phone: the leave button holds the `leave` icon (aria-label "Leave game" unchanged); `#kart-turn-note` under the
+  choices on the setup screen; `#wake-note` on the game screen only when the wake lock is refused or missing
+  (headless browsers refuse it, so the tests will see it).
+
+Also for T: look at the screenshots your files take of the new screens (the picker, join window, both setups,
+the 3D race with the strip and with Tuning and Settings open, both results, the phone's setup) and report
+anything that overlaps, is cut off or scrolls; the main session could not screenshot the 3D race.

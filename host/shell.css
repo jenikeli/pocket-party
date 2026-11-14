@@ -199,3 +199,8 @@ p {
   color: #5c6680;
   pointer-events: none;
 }
+
+/* Above the strip while a game has docked the bar there, so it never lies over Back to games. */
+.top-bar.docked ~ #wake-status {
+  bottom: calc(var(--pp-strip) + 4px);
+}

@@ -2,7 +2,7 @@
 
 Code, assets and tools that the game itself does not use, kept on purpose. Each entry lists what to delete, so a
 cleanup is quick when it is wanted. Add an entry whenever something is kept but unused; remove it once it is
-deleted or used again. Last checked 2026-11-13 (end of M10).
+deleted or used again. Last checked 2026-11-14 (end of M10b).
 
 ## Deleted
 
@@ -17,9 +17,14 @@ deleted or used again. Last checked 2026-11-13 (end of M10).
 
 ## Small things in the code
 
-- `drawConfirmButton` and `drawButton` in `host/buttons.js` (Phaser canvas buttons): since M10 only the input
-  lab's player card uses them (`host/games/input-lab/player-card.js`). If the input lab's card moves to HTML,
-  delete the file.
+- `drawCloseButton` in `host/buttons.js` (a Phaser canvas button, confirmed by colour): only the input lab's
+  player card uses it (`host/games/input-lab/player-card.js`). If the input lab's card moves to HTML, delete the
+  file and use `shared/confirm-click.js`.
+- `isDone()` in the game module interface: all three games return false since M10b (the shell's back arrow is
+  the one way out), and `host/game-runner.js` still asks every frame. To delete: the call in `game-runner.js`,
+  the three games' functions, the entry in `plan.md`'s interface.
+- `test-results/reference/m10b/mockup.html` (ignored by git): the mockup M10b was built from. Delete it once
+  the device run is done.
 - `test-results/reference/m10/` (ignored by git): the chosen design's pictures and prototype page, used by M10's
   tasks. Delete the folder once the device run is done.
 

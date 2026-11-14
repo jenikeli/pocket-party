@@ -3026,3 +3026,392 @@ build are silent. At the default music volume (0.7) the music peaks around 0.2, 
 | `seaside-skyway` | D major | 112 | 32 (A B A C) | triangle lead in long notes, sixteenth arpeggios, bass in half notes, kick on 1 and 3, snare on 4, eighth hats | breezy | 68.6 s, 0.409, 0.074 s |
 | `test-track` | C major | 120 | 16 | lowpassed sawtooth lead in quarters, held chords, bass on every beat, kick on 1 and 3, snare on 2 and 4, eighth hats | plain | 32.0 s, 0.373, 0.006 s |
 | `results` | B-flat major | 100 | 4-bar fanfare once, then a 16-bar loop | square lead; the fanfare runs up an arpeggio with held chords, kicks and a snare roll; the loop is a slow lead over held chords | fanfare, then calm | 48.0 s, 0.384, 0.015 s |
+
+## M10b: Each game runs its own lobby, and the icon UI
+
+Built 2026-11-14 as one queue (task 0 by the main session, A to D by implementers, T the browser tests, Z the
+handoff), run without the user through one usage-limit pause. Handed off 2026-11-14, device run pending. Asked
+for after M10's device run; the UI rules it follows are `CLAUDE.md`'s "UI design" section, the mockup is
+https://claude.ai/artifact/7RzKR6aeL2Jopatrhh55SQ.
+
+- [x] The host page only picks a game: no room, no code, no players there
+- [x] A room per game: created when the game has loaded, closed by the back arrow (two clicks, at any time)
+- [x] Joining through the big QR window in every game; it opens by itself when a game's lobby opens
+- [x] Each game handles its lobby: Remove on every setup row and lab card, not during a race
+- [x] Icons instead of words, colour as the confirmation
+- [x] The phone's lobby page gone (Change name, "Also here"); "The game ended" when the room closes
+- [x] Engine sounds removed from both races
+
+### What exists now
+
+- **Shared by host and phone:** `shared/icons.js` (`icon(name)`, 19 icons as inline SVG in `currentColor`),
+  `shared/confirm-click.js` (`confirmOnSecondClick(button, onConfirm) -> { disarm() }`: the first click adds the
+  class `armed`, the second confirms; a `pointerdown` anywhere else, caught in the capture phase, or 3 s
+  disarms), and the classes `.pp-icon`, `.pp-icon-button` and `.armed` in `host/ui.css` and
+  `controller/style.css`.
+- **Host shell:** `host/main.js` (draws every `[data-icon]`, sets up the picker and settings), `game-picker.js`
+  and `.css` (were `lobby.*`), `game-session.js` (`playGame`: load, room, top bar, game, join window; `endGame`
+  once for back, an error or a lost connection), `game-opening.js` (`loadThenOpenRoom`, unit tested: load, then
+  `createRoom`, `connect()`, `setPlayerLimit`), `room.js` (`createRoom(gameId)`, one per game; `close()` drops
+  the listener, late messages and the grace timers), `game-bar.js` and `top-bar.css` (the top bar),
+  `settings.js` (was `room-settings.js`), `shell-rules.js` (was `lobby-rules.js`: the stored hold time,
+  `playerRangeText`), `join-window.js`, `shell-sounds.js` (`playShellSound` only). Deleted:
+  `lobby-players.js`, `connection-lost.js`, `host/confirm-click.js`.
+- **Protocol:** `CONTROLLER_STATE` without `others`; `CONTROLLER_SCREENS` is `game` only. The server is
+  unchanged: it already closes a room and sends `ROOM_CLOSED` when the host's socket closes, and answers an
+  unknown code with `NO_SUCH_ROOM`.
+- **Phone:** `controller/main.js` (game screen with "Connected" until the first state, `#ended-screen` on
+  `ROOM_CLOSED`, every `.leave-button` confirmed by colour instead of the native dialog), `game-screen.js`
+  (`showConnected`), the kart setup's four choices as icon and word, Ready green with a tick.
+  `controller/lobby-screen.js` deleted. The wake lock is still taken but its status is no longer shown.
+- **Races on the host:** `host/kart/player-rows.js` (`createPlayerRows(list, { onRemove }) -> { show(rows) }`,
+  rows updated in place, cross `[data-remove-player]`), `host/kart/panels.css`, `startBlocker` in
+  `host/kart/setup.js` ("Needs 2 players", "Waiting for Ana, Bo"), `setupRows` returns data and `styleIcons`
+  names the icons, `lapsStepperMarkup` and `loadStylesheets` in `panel-parts.js`. 2D: `MIN_PLAYERS = 2` in
+  `race.js`. 3D: the setup trimmed (no kicker, blurb, headings, Items On switch, lobby buttons), the tools icon
+  5 em down on the right, the top-left view's name and item frame and the race clock below the top bar.
+- **Input lab:** always open; `host/buttons.js` is `drawCloseButton` only (the canvas version of the two-click
+  rule); the card grid starts at y = 110, the title is in the right column.
+- **Sound:** no engine voices; `voice` left `host/audio/synth.js`, `raceSounds.stop()` went with them.
+
+### How it ended
+
+- **Tasks:** 0, A, B, C, D and T merged, each as one commit after a reviewer read its diff (T's after its
+  merge, while the full suite ran). Nothing was parked for the user.
+- **Review findings fixed by the main session:** B: a tap on Ready's tick did not un-ready (the click's target
+  was the SVG). C: a failed picture preload left the 3D stylesheets on the page. D: the lab's close button keeps
+  its own handle on the scene's input for its teardown. A: a closed room still delivered late messages and kept
+  its grace timers; a throw while a game's screen was set up left Play off for good. T's tests found the 3D
+  race's first view label under the back arrow and its clock under the gear, and the dead 80 px lift for the old
+  bottom-right bar.
+- **Tests at the handoff:** `npm test` 732 pass, 0 fail. The full browser suite, one file at a time, because the
+  shell, `shared/`, the controller shell and `test/helpers/` changed: 18 files, 142 tests, all pass, 27.9
+  minutes. Per file, from T's own runs: m1 10 (28 s), m3 14 (41 s), m4 20 (94 s), m5a 5 (14 s), m5b 7 (73 s),
+  m5c 11 (32 s), m10-shell 15 (51 s), m10-turned-controls 3 (11 s), https 4 (15 s), m6b 11 (79 s), m6c 5
+  (60 s), m7a 6 (64 s), m7b 10 (76 s), m7c 5 (172 s), m7d2 3 (98 s), m7d4b 2 (248 s), m8 8 (182 s), m9 3
+  (357 s). After the suite, three small test edits from T's review (a comment, an unused constant, the join
+  window's close icon checked for its name); m10-shell rerun, 15 pass.
+- **Tests changed on purpose:** the lobby is gone, so its tests (chips, Play off with the reason, the join
+  window on the lobby, Close room, Change name, "Also here", the connection-lost cover, New room) were replaced
+  by tests of the picker, the room made after the load, the join window, settings, the back arrow, "The game
+  ended", a second game's new code, Remove on rows and cards, and the 2D race's "Needs 2 players". The lab's
+  "a new or removed player is refused while it runs" became "the lab is always open". m8's "items off" turns
+  every item off. m7d2's start-lights test compares the lamps from the first countdown number it sees (3 or 2).
+  Unit tests: the engine tests became "no sound is left running"; `lobby.test.js` became `shell-rules.test.js`;
+  the roster-cue tests went with `rosterCues`.
+- **Approved writes outside the project:** none were needed or made.
+
+### Device run procedure (iPad host, an iPhone and an Android phone, HTTPS on the LAN)
+
+The browser tests prove the flows. This run is for real touch, real Safari, how the screens read from across
+the room, and the iPhone checks left over from M10. Nothing here needs tuning in code; say what reads wrong.
+
+1. **The picker (iPad).** Open `/host`, Tap to start. Three thumbnails, the chosen game's title, the player
+   range, Play, the gear. Is anything cut off or too small from across the room? Scan nothing: there is no code.
+2. **No room (a phone).** Open `/` and type any four letters: "No game is open right now."
+3. **Settings (iPad).** Tap the gear: music, effects, the hold time with minus and plus. Tap outside: it
+   closes. Do the three icons read as music, effects and time without words? Reload: the values are kept.
+4. **A game's room (iPad, both phones).** Play Kart race 2D. The join window opens by itself: scan the QR code
+   with both phones from where you sit. Each phone lands on the setup screen at once (no "You are in" page).
+   Close the window with the cross, open it again with the add-players icon, close it by tapping outside.
+5. **The phone's setup (both phones, iPhone first).** Four choices as icon and word: do Stick, Tilt, Go button
+   and Auto read right? Is each easy to hit? Ready turns green with a tick; tap the tick itself: it un-readies.
+   Double tap and pinch everywhere on the join, setup and driving screens: nothing may zoom (M10's iPhone check).
+6. **Remove and the armed colour (iPad).** On a player's row tap the cross: it turns red. Tap somewhere else:
+   it goes back. Tap it, wait 3 s: it goes back. Tap it twice: the player is removed and that phone shows "The
+   game ended"; "Join another" returns to the join page with the name kept. Is the red clear enough on the iPad
+   to be a confirmation, or too dark? (`--pp-danger` is `#8e2b22`; the mockup used a brighter `#c0392b`.)
+7. **The 2D race needs two.** With one phone in: "Needs 2 players" and Start race off. With both ready: race.
+   During the race the top bar is the back arrow and the gear only. On the iPhone, turned sideways: is the notch
+   or the home bar in the way of a button, and does tilt steer like a wheel (M10's iPhone checks)?
+8. **Leave (a phone).** On the setup screen tap the cross at the top right: red; again: the phone leaves.
+9. **Back (iPad).** On the results screen tap the back arrow: red; tap it again: the picker, and both phones
+   show "The game ended". Then the same in the middle of a race: are two taps the right amount of friction?
+10. **3D (iPad, both phones).** Play Kart race 3D: a new code. The course's name large, three pictures, the
+    card (laps, class with "cc", CPU, the item icons, the rows, Start race), the tools icon under the gear. Do
+    the item icons read as on and off? Race: are your name (top left view) and the clock (under the gear) clear
+    of the top bar, with 1 and with 2 phones? Listen: no engine sound; is anything missing without it?
+11. **Input lab (iPad, a phone).** Play Input lab, join: a card appears at once. The card's cross: red, then
+    removes. The top corners stay clear of the cards.
+12. **Drops (a phone).** Lock a phone on a setup screen: its row dims with a clock counting down the hold time
+    from the settings; unlock: it comes back. Lock it mid-race for 20 s and unlock: it drives on.
+13. Anything that looks broken or needs a word after all, with the screen it is on.
+
+**Report back:** the red of step 6, the friction of step 9, any icon that had to be guessed, and the iPhone
+checks of steps 5 and 7.
+
+### The queue as it was run
+
+Asked for after M10's device run (2026-11-13 and 14). One queue, run to the end without the user in a fresh chat
+(`milestone-plan` skill: "Queue" and "When the user is away"), one handoff and one device run at the end. Planned
+2026-11-14.
+
+#### Status
+
+| Task | What | Model | Depends on | Status |
+|---|---|---|---|---|
+| 0 | Main session: engine sounds removed; the shared icon set, confirm-by-colour and their CSS | | | merged |
+| A | Host shell: the game picker (no room), a room per game, the top bar, join window, settings | opus | 0 | merged |
+| B | Phone: no lobby page, the game's screen at once, icons, "The game ended" | sonnet | 0 | merged |
+| C | Both races' lobbies and results on the host: shared player rows, Remove, icons, trims | sonnet | 0 | merged |
+| D | Input lab on the host: always open, Remove by colour | sonnet | 0 | merged |
+| T | Browser tests for the new flow (a browser-test task) | sonnet | A B C D | merged |
+| Z | Main session: M10's device results recorded, full browser suite, docs, handoff | | all | done |
+
+Order: 0 by the main session first (it fixes the names the others build on). Then A, B and C together (no shared
+files; checked pair by pair below), D when a place frees. T alone when A to D are merged and nothing draws. Then
+Z. At most 3 subagents at once, reviewers included. Implementers commit early.
+
+File ownership, checked for the tasks that run together: A owns `host/*.js`, `host/*.css`, `host/index.html`,
+`host/games/index.js`, `shared/protocol.js`; B owns `controller/` (not `controller/games/input-lab/`); C owns
+`host/kart/`, `host/games/kart-2d/`, `host/games/kart-3d/`; D owns `host/games/input-lab/` and `host/buttons.js`.
+Task 0's files (`shared/icons.js`, `shared/confirm-click.js`, the icon and armed rules in `host/ui.css` and
+`controller/style.css`, the sound files) are finished before the others start and are then read-only for them:
+a task that needs another icon or class reports it, and the main session adds it.
+
+#### What the user decided
+
+Mockup, version 3: https://claude.ai/artifact/7RzKR6aeL2Jopatrhh55SQ (its source, for every task that builds a
+screen: `/home/ruijia/projects/pocket-party/test-results/reference/m10b/mockup.html`, ignored by git; the main
+session copies it there in task 0). `CLAUDE.md`'s "UI design" section holds the rules; every task follows it.
+
+- **The host page only picks a game.** After Tap to start comes the game picker: the games, how many play each,
+  Play. No room exists there: no code, no players, nobody can join.
+- **A room per game (option A).** Play loads the game, then creates its room. The back arrow closes the room at
+  any time, mid-race included (two clicks), and returns to the picker; every phone goes back to its join page
+  and scans again for the next game. A room and a game are the same thing, so "End game" and "Close room" become
+  the one back arrow.
+- **Joining is the big QR window in every game.** It opens by itself when a game's lobby opens, and from the
+  add-players icon after that. No QR code anywhere else.
+- **Each game handles its lobby.** The 2D and 3D races take players on their setup and results screens and are
+  closed during a race, as today; the input lab is open for as long as it runs. Each lobby lets the host remove
+  a player. Remove is not offered while a race runs.
+- **Icons instead of words, colour as the confirmation** (`CLAUDE.md`, "UI design"): a destructive control turns
+  red on the first click and acts on the second; a click anywhere else, or 3 seconds, disarms it.
+- **No name change after joining:** the phone's lobby page goes, with Change name and "Also here". The name is
+  set on the join page.
+- **3D class buttons keep "cc"** (50cc, 100cc, 150cc, 200cc). The settings icon is a gear.
+- **Engine sounds go**, in both races ("the only annoying sound").
+
+#### Rules for every task
+
+- Read `CLAUDE.md` first, its "UI design" section above all; its rules hold. Docs (`plan.md`, `CLAUDE.md`,
+  `docs/`) are the main session's: report what should change in them.
+- Own only the files your task lists. If you need a change in another file, report it; do not make it.
+- `npm test` must pass. Browser tests are run by the main session and by T only. Commit early and often.
+- Every icon-only control has an `aria-label` and a `title` (the tests find controls by id and read these).
+  Keep the ids the spec names; report any other id you rename or remove.
+- Names from phones go in as text, never as HTML.
+- Code your change leaves unused is deleted, not kept, and named in your report.
+- If you meet something only the user can decide (a new dependency, logic in the server, a hard constraint, a
+  write outside the project, a look the mockup does not settle), stop that part, finish the rest, and say so at
+  the top of your report.
+
+##### Shared by every task (task 0 builds these first)
+
+```
+shared/icons.js          icon(name) -> an SVG string (viewBox 0 0 24 24, stroke currentColor, class "pp-icon").
+                         Names: back, close, gear, add-players, user, check, stick, tilt, go-button, auto,
+                         flag, tools, again, music, volume, clock, minus, plus, play.
+shared/confirm-click.js  confirmOnSecondClick(button, onConfirm) -> { disarm() }. First click: class "armed"
+                         (red). Second click: onConfirm(). A pointerdown anywhere outside the button, or 3 s,
+                         disarms. No label change. (Moved from host/confirm-click.js; the phone's Leave uses it.)
+CSS, same names on host (host/ui.css) and phone (controller/style.css):
+  .pp-icon          the SVG, 1.25em square
+  .pp-icon-button   a square button holding one icon (.pp-primary for the accent one, .armed turns it red)
+```
+
+A button's icon is set with `button.innerHTML = icon('gear')` on our own constant names only.
+
+##### Game module interface, as it changes (task A builds the shell's side)
+
+```
+registry entry: { id, title, minPlayers, maxPlayers, cover, background }      (blurb goes)
+start({ container, players, setControllerView, removePlayer, pingPlayer, setRoomOpen })    (unchanged shape)
+  The room is new and empty at start(): players is empty and fills as phones join. The shell has opened the
+  room and set the server's player limit to maxPlayers before start(). A game closes the room for a race with
+  setRoomOpen(false) and opens it again on its setup and results screens. removePlayer(playerId) is what a
+  game's Remove control calls.
+isDone() -> true still means "leave this game": the shell closes the room and shows the picker.
+```
+
+The shell's top bar over every game (`host/game-bar.js`): `#game-back-button` (left; two clicks; closes the room),
+and on the right `#room-code-chip`, `#game-add-players-button` (both only while the room is open) and
+`#settings-button`. Games keep the top corners clear: 5 em down from the top at the left and right edges.
+
+`CONTROLLER_STATE` loses `others`; `CONTROLLER_SCREENS.LOBBY` goes (a phone in a room is always in a game).
+
+#### Tasks
+
+##### 0. Main session, first
+
+- Engine sounds removed: the engine voices and `engineLevels` in `host/games/kart-2d/` and `kart-3d/`
+  (`race-sounds.js`, `sound-cues.js`, the calls' `engines` option), `voice` in `host/audio/synth.js` if nothing
+  else uses it, their unit tests.
+- `shared/icons.js`, `shared/confirm-click.js` (with unit tests) and the CSS classes above; the host's users of
+  the old `host/confirm-click.js` moved to the shared one without changing what they do yet.
+- The mockup's source saved to `test-results/reference/m10b/mockup.html`.
+
+##### A. Host shell (opus)
+
+**Goal:** the host page picks a game and nothing else; a game's room is created when the game has loaded and
+closed when the host goes back.
+
+**Files:** `host/index.html`, `host/main.js`, `host/lobby.js` (becomes `host/game-picker.js`), `host/lobby.css`
+(becomes `host/game-picker.css`), `host/shell.css`, `host/ui.css` (only if a shell class is missing), `host/room.js`,
+`host/roster.js`, `host/grace-periods.js`, `host/game-session.js`, `host/game-bar.js`, `host/join-window.js`,
+`host/room-settings.js` (becomes `host/settings.js`), `host/lobby-players.js` (deleted, or kept only as the join
+window's list), `host/lobby-rules.js`, `host/shell-sounds.js`, `host/connection-lost.js`, `host/tap-to-start.js`,
+`host/games/index.js`, `shared/protocol.js`, their unit tests.
+
+**Behaviour** (mockup screens 1, 2 and the top bars of 3 to 6):
+- *Picker* (`#game-picker`): the chosen game's background and title, a player icon with its range ("1 to 4",
+  from `minPlayers` and `maxPlayers`; a minimum of 0 reads as 1), `#play-button`; thumbnails `[data-game-id]`;
+  `#settings-button` (gear) top right; `#picker-problem` says why the last game stopped (a load failure, a lost
+  connection). The lobby tune plays. No socket is open.
+- *Play:* the loading screen; `load(onProgress)`; then the room: a new `createRoom()` connects and sends
+  `CREATE_ROOM`; on `ROOM_CREATED` the player limit is set to the game's `maxPlayers`, the game starts, and the
+  join window opens. A failed load or a refused connection returns to the picker with the problem shown and no
+  room left behind. One room object per game: nothing of the last game's roster survives.
+- *Back* (`#game-back-button`, two clicks): the game stops, the room closes (the host's socket closes, so the
+  server tells every phone `ROOM_CLOSED`), the picker shows. The same when `isDone()` turns true, when a game
+  throws, and when the connection drops (then with the problem line).
+- *Top bar:* as in the interface above; the room code chip and add players hide while a game has the room
+  closed. The old bottom-right bar (`#end-game-button`, `#close-room-button`) goes.
+- *Join window* (`#join-window`): the QR code, `#join-code`, `#join-url`, the players so far (dot and name), a
+  close icon (`#join-close-button`); a click outside closes it too. No heading, no Done button. The LAN warning
+  stays.
+- *Settings* (`#settings`): three rows, each an icon and its control: music (`#music-volume`), effects
+  (`#effects-volume`), the hold time for a dropped player (`#grace-minus`, `#grace-value`, `#grace-plus`; kept in
+  the host's localStorage now, since no room outlives a game). Opened by the gear on the picker and in the top
+  bar; a click outside closes it.
+- *Sounds:* the join and leave blips play while a game's room is open; the picker keeps its click and Play sounds.
+- Deleted: the lobby's player chips, its Add players and Close room buttons, `canPickGame`, the lobby's status
+  line.
+
+**Tests:** the picker's range text; the room is created only after the load (order of calls, with fakes); the
+settings' stored hold time; the relay and protocol tests without `others`.
+
+##### B. Phone (sonnet)
+
+**Goal:** a phone that joins lands on the game's screen; the lobby page goes; icons and colour as on the host.
+
+**Files:** `controller/index.html`, `controller/style.css`, `controller/screens.css`, `controller/main.js`,
+`controller/game-screen.js`, `controller/connection.js`, `controller/lobby-screen.js` (deleted),
+`controller/kart/markup.js`, `controller/kart/setup-screen.js`, `controller/kart/setup.css`, their unit tests.
+
+**Behaviour** (mockup section 7):
+- *Join:* unchanged, with one new refusal shown plainly: a code for a room that does not exist reads "No game is
+  open right now." (the server's `NO_SUCH_ROOM`).
+- *After joining:* "Connected" until the first `CONTROLLER_STATE`, then the game's screen. The game screen's top
+  line is the room code and a leave icon (`.leave-button`, two taps, turns red on the first).
+- *When the room closes* (`ROOM_CLOSED`): "The game ended" and a button back to the join page, with the name
+  kept and the room code cleared.
+- *Kart setup:* the four choices as icons with a word under each (Stick, Tilt, Go button, Auto); the chosen one
+  in the accent colour; Ready turns green with a tick once ready; "Turn your phone sideways when the race
+  starts" goes. The ids and `data-value` attributes stay.
+- No ready page, no Change name, no "Also here": their code and ids are deleted (`#lobby-screen`,
+  `#player-label`, `#change-name-*`, `#lobby-others`).
+
+##### C. Both races' lobbies and results on the host (sonnet)
+
+**Goal:** the races' setup and results screens as in mockup screens 3, 4 and 6: shared player rows with Remove,
+icons, fewer words.
+
+**Files:** `host/kart/player-rows.js` (new, shared by both races), `host/kart/panel-parts.js`,
+`host/kart/setup.js` (the start rule), `host/games/kart-2d/` (`setup-panel.js`, `results-panel.js`,
+`panel-parts.js`, `kart-2d.css`, `index.js`), `host/games/kart-3d/` (`setup-panel.js`, `setup-markup.js`,
+`setup.css`, `results-panel.js`, `race-panels.css`, `items/item-settings-panel.js`, `index.js` for the calls),
+their unit tests.
+
+**Behaviour:**
+- *Player rows* (`createPlayerRows(list, { onRemove })` -> `{ show(rows) }`, rows from `setupRows`): colour dot,
+  name, the steering and accelerate icons, a green edge and tick when ready, dimmed with a clock and the time
+  left when away, and a close icon that removes on the second click (`[data-remove-player]`; calls the shell's
+  `removePlayer`). Rows are updated in place.
+- *2D setup:* the title, laps as a flag icon with minus and plus (`#kart-2d-laps-minus`, `-plus`), the rows, the
+  line that says why Start race is off, `#kart-2d-start-button`. The race needs 2 players: the rule moves from
+  the lobby into the race's own start rule ("Needs 2 players").
+- *3D setup:* the course's name large and the three course pictures without captions; the card: laps (flag, minus,
+  plus), class (`50cc` to `200cc`), CPU, the items as one on/off icon each (the separate On switch goes; all off
+  is items off), the rows, Start race. `#kart-3d-tools-button` becomes the tools icon. Gone: the "Kart race 3D"
+  line, the blurb, the "Race" and "Players" headings, the setup's own Back to lobby button (the shell's back
+  arrow does it). The top corners stay clear for the shell's bar.
+- *Results, both races:* the standings and Race again (the again icon and its words); the Back to lobby buttons
+  go.
+- Ids kept as the browser tests use them, except the ones named above as gone; list every one removed.
+
+##### D. Input lab on the host (sonnet)
+
+**Files:** `host/games/input-lab/`, `host/buttons.js`.
+
+- The lab opens the room at start and never closes it; a phone that joins gets a card at once.
+- A card's Remove is a close mark that turns red on the first click and removes on the second, disarmed by a
+  click elsewhere or 3 s (the canvas version of the shared rule; no "Sure?" text). Its own End or Close buttons,
+  if any remain in the canvas, go: the shell's back arrow is the way out. The readouts keep their words.
+
+##### T. Browser tests (sonnet, a browser-test task, spawned alone)
+
+**Files:** `test/helpers/browser.js`, `test/helpers/host-buttons.js`, `test/helpers/kart-3d-host.js`, every file in
+`test/browser/`.
+
+- Helpers: `openHost` taps Tap to start and waits for the picker; `startGame(hostPage, { gameId })` picks the
+  game, clicks Play and returns the room code once the join window shows; phones join after that. Every file's
+  opening lines follow.
+- Replaced on purpose: the lobby's tests (chips, Play off with the reason, the join window on the lobby, Close
+  room, Change name, "Also here") by: the picker has no room (no `CREATE_ROOM` before Play; a phone's join is
+  refused with "No game is open right now."); Play creates the room after the load; the join window opens by
+  itself in each game and closes on a click outside; the back arrow needs two clicks, disarms on a click
+  elsewhere, and sends the phones to "The game ended"; a second game gets a new code; Remove on a setup row
+  (2D and 3D) and on a lab card; the 2D race refuses to start with one player; every icon-only control has an
+  `aria-label`.
+- Still proved: grace period and rejoin within a game, a late joiner refused during a race and let in on setup
+  and results, the fifth phone refused in 3D, the QR encodes the URL module by module, a game load failure, the
+  turned controls.
+- Runs the files it changes, one at a time, when nothing draws. Reports each file's counts and times.
+
+##### Z. The end (main session)
+
+M10's device results into its notes (course load about 5 s for the airport and Seaside and under 2 s for the
+test track, 50 fps and above with 4 views, the look, controls, shadows, music and courses fine, engines removed,
+no zoom confirmed on Android; the iPhone still to check); the full browser suite; `plan.md` (the flow, the game
+module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (protocol rules, the test map),
+`docs/history.md`, `docs/unused.md`, the device run, and this file folded into the history and deleted.
+
+#### Decisions made during the run
+
+(The main session logs here what it decided without the user, for the review at the end.)
+
+- Task 0: the old lobby's and game bar's two-click buttons moved to `shared/confirm-click.js` lose their label
+  swap ("End it?", "Close it?", "Remove?") at once, since the shared rule has no label change; tasks A and T
+  replace those screens and their tests anyway.
+- Task 0: `raceSounds.stop()` went with the engines in both races (nothing is held any more), and `voice` left
+  `host/audio/synth.js` (no other user). `shared/icons.js` also exports `ICON_NAMES` (for its unit test).
+- After T: its tests found the 3D race's first view label under the back arrow and the clock under the gear;
+  the top-left view's name and item frame now start below the arrow (`views.js`, `view-hud.js`) and the clock sits
+  under the gear. The old 80 px lift of the bottom-right view's place (for the removed bar) is gone.
+- Task T: m7d2's start-lights test now compares the lamps from the first countdown number it sees (3 or 2),
+  since a software frame can take longer than the first second.
+- After A's review: a closed room drops late messages, its listener and its grace timers (`room.close()`), a
+  late `setRoomOpen` from a stopped game is ignored, and a throw while a game's screen is set up ends the game
+  like any other error. Not done: a timeout for a server that accepts the socket but never answers
+  `CREATE_ROOM` (the server always answers).
+- After A: the 3D tools icon stays under the top bar (the mockup has it in the bar, left of the gear): the bar
+  is the shell's and the icon the game's, and moving it would make the shell know a game's control.
+- After C: `blurb` left `course-previews.js` and the items' `on` switch (`toggleItems`) left `item-settings.js`,
+  with their tests, since nothing shows or sets them any more.
+- Task A: one `#settings-button`, in a top bar that is always there (picker and games); the input lab's
+  `minPlayers` 2 -> 1 so the picker reads "1 to 9" as the mockup; the picker's title at 4em (4.4em wrapped); the
+  lost-connection cover is replaced by the picker's problem line; `server/` unchanged (nothing parked).
+- Task D: the lab's cards moved down (grid from y=110, cards 310 high) and its title into the right column, to
+  keep the top corners clear; `host/buttons.js` now holds only `drawCloseButton`.
+- Task C: the 2D race's "Needs 2 players" rule is `MIN_PLAYERS` in its own `race.js`; both races' `isDone()`
+  return false (the shell's back arrow is the only way out); no "Results" heading; the 3D tools icon sits under
+  the shell's top bar, 5 em down on the right.
+- Task B: the phone still takes the wake lock but no longer shows its status (the lobby line that showed it is
+  gone, and the UI rules say show only what the decision needs).
+- Task 0: `--pp-danger` keeps its value (`#8e2b22`); the mockup's brighter red was not taken as a token change.
+
+#### Parked for the user
+
+Nothing was parked.

@@ -185,6 +185,8 @@ describe('M10b host shell', () => {
     assert.equal(await hostPage.textContent(`#join-players [data-player-id="${phones[0].playerId}"]`), 'Ana');
     await saveScreenshot(hostPage, 'm10b-4-host-join-window');
 
+    // The window's own close icon is only on the page while it is open, so it is checked here.
+    assert.deepEqual(await unnamedIconButtons(), []);
     await clickNow(hostPage, '#join-close-button');
     await hostPage.waitForSelector('#join-window', { state: 'hidden' });
     assert.equal(await hostPage.isVisible('#kart-2d-setup'), true);

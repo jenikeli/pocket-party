@@ -441,7 +441,7 @@ covers M8d's), in "M9" in `docs/3d-findings.md`, beside the "M9: rock study".
   from the glide; boats rock through a copy of Seaside's private `addBoats`; `kart-physics.js` is 231 lines (split
   in M10); the start gate's sign still reads as on every course.
 
-### M10: Polish (built, device run pending)
+### M10: Polish (done)
 The whole app's look, the phone in portrait, sound and music, and the leftovers of M7 to M9. Built as one queue
 of 20 tasks run without the user (2026-11-12 and 13); every task, interface and decision is in "M10" in
 `docs/history.md`, what was measured and the device-run procedure in "M10" in `docs/3d-findings.md`.
@@ -479,16 +479,33 @@ of 20 tasks run without the user (2026-11-12 and 13); every task, interface and 
 - **Tests:** `m10-shell` and `m10-turned-controls` are new; m6b carries the 3D setup's checks. Every 3D test
   waits for the course build after Start race, Watch or Measure.
 - **A player who drops mid-race:** as before (the kart coasts with no input); nothing was built.
+- **Device run (2026-11-13 and 14, iPad and an Android phone; results in "M10" in `docs/3d-findings.md`):** courses
+  appear in about 5 s (test track under 2 s), 50 fps and above with 4 views, the look, controls, shadows, music
+  and courses fine. M10b replaced the lobby, the phone's lobby page, `confirm-click.js`, the engine sounds and
+  `voice` named above; the iPhone's checks moved to M10b's device run.
 - **Left open:** why bloom costs 3.5 ms with 4 views; the kit maps now stay for the whole game (about 100 MB
   after all three courses, trimming designed in the history if the iPad needs it); `index.js` (232 lines) and
   `renderer.js` (212) of the 3D race are still a little long.
 
-### M10b: Each game runs its own lobby, and the icon UI (planned)
-Asked for after M10's device run. The plan, with the user's decisions and every task, is `docs/queue.md`: the host
-page only picks a game (no room there); a room per game, created when the game has loaded and closed by the back
-arrow; joining through the big QR window in every game; Remove in every game's lobby; icons instead of words and
-colour as the confirmation (`CLAUDE.md`, "UI design"); engine sounds removed. Run it in a fresh chat with
-`/loop run the M10b queue in docs/queue.md`.
+### M10b: Each game runs its own lobby, and the icon UI (built, device run pending)
+Built 2026-11-14 as one queue; every task, decision and the device-run procedure are in "M10b" in
+`docs/history.md`. The flow and the game module interface above describe it.
+- **The host page only picks a game** (`host/game-picker.js`): no room there. Play loads the game, then
+  `host/game-session.js` makes its room (`host/room.js`, one per game; `game-opening.js` holds the order) and
+  the join window opens by itself. The back arrow (two clicks) closes the room; phones show "The game ended".
+- **The top bar** (`host/game-bar.js`, `top-bar.css`): back arrow left; room code, add players and the gear
+  right. Settings (`host/settings.js`): volumes and the hold time, in the host's localStorage.
+- **Icons and confirming by colour:** `shared/icons.js` (`icon(name)`), `shared/confirm-click.js`
+  (`confirmOnSecondClick`), `.pp-icon`, `.pp-icon-button`, `.armed` on host and phone; the canvas version for
+  the input lab is `drawCloseButton` in `host/buttons.js`.
+- **Each game is its own lobby:** both races' setup screens use `host/kart/player-rows.js` (Remove per row)
+  and `startBlocker` in `host/kart/setup.js`; the 2D race needs 2 players (`MIN_PLAYERS` in its `race.js`); the
+  input lab's room is always open. No game's `isDone()` is ever true now.
+- **The phone** has no lobby page: join, then the game's screen; `others` and the `lobby` screen left
+  `CONTROLLER_STATE`.
+- **No engine sounds** in either race.
+- **Tests:** the browser tests' helpers are `openHost` (to the picker) and `startGame(hostPage, { gameId })`
+  (returns the room code; phones join after it).
 
 ### M11: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin

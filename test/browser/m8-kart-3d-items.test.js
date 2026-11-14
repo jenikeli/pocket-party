@@ -102,8 +102,8 @@ describe('M8 items', () => {
     await saveScreenshot(hostPage, 'm8-0-host-setup-items');
   });
 
-  // Allows only `id` on the setup screen (none at all for null: every item off is items off) (the buttons keep their state from race to race). The row redraws on
-  // the host's next frame, which software drawing makes slow, so each click waits for its button to change.
+  // Allows only `id` on the setup screen, or none at all for null: every item off is items off. The buttons keep
+  // their state from race to race. The row redraws on the host's next frame, which software drawing makes slow, so each click waits for its button to change.
   async function allowOnly(id) {
     for (const each of Object.values(KART_ITEMS)) {
       const selector = `[data-item-id="${each}"]`;

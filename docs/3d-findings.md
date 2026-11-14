@@ -1640,3 +1640,14 @@ run is for what they cannot: real touch and Safari, the iPad's look and speed, s
 
 **Report back:** the build times of step 9, the fps and the Measure report of step 10, the volumes of step 5,
 and the sounds and tunes to change.
+
+### Device run results (2026-11-13 and 14, iPad host, an Android phone)
+
+- **Course build:** about 5 s for Palm Bay Airport and for Seaside Skyway, under 2 s for the test track.
+- **Frame rate:** 50 fps and above with 4 views.
+- **Fine as built:** the look, the turned controls, the kart shadows, the music, the courses.
+- **Engine sounds:** "the only annoying sound"; removed from both races in M10b.
+- **No zoom:** confirmed on Android. The iPhone was not at hand: its checks (no zoom, the notch and home bar,
+  tilt with the phone turned) moved to M10b's device run.
+- **The UI:** the lobby and its words led to M10b (each game runs its own lobby, icons, colour as the
+  confirmation) and to `CLAUDE.md`'s "UI design" section.

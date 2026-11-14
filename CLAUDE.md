@@ -25,7 +25,7 @@ A local-network racing party game in the style of Mario Kart (a 2D race first, t
 ```
 
 - **Server** (`server/`): Node.js. Serves static files and relays WebSocket messages between host and controllers. Manages rooms and the player-slot table (id, secret token, connected flag). It contains NO game logic.
-- **Host** (`host/`): runs in the host device's browser. Owns all authoritative game state and game logic, including physics. The shell (Tap to start, lobby, join window, loading screen) is plain HTML and CSS in the "Night" look (`host/ui.css`; M10); each game module brings its own renderer (Phaser, Three.js, ...) and puts its HTML panels in its own `div.pp-stage`.
+- **Host** (`host/`): runs in the host device's browser. Owns all authoritative game state and game logic, including physics. The shell (Tap to start, the game picker, the top bar over a game, the join window, settings, the loading screen) is plain HTML and CSS in the "Night" look (`host/ui.css`; M10, M10b); each game module brings its own renderer (Phaser, Three.js, ...) and puts its HTML panels in its own `div.pp-stage`.
 - **Controller** (`controller/`): plain HTML/JS, mobile-first, no framework. Joins with a room code, sends inputs, shows minimal UI for the current game state.
 - **Shared** (`shared/`): message type definitions and constants used by all three. Single source of truth for the protocol.
 
@@ -53,14 +53,15 @@ Three input types to support and compare: **tap**, **swipe**, **tilt**. Each liv
 
 - All messages are JSON: `{ type: string, ...payload }`. Types live in `shared/protocol.js`. Add new types there first.
 - On first join, the server issues each controller a random `playerId` and secret `token`. The controller stores both in `localStorage`.
-- Reconnect: the controller sends `{type: "rejoin", roomCode, playerId, token}`. The server validates the token. The host holds the slot for a grace period (default 30 seconds, set in the lobby) before freeing it, and can also remove a player at once. A page cannot keep its own socket alive once the OS suspends it, so design for drops: when the controller tab becomes visible again it shows "Reconnecting..." and rejoins automatically, with a "Tap to reconnect" fallback. Never accept a rejoin on `playerId` alone.
+- Reconnect: the controller sends `{type: "rejoin", roomCode, playerId, token}`. The server validates the token. The host holds the slot for a grace period (default 30 seconds, set in the host's settings) before freeing it, and can also remove a player at once. A page cannot keep its own socket alive once the OS suspends it, so design for drops: when the controller tab becomes visible again it shows "Reconnecting..." and rejoins automatically, with a "Tap to reconnect" fallback. Never accept a rejoin on `playerId` alone.
+- A room is one game (M10b): the host creates it (`CREATE_ROOM`) once the game has loaded and closes it by closing its socket when the game ends (the back arrow), at which the server sends every phone `ROOM_CLOSED` and the phones show "The game ended". A phone in a room is always on its game's screen; there is no lobby screen and no name change after joining.
 - The host is the single authority on game state. Controllers send inputs, not state changes.
 - Mobile browsers suspend background tabs and sockets when the screen locks. Treat disconnects as normal, not as errors. Measured: hidden pages lost their socket after about 14-30 s in two cases and kept it for 90 s+ in another. After resuming, `ws.readyState` can still read open on a dead socket, so on `visibilitychange` to visible, send a ping and reconnect if no pong arrives within about 2 seconds.
 
 ## Assets
 
-- The host preloads everything needed for the lobby before it creates a room. The room code is not shown until loading finishes, so nobody can join a half-loaded game. Controllers need almost no assets and load instantly.
-- Each game's code and assets are lazy-loaded (the chosen game can start loading while players are in the lobby). Before a game starts, the host confirms its assets are ready.
+- The host page has no room: it only picks a game (M10b). A game's room is created when the game has loaded, and the room code is not shown before that, so nobody can join a half-loaded game. Controllers need almost no assets and load instantly.
+- Each game's code and assets are lazy-loaded on Play, behind the loading screen. Before a game starts, the host confirms its assets are ready.
 - Prefer sprite atlases, small compressed images, and short audio. Keep the total payload small (target under about 50 MB). Draw as much as possible procedurally (the stadium track is generated from math, not images).
 - Keep an `assets/manifest.json` listing every asset with a version or hash.
 

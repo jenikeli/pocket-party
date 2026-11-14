@@ -8,7 +8,6 @@ import { waitUntil } from './browser.js';
 export const GAME_BACK_BUTTON = '#game-back-button';
 export const RACE_AGAIN_BUTTON = '#kart-2d-race-again-button';
 export const LAPS_MINUS_BUTTON = '#kart-2d-laps-minus';
-export const LAPS_PLUS_BUTTON = '#kart-2d-laps-plus';
 export const START_RACE_BUTTON = '#kart-2d-start-button';
 
 // The cross on one player's row in a race's setup screen (two clicks remove the player).

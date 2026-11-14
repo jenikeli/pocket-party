@@ -64,11 +64,14 @@ A registry, `host/games/index.js`, lists each game (`{ id, title, blurb, minPlay
 
 ```
 load(onProgress)       -> Promise. Fetch and decode assets, behind the shell's loading screen. onProgress(0..1) optional.
-start({ container, players, setControllerView, removePlayer, pingPlayer, setRoomOpen, bar })
+start({ container, players, setControllerView, removePlayer, pingPlayer, pickColor, setRoomOpen, bar })
                        -> Build the game in container (an empty full-screen element). players is the room's live
                           roster (empty at start, fills as phones join). setControllerView(playerId, view) sets what
                           that phone shows. removePlayer(playerId) kicks (onPlayerLeft follows). pingPlayer(playerId,
-                          sentAt) sends a PING; the PONG comes to onMessage. setRoomOpen(open): close the room for a
+                          sentAt) sends a PING; the PONG comes to onMessage. pickColor(playerId, colorIndex) gives
+                          the player that colour slot if nobody else holds it (a dropped player in grace still holds
+                          theirs), tells their phone, and returns whether it did; the game decides when picking is
+                          allowed (the kart races: setup screen only). setRoomOpen(open): close the room for a
                           race, open it on setup and results (the bar then shows the room code and Add players).
                           bar.slot: an element in the shell's bar for the game's own controls. bar.setDocked(true)
                           moves the bar into a strip along the bottom (--pp-strip, 4 stage em) and ends the
@@ -92,7 +95,7 @@ Rules that keep games affordable:
 - **Controller view is state, not events:** `setControllerView` stores a small object per player, sent in `CONTROLLER_STATE` with the game id, so a rejoining phone gets it again. Views are sent from `step()`.
 - **Input stays `INPUT`** (kinds in `INPUT_KINDS`: steering, held buttons, choices). A game that steers continuously keeps the latest input per player and reads it in `step`.
 
-Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when `CONTROLLER_STATE` names the game (`controller/game-screen.js`): `start(container, send)`, `showView(view)`, `stop()`.
+Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when `CONTROLLER_STATE` names the game (`controller/game-screen.js`): `start(container, send, leave)`, `showView(view, player)`, `stop()`. `leave()` is the shell's leave, with no confirm of its own (the game adds the two taps); `player` is `{ name, color }` from `CONTROLLER_STATE`.
 
 **Flow:** Tap to start (full screen, wake lock, audio unlock) -> game picker -> Play -> loading screen -> the room is created and the game starts on its setup screen; the join window (QR, code, link) opens by itself, later from Add players -> race (room closed) -> results (open) -> Race again, or Back to games (two clicks), which closes the room: phones show "The game ended".
 

@@ -164,7 +164,7 @@ test('CPU karts lap the course at every engine class: over the jump, up the wall
     }
     lapTimes[engineClass] = playerKart(race, 'p1').finishTime / 3;
   }
-  // The middle lane, braking for every corner and never drifting: MK8DX's staff ghosts lap its courses in 38-44 s
+  // The middle lane, braking for every corner and never drifting: The reference game's staff ghosts lap its courses in 38-44 s
   // at 150cc, with drifts and three mushrooms.
   assert.ok(lapTimes[150] > 34 && lapTimes[150] < 44, `150cc lap ${lapTimes[150]} s`);
   assert.ok(lapTimes[50] > lapTimes[100] && lapTimes[100] > lapTimes[150] && lapTimes[150] > lapTimes[200], JSON.stringify(lapTimes));
@@ -223,7 +223,7 @@ test('a player leaving: their kart goes; if everyone left has finished, the race
   assert.deepEqual(race.karts.map((kart) => kart.place).sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
 });
 
-test('engine classes: speeds are 150cc\'s times 0.8, 0.9, 1 and 1.5, as in MK8DX, acceleration included', () => {
+test('engine classes: speeds are 150cc\'s times 0.8, 0.9, 1 and 1.5, as in the reference game, acceleration included', () => {
   // The kart on pole accelerating for 3 s down the start straight: the same curve, scaled by the class. A full
   // grid of players, so the pole kart is a player's, held straight with Go from GO (a CPU kart may rocket start
   // and is caught up to the players).

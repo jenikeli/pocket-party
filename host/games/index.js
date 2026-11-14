@@ -11,12 +11,12 @@ import { MAX_PLAYERS } from '/shared/protocol.js';
 // the game is chosen (null: a plain dark fade).
 export const GAMES = Object.freeze([
   // Split screen, one view per player, so at most 4 (M6). CPU karts fill the field, so one player can race alone,
-  // as in MK8DX. It starts with no players too, for the setup screen's Watch (self-driving karts, no phones);
+  // as in the reference game. It starts with no players too, for the setup screen's Watch (self-driving karts, no phones);
   // a race itself still needs a player (canStartRace in host/kart/setup.js). The picture is the saved preview
   // of its first course (host/games/kart-3d/course-previews.js).
   Object.freeze({
     id: 'kart-3d',
-    title: 'Kart race 3D',
+    title: 'Kartwheel',
     blurb: 'Up to 4 players, split screen. CPU karts fill the grid.',
     minPlayers: 0,
     maxPlayers: 4,
@@ -25,7 +25,7 @@ export const GAMES = Object.freeze([
   }),
   Object.freeze({
     id: 'kart-2d',
-    title: 'Kart race 2D',
+    title: 'Kartwheel Mini',
     blurb: `2 to ${MAX_PLAYERS} players on one screen.`,
     minPlayers: 2,
     maxPlayers: MAX_PLAYERS,

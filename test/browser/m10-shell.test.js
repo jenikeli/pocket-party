@@ -114,14 +114,14 @@ describe('M10b host shell', () => {
 
   test('the picker shows the chosen game, its blurb, how many play it, and its thumbnails', async () => {
     assert.equal(await hostPage.getAttribute('[data-game-id="kart-3d"]', 'aria-pressed'), 'true');
-    assert.equal(await hostPage.textContent('#picker-game-title'), 'Kart race 3D');
+    assert.equal(await hostPage.textContent('#picker-game-title'), 'Kartwheel');
     assert.equal(await hostPage.textContent('#picker-player-range'), '1 to 4');
     // The one line about the game is back under its name (from the registry's blurb).
     assert.match(await hostPage.textContent('#picker-game-blurb'), /\S/);
     await clickNow(hostPage, '[data-game-id="kart-2d"]');
     await hostPage.waitForSelector('[data-game-id="kart-2d"][aria-pressed="true"]');
     assert.equal(await hostPage.getAttribute('[data-game-id="kart-3d"]', 'aria-pressed'), 'false');
-    assert.equal(await hostPage.textContent('#picker-game-title'), 'Kart race 2D');
+    assert.equal(await hostPage.textContent('#picker-game-title'), 'Kartwheel Mini');
     assert.match(await hostPage.textContent('#picker-game-blurb'), /\S/);
     assert.equal(await hostPage.textContent('#picker-player-range'), '2 to 9');
     await clickNow(hostPage, '[data-game-id="input-lab"]');
@@ -171,7 +171,7 @@ describe('M10b host shell', () => {
     });
     await clickNow(hostPage, '#play-button');
     await hostPage.waitForSelector('#loading-screen:not([hidden])');
-    assert.equal(await hostPage.textContent('#loading-title'), 'Kart race 2D');
+    assert.equal(await hostPage.textContent('#loading-title'), 'Kartwheel Mini');
     assert.equal(hostSocketCount, 0, 'no room while the game loads');
     await saveScreenshot(hostPage, 'm10b-3-host-loading');
 

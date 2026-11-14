@@ -1,4 +1,4 @@
-// The kit's motor yacht (M7d4d), after the one on Daisy Circuit's water: a white hull with a raised bow and a curved
+// The kit's motor yacht (M7d4d), after the one on the reference seaside course's water: a white hull with a raised bow and a curved
 // sheer line, a rail of posts round the foredeck, a cabin with big brown-framed windows and a lifebuoy on its side,
 // a flybridge on the cabin's roof (motor-yacht-flybridge.js), and a flat transom with a swim platform. One geometry
 // coloured per vertex, about 7.4 long (8 with the swim platform), facing +z, its waterline at y = 0. Takes the kit

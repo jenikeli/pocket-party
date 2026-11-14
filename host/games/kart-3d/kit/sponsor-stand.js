@@ -1,4 +1,4 @@
-// The kit's sponsor stand (M7d2, rebuilt in M7d4c3 to the study), as Mario Circuit's "Nintendo" board: one printed
+// The kit's sponsor stand (M7d2, rebuilt in M7d4c3 to the study), as the reference circuit course's brand board: one printed
 // board (kit/sponsors.js) facing the road in a frame with a raised rim, on two bevelled legs with feet; the back
 // is a plain painted panel. Set beside the road. Each stand shows its own brand, so the stands are merged into
 // one shape with their own texture coordinates rather than instanced. Used by kit/props.js.

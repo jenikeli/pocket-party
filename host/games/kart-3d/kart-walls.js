@@ -21,7 +21,7 @@ const WALL_DEPTH = 1.5;
 export const HIT_SPEED = 1;
 
 // Pushes the kart back inside a wall it went through and deals with its speed into the wall. Returns true if
-// it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in MK8DX. A
+// it touched one. Edges without a wall let it through, to fall. A wall ends a slipstream boost, as in the reference game. A
 // sticky wall holds the kart where it touched it, with no bounce.
 export function hitWall(track, kart, contact, dt) {
   const limit = outerEdge(contact) - KART_RADIUS;

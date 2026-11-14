@@ -1,4 +1,4 @@
-// The kit road's textures (M7d2), from the look study in docs/mk8dx-reference.md: worn paint that shows the
+// The kit road's textures (M7d2), from the look study in docs/kart-reference.md: worn paint that shows the
 // asphalt's stones through it, riveted metal plates for anti-gravity road, and grass with blades in it (the asphalt is photo-scanned, photo-asphalt.js). Each is a tile that repeats without a seam,
 // laid over the world by the strip builder (one tile per 8 units). Used by kit/road.js, kit/road-paint.js and
 // kit/kit.js (the decks' grass).

@@ -1,6 +1,6 @@
-// The start gate's pictures (M7d2, moved out of kit/start-gate.js in M7d4): the sign reading MARIO KART in the
+// The start gate's pictures (M7d2, moved out of kit/start-gate.js in M7d4): the sign reading KARTWHEEL in the
 // course's colours, and since M7d4 its relief (a normal map, so the letters and their outline stand out from
-// the board and catch the sun, as the raised letters on MK8DX's gates do), and the mushroom badge on top. Used
+// the board and catch the sun, as the raised letters on the reference game's gates do), and the mushroom badge on top. Used
 // by kit/start-gate.js.
 
 import { createCanvas, canvasTexture } from '../canvas-texture.js';
@@ -15,7 +15,7 @@ const RAISE = { board: 40, stripe: 90, outline: 150, letters: 240 };
 // The relief's edges are softened over this many pixels either way, so the letters look bevelled, not cut.
 const SOFTEN = 3;
 
-// Returns { map, relief }: MARIO KART in white with an outline on the theme's background, a stripe along the
+// Returns { map, relief }: KARTWHEEL in white with an outline on the theme's background, a stripe along the
 // foot and checks at both ends; and the normal map that raises them.
 export function drawSign(theme) {
   const colours = createCanvas(WIDTH, HEIGHT);
@@ -53,9 +53,9 @@ function paintSign(context, { background, stripe, outline, letters = '#ffffff', 
   context.lineJoin = 'round';
   context.lineWidth = 22;
   context.strokeStyle = outline;
-  context.strokeText('MARIO KART', 512, 108, 840);
+  context.strokeText('KARTWHEEL', 512, 108, 840);
   context.fillStyle = letters;
-  context.fillText('MARIO KART', 512, 108, 840);
+  context.fillText('KARTWHEEL', 512, 108, 840);
 }
 
 // The normal map of the heights drawn on `context` (grey levels), their edges softened by a box blur run

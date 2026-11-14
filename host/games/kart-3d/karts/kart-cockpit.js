@@ -1,4 +1,4 @@
-// Where the driver sits in our go-kart (M7d5), as in MK8DX's Standard Kart: a bucket seat (a low rounded shell in
+// Where the driver sits in our go-kart (M7d5), as in the reference game's standard kart: a bucket seat (a low rounded shell in
 // the main colour with dark cushions in it, so from behind it reads as part of the kart rather than a dark slab)
 // and a small black steering wheel with a silver three-spoke hub, on a column rising from the nose. The same for
 // every design. Used by design-shapes.js.

@@ -6,7 +6,7 @@ import { pointAt, stationIndexAt, wrapDistance, progressBetween } from '../track
 import { subtract, length } from '../vector.js';
 import { tuning } from '../tuning.js';
 
-// Boxes in a row stand about this far apart, as in MK8DX's rows: a kart anywhere across the road meets one
+// Boxes in a row stand about this far apart, as in the reference game's rows: a kart anywhere across the road meets one
 // unless it aims between two.
 const BOX_SPACING = 4;
 // The outer boxes stand at least this far inside the road's edges.

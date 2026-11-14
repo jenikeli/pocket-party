@@ -1,5 +1,5 @@
 // The airfield ground's materials (M9, Palm Bay Airport): the land, grass and sand blended per vertex, the grass
-// mown in stripes; the apron's pale concrete slabs with dark joints (MK8DX's Sunshine Airport's apron); and dark
+// mown in stripes; the apron's pale concrete slabs with dark joints (the reference airport course's apron); and dark
 // tarmac for the taxiway and the runway. Every material takes vertex colours, so the course's baked shade darkens
 // the ground at the foot of walls. Used by kit/terrain.js.
 

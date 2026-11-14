@@ -1,4 +1,4 @@
-// The kit's giant Koopa shell (M7d3, rebuilt in M7d4d to the study of Koopa Cape's, docs/mk8dx-reference.md): a
+// The kit's giant shell (M7d3, rebuilt in M7d4d to the study of the reference cape course's, docs/kart-reference.md): a
 // green dome of grooved scutes (a middle one, a ring of six, a ring of twelve; the grooves are cut into the dome
 // as well as drawn in its maps), a rim of twelve fat rounded white lobes, one under each outer scute, and a dark
 // underside. Stands round y = 0 at its rim, radius 1 (scaled per course), as before. Takes the kit and returns the
@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import { at, coloured, mergeShapes, shaded } from '../shape-utils.js';
-import { scuteAt, drawScuteMaps } from './koopa-shell-scutes.js';
+import { scuteAt, drawScuteMaps } from './giant-shell-scutes.js';
 import { drawnOnce } from '../canvas-texture.js';
 
 const DOME_RADIUS = 0.96;
@@ -17,8 +17,8 @@ const LOBE_SIZE = { along: 0.29, across: 0.14, up: 0.17 };
 const WHITE = 0xfffbee;
 const UNDERSIDE = 0x3a2a1c;
 
-export function buildKoopaShell({ keep }) {
-  const maps = drawnOnce('koopa-scutes', drawScuteMaps);
+export function buildGiantShell({ keep }) {
+  const maps = drawnOnce('giant-scutes', drawScuteMaps);
   Object.values(maps).forEach(keep);
   const { map, normalMap, aoMap, roughnessMap } = maps;
   const geometry = mergeShapes([buildDome(), ...buildLobes(), buildUnderside()]);

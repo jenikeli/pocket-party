@@ -1,15 +1,15 @@
-// The kit's MKTV van (M7d2, rebuilt in M7d4c3 to the study): a white TV van with a blue stripe, a windscreen in a
+// The kit's TV van (M7d2, rebuilt in M7d4c3 to the study): a white TV van with a blue stripe, a windscreen in a
 // frame, a grille and headlights, side windows, door seams and handles, mirrors, bumpers, tyres with hubcaps, and
-// on its roof a rack carrying a satellite dish on a mount and a Toad with a TV camera (kit/mktv-toad.js). The MKTV
+// on its roof a rack carrying a satellite dish on a mount and a cameraman with a TV camera (kit/tv-cameraman.js). The KWTV
 // board (kit/sponsors.js) is on both its sides. Facing +z, standing on y = 0. Used by kit/props.js.
 
 import * as THREE from 'three';
 import { roundedBox, roundedCylinder, at, between, coloured, mergeShapes } from '../shape-utils.js';
 import { sponsorUv } from './sponsors.js';
-import { buildToad } from './mktv-toad.js';
+import { buildCameraman } from './tv-cameraman.js';
 
-// The MKTV board's place among the sponsors (kit/sponsors.js).
-const MKTV = 3;
+// The KWTV board's place among the sponsors (kit/sponsors.js).
+const KWTV = 3;
 const LENGTH = 4.6;
 const WIDTH = 2;
 const ROOF = 2.33;
@@ -20,7 +20,7 @@ const STEEL = 0x9aa0a8;
 
 // Returns the van's parts: its shape (coloured per vertex, painted) and its two printed boards (in the sponsor
 // atlas's texture coordinates, the sponsors' material).
-export function buildMktvVan(kit) {
+export function buildTvVan(kit) {
   const body = mergeShapes([...bodyShell(), ...frontEnd(), ...sides(), ...wheels(), ...roof()]);
   return [
     { geometry: kit.keep(body), material: kit.materials.painted },
@@ -84,7 +84,7 @@ function wheels() {
   }));
 }
 
-// The roof rack (two rails and three cross bars on posts), the dish on its mount toward the back, and the Toad
+// The roof rack (two rails and three cross bars on posts), the dish on its mount toward the back, and the cameraman
 // with his camera toward the front.
 function roof() {
   const rail = (from, to) => coloured(between(new THREE.CylinderGeometry(0.03, 0.03, 1, 5), from, to), STEEL);
@@ -103,7 +103,7 @@ function roof() {
     coloured(at(roundedCylinder(0.2, 0.26, 0.1, 0.03, 10), 0, top + 0.05, -1.1), STEEL),
     coloured(at(new THREE.CylinderGeometry(0.06, 0.08, 0.4, 6), 0, top + 0.3, -1.1), STEEL),
     ...dish(top + 0.5),
-    ...buildToad().map((toad) => toad.translate(0, top, 0.7)),
+    ...buildCameraman().map((piece) => piece.translate(0, top, 0.7)),
   );
   return parts;
 }
@@ -131,7 +131,7 @@ function buildBoards() {
     const board = new THREE.PlaneGeometry(3, 0.94);
     const uv = board.attributes.uv;
     for (let index = 0; index < uv.count; index += 1) {
-      uv.setXY(index, ...sponsorUv(MKTV, uv.getX(index), uv.getY(index)));
+      uv.setXY(index, ...sponsorUv(KWTV, uv.getX(index), uv.getY(index)));
     }
     return board.rotateY((side * Math.PI) / 2).translate(side * (WIDTH / 2 + 0.01), 1.5, -0.3);
   });

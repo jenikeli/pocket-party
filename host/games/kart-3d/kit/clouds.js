@@ -1,5 +1,5 @@
 // The kit's cumulus cloud (M7d3; M7c's with more puffs and shading): puffs heaped in two layers on a flat base,
-// white on top and blue-grey underneath, as MK8DX's big clouds are. One geometry coloured per vertex, about 30
+// white on top and blue-grey underneath, as the reference game's big clouds are. One geometry coloured per vertex, about 30
 // across and 7.5 tall above y = 0, its base flat. Takes the kit and returns the parts, [{ geometry, material }].
 // Used by the seaside sky.
 

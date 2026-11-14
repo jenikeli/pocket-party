@@ -1,4 +1,4 @@
-// The kit's traffic cone (M7d4c5), after MK8DX's: orange with white bands that stand a little proud of the
+// The kit's traffic cone (M7d4c5), after the reference game's: orange with white bands that stand a little proud of the
 // cone, on a square foot with bevelled corners and a flange. About 0.75 tall, the foot 0.52 across. One shape
 // coloured per vertex, so a row of dozens draws as one instanced mesh. Used by kit/props.js.
 

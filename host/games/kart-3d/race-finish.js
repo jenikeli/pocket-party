@@ -6,7 +6,7 @@ import { handOver } from './race-cpus.js';
 import { RACE_PHASES } from './race-phases.js';
 
 // Once the first player finishes, the others have this long before the race ends without them (the 2D race's
-// rule; MK8DX waits for every player, but a phone left on a table would then hold the race up for ever).
+// rule; the reference game waits for every player, but a phone left on a table would then hold the race up for ever).
 export const FINISH_TIME_LIMIT_SECONDS = 30;
 
 // The race's own clock: seconds since GO (0 before it).
@@ -16,7 +16,7 @@ export function raceClock(race) {
 
 // A new lap starts the clock for that lap; past the last lap's line the kart has finished. distance only
 // grows by driving forward, so a kart that reverses over the line must drive that bit again. A finished player
-// hands their kart to the CPU driver, as in MK8DX, so it does not stand in the road.
+// hands their kart to the CPU driver, as in the reference game, so it does not stand in the road.
 export function countLaps(race, track, kart) {
   const lap = Math.min(Math.max(Math.floor(kart.distance / track.length) + 1, 1), race.laps);
   if (kart.finishTime === null && lap > kart.lap) {
@@ -52,7 +52,7 @@ export function updatePlaces(race) {
 }
 
 // Over when every player has finished, or the time limit after the first player is up. CPU karts never hold the
-// race up: those still driving are placed by how far round they got, as in MK8DX.
+// race up: those still driving are placed by how far round they got, as in the reference game.
 export function isRaceOver(race) {
   const players = race.karts.filter((kart) => kart.playerId !== null);
   if (players.every((kart) => kart.finishTime !== null)) {

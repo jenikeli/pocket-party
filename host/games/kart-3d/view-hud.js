@@ -1,6 +1,6 @@
 // What one split-screen view of the 3D race shows over its picture, as HTML on top of the canvas: the player's
 // name top left (so players know which view is theirs), the lap bottom left and the place bottom right (where
-// MK8DX puts them), the item frame under the name (the held item, or the roulette, and a ring per running effect,
+// the reference game puts them), the item frame under the name (the held item, or the roulette, and a ring per running effect,
 // M8a), and a banner in the middle ("Final lap!", "Finish!"). Sizes follow the view's height, so a
 // quarter view gets smaller text. Used by host/games/kart-3d/views.js, one per view.
 
@@ -9,7 +9,7 @@ import { KART_ITEMS } from '/shared/protocol.js';
 import { ITEM_ICONS } from '/shared/item-icons.js';
 import { setText } from '/host/kart/panel-parts.js';
 
-// The roulette flips to the next icon this often, in milliseconds (MK8DX's spins fast).
+// The roulette flips to the next icon this often, in milliseconds (the reference game's spins fast).
 const ROULETTE_FLIP_MS = 80;
 const ROULETTE_IDS = Object.values(KART_ITEMS);
 

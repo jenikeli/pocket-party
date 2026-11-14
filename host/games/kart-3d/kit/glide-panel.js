@@ -1,4 +1,4 @@
-// The glide ramp's panel (M9): the whole ramp before a glide is covered in glowing cyan, as in MK8DX, with white
+// The glide ramp's panel (M9): the whole ramp before a glide is covered in glowing cyan, as in the reference game, with white
 // glider-shaped arrows (a swept wing with a notched tail) that scroll up the ramp toward the lip. Like the LED
 // panels (kit/led-panels.js) it is a lit-looking base under a see-through layer of arrows added to its light, and it
 // glows as brightly as the Dash panel glow slider says. Where it goes comes from kit/road-marks.js's

@@ -1,4 +1,4 @@
-// The grandstand's silver steelwork (M7d4c3), as on Toad Circuit's stands in MK8DX: lattice truss columns (four
+// The grandstand's silver steelwork (M7d4c3), as on the reference circuit course's stands: lattice truss columns (four
 // legs tied by rings and zigzag braces, on a foot plate), flat lattice girders between two lines of points, and
 // railings of round posts and rails. Each returns a list of thin shapes coloured per vertex, for the stand to
 // merge into one steel mesh. Used by kit/grandstand-structure.js and kit/grandstand-roof.js.

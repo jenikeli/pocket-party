@@ -64,7 +64,7 @@ function propPiece(name, size) {
 
 // Each prop's height, about, which frames it.
 const PROP_SIZES = {
-  cone: 0.8, 'tyre-stack': 1.2, 'warp-pipe': 2, 'giant-mushroom': 6, 'mktv-van': 3, 'sponsor-stand': 3,
+  cone: 0.8, 'tyre-stack': 1.2, 'warp-pipe': 2, 'giant-mushroom': 6, 'tv-van': 3, 'sponsor-stand': 3,
   'lantern-lamp': 5, 'triple-lamp': 6, floodlight: 12, palm: 8, parasol: 2.5, lounger: 1.2, surfboards: 2.5,
   'lifebuoy-post': 2, barrels: 1.2, 'round-tree': 6, hedge: 1.5, planter: 1.5,
 };

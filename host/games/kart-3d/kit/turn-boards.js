@@ -1,7 +1,7 @@
-// The kit's turn boards (M7d3), as round the outside of MK8DX's corners (Mario Circuit's last turn): red boards
+// The kit's turn boards (M7d3), as round the outside of the reference game's corners (the reference circuit course's last turn): red boards
 // with white chevrons pointing the way the road turns, turned to face the karts coming into the corner, on two
 // posts that stand clear of the barrier on the ledge, which widens under them (kit/barriers.js). Placed by
-// turnBoardSpots (kit/layout-rules.js). Since M7d4 built up as MK8DX's signs are (docs/mk8dx-reference.md, "The
+// turnBoardSpots (kit/layout-rules.js). Since M7d4 built up as the reference game's signs are (docs/kart-reference.md, "The
 // kit's objects up close"): a thick board whose rounded edges catch the light round its white rim, held to its
 // posts by clamps, on round posts with caps and foot plates. Two instanced meshes for the boards (one per direction) and
 // one for the posts and fittings. Used by the courses' dressings.

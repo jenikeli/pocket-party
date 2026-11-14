@@ -1,6 +1,6 @@
 // What holds the kit's floating road up (M7d3): concrete piers, a column with a wide cap under the road, or, on
 // the stretches a course's layout names, steel truss towers with lattice girders along the road's edges
-// (kit/truss.js), as under MK8DX's sky courses. None in gaps, and piers only under level road. Drawing only.
+// (kit/truss.js), as under the reference game's sky courses. None in gaps, and piers only under level road. Drawing only.
 // They cast no shadow: it would fall on the sea, which takes none.
 // Used by the courses' dressings.
 

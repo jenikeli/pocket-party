@@ -1,4 +1,4 @@
-// The 3D race's rules: the grid of 12 karts (players at the back, CPU karts filling the field as in MK8DX), the
+// The 3D race's rules: the grid of 12 karts (players at the back, CPU karts filling the field as in the reference game), the
 // countdown with the rocket start, laps, finishing, places, the time limit after the first player finishes, and
 // the engine classes. The race is plain data (see createRace). No Three.js, no DOM: unit tested in Node by
 // driving whole races. Used by host/games/kart-3d/index.js. The CPU drivers' part (their drivers, rocket starts
@@ -21,12 +21,12 @@ import { countLaps, endRace, updatePlaces, isRaceOver } from './race-finish.js';
 
 export { RACE_PHASES };
 
-// MK8DX always races 12 karts.
+// The reference game always races 12 karts.
 export const FIELD_SIZE = 12;
-// MK8DX's engine classes: each top speed is 150cc's times this share (docs/mk8dx-reference.md).
+// The reference game's engine classes: each top speed is 150cc's times this share (docs/kart-reference.md).
 export const ENGINE_CLASSES = Object.freeze({ 50: 0.8, 100: 0.9, 150: 1, 200: 1.5 });
 export const DEFAULT_ENGINE_CLASS = 150;
-// The grid: two staggered columns behind the start line, as in MK8DX.
+// The grid: two staggered columns behind the start line, as in the reference game.
 const GRID_LANES = [-3, 3];
 const GRID_FIRST_ROW = 3;
 const GRID_ROW_SPACING = 5;
@@ -39,7 +39,7 @@ const PLAYER_WEIGHT = 1;
 // `playerIds` in grid order, `laps`, `engineClass` (a key of ENGINE_CLASSES) and `cpuLevel` (a key of
 // CPU_LEVELS, cpu-levels.js) from the setup screen, `allowedItems` the item ids allowed (none: items off) and
 // `itemSeed` where the race's item draws start (items/item-rules.js; the game passes a fresh one each race).
-// As in MK8DX the players start at the back, behind the CPU karts. Returns the race: { phase, time, laps,
+// As in the reference game the players start at the back, behind the CPU karts. Returns the race: { phase, time, laps,
 // engineClass, cpuLevel, firstPlayerFinishTime, items, spinPosts, karts }; items is item-rules.js's createItems,
 // spinPosts spin-posts.js's createSpinPosts. time counts from the start of the countdown (GO is at GO_AT);
 // race-finish.js's raceClock() gives the race's own clock from GO.

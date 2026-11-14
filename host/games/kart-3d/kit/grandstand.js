@@ -1,7 +1,7 @@
-// The kit's grandstand (M7d2, rebuilt to the M7d4 study in M7d4c3 after Toad Circuit's in MK8DX): two decks of
-// stepped seating on silver lattice columns (kit/grandstand-structure.js) under a cantilevered roof with a MARIO
-// KART fascia (kit/grandstand-roof.js), sponsor boards (kit/sponsors.js) along its front wall, and a crowd of
-// small Toad-like spectators who hop now and then (kit/grandstand-crowd.js). Built straight, facing +z (toward
+// The kit's grandstand (M7d2, rebuilt to the M7d4 study in M7d4c3 after the reference circuit course's): two decks of
+// stepped seating on silver lattice columns (kit/grandstand-structure.js) under a cantilevered roof with a KARTWHEEL
+// fascia (kit/grandstand-roof.js), sponsor boards (kit/sponsors.js) along its front wall, and a crowd of
+// small mushroom-capped spectators who hop now and then (kit/grandstand-crowd.js). Built straight, facing +z (toward
 // the road), standing on y = 0 with its front at z = 0. Used by the courses' dressings.
 
 import * as THREE from 'three';
@@ -90,7 +90,7 @@ function stretchUv(geometry, scale) {
   return geometry;
 }
 
-// One tile of the fascia's sign: MARIO KART in white with a dark outline on red, a white star at each end. It
+// One tile of the fascia's sign: KARTWHEEL in white with a dark outline on red, a white star at each end. It
 // repeats along the fascia.
 function drawSignTexture() {
   const { canvas, context } = createCanvas(1024, 80);
@@ -102,9 +102,9 @@ function drawSignTexture() {
   context.lineJoin = 'round';
   context.lineWidth = 10;
   context.strokeStyle = '#5a0c08';
-  context.strokeText('MARIO KART', 512, 44);
+  context.strokeText('KARTWHEEL', 512, 44);
   context.fillStyle = '#ffffff';
-  context.fillText('MARIO KART', 512, 44);
+  context.fillText('KARTWHEEL', 512, 44);
   for (const x of [128, 896]) {
     drawStar(context, x, 40, 26);
   }

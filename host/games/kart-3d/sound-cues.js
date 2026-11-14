@@ -8,7 +8,7 @@
 import { START_OUTCOMES } from './rocket-start.js';
 import { BOOST_KINDS } from './kart-boosts.js';
 
-// The roulette ticks this often while it rolls, as MK8DX's item box roulette does.
+// The roulette ticks this often while it rolls, as the reference game's item box roulette does.
 export const ROULETTE_TICK_SECONDS = 0.08;
 // Spin and rocket start boosts have their own cues (spin, rocketStart), so their boost cue would play twice.
 const BOOSTS_WITH_OWN_CUES = [BOOST_KINDS.SPIN, BOOST_KINDS.ROCKET_START];

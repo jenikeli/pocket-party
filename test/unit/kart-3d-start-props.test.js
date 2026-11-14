@@ -1,4 +1,4 @@
-// Unit tests for the rebuilt floodlight, bunting pennant, sponsor stand and MKTV van (M7d4c3): their parts and
+// Unit tests for the rebuilt floodlight, bunting pennant, sponsor stand and TV van (M7d4c3): their parts and
 // materials, their footprint within PROP_REACH, no NaN, and their triangle counts. Run without a browser, with the
 // same stand-in kit and import hook as kart-3d-kit-parts.test.js.
 
@@ -22,7 +22,7 @@ registerHooks({
 
 const THREE = await import('three');
 const { buildFloodlight } = await import('../../host/games/kart-3d/kit/floodlight.js');
-const { buildMktvVan } = await import('../../host/games/kart-3d/kit/mktv-van.js');
+const { buildTvVan } = await import('../../host/games/kart-3d/kit/tv-van.js');
 const { buildSponsorStand, buildSponsorStands } = await import('../../host/games/kart-3d/kit/sponsor-stand.js');
 const { createPennant } = await import('../../host/games/kart-3d/kit/bunting-pennant.js');
 const { PROP_REACH } = await import('../../host/games/kart-3d/kit/layout-rules.js');
@@ -62,12 +62,12 @@ test('the floodlight keeps its two parts, steel and glass, and its footprint', (
   assert.ok(trianglesOf(parts[0].geometry) < 20000, 'the mast stays light');
 });
 
-test('the MKTV van keeps its painted shape and its printed boards, within its reach', () => {
+test('the TV van keeps its painted shape and its printed boards, within its reach', () => {
   const kit = fakeKit();
-  const parts = buildMktvVan(kit);
+  const parts = buildTvVan(kit);
   assert.deepEqual(parts.map((part) => part.material), [kit.materials.painted, kit.sponsors]);
   parts.forEach((part, index) => assertClean(part.geometry, `van part ${index}`));
-  assert.ok(reachOf(parts.map((part) => part.geometry)) <= PROP_REACH['mktv-van'], 'within its reach');
+  assert.ok(reachOf(parts.map((part) => part.geometry)) <= PROP_REACH['tv-van'], 'within its reach');
   assert.ok(parts[0].geometry.attributes.color, 'the shape is coloured per vertex');
 });
 

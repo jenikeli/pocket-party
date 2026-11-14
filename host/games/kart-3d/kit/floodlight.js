@@ -1,6 +1,6 @@
-// The kit's floodlight tower (M7d2, rebuilt in M7d4c3 to the study), as round MK8DX's stadiums: a chunky steel
+// The kit's floodlight tower (M7d2, rebuilt in M7d4c3 to the study), as round the reference game's stadiums: a chunky steel
 // lattice mast on concrete feet with a ladder up its back, a service platform with a railing, and the lamp head on
-// top facing the road (kit/floodlight-head.js). Lit only at night on MK8DX, so on a day course its lamps are glass
+// top facing the road (kit/floodlight-head.js). Lit only at night on the reference game, so on a day course its lamps are glass
 // lit by the sun. Two shapes, standing on y = 0 with the lamps facing +z: the steel (coloured per vertex) and the
 // glass. Takes the kit and returns the tower's parts, [{ geometry, material }]. Used by kit/props.js.
 

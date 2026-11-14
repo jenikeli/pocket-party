@@ -1,7 +1,7 @@
 // The kit's plainest barriers (M7d2): a concrete wall shaped like a road barrier (wide at the foot, its inner face
 // leaning back), painted in blue and white panels along its top half, for any wall a course gives no other
 // style; and the anti-gravity sections' wall, white metal with a glowing cyan line along it. Since M7d4 both are
-// built up as MK8DX's are (docs/mk8dx-reference.md, "The kit's objects up close"): rounded edges, a coping or a
+// built up as the reference game's are (docs/kart-reference.md, "The kit's objects up close"): rounded edges, a coping or a
 // rounded rail along the top, a darker foot, seams between panels (and rivets beside the metal wall's), and
 // relief in the concrete. Each returns { add(segment, side), end(station, index, side, facing), meshes() } for
 // kit/barriers.js: end closes the wall's cross-section where it starts or stops.

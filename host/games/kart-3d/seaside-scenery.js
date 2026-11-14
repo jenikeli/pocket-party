@@ -1,5 +1,5 @@
 // Seaside Skyway's look (M7d3), built from the kit (kit/): its road in harbour colours (a white edge line,
-// coral and pale teal checks, coral and white curbs, as at MK8DX's Toad Harbor), the barriers, decks, props,
+// coral and pale teal checks, coral and white curbs, as at the reference harbour course), the barriers, decks, props,
 // grandstand, gate and bunting that seaside-layout.js places, turn boards round its corners, piers and trusses
 // holding the road up, and round it the sea (seaside-surroundings.js) and the sky (seaside-sky.js). Used by
 // scenery.js.

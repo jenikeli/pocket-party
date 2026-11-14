@@ -1,4 +1,4 @@
-// The kit's stone lighthouse (M7d3, rebuilt in M7d4d to the study of Daisy Circuit's, docs/mk8dx-reference.md):
+// The kit's stone lighthouse (M7d3, rebuilt in M7d4d to the study of the reference seaside course's, docs/kart-reference.md):
 // a tapering tower of irregular stones with deep mortar, a smooth tan plinth, arched white windows and door, a
 // green balcony with a railing of balusters, a white lamp room with orange window frames, a glossy orange dome and
 // a green clover weathervane. Takes the kit and `height` (the tower's, to the balcony) and returns the parts,

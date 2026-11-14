@@ -1,4 +1,4 @@
-// The stilt hut's thatch roof (M7d4d), as at MK8DX's Cheep Cheep Beach: three square roofs stacked, each steeper
+// The stilt hut's thatch roof (M7d4d), as at the reference beach course: three square roofs stacked, each steeper
 // than the one below, every eave hung with a ragged fringe of tapered straw bunches (so the edge is thick and
 // uneven, not a clean line), a roll of straw along each hip and a bound topknot. One geometry with colours and
 // texture coordinates, for the thatch material. `top` is the walls' top; the roof is centred on z = `centreZ`.

@@ -1,4 +1,4 @@
-// A five-petal flower with a yellow middle (M7d4c5), as MK8DX's hedges and planters carry: round petals round a
+// A five-petal flower with a yellow middle (M7d4c5), as the reference game's hedges and planters carry: round petals round a
 // small dome, flat on a surface and standing a little off it. About 55 triangles. Used by kit/hedge.js and
 // kit/planter.js.
 

@@ -7,7 +7,7 @@
 //
 // A kart on the road is stuck to it: every step it is moved along its velocity, then put back on the surface,
 // its "up" set to the road's normal and its nose laid flat on the road. So hills, banks and walls rolled up to
-// vertical all work the same way, and gravity only matters in the air. That is how MK8DX feels too: slopes
+// vertical all work the same way, and gravity only matters in the air. That is how the reference game feels too: slopes
 // barely change a kart's speed.
 
 import { vec, add, scale, addScaled, cross, dot, normalize, rotate } from './vector.js';
@@ -25,7 +25,7 @@ import { isHeldOnWall } from './items/sticky-walls.js';
 // Units per second squared, a guess: stronger than real gravity at this scale, for short snappy jumps.
 export const GRAVITY = 25;
 // A kart that fell is put back this far before the last place it was on the road, so it has a run-up to
-// jumps; MK8DX puts karts back about where they fell.
+// jumps; the reference game puts karts back about where they fell.
 const RESPAWN_BACK = 30;
 const DOWN = vec(0, -1, 0);
 // How much of the steering works in the air.

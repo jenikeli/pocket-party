@@ -1,7 +1,7 @@
-// The kit's street lamps (M7d2, rebuilt in M7d4c4 to the study), in MK8DX's two styles. Toad Harbor's: a dark iron
+// The kit's street lamps (M7d2, rebuilt in M7d4c4 to the study), in the reference game's two styles. The reference harbour course's: a dark iron
 // post flaring at its foot with gold collar rings, a spike finial, and a curved arm on a scroll bracket holding a
-// round globe. Daisy Circuit's: three four-sided lanterns with pyramid roofs on a crossbar, the post rising from a
-// square stone pedestal with a gold plaque. By day they are off, glass lit by the sun, as on MK8DX's day courses.
+// round globe. The reference seaside course's: three four-sided lanterns with pyramid roofs on a crossbar, the post rising from a
+// square stone pedestal with a gold plaque. By day they are off, glass lit by the sun, as on the reference game's day courses.
 // Each is two shapes, standing on y = 0 and reaching toward +z (the globe lamp) or along x (the triple): the iron
 // (coloured per vertex) and the glass. Each builder takes the kit and returns the lamp's parts,
 // [{ geometry, material }]. Used by kit/props.js.

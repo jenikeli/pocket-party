@@ -1,6 +1,6 @@
-# Mario Kart 8 Deluxe reference (researched, not measured)
+# Reference game notes (researched, not measured)
 
-What the 3D kart race copies from Mario Kart 8 Deluxe ("MK8DX"). The numbers are fan-wiki data (the Super Mario Wiki's tables come from the game's own data files; the rest is guides and community timing), so our measured findings (`docs/3d-findings.md`) win where they disagree. The look studies were made by Claude from screenshots on the Super Mario Wiki's course pages (no footage, sizes by eye, good to about a third); only notes were kept, never images. The full studies with every source link are in git (`git show c091f14:docs/mk8dx-reference.md`).
+What the 3D kart race copies from the reference console kart racer (called "the reference game" throughout the repo). The numbers are fan-wiki data (the fan wiki's tables come from the game's own data files; the rest is guides and community timing), so our measured findings (`docs/3d-findings.md`) win where they disagree. The look studies were made by Claude from screenshots on the fan wiki's course pages (no footage, sizes by eye, good to about a third); only notes were kept, never images. The full studies with every source link are in git (`git show c091f14`, in its `docs/` folder).
 
 ## What we copy and what we do not
 
@@ -54,7 +54,7 @@ At level 10, a hard drift reaches blue after 0.85 s, orange after 1.8 s, purple 
 - **Anti-gravity:** bumping another kart or a glowing post gives both a spin boost (the kart spins and boosts forward; no bounce off a post). Wheels turn flat and their rims glow cyan.
 - **Gliding** uses the glider stats. **Underwater** uses water stats. **Off-road** slows; boosts ignore it.
 - **Assists:** Smart Steering (steers back onto the road, blocks purple), auto-accelerate, tilt steering.
-- **Items:** boxes in rows across the road, two held, odds by place. We replaced MK8DX's items with our own.
+- **Items:** boxes in rows across the road, two held, odds by place. We replaced the reference game's items with our own.
 - **Camera:** behind and above, lags in turns, swings out in drifts, pulls back in boosts. **HUD:** items top left, lap bottom left, place bottom right.
 
 ## Course patterns
@@ -70,7 +70,7 @@ Proportions only; no layout was copied.
 
 ## The look, part by part
 
-What makes it read as MK8DX:
+What makes it read as the reference game:
 
 - **Every surface is a textured material:** coarse asphalt with stones, paint that shows the asphalt through it, riveted plates, wood grain, layered rock. Nothing large is a flat colour.
 - **The road's edge is never empty for long:** sponsor boards, cones, tyre stacks, pipes, flags, bunting, lamps, spectators.
@@ -82,17 +82,17 @@ Details worth keeping:
 
 - **Asphalt:** three tones (mid-grey, light stones, dark gaps) with high contrast, a stone about a tenth of a tyre's width, no visible repeat (large patches on top).
 - **Markings** carry the stone texture and look worn. A solid edge line a little in from each edge (yellow, white or orange by course), about a fifth of a kart wide; dashed lane lines on wide straights.
-- **Curbs:** red and white stripes inside corners, each stripe one to two kart lengths, about a kart wide; pastel at Daisy Circuit; rounded blocks in two colours at Koopa Cape.
+- **Curbs:** red and white stripes inside corners, each stripe one to two kart lengths, about a kart wide; pastel at the seaside course; rounded blocks in two colours at the cape course.
 - **Start line:** two or three rows of checks in the course's colours. **Grid marks:** a white bracket per place, staggered in two columns.
 - **Dash panel:** a lit LED sign in a raised metal frame: fine lines, a yellow-orange-red gradient, dotted chevrons. It glows but does not light the road. **Anti-gravity panel and glide ramp:** the same in blue to cyan across the whole road.
 - **Lamps are off by day;** lit only at dusk, night or indoors. Start lights, screens, panels and item boxes do glow by day.
-- **Start gate:** every course has one saying MARIOKART, styled for the course (an arch, pipes, vines, cranes), often with a badge on top; Lakitu holds a box of three lamps for the countdown.
+- **Start gate:** every course has one saying the game's name, styled for the course (an arch, pipes, vines, cranes), often with a badge on top; the starter holds a box of three lamps for the countdown.
 - **Seaside:** turquoise shallows turning deep blue, white foam at the shore, curved ringed palms, thatched huts on stilts, a stone lighthouse, a giant shell in the sea. **Sky:** viaducts on steel trusses, airships, huge clouds.
 - **Standard Kart:** an open go-kart in the character's three colours with their emblem on the nose, two big exhausts with gold bell tips, fat tyres with gold hubs (rear bigger). The driver sits upright and high, about three heads tall; seated, the top of the head is about as high as the kart is long.
 
 ## The kit's objects up close
 
-Six things every MK8DX object has, which decide whether a piece of ours reads as a prototype:
+Six things every reference-game object has, which decide whether a piece of ours reads as a prototype:
 
 1. **No sharp edges:** a bevel of about a tenth of the part's thickness, wide enough to catch a line of light.
 2. **Two scales of parts:** a frame round every board, a cap and foot on every post, collars, bolts at corners, seams between plates, a plinth under a tower. Anything bigger than a kart carries three or more smaller parts.
@@ -103,25 +103,25 @@ Six things every MK8DX object has, which decide whether a piece of ours reads as
 
 Surfaces are clean saturated colour with a little wear: lighter rubbed edges, a few stains low down, a soft gradient top to bottom.
 
-How MK8DX builds particular objects (for new pieces; the kit already follows these):
+How the reference game builds particular objects (for new pieces; the kit already follows these):
 
 - **Padded sponsor wall:** a fat rounded pad along the top printed tone on tone, printed banners with pictures as well as words, chain-link on capped posts above.
-- **Striped rail (Toad Harbor):** two padded bars about 0.4 tall and 0.2 deep with slanted orange bands, in chunky white post blocks on a bevelled kerb.
+- **Striped rail (harbour course):** two padded bars about 0.4 tall and 0.2 deep with slanted orange bands, in chunky white post blocks on a bevelled kerb.
 - **Steel guardrail:** a corrugated beam about a kart tall, weathered, bolts with square washers, splice plates, posts behind.
-- **Chevron guard (Toad Circuit; not built):** fat cream padded beams with three red chevrons each, on short capped posts round the outside of corners.
+- **Chevron guard (circuit course; not built):** fat cream padded beams with three red chevrons each, on short capped posts round the outside of corners.
 - **Rail fence:** bevelled posts with pyramid tops, rails passing in front and overlapping at joints. **Block curbs:** short rounded blocks set tight, no studs.
-- **Promenade railing (Daisy Circuit):** blue iron posts with big ball caps, collars and flared feet; stone pillars with a cap slab and a flower plaque, some with a lamp; a rounded seawall coping below.
+- **Promenade railing (seaside course):** blue iron posts with big ball caps, collars and flared feet; stone pillars with a cap slab and a flower plaque, some with a lamp; a rounded seawall coping below.
 - **Start gate:** posts of plinth, panels with seams and bolts, bands and a cap; a thick sign with a bevelled rim and raised letters.
 - **Street lamps:** a pedestal or flared foot, collars, a finial, framed glass panes, a scroll under the arm.
 - **Trees:** tiers of overlapping leaf scales on a short thick trunk. **Hedges:** loaves with a furry texture and big five-petal flowers.
 - **Grandstand:** two decks of stepped seats on lattice columns, a cantilevered roof with a railing, floodlight boxes, a fascia sign, stairs.
-- **Lighthouse (Daisy Circuit):** irregular stones with deep mortar, arched white window frames, a green balcony with balusters, a glossy orange dome.
+- **Lighthouse (seaside course):** irregular stones with deep mortar, arched white window frames, a green balcony with balusters, a glossy orange dome.
 - **Boats:** a white motor yacht with a raised bow, rails, a flybridge and a swim platform; a long white cruise ship on the horizon (not built).
 - **Cliffs:** see "Rock study" in `docs/3d-findings.md`.
 
 ## How games look detailed and still run smoothly
 
 - **Triangles are rarely what makes a frame slow.** What costs in a browser: draw calls, pixels times shading work, shadow passes (every caster is drawn again), post-processing such as bloom. Our own measurements agree.
-- **MK8DX's detail comes from simple, carefully built models with clean textures** (colour, normal, specular) and from lighting: real-time shadows mixed with pre-baked ones that darken corners. The usual way to more detail is to bake it into normal and ambient occlusion maps on a simple model.
+- **The reference game's detail comes from simple, carefully built models with clean textures** (colour, normal, specular) and from lighting: real-time shadows mixed with pre-baked ones that darken corners. The usual way to more detail is to bake it into normal and ambient occlusion maps on a simple model.
 - **With Three.js:** `normalMap`, `aoMap` and roughness maps on simple shapes, textures up to about 2048 with mipmaps and anisotropy; baked light in maps or vertex colours; `InstancedMesh` and merging for fewer draw calls (a merged mesh is drawn whole whenever any of it is in view, so cut lap-long meshes up); shadows only from pieces big enough to show, a small tightly fitted shadow map; a low pixel ratio and bloom at half resolution; an environment map plus three or fewer real lights.
 - **Not used:** KTX2 texture compression (needs the Basis transcoder vendored; ask first), LOD.

@@ -1,4 +1,4 @@
-// The item box's shapes and maps (M8), our own after MK8DX's: a rounded cube of
+// The item box's shapes and maps (M8), our own after the reference game's: a rounded cube of
 // clear glass dotted with rings of circles, its edges bright, a rainbow running over it, and inside a blocky "?"
 // with a white face and a blue bevelled rim. Built once when the race's drawing is made. Used by
 // item-box-look.js.
@@ -18,7 +18,7 @@ const MARK_BEVEL = 0.045;
 const MARK_FACE_HEX = 0xf2f7ff;
 const MARK_RIM_HEX = 0x2a62f0;
 // The "?" drawn on a grid 10 wide and 14 tall, y up: its hook as one outline (open at the bottom left, as a
-// question mark is) and its dot, both blocky with cut corners like MK8DX's.
+// question mark is) and its dot, both blocky with cut corners like the reference game's.
 const HOOK = [
   [0, 9], [0, 11.5], [2.5, 14], [7.5, 14], [10, 11.5], [10, 9.5], [6.6, 7], [6.6, 5], [3.4, 5], [3.4, 8],
   [6.8, 10.2], [6.8, 11], [6.1, 11.6], [3.9, 11.6], [3.2, 11], [3.2, 9],

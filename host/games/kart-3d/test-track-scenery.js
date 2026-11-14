@@ -1,5 +1,5 @@
 // The Test track's dressing (M7d2): the track where the kit's pieces (kit/) are shown, so they can be looked at
-// on the iPad before a course depends on them. Its road and gate are the kit's, in Mario Kart Stadium's colours
+// on the iPad before a course depends on them. Its road and gate are the kit's, in the reference stadium course's colours
 // (a yellow edge line, black and white checks, red and white curbs, a yellow gate); every barrier style stands somewhere on its walls,
 // decks beside the road carry a grandstand, a paddock and the rest of the props, as test-track-layout.js
 // places them, turn boards stand round its corners, and concrete piers hold it all up. Used by scenery.js.

@@ -4,16 +4,16 @@
 // in here as the new defaults. Values last until the host page reloads. Plain data, unit tested in Node.
 //
 // A kart is 2 units long. Angles are in degrees and turn rates in degrees per second, which read more easily on a
-// slider than radians. MK8DX's numbers (docs/mk8dx-reference.md, level 10) are noted where a default came from.
+// slider than radians. The reference game's numbers (docs/kart-reference.md, level 10) are noted where a default came from.
 
 import { ITEM_TUNABLES } from './items/item-tuning.js';
 
 export const TUNABLES = Object.freeze([
-  // 16 kart lengths a second, tuned by feel on the M7a device run to feel like MK8DX's 150cc (M6 guessed 24).
+  // 16 kart lengths a second, tuned by feel on the M7a device run to feel like the reference game's 150cc (M6 guessed 24).
   // Every speed-based rule scales with it.
   { key: 'topSpeed', group: 'Speed', label: 'Top speed', unit: 'units/s', min: 12, max: 48, step: 0.5, value: 32 },
 
-  // How hard a small stick or tilt turns: the slope of the steering near the middle. 37.8 is MK8DX's 0.011
+  // How hard a small stick or tilt turns: the slope of the steering near the middle. 37.8 is the reference game's 0.011
   // radians a frame (Drive_DirRotH), the M6 steering, kept so small movements feel the same.
   { key: 'steerRate', group: 'Steering', label: 'Turn near the middle', unit: 'deg/s', min: 15, max: 80, step: 0.5, value: 37.8 },
   // The turn at full stick or tilt, tuned on the M7a device run: 67 deg/s turns a circle of radius 13.7 kart
@@ -23,10 +23,10 @@ export const TUNABLES = Object.freeze([
   // the stick's travel gentle and puts the extra turn at the end.
   { key: 'steerCurve', group: 'Steering', label: 'Steering curve', unit: '', min: 1, max: 6, step: 0.1, value: 3 },
   // The tightest drift, stick pushed fully into it, tuned on the M7a device run. It must turn tighter than a full
-  // normal turn, as in MK8DX, whose data has the drift at 1.73 times the steering (Drift_DirRotH 0.019 against
+  // normal turn, as in the reference game, whose data has the drift at 1.73 times the steering (Drift_DirRotH 0.019 against
   // Drive_DirRotH 0.011 radians a frame; the unit of both is our reading).
   { key: 'driftTightRate', group: 'Steering', label: 'Drift, stick into it', unit: 'deg/s', min: 40, max: 200, step: 0.5, value: 72.5 },
-  // The widest drift, stick pushed away, as a share of the tightest (a guess; MK8DX's data has only the tightest).
+  // The widest drift, stick pushed away, as a share of the tightest (a guess; the reference game's data has only the tightest).
   { key: 'driftWideShare', group: 'Steering', label: 'Drift, stick away (share)', unit: '', min: 0, max: 1, step: 0.01, value: 0.35 },
 
   // A hit (not resting against the wall) keeps 1 - graze loss - hit loss x sin(angle) of the speed along the wall,
@@ -46,7 +46,7 @@ export const TUNABLES = Object.freeze([
   // elastic), and the speed they part at however gently they touched.
   { key: 'bumpBounce', group: 'Bumps', label: 'Bounce', unit: 'share', min: 0, max: 1, step: 0.01, value: 0.25 },
   { key: 'bumpMinSpeed', group: 'Bumps', label: 'Least parting speed', unit: 'units/s', min: 0, max: 15, step: 0.1, value: 5 },
-  // A kart's mass is its weight times this share standing still, rising to its full weight at top speed (MK8DX's
+  // A kart's mass is its weight times this share standing still, rising to its full weight at top speed (the reference game's
   // rule; its own numbers are not in the reference).
   { key: 'standingMassShare', group: 'Bumps', label: 'Mass standing still', unit: 'share', min: 0.1, max: 1, step: 0.05, value: 0.7 },
   // Grip takes away sideways sliding, per second. Right after a bump or a wall hit the grip is the slide grip for
@@ -60,7 +60,7 @@ export const TUNABLES = Object.freeze([
   { key: 'postCooldown', group: 'Spin posts', label: 'Cooldown', unit: 's', min: 0, max: 3, step: 0.05, value: 0.6 },
 
   // The hop on pressing Drift: how high and how long in the air. The M6 hop was 0.23 high and 0.27 s, and
-  // MK8DX's is higher; 0.4 was tuned on the M7a device run.
+  // the reference game's is higher; 0.4 was tuned on the M7a device run.
   { key: 'hopHeight', group: 'Hop and body', label: 'Hop height', unit: 'units', min: 0.1, max: 1.5, step: 0.05, value: 0.4 },
   { key: 'hopSeconds', group: 'Hop and body', label: 'Hop time', unit: 's', min: 0.1, max: 0.6, step: 0.01, value: 0.27 },
   // How far the body turns into a drift, and about how long it takes to ease there and back.
@@ -80,7 +80,7 @@ export const TUNABLES = Object.freeze([
   { key: 'trickLate', group: 'Timing windows', label: 'Trick, after the lip', unit: 's', min: 0, max: 0.6, step: 0.01, value: 0.3 },
 
   // How fast each boost pushes the kart, as a share of top speed: the gap between normal and boosted speed.
-  // MK8DX's level 10 gives the mini-turbo 1.1 and the jump boost 1.35; the dash panel and rocket start are
+  // The reference game's level 10 gives the mini-turbo 1.1 and the jump boost 1.35; the dash panel and rocket start are
   // "like a mushroom" (the jump boost's speed), slipstream is "modest" and the spin boost about a mini-turbo.
   { key: 'miniTurboSpeed', group: 'Boosts', label: 'Mini-turbo speed', unit: 'x top', min: 1, max: 2, step: 0.01, value: 1.1 },
   { key: 'jumpBoostSpeed', group: 'Boosts', label: 'Trick boost speed', unit: 'x top', min: 1, max: 2, step: 0.01, value: 1.35 },
@@ -98,7 +98,7 @@ export const TUNABLES = Object.freeze([
   // comes down in the same place. At 7.5, off Palm Bay Airport's glide ramp at top speed, a glide with no dive comes
   // down onto the gap's line just before the beach road; boosted off the dash panel before the ramp (as most karts
   // are), it lands 15 to 20 units down the road, and a trick adds a few more (6.5 sent some floats into the turn
-  // after the landing). The glider flies at MK8DX's air speed (8.05 against a ground top speed of 7.75), turns at
+  // after the landing). The glider flies at the reference game's air speed (8.05 against a ground top speed of 7.75), turns at
   // a share of the ground steering and banks with it. The camera rides higher and further back while gliding.
   { key: 'glideGravity', group: 'Gliding', label: 'Gravity, floating', unit: 'units/s^2', min: 1, max: 20, step: 0.1, value: 7.5 },
   { key: 'glideDiveGravity', group: 'Gliding', label: 'Gravity, diving', unit: 'units/s^2', min: 5, max: 50, step: 0.5, value: 22 },
@@ -108,7 +108,7 @@ export const TUNABLES = Object.freeze([
   { key: 'glideCameraLift', group: 'Gliding', label: 'Camera higher by', unit: 'units', min: 0, max: 6, step: 0.1, value: 1.5 },
   { key: 'glideCameraPullBack', group: 'Gliding', label: 'Camera further back by', unit: 'units', min: 0, max: 8, step: 0.1, value: 2 },
 
-  // The CPU drivers' catch-up (M7e; cpu-pace.js), mild as in MK8DX: a CPU kart behind the leading player gets up
+  // The CPU drivers' catch-up (M7e; cpu-pace.js), mild as in the reference game: a CPU kart behind the leading player gets up
   // to this share more top speed, one ahead up to this share less, in full at the range's distance (guesses; 0
   // turns it off).
   { key: 'cpuCatchUp', group: 'CPU drivers', label: 'Catch-up share', unit: 'x top', min: 0, max: 0.2, step: 0.01, value: 0.05 },

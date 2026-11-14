@@ -1,4 +1,4 @@
-// Our go-kart's tyres (M7d5), in the style of MK8DX's standard tyres: fat black tyres with a deep block tread and a
+// Our go-kart's tyres (M7d5), in the style of the reference game's standard tyres: fat black tyres with a deep block tread and a
 // big gold hub filling most of the outer face, with a centre cap, turned round the axle from one outline. The
 // tread's blocks are built (raised columns round the tyre, staggered either side of a middle groove); the
 // lettering, the hub's five holes and the rims that glow in anti-gravity are drawn on the wheel's maps

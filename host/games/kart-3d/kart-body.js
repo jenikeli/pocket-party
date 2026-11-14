@@ -47,7 +47,7 @@ export function moveBody(kart, controls, dt) {
 }
 
 // -1 to 1: fully toward the drift's side while drifting, and already during the hop that may start one (Drift
-// held) as far as the stick is over, as MK8DX's kart turns in the air before it lands into the drift.
+// held) as far as the stick is over, as the reference game's kart turns in the air before it lands into the drift.
 function leanTarget(kart, controls) {
   if (kart.driftDirection !== 0) {
     return kart.driftDirection;

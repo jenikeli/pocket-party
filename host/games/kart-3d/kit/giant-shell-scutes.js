@@ -1,6 +1,6 @@
-// The Koopa shell's scutes (M7d4d, after Koopa Cape's in docs/mk8dx-reference.md): where they lie seen from above,
+// The giant shell's scutes (M7d4d, after the reference cape course's in docs/kart-reference.md): where they lie seen from above,
 // the dome's relief at any point (for the shape and for the maps) and the picture drawn with kit/surface-maps.js,
-// so its colour, relief, shade and roughness maps agree. Used by kit/koopa-shell.js.
+// so its colour, relief, shade and roughness maps agree. Used by kit/giant-shell.js.
 
 import { createSurface } from './surface-maps.js';
 

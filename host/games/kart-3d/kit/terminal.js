@@ -1,5 +1,5 @@
-// The airport's terminal (M9), a landmark: a long, low building facing the apron, after Sunshine Airport's in
-// MK8DX in our own colours and name. Its body, hall, roof, round ends and jet bridges are
+// The airport's terminal (M9), a landmark: a long, low building facing the apron, after the reference airport course's in
+// the reference game in our own colours and name. Its body, hall, roof, round ends and jet bridges are
 // built in kit/terminal-body.js, terminal-inside.js, terminal-roof.js, terminal-ends.js and terminal-bridges.js,
 // its maps in terminal-maps.js and pictures in terminal-pictures.js; here each part gets its material and becomes
 // one mesh.

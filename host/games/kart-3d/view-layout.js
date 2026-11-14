@@ -1,8 +1,8 @@
 // Where each split-screen view sits on the canvas: 1 view fills it, 2 are stacked top and bottom, 4 are
-// quarters (3 players get quarters too, as in MK8DX). Plain maths (no Three.js, no DOM), unit tested in Node.
+// quarters (3 players get quarters too, as in the reference game). Plain maths (no Three.js, no DOM), unit tested in Node.
 // Used by host/games/kart-3d/views.js.
 
-// A thin gap between views, as in MK8DX's split screen, so the views read as separate screens.
+// A thin gap between views, as in the reference game's split screen, so the views read as separate screens.
 const GAP = 4;
 
 // Rectangles in CSS pixels with y measured from the bottom, which is how WebGL's viewport and scissor count.

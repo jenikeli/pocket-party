@@ -1,4 +1,4 @@
-// The kit's panels on the road (M7d2), drawn like lit LED signs as in MK8DX: the dash panels (yellow to orange to
+// The kit's panels on the road (M7d2), drawn like lit LED signs as in the reference game: the dash panels (yellow to orange to
 // red) and a band across the whole road where each anti-gravity section starts (blue to cyan). Each has a
 // glowing base with fine lines across it, a raised metal frame lit by the sun, and on top a see-through layer of
 // chevrons made of dots that slides forward, added to the base's light. They glow as brightly as the Dash panel

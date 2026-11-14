@@ -1,4 +1,4 @@
-// The kit's hedge (M7d4c5, to the study of MK8DX's Daisy Circuit hedges): a long rounded loaf with a furry mat of short
+// The kit's hedge (M7d4c5, to the study of the reference seaside course hedges): a long rounded loaf with a furry mat of short
 // blades in relief (kit/garden-textures.js) and big five-petal pink flowers with yellow middles stuck on its
 // front and top (kit/flowers.js). 2.4 long along x, 1 tall, 0.85 deep, on y = 0, facing +z. Used by
 // kit/props.js.

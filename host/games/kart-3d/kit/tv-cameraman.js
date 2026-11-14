@@ -1,5 +1,5 @@
-// The Toad on the MKTV van's roof (M7d4c3), as in the study: a small blue-vested Toad with his white, red-spotted
-// cap, filming with a TV camera on his shoulder. Used by kit/mktv-van.js. Standing on y = 0, facing +z, about 1
+// The cameraman on the TV van's roof (M7d4c3), as in the study: a small blue-vested cameraman with his white, red-spotted
+// cap, filming with a TV camera on his shoulder. Used by kit/tv-van.js. Standing on y = 0, facing +z, about 1
 // tall; returns the shapes (coloured per vertex) to merge into the van's.
 
 import * as THREE from 'three';
@@ -12,7 +12,7 @@ const VEST = 0x2f6fd8;
 const TROUSERS = 0xf4f4f0;
 const CAMERA = 0x2b2e35;
 
-export function buildToad() {
+export function buildCameraman() {
   const sphere = (radius, x, y, z, scale = [1, 1, 1]) => at(new THREE.SphereGeometry(radius, 12, 8).scale(...scale), x, y, z);
   const parts = [
     coloured(at(roundedBox(0.34, 0.3, 0.2, 0.06, { chamfered: true }), 0, 0.15, 0), TROUSERS),

@@ -307,13 +307,13 @@ describe('M7b 3D race', () => {
     await waitUntil(async () => (await hudTexts('lap')).join() === 'Lap 1/3', { ...RACE_TIMEOUT, message: 'Cy\'s view on the Test track' });
     await saveScreenshot(hostPage, 'm7b-6-host-test-track');
     // What happens when the browser takes the graphics memory back (it can, on an iPad under pressure).
-    const stopped = hostPage.waitForEvent('console', (entry) => entry.text().includes('Kart race 3D stopped with an error'));
+    const stopped = hostPage.waitForEvent('console', (entry) => entry.text().includes('Kartwheel stopped with an error'));
     await hostPage.evaluate(() => {
       document.querySelector('#game-container canvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext();
     });
     await stopped;
     await hostPage.waitForSelector('#game-picker:not([hidden])');
-    assert.match(await hostPage.textContent('#picker-problem'), /^Kart race 3D stopped with an error/);
+    assert.match(await hostPage.textContent('#picker-problem'), /^Kartwheel stopped with an error/);
     await cy.page.waitForSelector('#ended-screen:not([hidden])');
     assert.deepEqual(pageErrors, []);
   });

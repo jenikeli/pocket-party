@@ -1,4 +1,4 @@
-// The front half of our go-kart (M7d5), built in the style of MK8DX's Standard Kart:
+// The front half of our go-kart (M7d5), built in the style of the reference game's standard kart:
 // the smooth nose and cowl (kart-shells.js) with the emblem disc on the nose's top and two round lamps at its tip;
 // two soft side pods (a pillowy top in the main colour, a notched stripe in the second colour, a rounded base in
 // the third); the floor pan and the front wheels' arms. Used by design-shapes.js.

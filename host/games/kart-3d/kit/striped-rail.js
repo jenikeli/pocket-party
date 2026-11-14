@@ -1,5 +1,5 @@
-// The kit's striped rail (M7d2), as at Toad Harbor: two rails painted in orange and white stripes that wind round
-// them, on a low concrete kerb. Since M7d4 built as Toad Harbor's is (docs/mk8dx-reference.md, "The kit's objects
+// The kit's striped rail (M7d2), as at the reference harbour course: two rails painted in orange and white stripes that wind round
+// them, on a low concrete kerb. Since M7d4 built as the reference harbour course's is (docs/kart-reference.md, "The kit's objects
 // up close"): fat rails, oval rather than round, held every few metres in a chunky white post block with rounded
 // edges and two bolt heads on its face, on a kerb with a rounded top edge. Since M7d4b2 the rails, a rod between
 // them and the blocks are drawn with their detail in textures (kit/striped-rail-detail.js). Returns {

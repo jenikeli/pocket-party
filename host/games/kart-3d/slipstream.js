@@ -1,4 +1,4 @@
-// Slipstream (drafting) in the 3D race, as in MK8DX: a kart that stays close behind another for a while gets a
+// Slipstream (drafting) in the 3D race, as in the reference game: a kart that stays close behind another for a while gets a
 // modest boost, which a wall or a bump ends (kart-walls.js, kart-bumps.js). Plain maths, unit tested in Node.
 // Used by host/games/kart-3d/race.js after every kart has stepped.
 

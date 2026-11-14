@@ -18,7 +18,7 @@ The docs are organised by topic and kept short (`CLAUDE.md`): they hold what the
 
 1. `plan.md`: update the section the work changed (a decision, a design section, the game module interface, "Where things live" for new files or patterns, "Things to know" for a pitfall that cost time, "Open issues", "Later ideas"). Edit in place; do not add a milestone section.
 2. `docs/3d-findings.md` (3D work): new measurements and pitfalls under their topic, replacing numbers they supersede.
-3. `docs/mk8dx-reference.md`: only new research about MK8DX itself.
+3. `docs/kart-reference.md`: only new research about the reference game itself.
 4. `docs/device-run.md`: the device-run procedure, if the work needs one (the `device-run` skill). It holds only runs still to do.
 5. `CLAUDE.md`: Commands for any new or changed command, the Testing map for any new browser test file.
 6. `plan.md`'s "Open issues": note anything left unused but kept, with what to delete; remove entries for what was deleted or put back to use.

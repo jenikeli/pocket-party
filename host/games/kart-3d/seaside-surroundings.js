@@ -1,18 +1,18 @@
 // Seaside Skyway's sea and what stands in it (M7d3), round the seaside half of the lap: beach islands with
 // turquoise shallows, foam, rocks and palms, huts on stilts in their shallows, the stone lighthouse on its rocky
-// island ahead of the start straight, the giant Koopa shell half sunk off the first corner, sailboats rocking,
+// island ahead of the start straight, the giant shell half sunk off the first corner, sailboats rocking,
 // and ripples on the water. Placed from seaside-landmarks.js; every set of one piece is one instanced or merged
 // mesh. Only the palms cast shadows (onto their islands): everything else's would fall on the sea, which takes
 // none. Used by seaside-scenery.js; the kit-shots page reuses addIslands and addInstances, and Palm Bay Airport's
 // landmarks addBoats.
 
 import * as THREE from 'three';
-import { BEACH_ISLANDS, LIGHTHOUSE, KOOPA_SHELL, BOATS, islandHeightAt } from './seaside-landmarks.js';
+import { BEACH_ISLANDS, LIGHTHOUSE, GIANT_SHELL, BOATS, islandHeightAt } from './seaside-landmarks.js';
 import { buildBeachIslands } from './kit/beach-island.js';
 import { buildPalmParts } from './kit/palm.js';
 import { buildStiltHut } from './kit/stilt-hut.js';
 import { buildLighthouse } from './kit/lighthouse.js';
-import { buildKoopaShell } from './kit/koopa-shell.js';
+import { buildGiantShell } from './kit/giant-shell.js';
 import { buildSailboat } from './kit/sailboat.js';
 import { buildMotorYacht } from './kit/motor-yacht.js';
 import { dressSea } from './kit/sea.js';
@@ -31,7 +31,7 @@ export function buildSeasideSurroundings(kit, sea) {
   addPalms(kit, islands.palms);
   addHuts(kit, islands.huts);
   addLighthouse(kit, seaLevel + islandHeightAt(lighthouseIsland, 0));
-  addKoopaShell(kit, seaLevel);
+  addGiantShell(kit, seaLevel);
   const boats = addBoats(kit, seaLevel, BOATS);
   const water = dressSea(sea, keep);
   let time = 0;
@@ -99,12 +99,12 @@ function addLighthouse(kit, base) {
 }
 
 // Half sunk and tipped over, as if it had sailed in and run aground.
-function addKoopaShell(kit, seaLevel) {
-  const [{ geometry, material }] = buildKoopaShell(kit);
+function addGiantShell(kit, seaLevel) {
+  const [{ geometry, material }] = buildGiantShell(kit);
   const shell = new THREE.Mesh(geometry, material);
-  shell.scale.setScalar(KOOPA_SHELL.radius);
-  shell.position.set(KOOPA_SHELL.x, seaLevel - KOOPA_SHELL.radius * 0.25, KOOPA_SHELL.z);
-  shell.rotation.set(KOOPA_SHELL.tilt, KOOPA_SHELL.heading, 0, 'YXZ');
+  shell.scale.setScalar(GIANT_SHELL.radius);
+  shell.position.set(GIANT_SHELL.x, seaLevel - GIANT_SHELL.radius * 0.25, GIANT_SHELL.z);
+  shell.rotation.set(GIANT_SHELL.tilt, GIANT_SHELL.heading, 0, 'YXZ');
   kit.world.add(shell);
 }
 

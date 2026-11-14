@@ -13,7 +13,7 @@ The user tests each milestone on real devices; automation cannot. The procedure 
 - Frame rates with several views (3D race): use the setup screen's **Watch, no phones: 1 2 3 4** (self-driving karts with a view each, fps in the Tuning readout), not four phones or connections. Phones only where the step is about the phones themselves.
 - Numbered steps, each one thing to do and what to look for. Name the device, the course, the quality level and the number of phones.
 - Where to find each thing: the panel and group of every slider or switch, the place on the course (by distance along the lap, `s`, and what is there to recognise it).
-- What to report back: numbers to note (the Measure report to Copy, fps from the readout, how long the course takes to appear) and questions to answer (which looks closer to MK8DX).
+- What to report back: numbers to note (the Measure report to Copy, fps from the readout, how long the course takes to appear) and questions to answer (which looks closer to the reference game).
 - A last step for anything that looks broken.
 
 ## Tuning steps
@@ -23,7 +23,7 @@ Mark every step where the user should tune something with a bold **Tune:** at it
 - its range and its current default,
 - what to look for while moving it.
 
-For example: "**Tune:** Look group, *Light from the course, strength* (0-3, default 0.7): the shade side of the walls and the karts' shine; note the value that looks closest to MK8DX."
+For example: "**Tune:** Look group, *Light from the course, strength* (0-3, default 0.7): the shade side of the walls and the karts' shine; note the value that looks closest to the reference game."
 
 In the chat summary, list the **Tune:** steps so the user can find them at a glance.
 

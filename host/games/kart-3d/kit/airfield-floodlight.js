@@ -1,6 +1,6 @@
-// The airport's floodlight (M9 task K), after the one on Sunshine Airport's apron: a tall three-legged lattice
+// The airport's floodlight (M9 task K), after the one on the reference airport course's apron: a tall three-legged lattice
 // mast with a hexagonal railing and a cabinet at its foot, a ring of lamp boxes on a platform at its top, and a long
-// ribbon banner (our own lettering) swooping from the top down along the road. Lit only at night on MK8DX, so by
+// ribbon banner (our own lettering) swooping from the top down along the road. Lit only at night on the reference game, so by
 // day the lamps are glass. Takes the kit and returns the parts: the steel (coloured per vertex), the glass and the
 // ribbon (its own textured material); standing on y = 0, the ribbon trailing toward +x. Used by kit/props.js.
 

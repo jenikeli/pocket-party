@@ -1,7 +1,7 @@
 // Where Seaside Skyway's surroundings stand (M7d3), in the course's own coordinates (x right, z down the plan in
 // seaside-skyway.js; the road runs from x -40 to 224 and z 0 to 291, at heights 0 to 10, over a sea at -14).
 // Round the seaside half: beach islands with palms and huts on stilts, a stone lighthouse ahead of the start
-// straight, a giant Koopa shell half sunk off the first corner, sailboats. Round the sky half: clouds beside and
+// straight, a giant shell half sunk off the first corner, sailboats. Round the sky half: clouds beside and
 // under the high road, hot-air balloons, an airship circling. Plain data and maths, unit tested in Node (nothing
 // reaches the road). Drawn by seaside-surroundings.js (the sea) and seaside-sky.js (the sky).
 
@@ -22,9 +22,9 @@ export const BEACH_ISLANDS = Object.freeze([
 // shows above the road from the grid.
 export const LIGHTHOUSE = Object.freeze({ x: 290, z: -35, radius: 20, height: 4, tower: 24 });
 
-// The giant Koopa shell, half sunk in open water outside the first corner: its middle, radius and how far it
+// The giant shell, half sunk in open water outside the first corner: its middle, radius and how far it
 // is tipped over (radians).
-export const KOOPA_SHELL = Object.freeze({ x: 262, z: 92, radius: 10, tilt: 0.35, heading: 0.8 });
+export const GIANT_SHELL = Object.freeze({ x: 262, z: 92, radius: 10, tilt: 0.35, heading: 0.8 });
 
 // Boats rocking in open water: sailboats and motor yachts (kit/sailboat.js, kit/motor-yacht.js), `kind` being the
 // name of the kit's builder for each.
@@ -38,7 +38,7 @@ export const BOATS = Object.freeze([
   { kind: 'sailboat', x: 300, z: 140, heading: 0.9 },
 ]);
 
-// Clouds round the sky half's high road, at its height and below it, as on MK8DX's Cloudtop Cruise: middle
+// Clouds round the sky half's high road, at its height and below it, as on the reference sky course: middle
 // (its flat bottom's height y) and size (a cloud of size 1 is about 30 across and 7.5 tall).
 export const NEAR_CLOUDS = Object.freeze([
   { x: 262, z: 178, y: -1, size: 0.75 },

@@ -1,11 +1,11 @@
 // Every boost a 3D kart can get (mini-turbos, the jump boost after a trick, dash panels, the rocket start,
 // slipstream and the anti-gravity spin boost), the stall after a rocket start pressed too early, and the dash
-// panels on the road. Numbers from docs/mk8dx-reference.md (level 10) where it has them, guesses otherwise;
+// panels on the road. Numbers from docs/kart-reference.md (level 10) where it has them, guesses otherwise;
 // each boost's speed is tuned (tuning.js).
 // Plain functions on plain kart objects, unit tested in Node. Used by kart-physics.js, kart-techniques.js,
 // kart-bumps.js, slipstream.js and race.js.
 
-import { fromMk8Acceleration, kartTopSpeed } from './kart-driving.js';
+import { fromReferenceAcceleration, kartTopSpeed } from './kart-driving.js';
 import { tuning } from './tuning.js';
 import { progressBetween } from './track.js';
 
@@ -19,25 +19,25 @@ export const BOOST_KINDS = Object.freeze({
 });
 
 const FRAME = 1 / 60;
-// MK8DX's mini-turbo boosts at level 10: blue, orange and purple, in frames. Every level boosts to the same
+// The reference game's mini-turbo boosts at level 10: blue, orange and purple, in frames. Every level boosts to the same
 // speed; they differ only in how long they last.
 const MINI_TURBO_FRAMES = [30, 90, 150];
 
 // seconds: how long it lasts (a mini-turbo's and a rocket start's are worked out when they start); speedKey: the
-// tuning.js number for the speed it pushes to, as a share of the kart's top speed; mk8Acceleration: how fast it gets
-// there, in MK8DX's units. MK8DX's boost accelerations
+// tuning.js number for the speed it pushes to, as a share of the kart's top speed; referenceAcceleration: how fast it gets
+// there, in the reference game's units. The reference game's boost accelerations
 // (0.12-0.14 for mini-turbos, 0.2 for the jump boost) have no unit in the reference; they are read like its
 // acceleration limit, units per frame added each frame, and turned into ours when the boost starts, so they
 // follow the kart's top speed.
 const BOOSTS = Object.freeze({
-  [BOOST_KINDS.MINI_TURBO]: { seconds: null, speedKey: 'miniTurboSpeed', mk8Acceleration: 0.13 },
-  [BOOST_KINDS.JUMP]: { seconds: 25 * FRAME, speedKey: 'jumpBoostSpeed', mk8Acceleration: 0.2 },
+  [BOOST_KINDS.MINI_TURBO]: { seconds: null, speedKey: 'miniTurboSpeed', referenceAcceleration: 0.13 },
+  [BOOST_KINDS.JUMP]: { seconds: 25 * FRAME, speedKey: 'jumpBoostSpeed', referenceAcceleration: 0.2 },
   // No lengths found for these: guesses. A dash panel is "like a mushroom", a full second; slipstream is
   // "modest, about 3 s"; the spin boost is taken to be about a blue mini-turbo.
-  [BOOST_KINDS.DASH_PANEL]: { seconds: 1, speedKey: 'dashPanelSpeed', mk8Acceleration: 0.2 },
-  [BOOST_KINDS.ROCKET_START]: { seconds: null, speedKey: 'rocketStartSpeed', mk8Acceleration: 0.2 },
-  [BOOST_KINDS.SLIPSTREAM]: { seconds: 3, speedKey: 'slipstreamSpeed', mk8Acceleration: 0.13 },
-  [BOOST_KINDS.SPIN]: { seconds: 30 * FRAME, speedKey: 'spinBoostSpeed', mk8Acceleration: 0.13 },
+  [BOOST_KINDS.DASH_PANEL]: { seconds: 1, speedKey: 'dashPanelSpeed', referenceAcceleration: 0.2 },
+  [BOOST_KINDS.ROCKET_START]: { seconds: null, speedKey: 'rocketStartSpeed', referenceAcceleration: 0.2 },
+  [BOOST_KINDS.SLIPSTREAM]: { seconds: 3, speedKey: 'slipstreamSpeed', referenceAcceleration: 0.13 },
+  [BOOST_KINDS.SPIN]: { seconds: 30 * FRAME, speedKey: 'spinBoostSpeed', referenceAcceleration: 0.13 },
 });
 
 // A dash panel covers this much road, centred on its spot (units).
@@ -59,9 +59,9 @@ export function miniTurboSeconds(level) {
 // Starts a boost of `kind`. Boosts do not stack: a kart already boosting keeps the longer time and the faster
 // speed of the two, and the newer kind (so a mini-turbo during a slipstream is no longer ended by a wall).
 export function startBoost(kart, kind, seconds = BOOSTS[kind].seconds) {
-  const { speedKey, mk8Acceleration } = BOOSTS[kind];
+  const { speedKey, referenceAcceleration } = BOOSTS[kind];
   const speedShare = tuning[speedKey];
-  const acceleration = fromMk8Acceleration(mk8Acceleration, kartTopSpeed(kart));
+  const acceleration = fromReferenceAcceleration(referenceAcceleration, kartTopSpeed(kart));
   const current = kart.boost;
   kart.boost = {
     kind,

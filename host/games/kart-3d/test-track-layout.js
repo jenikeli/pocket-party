@@ -55,7 +55,7 @@ export const PROPS = Object.freeze([
   { piece: 'sponsor-stand', s: 22, side: 'right', out: 2.2 },
   ...cones(26, 32, 'right', 1.2),
   { piece: 'lantern-lamp', s: 37, side: 'right', out: 1.4 },
-  { piece: 'mktv-van', s: 46, side: 'right', out: 4.5, turn: 90 },
+  { piece: 'tv-van', s: 46, side: 'right', out: 4.5, turn: 90 },
   { piece: 'lantern-lamp', s: 55, side: 'right', out: 1.4 },
   // Outside the first turn.
   { piece: 'triple-lamp', s: 134, side: 'left', out: 2 },

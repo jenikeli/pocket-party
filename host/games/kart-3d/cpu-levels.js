@@ -1,4 +1,4 @@
-// The CPU drivers' levels (M7e), chosen on the host's setup screen like MK8DX's CPU setting in versus races: how
+// The CPU drivers' levels (M7e), chosen on the host's setup screen like the reference game's CPU setting in versus races: how
 // fast they drive and how close to the limit they corner, which spark level they drift for, how often they rocket
 // start and trick, and how far they wander from the racing line. Plain data. Used by cpu-driver.js,
 // cpu-drift.js, cpu-trick.js, race.js and panels.js.

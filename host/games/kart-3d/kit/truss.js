@@ -1,4 +1,4 @@
-// The kit's steel trusses (M7d3), as under MK8DX's sky roads (Mario Circuit, Cloudtop Cruise): lattice towers from
+// The kit's steel trusses (M7d3), as under the reference game's sky roads (the reference circuit course, the reference sky course): lattice towers from
 // the sea up to the road, four legs tied by rings and crossed braces, and lattice girders (a Warren truss) under
 // both edges of the road between them. Each comes out as one merged geometry of thin beams, coloured per vertex.
 // Used by kit/supports.js.

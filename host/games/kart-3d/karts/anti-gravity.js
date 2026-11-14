@@ -1,5 +1,5 @@
 // How far a kart's wheels have turned flat for anti-gravity (M7d5): eased in and out over a quarter second, not
-// snapped, as MK8DX's wheels fold. Drawing only. Plain functions, unit tested in Node. Used by kart-models.js.
+// snapped, as the reference game's wheels fold. Drawing only. Plain functions, unit tested in Node. Used by kart-models.js.
 
 // How long the wheels take to turn all the way flat, or back.
 export const ANTI_GRAVITY_SECONDS = 0.25;

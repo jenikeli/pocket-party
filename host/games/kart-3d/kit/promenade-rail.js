@@ -1,10 +1,10 @@
-// The kit's promenade railing (M7d4), as along MK8DX's Daisy Circuit seafront (docs/mk8dx-reference.md, "The
+// The kit's promenade railing (M7d4), as along the reference seaside course seafront (docs/kart-reference.md, "The
 // kit's objects up close"), in toy proportions since M7d4c3: fat blue iron posts, each with a flared foot, a
 // collar and a ball on top twice its width, two fat round rails between them, and every few metres a big square
-// stone pillar (dressed blocks, a plinth, an overhanging cap, a round plaque with Daisy's flower), every other
+// stone pillar (dressed blocks, a plinth, an overhanging cap, a round plaque with the flower), every other
 // one carrying a lantern. Returns { add(segment, side), end(station, index, side, facing), meshes() } for
-// kit/barriers.js: end stands a pillar where the railing starts or stops, so the rails end in stone, as Daisy
-// Circuit's do. The shapes are in kit/promenade-shapes.js, the maps in kit/promenade-detail.js.
+// kit/barriers.js: end stands a pillar where the railing starts or stops, so the rails end in stone, as the reference seaside course's do.
+// The shapes are in kit/promenade-shapes.js, the maps in kit/promenade-detail.js.
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';
@@ -19,7 +19,7 @@ export const RAIL_OUT = PILLAR_REACH + 0.06;
 const RAIL_LIFTS = [0.5, 0.9];
 const RAIL_RADIUS = 0.05;
 const POST_STATIONS = 2;
-// A pillar instead of a post every this many stations (Daisy Circuit's stand about every 6 posts).
+// A pillar instead of a post every this many stations (the reference seaside course's stand about every 6 posts).
 const PILLAR_STATIONS = 12;
 // The same warm glass as the props' lamps, not glowing: lamps are off by day.
 const GLASS = { color: 0xfff4dc, roughness: 0.15, metalness: 0.1 };

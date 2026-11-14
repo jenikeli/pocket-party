@@ -1,5 +1,5 @@
 // The kit's seaside textures (M7d3): weathered wooden planks and beach sand, for the boardwalks, fences and huts
-// of a seaside course (MK8DX's Cheep Cheep Beach, Koopa Cape and Daisy Circuit). Each is a tile that repeats
+// of a seaside course (the reference beach course, the reference cape course and the reference seaside course). Each is a tile that repeats
 // without a seam; wood is pale, so a part's own colour tints it. Shared through kit/kit.js. (The thatch and the
 // stone moved to kit/thatch-texture.js and kit/stone-texture.js in M7d4c3.)
 

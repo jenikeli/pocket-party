@@ -2,14 +2,14 @@
 
 What the game is, the decisions behind it, how the parts fit, and what is left open. Every planned milestone (M0 to M10c) is built and device-tested. See `CLAUDE.md` for the architecture, constraints and rules of work.
 
-Organised by topic, not by milestone: commit messages carry the milestone ids (`git log --grep m9`). The milestone-by-milestone notes that used to be here and in `docs/history.md` are in git: `git show c091f14:plan.md`, `git show c091f14:docs/history.md`, `git show c091f14:docs/3d-findings.md`, `git show c091f14:docs/mk8dx-reference.md`.
+Organised by topic, not by milestone: commit messages carry the milestone ids (`git log --grep m9`). The milestone-by-milestone notes that used to be here and in `docs/history.md` are in git: `git show c091f14:plan.md`, `git show c091f14:docs/history.md`, `git show c091f14:docs/3d-findings.md`, and the reference-game notes in that commit's `docs/` folder (`git show c091f14 --stat`).
 
 ## Goal
 
-A Mario Kart-style racing game for a party. A host display shows the race, and players steer with their own phones (iOS or Android). Three games on the host's game picker, each a separate module:
+A racing game in the style of console kart racers for a party. A host display shows the race, and players steer with their own phones (iOS or Android). Three games on the host's game picker, each a separate module:
 
-- **Kart race 2D** (`kart-2d`, 2-9 players): top-down, a stadium track, the whole track on one screen.
-- **Kart race 3D** (`kart-3d`, 1-4 players in split screen, CPU karts fill the field to 12): the main game, meant to look, feel and play as close to Mario Kart 8 Deluxe ("MK8DX") as we can make it, with our own assets.
+- **Kartwheel Mini** (`kart-2d`, the 2D race, 2-9 players): top-down, a stadium track, the whole track on one screen.
+- **Kartwheel** (`kart-3d`, the 3D race, 1-4 players in split screen, CPU karts fill the field to 12): the main game, meant to look, feel and play as close to the reference console kart racer as we can make it, with our own assets.
 - **Input lab** (`input-lab`): a developer tool for tap, swipe, tilt and latency.
 
 ## Decisions
@@ -22,7 +22,7 @@ A Mario Kart-style racing game for a party. A host display shows the race, and p
 - **HTTPS with a self-signed cert** (`npm run gen-cert`, for every current LAN IP, 365 days; players tap through a warning once per cert). Rejected: a local CA, a real domain. No HTTP-to-HTTPS redirect: open the `https://` URL the server prints.
 - **Reconnection:** playerId plus a secret token in `localStorage`. The host runs a grace timer per dropped player (default 30 s, a host setting) and sends `REMOVE_PLAYER` when it ends; the server frees the slot only if it is still disconnected and answers `PLAYER_LEFT`, and the host removes players only on `PLAYER_LEFT`, so a rejoin that beats the timer is safe. A kart whose phone dropped mid-race gets neutral input and drives on when the phone is back.
 - **Host UI is HTML** in the "Night" look (`host/ui.css` tokens and classes, the same names on the phone in `controller/style.css`), sized in `em` inside a 16:9 `.pp-stage` whose font size is 1/80 of its width (`host/stage.js`). Phaser draws only the 2D track and the input lab.
-- **Kart controls:** the phone is held sideways like a Switch controller. Each player picks a control style on their phone: steering by tilt or stick, auto-accelerate on or off.
+- **Kart controls:** the phone is held sideways like a game controller. Each player picks a control style on their phone: steering by tilt or stick, auto-accelerate on or off.
 - **Tests guard everything built** (`CLAUDE.md`, "Testing"); real-device checks are kept for what automation cannot see.
 
 ## 2D kart race
@@ -34,13 +34,13 @@ A Mario Kart-style racing game for a party. A host display shows the race, and p
 
 ## 3D kart race
 
-The target is a race an MK8DX player recognises by feel. MK8DX's numbers and our studies of its look are in `docs/mk8dx-reference.md`; what we measured and tuned is in `docs/3d-findings.md`.
+The target is a race a reference-game player recognises by feel. The reference game's numbers and our studies of its look are in `docs/kart-reference.md`; what we measured and tuned is in `docs/3d-findings.md`.
 
-- **Copy MK8DX's designs freely, build them ourselves.** Private use only, never published. Every model and texture is made in code (or CC0, like the photo asphalt); nothing is extracted from the game. The 12 drivers are an original cast.
-- **Kart rules written by hand,** DOM-free and unit tested, using MK8DX's structure (a turn rate, a speed curve, boost multipliers). No physics library.
+- **Copy the reference game's designs freely, build them ourselves.** Private use only, never published. Every model and texture is made in code (or CC0, like the photo asphalt); nothing is extracted from the game. The 12 drivers are an original cast.
+- **Kart rules written by hand,** DOM-free and unit tested, using the reference game's structure (a turn rate, a speed curve, boost multipliers). No physics library.
 - **Track from maths:** a closed centre line with width, height and roll per piece (`track-builder.js` makes stations 1 unit apart; `track.js` finds a kart by walking from its last station). Hills, jump gaps, banks, anti-gravity walls, off-road shoulders, glide gaps and spin posts all come from the course definition. On the road a kart is stuck to the surface; gravity acts only in the air.
 - **Built:** driving, hop and drift with three mini-turbo levels, rocket start, trick, dash panels, slipstream, spin boost, gliding, spin posts; countdown, laps, places, results, engine classes (50 to 200cc); CPU drivers at three levels on a racing line; six items of our own (blocker, jump, teleport, magnet, push, sticky walls); three courses (Palm Bay Airport, Seaside Skyway, Test track); the look (kit of textured pieces, baked shade, course light, bloom, three quality levels); sound and music made in code.
-- **Frame rate target,** MK8DX's own: 60 fps with 1-2 views, a steady 30 with 3-4. Physics is fixed at 60 Hz.
+- **Frame rate target,** the reference game's own: 60 fps with 1-2 views, a steady 30 with 3-4. Physics is fixed at 60 Hz.
 - **Not built:** Smart Steering, underwater, Grand Prix, path splits, phone vibration, engine sounds (removed: annoying).
 
 ## Kart controller (both races, `controller/kart/`)
@@ -150,6 +150,6 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
   - *Several host screens.* A second page (for example `/view`) on another device receives the same snapshots and draws, say, players 5-8.
 - **Spectator view.**
 - **Phone vibration.** A 15 ms `navigator.vibrate` on every press was built and not felt on Android; iOS Safari has no `navigator.vibrate`. Before trying again: a longer pulse, the phone's vibration settings, a test page calling `navigator.vibrate(200)` from a tap.
-- **For the 2D race:** items, drifting, more tracks. **For both:** character and kart selection (MK8DX's stat system is in `docs/mk8dx-reference.md`).
+- **For the 2D race:** items, drifting, more tracks. **For both:** character and kart selection (the reference game's stat system is in `docs/kart-reference.md`).
 - **For the 3D race:** Smart Steering, underwater sections, Grand Prix (4 races with points), path splits (needs a second route in the track model), bloom at half resolution (would make High usable on integrated graphics), hiding karts very close to the camera.
 - **A new course built in Blender** was tried and dropped (every look is JS; the pipeline is in git before the commit "blender removed").

@@ -62,7 +62,7 @@
       "bytes": 31267,
       "source": "a screenshot of our 2D race, the infield readout painted over (M10 task D)",
       "licence": "our own",
-      "usedBy": "host/games/index.js (the lobby background of Kart race 2D)"
+      "usedBy": "host/games/index.js (the lobby background of Kartwheel Mini)"
     },
     {
       "path": "kart-3d/previews/palm-bay-airport.jpg",
@@ -70,7 +70,7 @@
       "bytes": 165743,
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
-      "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen) and host/games/index.js (the lobby background of Kart race 3D)"
+      "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen) and host/games/index.js (the lobby background of Kartwheel)"
     },
     {
       "path": "kart-3d/previews/seaside-skyway.jpg",

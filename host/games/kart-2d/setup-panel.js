@@ -21,7 +21,7 @@ export function createSetupPanel(stage, { onLapsStep, onStartRace, onRemovePlaye
   screen.innerHTML = `
     <div class="pp-panel k2d-panel">
       <div class="k2d-head">
-        <h1 class="pp-title k2d-heading">Kart race 2D</h1>
+        <h1 class="pp-title k2d-heading">Kartwheel Mini</h1>
         ${lapsStepperMarkup({ minusId: 'kart-2d-laps-minus', valueId: 'kart-2d-laps-value', plusId: 'kart-2d-laps-plus' })}
       </div>
       <h2 class="k2d-subheading">Players</h2>

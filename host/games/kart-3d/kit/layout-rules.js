@@ -27,7 +27,7 @@ export const BARRIER_STYLES = Object.freeze({
   STRIPED_RAIL: 'striped-rail',
   RAIL_FENCE: 'rail-fence',
   BLOCK_CURBS: 'block-curbs',
-  // M7d4's, as on Daisy Circuit's seafront.
+  // M7d4's, as on the reference seaside course's seafront.
   PROMENADE_RAIL: 'promenade-rail',
   // M9's, the airport's: post-and-rail with chevron boards, and a fat yellow pillow.
   APRON_RAIL: 'apron-rail',
@@ -42,7 +42,7 @@ export const PROP_REACH = Object.freeze({
   'tyre-stack': 0.5,
   'warp-pipe': 1.15,
   'giant-mushroom': 3,
-  'mktv-van': 2.4,
+  'tv-van': 2.4,
   'sponsor-stand': 1.35,
   'lantern-lamp': 0.3,
   'triple-lamp': 0.3,

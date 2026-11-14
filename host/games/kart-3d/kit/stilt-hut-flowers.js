@@ -1,4 +1,4 @@
-// A window box of red flowers for the stilt hut (M7d4d), as MK8DX's huts have along their decks: a plank box, dark
+// A window box of red flowers for the stilt hut (M7d4d), as the reference game's huts have along their decks: a plank box, dark
 // soil, green leaves and a row of red blooms. Returns { wood, plants }: lists of coloured shapes for the hut's
 // wood and painted parts. Used by kit/stilt-hut.js.
 

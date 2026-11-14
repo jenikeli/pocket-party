@@ -1,5 +1,5 @@
 // The gliders' canopies (M9), one material per design: its picture drawn on a canvas as the canopy is seen from
-// above (glider.js's texture coordinates), in the style of MK8DX's Super Glider: the cloth in the design's main
+// above (glider.js's texture coordinates), in the style of the reference game's glider: the cloth in the design's main
 // colour, a stripe of its second colour from the nose widening to the trailing edge, its emblem on a disc ringed
 // in its third colour in the middle, a darker hem round the edges and faint seams where the battens run. Used by
 // kart-models.js.

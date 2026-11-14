@@ -1,12 +1,12 @@
 # 3D findings
 
-What was measured and learned while building the 3D kart race, by topic. Measured facts, mostly single runs on a few devices; they win over general assumptions. The tuned numbers themselves live in `host/games/kart-3d/tuning.js` (each with its meaning); MK8DX's own numbers are in `docs/mk8dx-reference.md`. The full per-milestone tables are in git (`git show c091f14:docs/3d-findings.md`).
+What was measured and learned while building the 3D kart race, by topic. Measured facts, mostly single runs on a few devices; they win over general assumptions. The tuned numbers themselves live in `host/games/kart-3d/tuning.js` (each with its meaning); the reference game's own numbers are in `docs/kart-reference.md`. The full per-milestone tables are in git (`git show c091f14:docs/3d-findings.md`).
 
 Devices: the iPad (the main host, Safari 27, canvas about 1366x892 CSS px), a Windows laptop (Ryzen 9 5900HS: integrated Radeon, or its RTX 3070), a Galaxy S24, the dev box (headless Chromium, WebGL in software).
 
 ## What the hosts can carry
 
-- **The iPad carries the whole look with 12 karts and 4 views.** It has run between 50 and 90 fps with 4 views on High as detail was added, always above MK8DX's own bar (60 fps with 1-2 views, 30 with 3-4).
+- **The iPad carries the whole look with 12 karts and 4 views.** It has run between 50 and 90 fps with 4 views on High as detail was added, always above the reference game's own bar (60 fps with 1-2 views, 30 with 3-4).
 - **Pixels and passes cost, triangles barely.** On the iPad 4.7 million triangles took the same time as 2.5 million; doubling the pixel ratio doubled the frame. What costs: bloom (1.5-3.5 ms), shadows (1-2 ms), the barriers (1-2.5 ms, the dearest part of a course), the karts (3.4 ms with 4 views before their shadows came from box stand-ins). Road, sea, decks, props, gate, surroundings and sky each move the frame by under a millisecond.
 - **Measure reports, iPad, ms a frame with the GPU made to finish, 1 view / 4 views:**
 
@@ -38,7 +38,7 @@ Devices: the iPad (the main host, Safari 27, canvas about 1366x892 CSS px), a Wi
 
 - **Whole frames flashing green or cyan on the iPad (High, 4 views).** One NaN or infinite pixel in bloom's half-float buffer spreads over the frame as bloom blurs it. It came from triangles whose corner normals point more than a right angle apart or are near zero: the iPad's GPU does that maths in half precision, the dev box never showed it. Fixed by flat normals on such triangles (`karts/safe-normals.js`) and by bloom reading only values between 0 and 16 (`guardBloomInput` in `bloom.js`). Any new smooth-shaded shape with sharp folds can bring it back.
 - **Dash panels bloom into a blur** if their glow is too strong: tuned to glow 1.6, bloom strength 0.2, radius 0.3.
-- **Lamps lit in daylight look wrong;** MK8DX lights lamps only at dusk, night or indoors.
+- **Lamps lit in daylight look wrong;** the reference game lights lamps only at dusk, night or indoors.
 - **A shoulder (grass) that starts at a piece's end** leaves a notch to drive out of: shoulders ease in and out over 16 units. A deck's free end tapers the same way.
 - **The road floats,** so everything beside it stands on a deck or a ledge; barriers stand on a concrete ledge from the rules' wall line outward.
 - **Rock** built as stacked rings of round shapes reads as blobs, and seams on every band read as wooden planks: see "Rock study" below.
@@ -48,12 +48,12 @@ Devices: the iPad (the main host, Safari 27, canvas about 1366x892 CSS px), a Wi
 
 ## The feel
 
-- **MK8DX's distance unit is not public,** so every distance is ours: a kart is about 2 units long, the road 13-20 wide (MK8DX's start straight measured about 9 kart widths; ours 9.6), the camera 6.5 behind and 2.4 above at 65 degrees.
-- **Tuned by feel against MK8DX's 150cc on the device:** top speed 32 units/s (16 kart lengths a second), 67 deg/s at full stick, 72.5 fully into a drift (a drift must turn tighter than steering, as in MK8DX), a wall hit that costs speed by angle so that riding the wall is the slow line (unit tested), bumps that bounce a little (0.25), a hop of 0.4.
-- **Taken from MK8DX's level-10 data as they are:** the speed curve, the mini-turbo counter (5 or 2 a frame; blue, orange, purple at 256, 542, 828; boosts of 30, 90, 150 frames at 1.1 times top speed), the trick boost (1.35 times). Guesses that stayed: dash panel and rocket start 1.35, slipstream 1.08, spin boost 1.1. Boosts do not stack: the longer time and faster speed win.
+- **The reference game's distance unit is not public,** so every distance is ours: a kart is about 2 units long, the road 13-20 wide (the reference game's start straight measured about 9 kart widths; ours 9.6), the camera 6.5 behind and 2.4 above at 65 degrees.
+- **Tuned by feel against the reference game's 150cc on the device:** top speed 32 units/s (16 kart lengths a second), 67 deg/s at full stick, 72.5 fully into a drift (a drift must turn tighter than steering, as in the reference game), a wall hit that costs speed by angle so that riding the wall is the slow line (unit tested), bumps that bounce a little (0.25), a hop of 0.4.
+- **Taken from the reference game's level-10 data as they are:** the speed curve, the mini-turbo counter (5 or 2 a frame; blue, orange, purple at 256, 542, 828; boosts of 30, 90, 150 frames at 1.1 times top speed), the trick boost (1.35 times). Guesses that stayed: dash panel and rocket start 1.35, slipstream 1.08, spin boost 1.1. Boosts do not stack: the longer time and faster speed win.
 - **Rocket start:** the host judges when the Go press arrives. The window is 0.3 to 1.2 s after "2" appears, and the boost is longer the earlier in it (1 s down to 0.3 s). Measured arrivals were +0.13 to +0.57 s after "2" with round trips of 11-113 ms. With auto-accelerate, holding Drift counts.
 - **Engine classes** are a share of 150cc's top speed on each kart (0.8, 0.9, 1, 1.5), so the Top speed slider always means 150cc. Glide gravity scales with the class so every class lands in about the same place.
-- **Laps:** a lone CPU kart laps Seaside Skyway (1213 units) in about 36 s at 150cc and Palm Bay Airport (1551 units) in about 50 s. MK8DX's laps are 31 to 44 s.
+- **Laps:** a lone CPU kart laps Seaside Skyway (1213 units) in about 36 s at 150cc and Palm Bay Airport (1551 units) in about 50 s. The reference game's laps are 31 to 44 s.
 - **CPU levels as judged on the device:** Normal, winning from 12th is doable; Hard, quite challenging; Easy, like a beginner. A mild catch-up, up to 5% of top speed at 200 units from the leading player.
 - **Spin posts** slide a kart round them with no bounce (the bounce threw karts into walls); in anti-gravity the kart spins and boosts, once per 0.6 s.
 - **Items:** every allowed item is equally likely (place-based odds made the same few come up). Removed after the device run: big, small, bouncy, and the ramp. The push acts only on karts beside and behind, never the one in front (pushing it on stops the overtake).
@@ -61,7 +61,7 @@ Devices: the iPad (the main host, Safari 27, canvas about 1366x892 CSS px), a Wi
 
 ## Rock study
 
-Done before the bay's rocky islands (`kit/rock-island*.js`), after rock made of rings of round shapes looked wrong. From photographs of sea stacks and karst islands and from MK8DX's Dolphin Shoals, Koopa Cape and Sunshine Airport.
+Done before the bay's rocky islands (`kit/rock-island*.js`), after rock made of rings of round shapes looked wrong. From photographs of sea stacks and karst islands and from the reference game's shoals, cape and airport courses.
 
 - **Planes and edges, not blobs.** Rock breaks along bedding planes and joints: flat faces meeting at fairly sharp edges, near-upright walls, flat or humped tops, an angular stepped outline.
 - **Strata:** level bands of differing tone; a hard band stands out as a ledge, a soft one is worn back.
@@ -70,7 +70,7 @@ Done before the bay's rocky islands (`kit/rock-island*.js`), after rock made of 
 - **The foot:** a dark wet band at the waterline, a wave-cut notch with the rock overhanging, fallen angular blocks.
 - **Vegetation only where it can hold:** on tops and ledges, hanging over the lip in tongues; walls are bare.
 - **Colour:** paler on weathered upper faces, dark streaks below ledges, each facet a little lighter or darker.
-- **MK8DX keeps rock planar and blocky** and puts the fine detail in the texture; only grass and bushes are rounded.
+- **The reference game keeps rock planar and blocky** and puts the fine detail in the texture; only grass and bushes are rounded.
 - **What worked:** flat facets stacked in strata, seams on a third of the band edges with short blocks between joints, one drawn limestone tile for the detail. Two rings where strata meet must differ only by a uniform step, or the faces between them twist and the inward half is culled (a unit test checks the winding).
 
 ## Tools for looking and measuring

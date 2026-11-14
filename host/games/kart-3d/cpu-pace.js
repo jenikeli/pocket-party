@@ -1,5 +1,5 @@
 // The CPU karts' catch-up (M7e): a CPU kart far behind the leading player gets a slightly higher top speed, one far
-// ahead a slightly lower one. MK8DX has a mild catch-up (rubber-banding), weaker than older Mario Karts, with no
+// ahead a slightly lower one. The reference game has a mild catch-up (rubber-banding), weaker than older console kart racers, with no
 // published numbers, so the strength and range (tuning.js) are guesses to tune on the device run. Used by race.js.
 
 import { tuning } from './tuning.js';

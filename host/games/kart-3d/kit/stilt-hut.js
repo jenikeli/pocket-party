@@ -1,4 +1,4 @@
-// The kit's hut on stilts (M7d3, rebuilt in M7d4d to the M7d4 study), as at MK8DX's Cheep Cheep Beach: a plank
+// The kit's hut on stilts (M7d3, rebuilt in M7d4d to the M7d4 study), as at the reference beach course: a plank
 // hut on a plank deck held over the water by stilts, with a door, a window, flower boxes of red flowers, white
 // posts with a rope along the walkway toward the beach, a ladder to the water, and a thick layered thatch roof
 // with a ragged edge and a ridge roll. Three parts: the wood (planks textured), the painted bits (white posts,

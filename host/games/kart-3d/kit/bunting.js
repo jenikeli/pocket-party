@@ -1,4 +1,4 @@
-// The kit's bunting (M7d2, rebuilt in M7d4c3 to the study), as near Mario Circuit's start gate: strings of pastel
+// The kit's bunting (M7d2, rebuilt in M7d4c3 to the study), as near the reference circuit course's start gate: strings of pastel
 // pennants hung across the road between two poles standing on its walls, sagging a little in the middle. Each
 // pennant is a curled cloth with a woven relief and a hem folded over its rope (kit/bunting-pennant.js); each pole
 // has a foot, collars and a cap. Every string is merged into one shape; a pennant is two one-sided layers, one for

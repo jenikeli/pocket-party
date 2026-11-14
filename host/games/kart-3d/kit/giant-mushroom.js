@@ -1,4 +1,4 @@
-// The kit's giant mushroom (M7d4c5), after Toad Circuit's: a glossy red cap with a soft, thick rounded rim and
+// The kit's giant mushroom (M7d4c5), after the reference circuit course's: a glossy red cap with a soft, thick rounded rim and
 // white spots, ribbed gills under it, and a cream stem that widens into a foot. About 4.9 tall; the cap is 6
 // across. Used by kit/props.js.
 

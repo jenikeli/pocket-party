@@ -44,7 +44,7 @@ const STYLE_BUILDERS = {
 const LEDGE_WIDTH = 0.95;
 const LEDGE_TOP = 0.1;
 const LEDGE_COLOR = 0xd2ccc2;
-// The ledge's face below its coping is darker, weathered where rain runs down it (M7d4, as on Daisy Circuit's
+// The ledge's face below its coping is darker, weathered where rain runs down it (M7d4, as on the reference seaside course's
 // seawall).
 const LEDGE_FACE_COLOR = 0xa49e94;
 const COPING_DEPTH = 0.16;

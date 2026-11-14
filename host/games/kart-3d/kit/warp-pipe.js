@@ -1,4 +1,4 @@
-// The kit's warp pipe (M7d4c5), after Toad Circuit's: glossy green with a fat, rounded lip round its top, a
+// The kit's warp pipe (M7d4c5), after the reference circuit course's: glossy green with a fat, rounded lip round its top, a
 // flared foot, a shadow under the lip, a pale highlight down its front-left side and a dark inside that goes
 // down out of sight. About 2.73 tall; the lip is 2.24 across. Used by kit/props.js.
 

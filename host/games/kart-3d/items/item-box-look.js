@@ -12,7 +12,7 @@ import { BOX_SIZE, buildShell, buildQuestionMark, createBoxMaps } from './item-b
 const FLOAT_HEIGHT = 1.35;
 const BOB_HEIGHT = 0.12;
 const BOB_RATE = 2.2;
-// The box turns slowly (radians a second), leaning this far off upright so a corner leads, as MK8DX's does. The
+// The box turns slowly (radians a second), leaning this far off upright so a corner leads, as the reference game's does. The
 // "?" sways from side to side (this far either way, at this rate) facing the karts coming, so they never see it
 // from behind, back to front.
 const BOX_TURN_RATE = 0.9;

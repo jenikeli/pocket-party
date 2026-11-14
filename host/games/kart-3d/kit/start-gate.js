@@ -1,8 +1,8 @@
 // The kit's start gate (M7d2): two chunky posts behind the walls either side of the start line, a big sign across
-// the road between them reading MARIO KART (kit/start-gate-sign.js) on both faces, with a stripe along its foot
-// and checks at its ends, and a round mushroom badge on top, in the course's colours (M7d3): Mario Kart
-// Stadium's yellow sign on the Test track, a sea-blue one on Seaside Skyway. Since M7d4 built up as MK8DX's
-// gates are (docs/mk8dx-reference.md, "The kit's objects up close"): each post a stone plinth, a shaft of panels with
+// the road between them reading KARTWHEEL (kit/start-gate-sign.js) on both faces, with a stripe along its foot
+// and checks at its ends, and a round mushroom badge on top, in the course's colours (M7d3): a
+// yellow sign on the Test track, a sea-blue one on Seaside Skyway. Since M7d4 built up as the reference game's
+// gates are (docs/kart-reference.md, "The kit's objects up close"): each post a stone plinth, a shaft of panels with
 // seams between them and a bolt at each corner, a band and a capital; the sign's letters raised (its relief)
 // inside a raised rim with a row of bolts along it. The start lights (kit/start-lights.js) hang under the sign's
 // middle. Since M7d4b2 the posts' panels, seams and bolts are maps on one shaft

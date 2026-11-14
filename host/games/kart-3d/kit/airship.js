@@ -1,4 +1,4 @@
-// The kit's airship (M7d3), drifting round a sky course as blimps and airships do round MK8DX's: a white envelope
+// The kit's airship (M7d3), drifting round a sky course as blimps and airships do round the reference game's: a white envelope
 // with red bands at its nose and tail, four red fins, a gondola with windows, two propellers that spin, and a
 // sponsor banner (kit/sponsors.js) on each flank. It flies a circle, banking a little into it. Used by the
 // seaside surroundings.

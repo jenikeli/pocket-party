@@ -2,7 +2,7 @@
 // in a loop about 630 units long (a kart is 2): a start straight, a hill with no walls (the edge a kart can fall
 // off), a flat turn, a jump ramp over a gap, a hairpin, a banked curve, a straight with off-road shoulders, and
 // an anti-gravity curve that rolls the road up to a vertical wall and back. M6c added two dash panels: one
-// before the jump and one on the off-road straight. The road floats over the sea, as on MK8DX's sky courses, so
+// before the jump and one on the off-road straight. The road floats over the sea, as on the reference game's sky courses, so
 // leaving it means falling. Pieces are described in track-builder.js; the unit tests check each feature at its
 // known spot. Built before the M7a tuning, so at 32 units/s its hairpin needs braking.
 //
@@ -15,7 +15,7 @@ export const TEST_TRACK = Object.freeze({
   name: 'Test track',
   // Dressed with the M7d kit's pieces, to look at them (test-track-scenery.js).
   scenery: 'test-track',
-  // Road width 16, 8 kart lengths: a guess until it is measured from MK8DX footage.
+  // Road width 16, 8 kart lengths: a guess until it is measured from the reference game footage.
   halfWidth: 8,
   // The grid sits on the start straight just behind this line.
   startLine: 34,

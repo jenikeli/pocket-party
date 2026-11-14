@@ -1,7 +1,7 @@
-// The grandstand's cantilevered roof (M7d4c3), as on Toad Circuit's stands in MK8DX: a roof held only from the
+// The grandstand's cantilevered roof (M7d4c3), as on the reference circuit course's stands: a roof held only from the
 // back by a lattice girder over each line of columns, reaching out over both decks to a little past the stand's
 // front; a pale ceiling under it crossed by purlins, so its underside is not one flat dark slab; a red fascia
-// along its front edge, framed, for the MARIO KART sign; and a railing along its top's front edge. Built along x
+// along its front edge, framed, for the KARTWHEEL sign; and a railing along its top's front edge. Built along x
 // round x = 0, as kit/grandstand-structure.js. Used by kit/grandstand.js.
 
 import * as THREE from 'three';
@@ -21,7 +21,7 @@ const PURLIN_ZS = [-5.8, -4.3, -2.8, -1.3, 0.2];
 const ROOF_TOP = 0xf4f4f0;
 const CEILING = 0xf2eee6;
 // The ceiling faces the ground and the stands, so the course's light leaves it dark, and the baked shade darker
-// still. MK8DX's own bake lights such undersides with the light bounced up off the ground: its colour is lifted
+// still. The reference game's own bake lights such undersides with the light bounced up off the ground: its colour is lifted
 // above white by this much to stand in for that bounce.
 const CEILING_LIFT = 3;
 const FASCIA_RED = 0xd8302a;

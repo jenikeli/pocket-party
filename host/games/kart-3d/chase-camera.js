@@ -1,6 +1,6 @@
 // The 3D race's chase camera, as plain maths: behind and above its kart, turning after it with a short lag,
 // rolling with the road on anti-gravity walls, steady over bumps and jumps, pulling back with a wider view
-// while the kart boosts, and riding higher and further back while it glides (M9), as MK8DX's does. No Three.js,
+// while the kart boosts, and riding higher and further back while it glides (M9), as the reference game's does. No Three.js,
 // unit tested in Node. Used by host/games/kart-3d/views.js, once per drawn frame for each view. Its distances,
 // field of view and catch-up rates are tuned (tuning.js): the direction trails the kart's nose a little, so a turn
 // shows the kart's side; the up trails the road's normal more, so small bumps do not shake the picture; the

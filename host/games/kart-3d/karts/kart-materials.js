@@ -64,7 +64,7 @@ export function createKartMaterials(designs, kartCount) {
 
 // Faces sit in the shade of their own caps and of the kart; a faint glow keeps them in their own colour, as the
 // references' faces are, instead of greying. three.js glows one colour for the whole material, so it is white here
-// and the shader multiplies it by each vertex's colour, right after the emissive map would have: peach glows peach,
+// and the shader multiplies it by each vertex's colour, right after the emissive map would have: pink glows pink,
 // white glows white, teal glows teal, all in the one draw call.
 function createSkinMaterial() {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, emissive: 0xffffff, emissiveIntensity: SKIN_GLOW });

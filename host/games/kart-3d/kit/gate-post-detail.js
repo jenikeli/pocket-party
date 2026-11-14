@@ -58,7 +58,7 @@ function drawPostMaps(post, height, color) {
   return surface.toMaps({ depth: 6, shade: { reach: 0.08, strength: 2.5 }, repeat: false });
 }
 
-// A fine line cut round the panel's face, a little in from its edges: the second, smaller scale of parts MK8DX's
+// A fine line cut round the panel's face, a little in from its edges: the second, smaller scale of parts the reference game's
 // panels have.
 function addPanelLine(surface, { left, bottom, width, height }, rgb) {
   const [x1, x2, y1, y2] = [left + LINE_INSET, left + width - LINE_INSET, bottom + LINE_INSET, bottom + height - LINE_INSET];

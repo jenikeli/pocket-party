@@ -1,4 +1,4 @@
-// The grandstand's structure below its roof (M7d4c3), after Toad Circuit's stands in MK8DX: two decks of stepped
+// The grandstand's structure below its roof (M7d4c3), after the reference circuit course's stands: two decks of stepped
 // seating (each row a concrete step, its riser and its tread meeting at a bevelled nose, with a row of seat shells
 // on it), each deck on silver lattice columns, a low wall in front for the sponsor boards, a parapet and railing
 // along the upper deck's front, a back wall, and a flight of stairs at each end. Built along x round x = 0,

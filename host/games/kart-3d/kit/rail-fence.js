@@ -1,6 +1,6 @@
-// The kit's seaside rail fence (M7d2), as at Koopa Cape: weathered wooden posts with pointed tops and two plank
-// rails along them, bolted to each post (M7d3 gave it wood grain and the bolts). Since M7d4 built up as MK8DX's
-// wooden fences are (docs/mk8dx-reference.md, "The kit's objects up close"): rounded posts and rails with the
+// The kit's seaside rail fence (M7d2), as at the reference cape course: weathered wooden posts with pointed tops and two plank
+// rails along them, bolted to each post (M7d3 gave it wood grain and the bolts). Since M7d4 built up as the reference game's
+// wooden fences are (docs/kart-reference.md, "The kit's objects up close"): rounded posts and rails with the
 // grain in relief, a low pyramid top with a darker cut end, a darker foot, and posts that stand a little uneven,
 // none quite as tall or as straight as the next. Returns { add(segment, side), end(station, index, side,
 // facing), meshes() } for kit/barriers.js: end puts a post where the rails start or stop.

@@ -1,6 +1,6 @@
-// The kit's padded wall with sponsor boards (M7d2), as at Mario Kart Stadium and Toad Circuit: a low padded wall
+// The kit's padded wall with sponsor boards (M7d2), as at the reference stadium course and the reference circuit course: a low padded wall
 // whose face toward the road is a row of printed boards (kit/sponsors.js), a rounded blue pad on top, and a
-// chain-link fence on posts above it. Since M7d4 built up as MK8DX's is (docs/mk8dx-reference.md, "The kit's
+// chain-link fence on posts above it. Since M7d4 built up as the reference game's is (docs/kart-reference.md, "The kit's
 // objects up close"): each board set back in a frame with a bolt at each corner, a dark kick strip along the
 // foot, a fat cushion of a pad with a seam between boards, and the fence on capped posts with a rail along its
 // top. Since M7d4b2 the boards' frames and bolts and the pad's seams are drawn in maps

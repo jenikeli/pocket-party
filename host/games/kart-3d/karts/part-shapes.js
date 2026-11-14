@@ -1,5 +1,5 @@
 // Small helpers the karts and their drivers are built with (M7d5): a part coloured per vertex with a darker
-// crease along its foot (MK8DX's dark creases where parts meet), a squashed ball, a limb (a capsule from one
+// crease along its foot (the reference game's dark creases where parts meet), a squashed ball, a limb (a capsule from one
 // point to another), a part painted in two tones by direction and a list of parts sorted by the kind of material
 // they are drawn with. Used by the kart's
 // builders (karts/) and the shared driver parts (karts/driver-parts.js).

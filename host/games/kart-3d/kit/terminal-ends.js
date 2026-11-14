@@ -1,5 +1,5 @@
-// The terminal's round ends (M9), as the round pavilion with a blue dome at the end of Sunshine Airport's terminal
-// in MK8DX: at each end a drum of light glass, its outer half standing out past the end walls, framed by white
+// The terminal's round ends (M9), as the round pavilion with a blue dome at the end of the reference airport course's terminal
+// in the reference game: at each end a drum of light glass, its outer half standing out past the end walls, framed by white
 // mullions, belted at the hall's top by a coral and yellow band, under a blue rim and a low blue dome that rises
 // over the roof. They break the long box's outline from the apron and from the air. Also the plant rooms on the
 // roof. Returns shapes by part, as kit/terminal-body.js does.

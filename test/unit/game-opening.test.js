@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadThenOpenRoom } from '../../host/game-opening.js';
 
-const GAME_INFO = { id: 'kart-3d', title: 'Kart race 3D', minPlayers: 0, maxPlayers: 4 };
+const GAME_INFO = { id: 'kart-3d', title: 'Kartwheel', minPlayers: 0, maxPlayers: 4 };
 
 // The fakes share one list of calls, so the test can check their order. `loadFails` and `connectFails` make
 // that step reject, as a missing file or a server that cannot be reached would.
@@ -60,7 +60,7 @@ test('a game that fails to load leaves no room behind', async (t) => {
   const { calls, loadGame, createRoom } = fakes({ loadFails: true });
   const opened = await loadThenOpenRoom({ gameInfo: GAME_INFO, loadGame, createRoom, onProgress: () => {} });
   assert.deepEqual(calls, ['load kart-3d']);
-  assert.deepEqual(opened, { problem: 'Could not load Kart race 3D (details in the browser console).' });
+  assert.deepEqual(opened, { problem: 'Could not load Kartwheel (details in the browser console).' });
 });
 
 test('a server that cannot be reached is a problem to show, and no limit is sent', async (t) => {

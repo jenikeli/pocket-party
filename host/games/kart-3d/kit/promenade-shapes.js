@@ -1,5 +1,5 @@
-// The shapes of the promenade railing (M7d4c3), the toy-proportioned posts and stone pillars of Daisy Circuit's
-// seafront (docs/mk8dx-reference.md, "The kit's objects up close"): a fat blue post with a flared foot, collars and
+// The shapes of the promenade railing (M7d4c3), the toy-proportioned posts and stone pillars of the reference seaside course's
+// seafront (docs/kart-reference.md, "The kit's objects up close"): a fat blue post with a flared foot, collars and
 // a big ball on top; a stone pillar of a plinth, a block shaft and an overhanging cap; the plaque's disc and rim;
 // and the lantern that stands on every other pillar. Each is modelled standing on y = 0, the road along z. Drawing
 // only, no canvas needed, so the unit tests can check them. Used by kit/promenade-rail.js.

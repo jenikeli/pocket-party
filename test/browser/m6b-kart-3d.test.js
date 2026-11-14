@@ -166,7 +166,7 @@ describe('M6b 3D driving', () => {
     // The one loading screen so far was the shell's, for the game's own files.
     const loading = await loadingLog(hostPage);
     assert.deepEqual(loading.events, ['shown', 'hidden']);
-    assert.deepEqual(loading.titles, ['Kart race 3D']);
+    assert.deepEqual(loading.titles, ['Kartwheel']);
   });
 
   test('the setup\'s controls with words say them, its icon-only ones carry a name and a title, and the old lobby controls are gone', async () => {

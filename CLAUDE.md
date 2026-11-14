@@ -4,13 +4,13 @@ Project context for Claude Code. Read this first every session, then `plan.md` (
 
 - `docs/spike-findings.md`, `docs/input-findings.md`: tests on my real devices (HTTPS, latency, sockets when a screen locks, tilt). Measured facts that override general assumptions; single runs on a few devices.
 - `docs/3d-findings.md`: what was measured and learned building the 3D race (what the iPad carries, what costs frame time, pitfalls, the feel).
-- `docs/mk8dx-reference.md`: MK8DX's numbers and how its courses and objects look. Fan-wiki data, so measured findings win.
+- `docs/kart-reference.md`: the reference game's numbers and how its courses and objects look. Fan-wiki data, so measured findings win.
 
 Docs are organised by topic and kept short: they hold what the code and the commits do not say. Milestone ids live in commit messages.
 
 ## What this is
 
-A local-network racing party game in the style of Mario Kart: a 2D race and a 3D one. The 3D race should look, feel and play as close to Mario Kart 8 Deluxe (Switch) as we can make it. It is for my private use and never published, so copying MK8DX's designs is fine; we build every model and texture ourselves rather than extracting files from the game. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
+A local-network racing party game in the style of console kart racers, with two games: Kartwheel (the 3D race) and Kartwheel Mini (the 2D one). The 3D race should look, feel and play as close to the reference console kart racer as we can make it. It is for my private use and never published, so copying the reference game's designs is fine; we build every model and texture ourselves rather than extracting files from the game. Phones are controllers, a larger screen is the host display that runs the game, and a small Node server serves files and relays messages. Everything is web tech. No app store, no native code.
 
 ## Supported devices
 

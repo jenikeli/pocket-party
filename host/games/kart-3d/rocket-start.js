@@ -1,4 +1,4 @@
-// The countdown before a 3D race and MK8DX's rocket start: Go pressed just after "2" appears and held to GO
+// The countdown before a 3D race and the reference game's rocket start: Go pressed just after "2" appears and held to GO
 // boosts the kart off the line; pressed too early, the kart stalls. Plain functions, unit tested in Node. Used
 // by host/games/kart-3d/race.js and race-views.js.
 //
@@ -8,15 +8,15 @@
 
 import { tuning } from './tuning.js';
 
-// "3" shows from 0 s, "2" from 1 s, "1" from 2 s, and GO at 3 s (a guess at MK8DX's pace), which shows for a
+// "3" shows from 0 s, "2" from 1 s, "1" from 2 s, and GO at 3 s (a guess at the reference game's pace), which shows for a
 // second while the karts drive off.
 export const GO_AT = 3;
 const TWO_AT = 1;
 const GO_SHOWN_FOR = 1;
 // A press arriving from tuning.rocketFrom to tuning.rocketTo seconds after "2" appears, and held until GO,
 // rocket starts; earlier stalls; later is a normal start (tuning.js). The earlier in the window, the longer the
-// boost (rocketBoostSeconds), so a well-timed press beats a late one, as in MK8DX.
-// A stalled kart stands still this long after GO (a guess; MK8DX's stall is about a second).
+// boost (rocketBoostSeconds), so a well-timed press beats a late one, as in the reference game.
+// A stalled kart stands still this long after GO (a guess; the reference game's stall is about a second).
 export const STALL_SECONDS = 1;
 
 export const START_OUTCOMES = Object.freeze({ ROCKET: 'rocket', STALL: 'stall', NORMAL: 'normal' });

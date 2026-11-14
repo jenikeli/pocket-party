@@ -1,4 +1,4 @@
-// The kit's props on the decks beside the road (M7d2): cones, tyre stacks, warp pipes, giant mushrooms, the MKTV
+// The kit's props on the decks beside the road (M7d2): cones, tyre stacks, warp pipes, giant mushrooms, the KWTV
 // van, sponsor stands, street lamps and floodlight towers, and since M7d3 the seaside's palms, parasols,
 // loungers, surfboards, lifebuoys and barrels, round trees, hedges and planters. Each spot in a course's layout names a prop and where
 // it stands; every prop of one kind draws as one instanced mesh per part (sponsor stands, which each show their
@@ -13,7 +13,7 @@ import { buildCone } from './cone.js';
 import { buildTyreStack } from './tyre-stack.js';
 import { buildWarpPipe } from './warp-pipe.js';
 import { buildGiantMushroom } from './giant-mushroom.js';
-import { buildMktvVan } from './mktv-van.js';
+import { buildTvVan } from './tv-van.js';
 import { buildSponsorStands } from './sponsor-stand.js';
 import { buildLanternLamp, buildTripleLamp } from './street-lamps.js';
 import { buildFloodlight } from './floodlight.js';
@@ -36,7 +36,7 @@ export const PROP_BUILDERS = {
   'tyre-stack': buildTyreStack,
   'warp-pipe': buildWarpPipe,
   'giant-mushroom': buildGiantMushroom,
-  'mktv-van': buildMktvVan,
+  'tv-van': buildTvVan,
   'lantern-lamp': buildLanternLamp,
   'triple-lamp': buildTripleLamp,
   floodlight: buildFloodlight,

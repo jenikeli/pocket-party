@@ -27,7 +27,7 @@ export function createControlsTable() {
   // screen locked). What they held is forgotten too: after a rejoin their phone's buttons all start released,
   // so the kart waits for fresh input instead of driving off on its own. With `autoAccelerate` (the player's
   // control style) the kart accelerates whenever brake is not held; the phone has no Go button then.
-  // Without it, a held Drift accelerates too: in MK8DX the accelerate button stays held through a drift, but a
+  // Without it, a held Drift accelerates too: in the reference game the accelerate button stays held through a drift, but a
   // phone has one right thumb for both buttons, and it cannot press two at once.
   function controlsFor(player, autoAccelerate) {
     if (!player?.connected) {

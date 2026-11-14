@@ -1,5 +1,5 @@
 // The water round a rocky island (M9): turquoise shallows fading out into the deep blue and patchy white foam at
-// the shore, as round the study's islands and MK8DX's. See-through sheets lying just on the sea, following the
+// the shore, as round the study's islands and the reference game's. See-through sheets lying just on the sea, following the
 // shore round the island: the masses' feet, or the beach's waterline where there is one. Used by
 // kit/rock-island.js.
 

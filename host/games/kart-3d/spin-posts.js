@@ -1,7 +1,7 @@
 // The spin-boost posts of the airport's anti-gravity ring (M9): round posts standing on the road. A kart that
 // touches one is slid round its side with its speed along the road kept, and in anti-gravity it spins and gets a
-// spin boost forward, as in MK8DX: no bounce back (the M9 device run: a bounce threw karts into walls and each
-// other, which MK8DX's pillars never do). Plain functions on plain data, unit tested in Node. Used by race.js after
+// spin boost forward, as in the reference game: no bounce back (the M9 device run: a bounce threw karts into walls and each
+// other, which the reference game's pillars never do). Plain functions on plain data, unit tested in Node. Used by race.js after
 // the karts have bumped each other.
 
 import { add, subtract, length, scale, addScaled, dot } from './vector.js';

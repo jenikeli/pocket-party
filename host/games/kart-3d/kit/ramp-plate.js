@@ -1,5 +1,5 @@
 // The kit's ramp plate (M7d2): a riveted steel plate over each jump's ramp, from where the road starts climbing
-// to the lip, with big white chevrons painted on it, as on Mario Kart Stadium's ramps. Drawing only; where the
+// to the lip, with big white chevrons painted on it, as on the reference stadium course's ramps. Drawing only; where the
 // ramps are comes from kit/road-marks.js. Used by kit/road.js.
 
 import * as THREE from 'three';

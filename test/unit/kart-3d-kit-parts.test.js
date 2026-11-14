@@ -54,11 +54,11 @@ function fakeKit() {
   };
 }
 
-// How many parts each prop has: the MKTV van, the lantern lamp, the floodlight, the palm, and since M7d4c5 the
+// How many parts each prop has: the TV van, the lantern lamp, the floodlight, the palm, and since M7d4c5 the
 // round tree and hedge have two, the triple lamp three (its stone pedestal, M7d4c4), and since M9 the follow-me car
 // two (its lettered board), the runway light and taxiway sign two (glass, faces), the airport floodlight three (glass,
 // ribbon), the rest one.
-const PARTS_BEFORE = { 'mktv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2, 'follow-me-car': 2, 'runway-light': 2, 'taxiway-sign': 2, 'airport-floodlight': 3 };
+const PARTS_BEFORE = { 'tv-van': 2, 'lantern-lamp': 2, 'triple-lamp': 3, floodlight: 2, palm: 2, 'round-tree': 2, hedge: 2, 'follow-me-car': 2, 'runway-light': 2, 'taxiway-sign': 2, 'airport-floodlight': 3 };
 
 function assertParts(parts, label) {
   assert.ok(Array.isArray(parts) && parts.length > 0, `${label} returns parts`);
@@ -82,7 +82,7 @@ test('the props use the kit\'s shared materials, the sponsors\' and the palm\'s'
   assert.equal(PROP_BUILDERS.cone(kit)[0].material, kit.materials.plastic);
   assert.equal(PROP_BUILDERS['tyre-stack'](kit)[0].material, kit.materials.painted);
   assert.deepEqual(PROP_BUILDERS['lantern-lamp'](kit).map((part) => part.material), [kit.materials.iron, kit.materials.glass]);
-  assert.deepEqual(PROP_BUILDERS['mktv-van'](kit).map((part) => part.material), [kit.materials.painted, kit.sponsors]);
+  assert.deepEqual(PROP_BUILDERS['tv-van'](kit).map((part) => part.material), [kit.materials.painted, kit.sponsors]);
   assert.deepEqual(PROP_BUILDERS.palm(kit).map((part) => part.material), [kit.palm.trunk, kit.palm.fronds]);
 });
 

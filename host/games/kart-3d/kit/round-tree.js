@@ -1,4 +1,4 @@
-// The kit's round tree (M7d4c5, rebuilt to the study of MK8DX's Toad Circuit trees): a short thick trunk flaring
+// The kit's round tree (M7d4c5, rebuilt to the study of the reference circuit course trees): a short thick trunk flaring
 // at the root under a round crown of overlapping leaf scales (kit/leaf-scale.js) laid in five tiers on a ball,
 // lighter on top and darker underneath, over a dark core so the gaps between scales read as shadow. About 5.4
 // tall and 4 across, standing on y = 0. Under 1,500 triangles: scores stand on the sky's islands.

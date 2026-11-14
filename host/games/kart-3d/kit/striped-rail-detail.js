@@ -1,5 +1,5 @@
 // The striped rail with its detail in textures (M7d4b2): the rails shaped to the study's second look at
-// Toad Harbor's (docs/mk8dx-reference.md: padded bars about 0.4 tall and 0.2 deep with a flat face and well
+// The reference harbour course's (docs/kart-reference.md: padded bars about 0.4 tall and 0.2 deep with a flat face and well
 // rounded top and bottom, nearly filling the height, a thin dark rod in the narrow gap between them), painted in
 // slanted orange bands with worn edges and a soft dimpled padding drawn in their maps; and the post blocks as
 // plain rounded boxes with their bolts, their grime and the dark creases round the rails drawn in maps

@@ -1,6 +1,6 @@
-// One of the 3D race's courses (courses.js), "Seaside Skyway" (M7b): our own layout, designed from the patterns of MK8DX's courses
-// ("Course patterns" in docs/mk8dx-reference.md) for the tuned speeds and turns (tuning.js), not traced from any
-// real course. About 1210 units a lap, about 40 s at 150cc, as MK8DX's laps are. The road floats over the sea,
+// One of the 3D race's courses (courses.js), "Seaside Skyway" (M7b): our own layout, designed from the patterns of the reference game's courses
+// ("Course patterns" in docs/kart-reference.md) for the tuned speeds and turns (tuning.js), not traced from any
+// real course. About 1210 units a lap, about 40 s at 150cc, as the reference game's laps are. The road floats over the sea,
 // so leaving it where it has no wall means falling. Pieces are described in track-builder.js; distances along
 // the lap (s) below are approximate.
 //
@@ -8,7 +8,7 @@
 // (32 units/s): a full drift into the turn holds a radius of about 25 to 30, a full normal turn about 27, and a
 // purple mini-turbo needs about 2.8 s of hard drifting.
 //
-// Its parts, in the order they come, quiet and busy in turn as MK8DX paces a lap:
+// Its parts, in the order they come, quiet and busy in turn as the reference game paces a lap:
 //   s 0-150     start straight, wide (18), the grid behind the line at 45, a row of item boxes past it
 //   s 150-235   first corner: a 90 degree right sweeper, radius 55, long enough for orange sparks
 //   s 235-340   a short straight, then a quick left-right chicane (the drift's side flips; blue sparks at most)

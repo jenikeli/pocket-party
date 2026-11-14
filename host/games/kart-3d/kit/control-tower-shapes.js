@@ -1,4 +1,4 @@
-// The control tower's shapes (M9), after Sunshine Airport's tower in MK8DX and real ones: a round podium with a band of
+// The control tower's shapes (M9), after the reference airport course's tower and real ones: a round podium with a band of
 // windows, a tapering clad shaft with a stair window up its front, a flare opening out under the cab, a service floor, a gallery with a railing, the round glass cab leaning out in flat
 // panes, a coral sunshade roof with a dome, two antennas and a radar. It stands on y = 0 round the y axis, its
 // door and stair window toward +x. Returns shapes by part, { partName: [geometry] }; the radar is its own part, as

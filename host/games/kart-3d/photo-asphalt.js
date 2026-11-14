@@ -13,7 +13,7 @@ const FILES = {
   aoMap: 'Asphalt023S_1K-JPG_AmbientOcclusion.jpg',
 };
 // The scan is 1.25 m square. A kart is 2 units long, about a real kart's length, so a unit is about a metre; the
-// tile is drawn 4 times larger than life, 5 units across, so its stones show from the chase camera as MK8DX's
+// tile is drawn 4 times larger than life, 5 units across, so its stones show from the chase camera as the reference game's
 // coarse asphalt does (at 3 units the road read as smooth). The road's texture coordinates count one repeat
 // every 8 units (strip-builder.js).
 const REPEAT = 8 / 5;

@@ -36,7 +36,7 @@ const { nextAntiGravityShare, easedShare, ANTI_GRAVITY_SECONDS } = await import(
 // 12 karts in every view: about 25,000 triangles and at most about 10 draw calls a kart with its driver.
 const TRIANGLE_BUDGET = 25000;
 const DRAW_CALL_BUDGET = 10;
-// A kart is about 2 long; seated, the top of the driver's head is a little lower than that (docs/mk8dx-reference.md
+// A kart is about 2 long; seated, the top of the driver's head is a little lower than that (docs/kart-reference.md
 // says about as high; the references' pictures, matched in M7d5's round 3, show a head about as wide as the
 // shoulders, which sits a little lower).
 const KART_LENGTH = 2;

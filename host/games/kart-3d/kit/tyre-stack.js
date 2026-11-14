@@ -1,4 +1,4 @@
-// The kit's tyre stack (M7d4c5), after Mario Kart Stadium's: four black tyres, each with a rounded sidewall, a
+// The kit's tyre stack (M7d4c5), after the reference stadium course's: four black tyres, each with a rounded sidewall, a
 // pale ring round its hollow middle and a deep tread, every one turned a little differently so the stack sits
 // slightly untidy. About 1 tall and 0.96 across. Used by kit/props.js.
 

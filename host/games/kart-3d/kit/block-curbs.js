@@ -1,5 +1,5 @@
-// The kit's block curbs (M7d2), as at Koopa Cape: a row of chunky raised blocks along the road's edge, green and
-// yellow in turn, about half a kart high. Since M7d4 shaped as MK8DX's are (docs/mk8dx-reference.md, "The kit's
+// The kit's block curbs (M7d2), as at the reference cape course: a row of chunky raised blocks along the road's edge, green and
+// yellow in turn, about half a kart high. Since M7d4 shaped as the reference game's are (docs/kart-reference.md, "The kit's
 // objects up close"): each block about as tall as it is deep, with well rounded edges and no studs, lighter on
 // top and darker at its foot, a little gap between one block and the next so the row bends round corners like a
 // chain. Returns { add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: no

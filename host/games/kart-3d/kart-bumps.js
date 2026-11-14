@@ -1,7 +1,7 @@
-// Karts bumping into each other in the 3D race, decided by weight as in MK8DX: each kart's mass blends between
+// Karts bumping into each other in the 3D race, decided by weight as in the reference game: each kart's mass blends between
 // a minimum and a maximum by how fast it goes relative to its top speed, so a heavy kart at full speed shoves a
 // light one aside, and a kart standing still is easy to push. A bump ends a slipstream boost, and two karts
-// bumping in an anti-gravity section both get a spin boost, as in MK8DX. Karts bounce apart (partly elastic,
+// bumping in an anti-gravity section both get a spin boost, as in the reference game. Karts bounce apart (partly elastic,
 // never less than a least parting speed) and slide loose for a moment, so a bump visibly throws them apart.
 // Plain functions, unit tested in Node. Used by host/games/kart-3d/race.js after every kart has stepped. The
 // tuned numbers are tuning.js's.

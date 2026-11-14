@@ -1,6 +1,6 @@
 // The kit's stone texture (M7d4d): irregular stones, crazy paving, with deep mortar between them, drawn as colour,
-// relief, shade and roughness maps in a tile that repeats without a seam, as on Daisy Circuit's lighthouse
-// (docs/mk8dx-reference.md). Pale grey-tan, so a part's vertex colour can darken it. Used by kit/lighthouse.js.
+// relief, shade and roughness maps in a tile that repeats without a seam, as on the reference seaside course's lighthouse
+// (docs/kart-reference.md). Pale grey-tan, so a part's vertex colour can darken it. Used by kit/lighthouse.js.
 
 import { createSurface } from './surface-maps.js';
 import { nearestCell } from './cell-noise.js';

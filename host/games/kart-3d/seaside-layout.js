@@ -77,13 +77,13 @@ const beachSpot = (s, side, depth) => [
 
 // Every prop on the decks: { piece (a name in PROP_REACH), s, side, out, turn (degrees from facing the road) }.
 export const PROPS = Object.freeze([
-  // The harbour square round the grandstand: palms at its ends, lamps, the MKTV van and sponsor stands past it.
+  // The harbour square round the grandstand: palms at its ends, lamps, the TV van and sponsor stands past it.
   { piece: 'barrels', s: 10, side: 'left', out: 2 },
   { piece: 'palm', s: 13, side: 'left', out: 6, turn: 40 },
   { piece: 'palm', s: 66, side: 'left', out: 10, turn: 200 },
   ...row('lantern-lamp', 66, 96, 10, 'left', 1.4),
   { piece: 'sponsor-stand', s: 71, side: 'left', out: 3.5 },
-  { piece: 'mktv-van', s: 82, side: 'left', out: 8, turn: 90 },
+  { piece: 'tv-van', s: 82, side: 'left', out: 8, turn: 90 },
   { piece: 'sponsor-stand', s: 91, side: 'left', out: 3.5 },
   { piece: 'palm', s: 95, side: 'left', out: 10, turn: 120 },
   // The boardwalk opposite: palms in a row with lamps between, lifebuoys, parasols and loungers.
@@ -115,7 +115,7 @@ export const PROPS = Object.freeze([
   { piece: 'sponsor-stand', s: 794, side: 'left', out: 3.5 },
   { piece: 'tyre-stack', s: 800, side: 'left', out: 1.4 },
   { piece: 'tyre-stack', s: 801.2, side: 'left', out: 2.4 },
-  { piece: 'mktv-van', s: 812, side: 'left', out: 5, turn: 90 },
+  { piece: 'tv-van', s: 812, side: 'left', out: 5, turn: 90 },
   { piece: 'sponsor-stand', s: 830, side: 'left', out: 3.5 },
   { piece: 'barrels', s: 842, side: 'left', out: 4 },
   ...row('hedge', 822, 834, 12, 'left', 6.4),

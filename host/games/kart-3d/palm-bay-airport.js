@@ -1,5 +1,5 @@
 // One of the 3D race's courses (courses.js), "Palm Bay Airport" (M9): our own layout of a sunny seaside airport,
-// with MK8DX's Sunshine Airport as the style reference, not traced from it. About 1551 units a lap, about 50 s at
+// with the reference airport course as the style reference, not traced from it. About 1551 units a lap, about 50 s at
 // 150cc. Unlike Seaside Skyway it runs on the ground: the airfield is at height 0, the sea at -8, and only the
 // cutting and tunnel under the runway, the jump's ramp, the hangar's raised banked ring, the glide ramp and the
 // glide leave it. Pieces are described in track-builder.js; distances along the lap (s) below are approximate.

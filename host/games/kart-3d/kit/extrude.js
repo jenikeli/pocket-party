@@ -1,7 +1,7 @@
 // Extrudes a barrier's cross-section along the road, one station segment at a time, at the outer edge of the
 // ground on one side (the road plus that side's grass, where the kart rules' wall is): the way the kit's walls,
 // rails, kerbs and decks follow the road through its bends, slopes and roll. Since M7d4 a profile's corners can
-// be rounded (roundProfile) and shaded smooth, as MK8DX's never show a sharp edge. Used by the kit's barriers and
+// be rounded (roundProfile) and shaded smooth, as the reference game's never show a sharp edge. Used by the kit's barriers and
 // kit/platform.js.
 
 import { addScaled } from '../vector.js';

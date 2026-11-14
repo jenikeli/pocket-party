@@ -1,5 +1,5 @@
 // Shade (ambient occlusion) baked into the vertex colours of the whole lap once the course is built (M7d4b2
-// tried it round the start line, M7d4c1 spread it round the lap), as MK8DX's "pre-baked shadows that take
+// tried it round the start line, M7d4c1 spread it round the lap), as the reference game's "pre-baked shadows that take
 // occluded edges into account" are: the road darker along the foot of its barriers, a ledge's face under its
 // coping, a deck where a wall stands on it, the ground under the gate. How: the course is drawn into a depth map
 // from each of many directions spread over the sphere, as a shadow map is drawn from the sun; a vertex that

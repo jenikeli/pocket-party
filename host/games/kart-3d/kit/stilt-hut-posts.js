@@ -1,4 +1,4 @@
-// The stilt hut's white posts (M7d4d), as at MK8DX's Cheep Cheep Beach: round white posts with a cap along the deck's
+// The stilt hut's white posts (M7d4d), as at the reference beach course: round white posts with a cap along the deck's
 // front rail and along the walkway, and a rope that sags between the walkway's posts. Returns a list of coloured
 // shapes for the hut's painted part. Used by kit/stilt-hut.js.
 

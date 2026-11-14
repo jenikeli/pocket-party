@@ -1,6 +1,6 @@
-// The kit's steel guardrail (M7d2), as at Mario Circuit: a galvanised W-shaped beam about half a kart high on
+// The kit's steel guardrail (M7d2), as at the reference circuit course: a galvanised W-shaped beam about half a kart high on
 // short yellow posts, bolted to each post (the bolt heads since M7d3). Since M7d4 built up further
-// (docs/mk8dx-reference.md, "The kit's objects up close"): a deeper, rounded W, a splice plate with a row of
+// (docs/kart-reference.md, "The kit's objects up close"): a deeper, rounded W, a splice plate with a row of
 // bolts where one beam meets the next, rounded posts with a cap and a foot plate, and a small amber reflector on
 // every few posts. Returns { add(segment, side), end(station, index, side, facing), meshes() } for
 // kit/barriers.js: end puts a post where the beam starts or stops, so it never ends in the air.

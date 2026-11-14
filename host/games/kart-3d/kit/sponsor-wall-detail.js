@@ -1,8 +1,8 @@
 // The padded sponsor wall with its detail in textures (M7d4b2): every board
 // framed, a raised light rim round it with a bolt in each corner, drawn over a copy of the sponsor atlas twice as
 // sharp (kit/sponsors.js); and the pad's own maps, one board long: a seam where boards meet, the cushion
-// bulging softly between seams, two rows of stitching along it and MARIO KART printed on its front slope tone on
-// tone, as on Mario Kart Stadium's (docs/mk8dx-reference.md). Used by kit/sponsor-wall.js.
+// bulging softly between seams, two rows of stitching along it and KARTWHEEL printed on its front slope tone on
+// tone, as on the reference stadium course's (docs/kart-reference.md). Used by kit/sponsor-wall.js.
 
 import * as THREE from 'three';
 import { drawSponsorAtlas } from './sponsors.js';
@@ -81,7 +81,7 @@ function drawPadMaps({ length, padLength, padRidge }) {
       surface.setHeight(column, row, surface.heightAt(column, row) + 40 * Math.sin((Math.PI * column) / width));
     }
   }
-  printTone(surface, 'MARIO KART', padRidge - 0.17, 0.17);
+  printTone(surface, 'KARTWHEEL', padRidge - 0.17, 0.17);
   // At the tile's edge, so it wraps round to show at both ends.
   surface.groove([0, 0], [0, padLength], { size: 0.04, depth: 90, color: [80, 80, 80], amount: 0.5, roughness: 0.7 });
   const stitch = { size: 0.014, depth: 30, color: [150, 150, 150], amount: 0.35, roughness: 0.6 };

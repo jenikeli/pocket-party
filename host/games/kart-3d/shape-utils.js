@@ -68,7 +68,7 @@ export function roundedBox(width, height, depth, radius, { chamfered = false } =
 }
 
 // A cylinder `height` tall round its middle (like Three.js's), `radiusTop` and `radiusBottom` wide, with both
-// rims rounded by `bevel` (M7d4): a post, a pole or a cap whose rims catch a line of light, as MK8DX's do,
+// rims rounded by `bevel` (M7d4): a post, a pole or a cap whose rims catch a line of light, as the reference game's do,
 // instead of meeting its ends at a sharp crease. A lathe, so it is indexed and merges with Three.js's shapes.
 export function roundedCylinder(radiusTop, radiusBottom, height, bevel, radialSegments = 12) {
   const half = height / 2;
@@ -82,7 +82,7 @@ export function roundedCylinder(radiusTop, radiusBottom, height, bevel, radialSe
 }
 
 // Multiplies `geometry`'s vertex colours (from coloured) by shadeAt(x, y, z) at each vertex, and returns it
-// (M7d4): darker where parts meet, as MK8DX's creases are, or lighter toward a block's top.
+// (M7d4): darker where parts meet, as the reference game's creases are, or lighter toward a block's top.
 export function shaded(geometry, shadeAt) {
   const { position, color } = geometry.attributes;
   for (let index = 0; index < position.count; index += 1) {

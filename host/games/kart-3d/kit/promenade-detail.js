@@ -75,7 +75,7 @@ function pitStone(surface) {
   }
 }
 
-// The plaque's maps, once over the disc: a brown field, the raised gold rim, and Daisy's flower, five domed petals
+// The plaque's maps, once over the disc: a brown field, the raised gold rim, and the flower, five domed petals
 // round a darker centre. Worked out pixel by pixel from the distance and angle from the middle.
 function drawPlaqueMaps() {
   const surface = createSurface(1, 1, PLAQUE_PIXELS, { color: hexToRgb(FIELD), roughness: 0.6, base: 80 });

@@ -1,6 +1,6 @@
-// The grandstand's crowd (M7d2, moved here in M7d4c3): a small Toad-like spectator on most seats, each a body in
+// The grandstand's crowd (M7d2, moved here in M7d4c3): a small mushroom-capped spectator on most seats, each a body in
 // a shirt colour, a face with two dark eyes and a mushroom cap in another colour with white spots, as round
-// MK8DX's stadium courses. They hop now and then. Four instanced meshes (bodies, faces, caps, and the eyes and
+// the reference game's stadium courses. They hop now and then. Four instanced meshes (bodies, faces, caps, and the eyes and
 // spots), moved every frame. Used by kit/grandstand.js.
 
 import * as THREE from 'three';

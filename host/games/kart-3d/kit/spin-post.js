@@ -1,5 +1,5 @@
 // The spin-boost posts of the airport's anti-gravity ring (M9), drawn: a fat orange bollard on a bolted steel foot,
-// a glowing cyan band (our anti-gravity colour) and a red dome light on top, after MK8DX's. Each stands where
+// a glowing cyan band (our anti-gravity colour) and a red dome light on top, after the reference game's. Each stands where
 // track.spinPosts says, on the road's surface along its normal, as wide and tall as the rules' post (spin-posts.js).
 // Every part is one geometry drawn once per post (instanced). A post flashes white for SPIN_POST_FLASH seconds
 // when a kart touches it (race.spinPosts[i].sinceHit). The caller adds `object` to the world. Used by the
@@ -83,7 +83,7 @@ function footShape() {
 }
 
 // The orange body: wide at its foot, easing in to a neck with a dark steel collar the dome sits on. Darker low
-// down, where it meets the foot, as MK8DX's creases are.
+// down, where it meets the foot, as the reference game's creases are.
 function bodyShape() {
   const profile = [
     [0.8, BODY_BOTTOM], [SPIN_POST_RADIUS, 0.3], [0.78, 0.7], [0.76, 1.1], [0.68, 1.3], [0.54, NECK_TOP], [0.46, NECK_TOP + 0.03], [0, NECK_TOP + 0.03],

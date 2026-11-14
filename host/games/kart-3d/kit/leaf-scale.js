@@ -1,4 +1,4 @@
-// One leaf scale (M7d4c5): a curved plate with a rounded tip, as MK8DX's round trees are made of (and the
+// One leaf scale (M7d4c5): a curved plate with a rounded tip, as the reference game's round trees are made of (and the
 // planter's leaves), with texture coordinates into kit/garden-textures.js's leaf (u across, v up to the tip) and
 // vertex colours that run from dark at the base, where the scale tucks under the tier above, to light at the tip.
 // Used by kit/round-tree.js and kit/planter.js.

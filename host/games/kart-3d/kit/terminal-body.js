@@ -1,4 +1,4 @@
-// The terminal's body (M9), after Sunshine Airport's in MK8DX: a concrete plinth; the hall's dark glass curtain
+// The terminal's body (M9), after the reference airport course's: a concrete plinth; the hall's dark glass curtain
 // wall leaning out toward the apron, framed by thin mullions and fat piers; the coloured band over it; a walkway
 // on the band with a railing; the upper storey's light glass set back behind it; and the clad walls round the
 // back and ends. The building faces +x from x = 0 (the foot of the hall's glass), runs along z, and stands on

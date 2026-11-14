@@ -1,5 +1,5 @@
 // What each of the 3D race's cues (host/games/kart-3d/sound-cues.js) sounds like, all made in code from tones
-// and noise (host/audio/synth.js), with MK8DX's sounds as the model. The countdown, GO and finish are the 2D
+// and noise (host/audio/synth.js), with the reference game's sounds as the model. The countdown, GO and finish are the 2D
 // race's (host/games/kart-2d/race-sounds.js), so both races sound like one family. Used by race-sounds.js; the items' and the hits' sounds are in
 // item-hit-sounds.js.
 

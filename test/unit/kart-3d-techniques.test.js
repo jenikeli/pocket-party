@@ -1,6 +1,6 @@
 // Unit tests for the 3D race's techniques (host/games/kart-3d/kart-techniques.js, kart-boosts.js,
 // slipstream.js, rocket-start.js and the hooks in kart-physics.js, kart-bumps.js and race.js), driven with
-// scripted inputs: hop and drift, MK8DX's charge counter and mini-turbo lengths, a purple drift round a
+// scripted inputs: hop and drift, the reference game's charge counter and mini-turbo lengths, a purple drift round a
 // long bend at full speed, the trick window at the ramp's lip, the rocket start window and its boost length,
 // dash panels, slipstream and the anti-gravity spin boost.
 
@@ -73,7 +73,7 @@ test('pressing Drift hops for about a quarter of a second; landing with the stic
 test('a drift turns at its tightest pushed into it, wider pushed away, but always toward its side', () => {
   const into = driftTurnAngle(1, 1, TOP_SPEED, STEP);
   assert.ok(Math.abs(into - (tuning.driftTightRate * Math.PI) / 180 / 60) < 1e-9, `${into} rad a frame into the turn`);
-  // As in MK8DX, a drift pushed fully into it turns tighter than a full normal turn.
+  // As in the reference game, a drift pushed fully into it turns tighter than a full normal turn.
   assert.ok(into > turnAngle(1, TOP_SPEED, STEP));
   const middle = driftTurnAngle(1, 0, TOP_SPEED, STEP);
   const away = driftTurnAngle(1, -1, TOP_SPEED, STEP);

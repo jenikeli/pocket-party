@@ -1,4 +1,4 @@
-// Unit tests for the kit's Koopa shell (M7d4d), which run without a browser (its maps need a canvas, so the
+// Unit tests for the kit's giant shell (M7d4d), which run without a browser (its maps need a canvas, so the
 // shapes and the scute surface's pixels are checked): the parts merge, nothing has a NaN position, the shell keeps
 // its footprint (radius 1 at the rim, reach under 1.1 and height under 0.8), and the picture is the size the
 // budget allows.
@@ -24,8 +24,8 @@ registerHooks({
 });
 
 const { mergeShapes } = await import('../../host/games/kart-3d/shape-utils.js');
-const { buildDome, buildLobes, buildUnderside } = await import('../../host/games/kart-3d/kit/koopa-shell.js');
-const { drawScuteSurface, scuteAt, SCUTE_PIXELS } = await import('../../host/games/kart-3d/kit/koopa-shell-scutes.js');
+const { buildDome, buildLobes, buildUnderside } = await import('../../host/games/kart-3d/kit/giant-shell.js');
+const { drawScuteSurface, scuteAt, SCUTE_PIXELS } = await import('../../host/games/kart-3d/kit/giant-shell-scutes.js');
 
 const TRIANGLE_BUDGET = 12000;
 

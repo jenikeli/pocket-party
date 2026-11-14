@@ -1,9 +1,9 @@
-// MK8DX's driving techniques on the Drift button: hop, drift and mini-turbo, and the trick (jump boost) off a
-// ramp's lip. Numbers from docs/mk8dx-reference.md (level 10) where it has them; the hop and the trick window
+// The reference game's driving techniques on the Drift button: hop, drift and mini-turbo, and the trick (jump boost) off a
+// ramp's lip. Numbers from docs/kart-reference.md (level 10) where it has them; the hop and the trick window
 // are tuned (tuning.js). How the body leans and rolls for drawing is kart-body.js's. Plain functions on plain
 // kart objects, unit tested in Node. Used by kart-physics.js every step.
 //
-// MK8DX's rules: pressing Drift hops; the steering as the kart lands picks the drift's side; while drifting a
+// The reference game's rules: pressing Drift hops; the steering as the kart lands picks the drift's side; while drifting a
 // counter charges, faster with the stick pushed hard into the turn, through three spark levels; releasing
 // Drift fires a mini-turbo as long as the level reached. Pressing Drift as the kart leaves a ramp does a trick,
 // and the kart boosts when it lands; off a glide ramp the glider opens (kart-glide.js, M9) and a trick boosts at
@@ -20,8 +20,8 @@ const DRIFT_START_STEER = 0.3;
 // A kart slower than this cannot start a drift, and a drift ends without a boost when the kart slows below it
 // (a third of top speed, a guess).
 export const MIN_DRIFT_SPEED = 8;
-// MK8DX's counter: 5 a frame with the stick "well into the turn" (at least 0.5 on the Wii U, "very slightly
-// more" in MK8DX), 2 a frame otherwise. The levels start at these counts (level 10).
+// The reference game's counter: 5 a frame with the stick "well into the turn" (at least 0.5 on the Wii U, "very slightly
+// more" in the reference game), 2 a frame otherwise. The levels start at these counts (level 10).
 const HARD_STEER = 0.55;
 const HARD_CHARGE_PER_FRAME = 5;
 const SOFT_CHARGE_PER_FRAME = 2;
@@ -34,7 +34,7 @@ export const SPARK_COLORS = Object.freeze([null, 'blue', 'orange', 'purple']);
 const LIP_TIMING_RANGE = 0.5;
 
 // The technique fields of a fresh kart (also after it is put back on the road): driftDirection -1 (left), 1
-// (right) or 0 (not drifting); driftCharge the MK8DX counter; sinceDriftPress seconds since Drift was last
+// (right) or 0 (not drifting); driftCharge the reference game's counter; sinceDriftPress seconds since Drift was last
 // pressed; sinceLip seconds since the kart crossed a ramp's lip, null on the ground; hopping true from a hop
 // until it lands; tricking true from a trick until the landing that boosts.
 export function freshTechniques() {
@@ -98,7 +98,7 @@ function hop(kart, dt) {
   kart.hopping = true;
 }
 
-// Off a glide ramp the trick boosts at once (MK8DX); tricking still lasts until the landing, so it is one trick.
+// Off a glide ramp the trick boosts at once (the reference game); tricking still lasts until the landing, so it is one trick.
 function startTrick(kart) {
   if (!kart.tricking) {
     kart.tricking = true;

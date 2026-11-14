@@ -1,4 +1,4 @@
-// The apron's three trucks (M9 task J), after MK8DX's Sunshine Airport: the stair truck (a white cab and a fat
+// The apron's three trucks (M9 task J), after the reference airport course: the stair truck (a white cab and a fat
 // orange stair on a long chassis), the belt loader (a blue belt tilted up from a low chassis) and the fuel truck (a
 // white tank with a coral band). Chunky and soft like the game's: bevelled bodies, big tyres, a dark underside
 // where the body meets the chassis. Each builder takes the kit and returns one painted shape,

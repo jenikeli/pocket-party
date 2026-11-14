@@ -1,4 +1,4 @@
-// The apron's small wheeled things (M9 task J), after MK8DX's Sunshine Airport: the baggage train (a coral tug
+// The apron's small wheeled things (M9 task J), after the reference airport course: the baggage train (a coral tug
 // pulling three carts of suitcases), the ULD dolly (two grey freight containers on blue dollies) and the
 // follow-me car (a yellow chequered airport car with a lit "FOLLOW ME" board). Chunky and soft like the game's.
 // Each builder takes the kit and returns its painted shape, [{ geometry, material }] (the car adds its board);

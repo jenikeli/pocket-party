@@ -1,8 +1,8 @@
-// The kit's sponsor boards (M7d2): MK8DX's in-game brands (Bowser Oil, Lemmy's Tire Service, MKTV and the rest,
-// from the look study in docs/mk8dx-reference.md), each a bold logo with a thick outline, drawn side by side on
+// The kit's sponsor boards (M7d2): the reference game's in-game brands (Torque Oil, Lugnut Tire Service, KWTV and the rest,
+// from the look study in docs/kart-reference.md), each a bold logo with a thick outline, drawn side by side on
 // one canvas (an atlas), so every board on the course, whatever it shows, shares one texture and one material.
 // A board picks its brand by the texture coordinates of its cell (sponsorUv). Used by the padded walls, the
-// stands beside the road, the grandstand and the MKTV van.
+// stands beside the road, the grandstand and the TV van.
 
 import * as THREE from 'three';
 import { createCanvas, canvasTexture } from '../canvas-texture.js';
@@ -18,18 +18,18 @@ const CELL_INSET = 3;
 // `emblem` names a small picture drawn at the left (EMBLEMS); `textEdge` (optional) is the colour round the big
 // text where `edge` would be black on black (the text is black outlined in black, a blob).
 const DESIGNS = [
-  { background: '#121212', edge: '#ffd21e', big: ['BOWSER', '#ffd21e'], small: ['OIL', '#ff3b1f'], emblem: 'drop' },
-  { background: '#1d4fc4', edge: '#ffffff', big: ["LEMMY'S", '#ffe23a'], small: ['TIRE SERVICE', '#ffffff'], emblem: 'tyre' },
+  { background: '#121212', edge: '#ffd21e', big: ['TORQUE', '#ffd21e'], small: ['OIL', '#ff3b1f'], emblem: 'drop' },
+  { background: '#1d4fc4', edge: '#ffffff', big: ['LUGNUT', '#ffe23a'], small: ['TIRE SERVICE', '#ffffff'], emblem: 'tyre' },
   { background: '#8c1414', edge: '#ffcf3a', big: ['GOLDEN', '#ffcf3a'], small: ['WHEEL', '#ffffff'], emblem: 'wheel' },
-  { background: '#0e2f8a', edge: '#ffffff', big: ['MKTV', '#ffffff'], small: null, emblem: 'screen' },
-  { background: '#ff5a12', edge: '#2a0a00', big: ['BURNING', '#fff3c0'], small: ['DK', '#ffe23a'], emblem: 'flame' },
-  { background: '#f4f4f0', edge: '#1a1a1a', big: ['BULLET BILL', '#1a1a1a'], small: ['SPEED TRIAL', '#d8302a'], emblem: 'bullet', textEdge: '#f4f4f0' },
-  { background: '#d8302a', edge: '#ffffff', big: ['MARIO', '#ffffff'], small: ['MOTORS', '#ffe23a'], emblem: 'letter' },
-  { background: '#21a3e0', edge: '#ffffff', big: ['SUPER MARINE', '#ffffff'], small: ['WORLD', '#ffe23a'], emblem: 'waves' },
-  { background: '#bfe9ff', edge: '#1d4fc4', big: ["TOAD'S", '#d8302a'], small: ['POLAR EXPEDITION', '#1d4fc4'], emblem: 'spots' },
-  { background: '#3fae3a', edge: '#ffffff', big: ['YOSHI', '#ffffff'], small: ['COOKIES', '#ffe23a'], emblem: 'egg' },
-  { background: '#ff8fc8', edge: '#ffffff', big: ['PEACH', '#ffffff'], small: ['CASTLE TOURS', '#8c1458'], emblem: 'crown' },
-  { background: '#ffd21e', edge: '#1a1a1a', big: ['KOOPA', '#1a8a2a'], small: ['KAR WASH', '#1a1a1a'], emblem: 'shell' },
+  { background: '#0e2f8a', edge: '#ffffff', big: ['KWTV', '#ffffff'], small: null, emblem: 'screen' },
+  { background: '#ff5a12', edge: '#2a0a00', big: ['BURNING', '#fff3c0'], small: ['RUBBER', '#ffe23a'], emblem: 'flame' },
+  { background: '#f4f4f0', edge: '#1a1a1a', big: ['ROCKET', '#1a1a1a'], small: ['SPEED TRIAL', '#d8302a'], emblem: 'bullet', textEdge: '#f4f4f0' },
+  { background: '#d8302a', edge: '#ffffff', big: ['MAX', '#ffffff'], small: ['MOTORS', '#ffe23a'], emblem: 'letter' },
+  { background: '#21a3e0', edge: '#ffffff', big: ['CORAL COVE', '#ffffff'], small: ['AQUARIUM', '#ffe23a'], emblem: 'waves' },
+  { background: '#bfe9ff', edge: '#1d4fc4', big: ["SNOWCAP'S", '#d8302a'], small: ['POLAR EXPEDITION', '#1d4fc4'], emblem: 'spots' },
+  { background: '#3fae3a', edge: '#ffffff', big: ['DINO', '#ffffff'], small: ['COOKIES', '#ffe23a'], emblem: 'egg' },
+  { background: '#ff8fc8', edge: '#ffffff', big: ['PINK', '#ffffff'], small: ['CASTLE TOURS', '#8c1458'], emblem: 'crown' },
+  { background: '#ffd21e', edge: '#1a1a1a', big: ['TURTLE', '#1a8a2a'], small: ['CAR WASH', '#1a1a1a'], emblem: 'shell' },
 ];
 export const SPONSOR_COUNT = DESIGNS.length;
 const ROWS = Math.ceil(SPONSOR_COUNT / COLUMNS);

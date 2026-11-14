@@ -1,4 +1,4 @@
-// Gliding off a glide ramp (M9), as in MK8DX: crossing a glide ramp's lip opens the kart's glider, and until it
+// Gliding off a glide ramp (M9), as in the reference game: crossing a glide ramp's lip opens the kart's glider, and until it
 // lands it floats down under a gentler gravity at the glider's air speed, steered and banked with the stick, and
 // dives (sooner, a little faster) while Brake is held. Plain functions on plain kart objects, unit tested in
 // Node. Used by kart-physics.js (the flight, the corridor), kart-techniques.js (opening and landing) and
@@ -22,7 +22,7 @@ const DEGREES = Math.PI / 180;
 const DIVE_SPEED_SHARE = 1.08;
 // The nose follows the flight path, but tips at most this far up or down.
 const MAX_PITCH = 30 * DEGREES;
-// The glider turns at most this far either way from the road's way (MK8DX's glides only steer within the course).
+// The glider turns at most this far either way from the road's way (the reference game's glides only steer within the course).
 const MAX_HEADING = 60 * DEGREES;
 // The glider holds its air speed whatever the pedals: Go does nothing in the air.
 const AIR_PEDALS = Object.freeze({ accelerate: true, brake: false });

@@ -1,8 +1,8 @@
 // The kit's start lights (M7d2): a black box of three round lamps under little hoods, hanging from the start
-// gate over the grid where MK8DX's Lakitu holds his, lit by the race's countdown (kit/start-light-states.js):
+// gate over the grid where the reference game's starter holds his, lit by the race's countdown (kit/start-light-states.js):
 // red one by one, then all green at GO. Lit lamps are unlit materials brighter than white, so they glow on the
-// High quality setting; dark ones are dark glass. Since M7d4 built up as Lakitu's light box is
-// (docs/mk8dx-reference.md, "The kit's objects up close"): deeper hoods, a chrome ring round each lamp, a bolt in
+// High quality setting; dark ones are dark glass. Since M7d4 built up as the starter's light box is
+// (docs/kart-reference.md, "The kit's objects up close"): deeper hoods, a chrome ring round each lamp, a bolt in
 // each corner of its face, and a yoke with brackets it hangs from. Used by the courses' dressings with
 // kit/start-gate.js.
 

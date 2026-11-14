@@ -1,5 +1,5 @@
 // The kit's beach and harbour props (M7d3, rebuilt in M7d4c4 to the study), our own toy versions of what stands
-// about on MK8DX's seaside courses: a striped beach parasol, a sun lounger, surfboards stuck in the sand, a
+// about on the reference game's seaside courses: a striped beach parasol, a sun lounger, surfboards stuck in the sand, a
 // lifebuoy on a post and a stack of oil drums. Each is one geometry coloured per vertex, standing on y = 0 and
 // facing +z (toward the road); the shapes are drawn in beach-parasol.js, beach-lounger.js, beach-surfboards.js,
 // beach-lifebuoy.js and beach-barrels.js. Each builder takes the kit and returns the prop's parts,

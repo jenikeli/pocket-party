@@ -1,5 +1,5 @@
 // Unit tests for the 3D race's kart rules (host/games/kart-3d/kart-driving.js, kart-physics.js and
-// kart-bumps.js), driven with scripted controls: MK8DX's speed curve, the steering curve, off-road, the jump,
+// kart-bumps.js), driven with scripted controls: The reference game's speed curve, the steering curve, off-road, the jump,
 // falling off and being put back, driving on the anti-gravity wall, and bumps decided by weight. Walls and
 // bounces (M7a) are in kart-3d-feel.test.js.
 
@@ -46,7 +46,7 @@ function distanceAt(track, x, y, z, roughS) {
   return locate(track, { x, y, z }, stationIndexAt(track, roughS)).s;
 }
 
-test('MK8DX\'s speed curve: one frame adds at most its limit, and 90% of top speed takes about 3.8 s', () => {
+test('the reference game\'s speed curve: one frame adds at most its limit, and 90% of top speed takes about 3.8 s', () => {
   // The first frame closes 1% of the gap to top speed, just under the limit (0.08 / 7.75 of top speed).
   assert.ok(Math.abs(nextSpeed(0, GO, false, STEP, null, TOP_SPEED) - TOP_SPEED * 0.01) < 1e-9);
   assert.ok(TOP_SPEED * 0.01 < (0.08 / 7.75) * TOP_SPEED);
@@ -95,7 +95,7 @@ test('full steering turns the nose at the full steer rate, at any speed above a 
   }
 });
 
-test('the steering curve: small movements turn as gently as MK8DX\'s 0.011 radians a frame, full stick much tighter', () => {
+test('the steering curve: small movements turn as gently as the reference game\'s 0.011 radians a frame, full stick much tighter', () => {
   const perFrame = (steer) => turnAngle(steer, TOP_SPEED, STEP);
   // The M6 steering was a straight line, 0.011 a frame at full stick.
   for (const steer of [0.05, 0.1, 0.2]) {

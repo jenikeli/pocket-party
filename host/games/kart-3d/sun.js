@@ -10,7 +10,7 @@ import { viewShadowCentre, snapToTexels } from './shadow-fit.js';
 import { courseExtent } from './track.js';
 
 // Where the sun is, seen from the course's middle: low enough (about 34 degrees up) to show in the sky on the
-// legs that head toward it and to cast long shadows, as on MK8DX's sunny courses.
+// legs that head toward it and to cast long shadows, as on the reference game's sunny courses.
 export const SUN_OFFSET = new THREE.Vector3(-90, 120, -150);
 const COURSE_MAP_SIZE = 2048;
 // The whole-course map reaches this far past the stations, for what stands beside the road.

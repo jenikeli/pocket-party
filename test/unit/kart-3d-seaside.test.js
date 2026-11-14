@@ -10,7 +10,7 @@ import { BARRIER_RUNS, TRUSS_RUNS, PLATFORMS, GRANDSTAND, BUNTING, PROPS } from 
 import {
   BEACH_ISLANDS,
   LIGHTHOUSE,
-  KOOPA_SHELL,
+  GIANT_SHELL,
   BOATS,
   NEAR_CLOUDS,
   BALLOONS,
@@ -121,7 +121,7 @@ test('nothing round Seaside Skyway reaches the road or the room above it', () =>
   const lighthouseTop = SEA_LEVEL + LIGHTHOUSE.height + LIGHTHOUSE.tower + 7;
   assert.ok(clearOfRoad({ x: LIGHTHOUSE.x, z: LIGHTHOUSE.z, reach: LIGHTHOUSE.radius * WOBBLE, bottom: SEA_LEVEL, top: lighthouseTop }), 'the lighthouse');
   assert.ok(lighthouseTop > 6, 'the lighthouse\'s dome shows above the road');
-  assert.ok(clearOfRoad({ x: KOOPA_SHELL.x, z: KOOPA_SHELL.z, reach: KOOPA_SHELL.radius * 1.1, bottom: SEA_LEVEL, top: SEA_LEVEL + KOOPA_SHELL.radius }), 'the Koopa shell');
+  assert.ok(clearOfRoad({ x: GIANT_SHELL.x, z: GIANT_SHELL.z, reach: GIANT_SHELL.radius * 1.1, bottom: SEA_LEVEL, top: SEA_LEVEL + GIANT_SHELL.radius }), 'the giant shell');
   // A boat reaches 4.3 from its middle: the motor yacht (M7d4d) is 8.1 long with its swim platform.
   for (const boat of BOATS) {
     assert.ok(clearOfRoad({ x: boat.x, z: boat.z, reach: 4.3, bottom: SEA_LEVEL, top: SEA_LEVEL + 7.5 }), `the boat at ${boat.x}, ${boat.z}`);
@@ -141,7 +141,7 @@ test('boats sail in open water, clear of every island', () => {
     for (const island of [...BEACH_ISLANDS, LIGHTHOUSE]) {
       assert.ok(Math.hypot(boat.x - island.x, boat.z - island.z) > island.radius * WOBBLE * 1.15 + 4, `the boat at ${boat.x}, ${boat.z} is off the island at ${island.x}, ${island.z}`);
     }
-    assert.ok(Math.hypot(boat.x - KOOPA_SHELL.x, boat.z - KOOPA_SHELL.z) > KOOPA_SHELL.radius + 4, `the boat at ${boat.x}, ${boat.z} is off the shell`);
+    assert.ok(Math.hypot(boat.x - GIANT_SHELL.x, boat.z - GIANT_SHELL.z) > GIANT_SHELL.radius + 4, `the boat at ${boat.x}, ${boat.z} is off the shell`);
   }
 });
 

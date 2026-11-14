@@ -1,4 +1,4 @@
-// The kit's beach islands (M7d3), as off MK8DX's Cheep Cheep Beach and Koopa Cape: sand round a grassy hill, a
+// The kit's beach islands (M7d3), as off the reference beach course and the reference cape course: sand round a grassy hill, a
 // shelf of pale sand under the water round it, turquoise shallows over that shelf fading into the deep blue, and
 // white foam where the water meets the beach. Every island's land, shallows, foam and rocks are merged into one
 // geometry each; their outline and height come from seaside-landmarks.js. Since M7d4c3 it also makes their

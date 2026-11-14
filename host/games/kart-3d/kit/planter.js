@@ -1,4 +1,4 @@
-// The kit's planter (M7d4c5, to the study of MK8DX's Daisy Circuit flower pots): a long terracotta pot, tapered,
+// The kit's planter (M7d4c5, to the study of the reference seaside course flower pots): a long terracotta pot, tapered,
 // with a thick rim and a dark crease under it, full of soil, a ring of leaves and five-petal flowers in four
 // colours. 1.8 long along x, 0.8 deep, about 0.85 tall with the flowers, on y = 0. Used by kit/props.js.
 

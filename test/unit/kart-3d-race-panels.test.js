@@ -17,10 +17,17 @@ function playerNamed(name) {
 
 test('a results row shows the place, the name and the finish time, a player in their colour and a CPU kart in grey', () => {
   const player = playerNamed('Cy');
-  const playerRow = describeResultRow({ place: 1, playerId: 'p1', finishTime: 101.256 }, player);
-  assert.deepEqual(playerRow, { place: '1st', name: 'Cy', color: colorText(player), time: '1:41.25', isPlayer: true });
-  const cpuRow = describeResultRow({ place: 12, playerId: null, finishTime: null }, undefined);
-  assert.deepEqual(cpuRow, { place: '12th', name: 'CPU', color: '#9aa4bf', time: '--', isPlayer: false });
+  const playerRow = describeResultRow({ place: 1, playerId: 'p1', finishTime: 101.256 }, player, 101.256);
+  assert.deepEqual(playerRow, { place: '1st', name: 'Cy', color: colorText(player), time: '1:41.25', gap: '', isPlayer: true, isWinner: true });
+  const cpuRow = describeResultRow({ place: 12, playerId: null, finishTime: null }, undefined, 101.256);
+  assert.deepEqual(cpuRow, { place: '12th', name: 'CPU', color: '#9aa4bf', time: '--', gap: '', isPlayer: false, isWinner: false });
+});
+
+test('a results row gives a finished kart\'s gap to the winner, taken from the times as shown', () => {
+  const row = describeResultRow({ place: 2, playerId: null, finishTime: 64.9 }, undefined, 62.41);
+  assert.equal(row.gap, '+2.49');
+  assert.equal(row.isWinner, false);
+  assert.equal(describeResultRow({ place: 2, playerId: null, finishTime: 64.9 }, undefined, null).gap, '', 'no gap without a winner time');
 });
 
 test('a tuned number is written with the decimals of its slider\'s step, then its unit', () => {
@@ -45,8 +52,8 @@ test('each panel gets its own stage in the container, with the panel\'s class na
   globalThis.document = { createElement: fakeElement };
   const container = fakeElement();
   const first = createRaceStage(container, 'k3d-race-stage');
-  const second = createRaceStage(container, 'k3d-race-stage k3d-stage-over');
+  const second = createRaceStage(container, 'k3d-race-stage k3d-above-strip k3d-stage-over');
   assert.equal(first.className, 'pp-stage k3d-race-stage');
-  assert.equal(second.className, 'pp-stage k3d-race-stage k3d-stage-over');
+  assert.equal(second.className, 'pp-stage k3d-race-stage k3d-above-strip k3d-stage-over');
   assert.deepEqual(container.children, [first, second]);
 });

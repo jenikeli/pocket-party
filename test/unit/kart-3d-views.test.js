@@ -18,6 +18,7 @@ import {
   standingRows,
   describeClock,
   describeCountdown,
+  describeRaceSummary,
   kartPose,
   describeKart,
   BANNERS,
@@ -149,6 +150,11 @@ test('standings list every kart in place order, with finish times', () => {
   assert.equal(rows.length, 12);
   assert.deepEqual(rows[0], { place: 1, playerId: 'p1', finishTime: 101.5 });
   assert.deepEqual(rows[11], { place: 12, playerId: null, finishTime: null });
+});
+
+test('the results\' summary says the course, the speed and the laps', () => {
+  assert.equal(describeRaceSummary('Seaside Skyway', 150, 3), 'Seaside Skyway · 150cc · 3 laps');
+  assert.equal(describeRaceSummary('Test track', 50, 1), 'Test track · 50cc · 1 lap');
 });
 
 test('views: one per player kart in slot order; 3 players get a CPU kart in the fourth quarter', () => {

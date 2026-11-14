@@ -1,9 +1,10 @@
 // The 3D kart race (M6 to M10), a game module: a setup screen (setup-panel.js: the course from saved pictures,
 // laps, engine class, CPU level and the items on the host, the drawing quality, the Measure tool and Watch behind
-// the tools icon, and control style and ready on each phone), then the chosen course is built behind the
+// the Display button, and control style and ready on each phone), then the chosen course is built behind the
 // loading screen (M10: nothing is built before), a countdown with MK8DX's rocket start, and 1-4 players race
 // their laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results,
-// and Race again. Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
+// and Race again. While karts race the shell's bar docks as a strip along the bottom (bar.setDocked), with the
+// race's own buttons and clock in it (race-bar.js). Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
 // needed. The room is open to new players on the setup and results screens. Loaded through host/games/index.js
 // and run by the shell (host/game-session.js).
 // The rules live in DOM-free modules next to this file; this file connects them to the shell, the setup screen's
@@ -37,9 +38,15 @@ import { loadQuality, saveQuality } from './quality.js';
 import { loadPlainCourse } from './plain-course.js';
 import { toggleItem } from './items/item-settings.js';
 
-// The game's stylesheets: the player rows' and laps control's, shared with the 2D race, then the setup screen's
-// and the race panels'.
-const STYLESHEETS = ['/host/kart/panels.css', '/host/games/kart-3d/setup.css', '/host/games/kart-3d/race-panels.css'];
+// The game's stylesheets: the player rows' and laps control's, shared with the 2D race, then the setup screen's,
+// the race bar's, the results' and the developer panels'.
+const STYLESHEETS = [
+  '/host/kart/panels.css',
+  '/host/games/kart-3d/setup.css',
+  '/host/games/kart-3d/race-panels.css',
+  '/host/games/kart-3d/results-panel.css',
+  '/host/games/kart-3d/dev-panels.css',
+];
 
 // Returns a fresh 3D race game that follows the game module interface in plan.md.
 export function createGame() {
@@ -50,6 +57,7 @@ export function createGame() {
   let stylesheets = [];
   let renderer = null;
   let setupPanel = null;
+  let raceBar = null;
   let measurePanel = null;
   let shell = null;
   let stopPinging = null;
@@ -68,6 +76,8 @@ export function createGame() {
   const session = createRaceSession({ getPlayers: () => shell.players, setup, choices, chosenTrack });
   // Whether the shell has been told the room is open; null until the first time.
   let roomOpen = null;
+  // Whether the shell's bar is docked as the strip (the bar starts at the top).
+  let barDocked = false;
   // The race's cues (countdown, drifts, boosts, items, hits, laps).
   const raceSounds = createRaceSounds();
   const readout = createReadout();
@@ -103,7 +113,7 @@ export function createGame() {
     const tuningPanel = createTuningPanel(shell.container);
     // After the setup panel, so its report shows over the setup screen once a run ends.
     measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(choices.quality));
-    const raceBar = createRaceBar(shell.container, { onBackToSetup: session.showSetup, onRestart: session.restart, onTuning: () => tuningPanel.toggle() });
+    raceBar = createRaceBar(shell.container, shell.bar.slot, { onBackToSetup: session.showSetup, onRestart: session.restart, onTuning: () => tuningPanel.toggle() });
     const resultsPanel = createResultsPanel(shell.container, { onRaceAgain: session.showSetup });
     const panels = { setupPanel, raceBar, resultsPanel, tuningPanel, measurePanel };
     frameDrawer = createFrameDrawer({ renderer, readout, session, setup, choices, chosenTrack, players: () => shell.players, panels });
@@ -121,6 +131,17 @@ export function createGame() {
     if (open !== roomOpen) {
       roomOpen = open;
       shell.setRoomOpen(open);
+    }
+  }
+
+  // The shell's bar is the strip along the bottom while karts are on the grid or racing (a Watch race too) and at
+  // the results, and the bar at the top on the setup screen and while Measure runs (no race then). The shell is
+  // told only when this changes, and resizes the canvas to end above the strip.
+  function syncBarDocked() {
+    const docked = session.race !== null;
+    if (docked !== barDocked) {
+      barDocked = docked;
+      shell.bar.setDocked(docked);
     }
   }
 
@@ -190,11 +211,15 @@ export function createGame() {
     // Each course has its own tune, by its id (host/audio/tunes/), from GO; the results' after.
     playTune(tuneForRace(session.race, choices.courseId));
     syncRoomOpen();
+    syncBarDocked();
     phoneViews.sendChanged();
   }
 
   function render(alpha) {
     courseLoader.throwIfFailed();
+    // Here too: karts go on the grid from the course loader, between steps, and the first frame of a race should
+    // already be drawn above the strip.
+    syncBarDocked();
     frameDrawer.draw(alpha);
   }
 
@@ -212,6 +237,7 @@ export function createGame() {
     stopPinging();
     playTune(null);
     courseLoader.stop();
+    raceBar.remove();
     stylesheets.forEach((link) => link.remove());
     renderer.destroy();
   }

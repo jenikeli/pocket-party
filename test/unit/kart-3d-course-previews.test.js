@@ -14,6 +14,13 @@ test('every course has a preview entry and no entry is for an unknown course', (
   assert.deepEqual(Object.keys(COURSE_PREVIEWS).sort(), COURSES.map((course) => course.id).sort());
 });
 
+test('every entry has a one-line description', () => {
+  for (const course of COURSES) {
+    const { blurb } = COURSE_PREVIEWS[course.id];
+    assert.ok(typeof blurb === 'string' && blurb.length > 0 && !blurb.includes('\n'), `${course.id}: a one-line blurb`);
+  }
+});
+
 test('every entry has a distance that is on the course', () => {
   for (const course of COURSES) {
     const { s } = COURSE_PREVIEWS[course.id];

@@ -12,7 +12,7 @@ stage). Where this file and the mockup disagree, this file wins.
 |---|---|---|
 | 0 | icons, registry blurbs, `--pp-strip`, `formatGap`, CLAUDE.md's UI rules (main session) | merged |
 | A | host shell | merged |
-| B | 3D kart race | building |
+| B | 3D kart race | merged |
 | C | player rows, 2D race, phone | merged |
 | T | browser tests (alone, after A to C) | queued |
 | Z | full browser suite, docs, handoff (main session) | queued |

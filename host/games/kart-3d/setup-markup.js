@@ -9,7 +9,6 @@ import { COURSE_PREVIEWS } from './course-previews.js';
 import { CPU_LEVELS } from './cpu-levels.js';
 import { QUALITY_LEVELS } from './quality.js';
 import { MAX_STAND_INS } from './stand-ins.js';
-import { icon } from '/shared/icons.js';
 import { lapsStepperMarkup } from '/host/kart/panel-parts.js';
 
 // Returns the screen's <section>, hidden. Every text in it is our own (course names, labels), never from a
@@ -23,11 +22,11 @@ export function createSetupMarkup() {
     <img class="k3d-setup-picture" alt="" hidden>
     <div class="k3d-setup-scrim"></div>
     <div class="pp-stage k3d-setup-stage">
-      <button type="button" id="kart-3d-tools-button" class="pp-icon-button k3d-tools-button" aria-pressed="false"
-        aria-label="Display and tools" title="Display and tools">${icon('tools')}</button>
+      <button type="button" id="kart-3d-tools-button" class="pp-button k3d-tools-button" aria-pressed="false">Display</button>
       ${toolsDrawer()}
       <div class="k3d-course on-picture">
         <h1 id="kart-3d-course-name" class="pp-title k3d-course-name"></h1>
+        <p id="kart-3d-course-blurb" class="k3d-course-blurb"></p>
         <div class="k3d-courses">${COURSES.map(courseTile).join('')}</div>
       </div>
       ${card()}
@@ -53,11 +52,11 @@ export function wireHandlers(screen, handlers) {
   onClick('#kart-3d-start-button', () => handlers.onStartRace());
 }
 
-// A course is its picture alone; the chosen one's name is the big title, and every picture's name is its tooltip
-// and its accessible name.
+// A course is its picture (the previews are 16:9, shown whole) with its name under it; the chosen one's name is
+// also the big title.
 function courseTile(course) {
-  return `<button type="button" class="k3d-course-tile" data-course-id="${course.id}" aria-pressed="false" ` +
-    `aria-label="${course.name}" title="${course.name}"><img src="${COURSE_PREVIEWS[course.id].picture}" alt=""></button>`;
+  return `<button type="button" class="k3d-course-tile" data-course-id="${course.id}" aria-pressed="false">` +
+    `<img src="${COURSE_PREVIEWS[course.id].picture}" alt=""><span class="k3d-course-tile-name">${course.name}</span></button>`;
 }
 
 function toolsDrawer() {
@@ -93,11 +92,13 @@ function card() {
     <div class="pp-panel k3d-card">
       <div class="k3d-rule">
         ${lapsStepperMarkup({ minusId: 'kart-3d-laps-minus', valueId: 'kart-3d-laps', plusId: 'kart-3d-laps-plus' })}
-        <div class="pp-segment">${engineButtons}</div>
       </div>
+      <div class="k3d-rule"><span class="pp-muted">Speed</span><div class="pp-segment">${engineButtons}</div></div>
       <div class="k3d-rule"><span class="pp-muted">CPU</span><div class="pp-segment">${cpuButtons}</div></div>
       <div class="k3d-rule"><span class="pp-muted">Items</span><div id="kart-3d-item-row-slot"></div></div>
+      <h2 class="k3d-card-heading">Players</h2>
       <ul id="kart-3d-rows" class="kart-player-rows"></ul>
+      <p id="kart-3d-no-players" class="pp-muted k3d-no-players">Scan the code to join</p>
       <p id="kart-3d-status" class="pp-muted k3d-status"></p>
       <button type="button" id="kart-3d-start-button" class="pp-button pp-primary pp-big" disabled>Start race</button>
     </div>`;

@@ -2,7 +2,8 @@
 // tuning panel and results. Used by host/games/kart-3d/index.js, which owns the parts.
 
 import { RACE_PHASES } from './race.js';
-import { standingRows, describeClock, describeCountdown } from './race-views.js';
+import { standingRows, describeClock, describeCountdown, describeRaceSummary } from './race-views.js';
+import { COURSES } from './courses.js';
 
 // A long pause (a hidden tab) must not swing the cameras a long way at once: the runner's own cap
 // (host/fixed-step.js).
@@ -54,21 +55,26 @@ export function createFrameDrawer({ renderer, readout, session, setup, choices, 
     setupPanel.hide();
     renderer.draw(race, session.racers(), alpha, dt);
     canvasDrawn = true;
-    const readoutText = readout.frameDrawn(now, performance.now() - now, race, chosenTrack(), session.racers(), session.stepTimer.summary());
+    tuningPanel.setReadout(readout.frameDrawn(now, performance.now() - now, race, chosenTrack(), session.racers(), session.stepTimer.summary()));
     const racing = race.phase !== RACE_PHASES.RESULTS;
     tuningPanel.setVisible(racing);
     raceBar.show({
       clockText: describeClock(race),
       countdownText: describeCountdown(race),
-      readoutText,
-      readoutShown: tuningPanel.isOpen(),
+      tuningOpen: tuningPanel.isOpen(),
       barShown: racing,
     });
     if (racing) {
       resultsPanel.hide();
     } else {
-      resultsPanel.show(standingRows(race), session.racers());
+      resultsPanel.show(standingRows(race), session.racers(), raceSummary());
     }
+  }
+
+  // The choices cannot change during a race (index.js's choose), so they are what was raced.
+  function raceSummary() {
+    const courseName = COURSES.find((course) => course.id === choices.courseId).name;
+    return describeRaceSummary(courseName, choices.engineClass, session.race.laps);
   }
 
   return { draw };

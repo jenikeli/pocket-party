@@ -1,9 +1,9 @@
 // The 3D race's setup screen (M10, see setup.css): the chosen course's saved picture fills the screen
-// (course-previews.js; nothing is built until a race needs it), with the course's name large and the course
-// pictures on the left; one card on the right with laps, engine class, CPU level and items for everyone, each
-// player's row (host/kart/player-rows.js), the line that says why Start race is off, and Start race; and the tools
-// icon top right, a drawer with the host's drawing quality, the Measure tool (M7d4b) and Watch (a race of 1 to 4
-// self-driving karts with a view each, M7d4c1). Leaving the game is the shell's back arrow. Used by
+// (course-previews.js; nothing is built until a race needs it), with the course's name large, its description and
+// the course pictures bottom left; one card bottom right with laps, speed, CPU level and items for everyone, each
+// player's row (host/kart/player-rows.js) or "Scan the code to join" while nobody is in, the line that says why
+// Start race is off, and Start race; and the Display button top right, a drawer with the host's drawing quality,
+// the Measure tool (M7d4b) and Watch (a race of 1 to 4 self-driving karts with a view each, M7d4c1). Leaving the game is the shell's back arrow. Used by
 // host/games/kart-3d/index.js, which owns the state; the panel only shows it and reports clicks.
 
 import { playersInSlotOrder } from '/host/roster.js';
@@ -28,8 +28,11 @@ export function createSetupPanel(container, itemSettings, handlers) {
   container.append(screen);
   const picture = screen.querySelector('.k3d-setup-picture');
   const courseName = byId('kart-3d-course-name');
+  const courseBlurb = byId('kart-3d-course-blurb');
   const lapsValue = byId('kart-3d-laps');
-  const playerRows = createPlayerRows(byId('kart-3d-rows'), { onRemove: handlers.onRemovePlayer });
+  const rowsList = byId('kart-3d-rows');
+  const playerRows = createPlayerRows(rowsList, { onRemove: handlers.onRemovePlayer });
+  const noPlayers = byId('kart-3d-no-players');
   const status = byId('kart-3d-status');
   const startButton = byId('kart-3d-start-button');
   const toolsButton = byId('kart-3d-tools-button');
@@ -63,7 +66,11 @@ export function createSetupPanel(container, itemSettings, handlers) {
     cpuButtons.forEach((button) => setPressed(button, button.dataset.cpuLevel === cpuLevel));
     qualityButtons.forEach((button) => setPressed(button, button.dataset.quality === quality));
     itemRow.show(items);
-    playerRows.show(setupRows(setup, players));
+    const rows = setupRows(setup, players);
+    playerRows.show(rows);
+    // Nobody in yet: the line that says how to join takes the rows' place.
+    rowsList.hidden = rows.length === 0;
+    noPlayers.hidden = rows.length > 0;
     // The only sentence on the screen: why Start race is off. The 3D race can start with one player (CPU karts
     // fill the grid); with nobody in the room only Watch, in the tools drawer, can run.
     const blocker = startBlocker(setup, playersInSlotOrder(players));
@@ -74,6 +81,7 @@ export function createSetupPanel(container, itemSettings, handlers) {
   function showCourse(courseId) {
     showPicture(picture, COURSE_PREVIEWS[courseId].picture);
     courseName.textContent = COURSES.find((course) => course.id === courseId).name;
+    courseBlurb.textContent = COURSE_PREVIEWS[courseId].blurb;
   }
 
   // The drawer is closed again, so a race never comes back to it open.

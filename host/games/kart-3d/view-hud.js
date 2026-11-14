@@ -17,9 +17,9 @@ const STYLE = `
   .kart-3d-view-hud { position: absolute; overflow: hidden; pointer-events: none; font-family: sans-serif;
     color: #ffffff; }
   .kart-3d-view-hud p { position: absolute; margin: 0; }
-  .kart-3d-view-label { left: 0.5em; top: calc(var(--top-inset) + 0.5em); padding: 0.15em 0.4em; border-radius: 0.25em;
+  .kart-3d-view-label { left: 0.5em; top: 0.5em; padding: 0.15em 0.4em; border-radius: 0.25em;
     background: rgba(16, 19, 28, 0.6); font-weight: bold; }
-  .kart-3d-item-frame { position: absolute; left: 0.5em; top: calc(var(--top-inset) + 2.6em); display: flex;
+  .kart-3d-item-frame { position: absolute; left: 0.5em; top: 2.6em; display: flex;
     align-items: center; gap: 0.5em; }
   .kart-3d-item-frame[hidden] { display: none; }
   .kart-3d-item-box { width: 2.6em; height: 2.6em; box-sizing: border-box; padding: 0.3em; border-radius: 0.5em;
@@ -47,7 +47,7 @@ function addStyle(container) {
   }
 }
 
-// Returns { show(target, rect, canvasHeight, topInset), hide(), remove() }.
+// Returns { show(target, rect, canvasHeight), hide(), remove() }.
 export function createViewHud(container) {
   addStyle(container);
   const root = document.createElement('div');
@@ -62,9 +62,8 @@ export function createViewHud(container) {
 
   // `target` is { name, color, hud }: the label text and its CSS colour, and race-views.js viewHud's
   // { lap, laps, place, banner, item }. `rect` is the view's rectangle in CSS pixels with y from the bottom, as WebGL
-  // counts. `topInset` lowers the name and the item frame this many pixels, clear of the shell's back arrow.
-  // Writes to the page only on change: this runs every frame.
-  function show({ name, color, hud }, rect, canvasHeight, topInset) {
+  // counts. Writes to the page only on change: this runs every frame.
+  function show({ name, color, hud }, rect, canvasHeight) {
     root.hidden = false;
     setStyle(root, 'left', `${rect.x}px`);
     setStyle(root, 'top', `${canvasHeight - rect.y - rect.height}px`);
@@ -72,7 +71,6 @@ export function createViewHud(container) {
     setStyle(root, 'height', `${rect.height}px`);
     // The base size, which the lines' sizes (in em) follow: 20 px on a 540 px tall view, at least 12.
     setStyle(root, 'font-size', `${Math.max(Math.round(rect.height / 27), 12)}px`);
-    setStyle(root, '--top-inset', `${topInset}px`);
     setText(label, name);
     setStyle(label, 'color', color);
     itemFrame.show(hud.item ?? null);

@@ -118,6 +118,11 @@ export function describeClock(race) {
   return `${clock}\nRace ends in ${Math.ceil(Math.max(left, 0))} s`;
 }
 
+// What was raced, for the results' heading: ('Seaside Skyway', 150, 3) -> 'Seaside Skyway · 150cc · 3 laps'.
+export function describeRaceSummary(courseName, engineClass, laps) {
+  return `${courseName} · ${engineClass}cc · ${laps} ${laps === 1 ? 'lap' : 'laps'}`;
+}
+
 // One row per kart in place order, for the results: { place, playerId, finishTime } (playerId null for a CPU
 // kart, finishTime null if it had not finished).
 export function standingRows(race) {

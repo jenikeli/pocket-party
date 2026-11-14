@@ -20,11 +20,11 @@ deleted or used again. Last checked 2026-11-14 (end of M10b).
 - `drawCloseButton` in `host/buttons.js` (a Phaser canvas button, confirmed by colour): only the input lab's
   player card uses it (`host/games/input-lab/player-card.js`). If the input lab's card moves to HTML, delete the
   file and use `shared/confirm-click.js`.
-- `isDone()` in the game module interface: all three games return false since M10b (the shell's back arrow is
-  the one way out), and `host/game-runner.js` still asks every frame. To delete: the call in `game-runner.js`,
+- `isDone()` in the game module interface: all three games return false since M10b (the shell's Back to games
+  is the one way out), and `host/game-runner.js` still asks every frame. To delete: the call in `game-runner.js`,
   the three games' functions, the entry in `plan.md`'s interface.
-- `test-results/reference/m10b/mockup.html` (ignored by git): the mockup M10b was built from. Delete it once
-  the device run is done.
+- `test-results/reference/m10b/mockup.html` and `test-results/reference/m10c/mockup.html` (ignored by git): the
+  mockups M10b and M10c were built from. Delete them once M10c's device run is done.
 - `test-results/reference/m10/` (ignored by git): the chosen design's pictures and prototype page, used by M10's
   tasks. Delete the folder once the device run is done.
 

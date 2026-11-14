@@ -3103,6 +3103,9 @@ https://claude.ai/artifact/7RzKR6aeL2Jopatrhh55SQ.
 
 ### Device run procedure (iPad host, an iPhone and an Android phone, HTTPS on the LAN)
 
+**Not run: superseded by M10c's procedure, which covers M10b too** (the user skipped this run for the fixes).
+Kept as it was written.
+
 The browser tests prove the flows. This run is for real touch, real Safari, how the screens read from across
 the room, and the iPhone checks left over from M10. Nothing here needs tuning in code; say what reads wrong.
 
@@ -3415,3 +3418,327 @@ module interface, "Game settings", the M4 and M5a summaries), `CLAUDE.md` (proto
 #### Parked for the user
 
 Nothing was parked.
+
+## M10c: The UI fixes after M10b
+
+Built 2026-11-14 in the same chat as M10b, as a queue, after the user's review of M10b's look: "we went too
+overboard with the minimalist design". The user approved a mockup (mockup 3, `test-results/reference/m10c/`)
+and answered four questions: the button says "Back to games"; the strip is the 3D kart race's own and only while
+a race is drawn (another game decides for itself); the 2D race and the input lab keep the top bar; the views are
+not shrunk for Tuning, which is one popup over them with the stats as its top section. The thin spots the user
+was asked about (A to M in the mockup) were built as recommended: yes to A, C, D, F, G, H, I, J, K, L.
+
+### What exists now
+
+- **`CLAUDE.md`'s "UI design"** says "clear before minimal": rows have their words, lists their headings, games
+  and courses their descriptions; icons alone only for the gear, the remove cross, plus and minus and the
+  phone's leave door; pictures are shown whole; a game's buttons stay off the game where it can be helped.
+- **Shell** (`host/index.html`, `game-picker.*`, `game-bar.js`, `top-bar.css`, `shell.css`, `join-window.js`,
+  `game-session.js`, `shell-rules.js`): the picker's covers in 4:3 boxes (13em tiles, 12.6 x 9.45em pictures)
+  and the registry's `blurb` under the title; Back to games and Add players are `.pp-button`s with words; the
+  settings rows have words (`span.settings-label`); the join window is the pre-M10b one (title, hint, chips with
+  "back in 0:24" from `chipStatusText`, Done); `bar: { slot, setDocked }` for games (class `docked` on
+  `#top-bar`, `above-strip` on `#game-container`, which is then fixed with `bottom: var(--pp-strip)` so it meets
+  the strip exactly on an iPad; `--pp-strip` is 4 stage em, in `host/ui.css`). The wake-lock status line moves
+  above the strip while docked.
+- **3D kart race** (`host/games/kart-3d/`): the setup screen anchored at the bottom (`#kart-3d-course-blurb`,
+  16:9 course tiles with names, the card's Laps/Speed/CPU/Items rows, a Players heading, `#kart-3d-no-players`,
+  the Display button); `syncBarDocked` in `index.js` docks the bar whenever a race exists (grid, Watch, racing,
+  results; from `step` and `render`, so a race's first frame is already above the strip) and undocks it on the
+  setup screen and during Measure; the race bar (`race-bar.js`) is a wrapper in the slot with Setup, Restart,
+  Tuning and the clock; the race panels sit in `.pp-stage.k3d-above-strip` stages; one Tuning popup
+  (`tuning-panel.js`) with a Stats section holding the readout (`setReadout`) above the sliders; results with a
+  heading, `#kart-3d-results-summary` (`describeRaceSummary` in `race-views.js`), the winner's row `first` and
+  gaps; the view HUD no longer makes room for a back arrow. `race-panels.css` was split into
+  `results-panel.css` and `dev-panels.css`.
+- **Shared kart parts** (`host/kart/`): `styleWords` (was `styleIcons`) for the rows' "Tilt · Auto"; "Ready"
+  beside the tick; "back in 0:24"; the laps control's "Laps" label; `formatGap` in `race-time.js`.
+- **2D race:** the setup's Players heading and `#kart-2d-join-line`; results like the 3D ones (`resultRows`,
+  `lapsText` in its `race-views.js`).
+- **Phone:** the leave door icon; `#kart-turn-note` back; `#wake-note` when the phone cannot keep its screen
+  awake (refused or not supported).
+
+### How it ended
+
+- Task 0 by the main session, then A, B and C at the same time (sonnet), each reviewed, then T (browser tests,
+  spawned alone; stopped once at the usage limit and resumed). Merge order C, A, B, T.
+- Fixed by the main session while merging: B's setup panel used the rows list a line before declaring it (the
+  setup screen would have thrown; no unit test builds the panel); B's CSS reached into the shell's bar
+  (`#top-bar.docked #bar-slot`), removed since A lays out the slot; the dock is synced in `render` too; A's
+  container sized with `100dvh` became fixed against the strip; A's cover boxes counted without the tile's
+  border (9.75em became 9.45em, a true 4:3); the settings label column widened; the slot's buttons made as tall
+  as the bar's; the host's wake-lock line moved above the strip; the five unused icons removed.
+- Tests: `npm test` 740 pass. Full browser suite (shared code changed), 28 minutes: 139 of 143 pass; the four
+  failures were all in `m3-input-lab` (the swipe test missed its 954 ms window and the next three tests ran out
+  of the same message queue's time), and the file passes alone (14 of 14). After the review of task T's tests,
+  `m5c`, `m10-shell` and `m7b` ran again: 37 pass. Changed on purpose: every test that closed the join window with the cross, read
+  the back arrow's or Add players' label, the course tiles' aria-labels, the row style icons, the readout in the
+  race bar, the m7b back-arrow clearance and place-lift tests (now: every view's name at its top left, the
+  strip's controls inside the strip without overlapping, Settings opening above the strip), and the 2D/3D
+  results (heading, summary, gaps, winner). `RACE_VIEW_GAP` in `test/helpers/kart-3d-host.js`: the 4 px gap
+  between two stacked views moved with the canvas now ending above the strip.
+- Left as is: Measure keeps the bar at the top, so it covers the first view's name ("View 1") in the corner,
+  next to Measure's own box; Measure is a developer tool. `m7d4b` took about 243 s of its 330 s timeout.
+
+### Device run procedure (iPad host, an iPhone and an Android phone, HTTPS on the LAN; covers M10b too)
+
+The browser tests prove the flows. This run is for real touch, real Safari, how the screens read from across
+the room, and the iPhone checks left over from M10. Nothing here is tuned in code; say what reads wrong.
+
+1. **The picker (iPad).** Open `/host`, Tap to start. Three covers, each whole (the "3D" and the sun on the
+   first are not cut). The chosen game's title, its one-line description, "1 to 4", Play, the gear. Readable
+   from across the room?
+2. **No room (a phone).** Open `/` and type any four letters: "No game is open right now."
+3. **Settings (iPad).** The gear (redrawn: does it read as settings?): Music, Sound effects, Hold a dropped
+   player. Tap outside: it closes. Reload: the values are kept.
+4. **The join window (iPad, both phones).** Play Kart race 2D. "Join the party" opens by itself: scan the QR
+   code with both phones from where you sit. Each phone lands on the setup screen at once; both names appear
+   in the window. Close it with Done, open it with Add players, close it by tapping outside.
+5. **The phone's setup (both phones, iPhone first).** Stick, Tilt, Go button, Auto; "Turn your phone sideways
+   when the race starts" under them; Ready turns green with a tick, and a tap on the tick un-readies. Double tap
+   and pinch everywhere on the join, setup and driving screens: nothing may zoom (M10's iPhone check). Over
+   HTTPS the line "This phone's screen may sleep" must not show; if it does on a phone, say which.
+6. **The host's rows (iPad).** Each row says how its player drives ("Stick · Go button") and "Ready" when ready.
+   Tap a row's cross: red; tap elsewhere: back; tap it twice: removed, and that phone shows "The game ended".
+   Is the red clear enough to read as "armed"? (`--pp-danger` is `#8e2b22`; the M10b mockup had `#c0392b`.)
+7. **The 2D race.** With one phone in: "Needs 2 players". With both ready: race. On the iPhone, turned
+   sideways: is the notch or the home bar in the way of a button, and does tilt steer like a wheel (M10's
+   iPhone checks)? The results: the heading with "3 laps", the winner larger, the gap on the other row, Race
+   again across the panel.
+8. **Leave (a phone).** On the setup screen tap the door icon at the top right: red; again: the phone leaves.
+9. **Back to games (iPad).** On the 2D results tap Back to games: red; again: the picker, and both phones show
+   "The game ended". Then the same mid-race: are two taps the right friction?
+10. **3D setup (iPad, both phones).** Play Kart race 3D (a new code). The course's name, its description and
+    the three pictures with names sit at the bottom left, the card at the bottom right: Laps, Speed (the cc),
+    CPU, Items, Players with the rows ("Scan the code to join" before anyone joins), Start race. Display, under
+    the gear, opens Look, Measure and Watch.
+11. **3D race with the strip (iPad, Medium, Palm Bay Airport, 2 phones).** Race: the strip along the bottom
+    holds Back to games, Setup, Restart, Tuning, the clock and the gear, and no button lies on the views. Both
+    views' names sit at their top left. Is the strip easy to hit and not in the way? Open Tuning: Stats on top,
+    the sliders scroll under it, the race keeps running behind. Open the gear: Settings opens upward. The
+    results: heading, "Palm Bay Airport · 150cc · 3 laps", the winner larger, gaps, Race again across the panel;
+    the strip shows the room code and Add players again. Listen: no engine sound; is anything missing?
+12. **Input lab (iPad, a phone).** Play Input lab, join: a card appears at once. Its cross: red, then removes.
+13. **Drops (a phone).** Lock a phone on a setup screen: its row dims and reads "back in" with the hold time
+    counting down; unlock: it comes back. Lock it mid-race for 20 s and unlock: it drives on.
+14. Anything that looks broken, is cut off, or still needs a word, with the screen it is on.
+
+**Report back:** the red of step 6, the friction of step 9, whether the strip of step 11 is right, the gear's
+look, and the iPhone checks of steps 5 and 7.
+
+### The queue as it was run
+
+
+The user's review of M10b (2026-11-14): the icon UI went too far. Words come back where an icon had to be
+guessed, the covers are not cropped, the old join window returns, the 3D setup sits at the bottom, and the 3D
+race gets a strip of buttons under the views. The approved mockup is `test-results/reference/m10c/mockup.html`
+(ignored by git; open it in a browser, or read its markup: each `.stage` is one host screen in em of an 80 x 45
+stage). Where this file and the mockup disagree, this file wins.
+
+#### Status
+
+| Task | What | Status |
+|---|---|---|
+| 0 | icons, registry blurbs, `--pp-strip`, `formatGap`, CLAUDE.md's UI rules (main session) | merged |
+| A | host shell | merged |
+| B | 3D kart race | merged |
+| C | player rows, 2D race, phone | merged |
+| T | browser tests (alone, after A to C) | merged |
+| Z | full browser suite, docs, handoff (main session) | queued |
+
+A, B and C share no files and build at the same time. A is merged first (B uses its `bar`).
+
+#### Rules for every task
+
+- Read `CLAUDE.md` first (its "UI design" section was rewritten by task 0). Stay inside your task's files. If you
+  need a change in a file you do not own, say so in your report instead of making it.
+- Keep every element id that exists now unless your task says otherwise: the browser tests find elements by id.
+  List in your report every id, class used by tests, button text and aria-label you added, removed or changed.
+- Icon-only controls keep `aria-label` and `title`. A control that now has words needs neither.
+- Sizes on the host are in em of the 80 x 45 stage. Colours only from the tokens in `host/ui.css` and
+  `controller/style.css`.
+- Unit tests: add or change the ones your task names, and fix any that your change breaks on purpose (say which
+  in the report). `npm test` must pass. Do not run browser tests.
+- No new dependencies, nothing in `server/`, no writes outside the worktree.
+- Commit message: `m10c task <letter>: <what it does>`, lowercase.
+
+#### What task 0 provides (already on main when you start)
+
+- `shared/icons.js`: `gear` redrawn; new `leave` (a door with an arrow out).
+- `host/games/index.js`: each registry entry has `blurb` again (one line about the game).
+- `host/ui.css`: `--pp-strip: calc(4 * var(--pp-em))`, the height of the 3D race's strip.
+- `host/kart/race-time.js`: `formatGap(finishTime, winnerTime)` -> `'+2.49'` (both in seconds; the difference of the two times as shown).
+
+#### Task A: the host shell
+
+Files: `host/index.html`, `host/game-picker.js`, `host/game-picker.css`, `host/game-bar.js`, `host/top-bar.css`,
+`host/shell.css`, `host/join-window.js`, `host/settings.js`, `host/game-session.js`, `host/main.js`,
+`host/shell-rules.js`, `host/roster.js` (only if the join window's chips need it); unit tests
+`test/unit/shell-rules.test.js` or the file that tests what you change.
+
+1. **Game picker.** The cover boxes are 4:3, the shape the covers are drawn in (`assets/covers/*.svg`, 400 x 300),
+   so no cover is cropped: tiles 13em wide, the picture 9.75em high (no `aspect-ratio`: the iPad's Safari may not
+   have it). Under the title a line with the game's `blurb` (`#picker-game-blurb`), then the player range as
+   now (the person icon and "1 to 4").
+2. **Top bar.** `#game-back-button` becomes a `.pp-button` with the back icon and the words "Back to games"
+   (same id, same two-click arming with the `armed` class). `#game-add-players-button` becomes a `.pp-button
+   .pp-primary` with its icon and the words "Add players". The gear stays an icon. The room code chip is unchanged.
+3. **Settings.** Each row has words in place of its icon: "Music", "Sound effects", "Hold a dropped player"
+   (the minus, value and plus stay). Ids unchanged.
+4. **The join window as it was before M10b** (`git show 472116f:host/index.html`, `472116f:host/join-window.js`,
+   `472116f:host/shell.css`, `472116f:host/lobby-players.js` for the chips): the title "Join the party", the
+   line "Scan the code, or open the link and type the room code", the code, the link, the players as chips with
+   "back in 0:24" for a dropped one, and the big primary `#join-done-button` "Done". `#join-close-button` (the
+   cross) is removed. A click outside the panel still closes it. It still opens by itself for a new room and
+   from Add players. `lobby-players.js` is gone: put the chips' code where it fits (`join-window.js` if it stays
+   under about 200 lines, else a new `host/join-players.js`).
+5. **The bar can dock as a strip.** `game.start()` gets one more member, `bar`:
+   - `bar.slot`: an empty element (`#bar-slot`) in the bar, right after the back button, where a game puts its
+     own controls. The shell empties it when the game ends.
+   - `bar.setDocked(docked)`: `true` makes the bar a strip along the bottom of the window (class `docked` on
+     `#top-bar`): the full window width, `var(--pp-strip)` high, background `--pp-panel`, a `--pp-line` top
+     border; in a row: the back button, the slot, then pushed to the right the room code, Add players and the
+     gear. The strip's controls are sized in em of the stage like the rest. While docked the settings panel
+     opens upward, above the gear, and the game's `container` ends above the strip (`bottom: var(--pp-strip)`),
+     so a game's canvas is resized by its own ResizeObserver. `false` puts everything back at the top. The shell
+     undocks when the game ends. A game that never calls it keeps the bar at the top.
+   Write it into the comment of `host/game-session.js` where `start()` is called; plan.md's interface text is
+   the main session's.
+
+#### Task B: the 3D kart race
+
+Files: everything it needs in `host/games/kart-3d/` (`setup-markup.js`, `setup-panel.js`, `setup.css`,
+`course-previews.js`, `race-bar.js`, `race-panels.css`, `results-panel.js`, `tuning-panel.js`, `views.js`,
+`view-hud.js`, `frame-drawer.js`, `index.js`, `race-views.js`, `items/item-settings-panel.js`), their unit tests.
+Not `host/kart/` (task C) and nothing of the shell (task A).
+
+Interfaces it uses: `shell.bar.slot` and `shell.bar.setDocked(docked)` (task A, above; build against this text),
+`formatGap` (task 0), `lapsStepperMarkup` (task C changes it to put a `span.kart-laps-label` "Laps" where the
+flag icon was; your card just calls it as now, and may size `.k3d-card .kart-laps-label` in `setup.css`).
+
+1. **Setup screen at the bottom** (mockup screen 3). The course block (name, description, course pictures) is
+   anchored bottom left, the card bottom right (`bottom: 2.2em`), not hung from the top. Only the shell's bar is
+   at the top.
+   - The course's one-line description is back under its name (`#kart-3d-course-blurb`; the `blurb` texts are in
+     `git show 472116f:host/games/kart-3d/course-previews.js`).
+   - The course pictures are 16:9 (the previews are 1280 x 720), not cropped, each with its course's name under
+     it.
+   - The card's rows, each with a word: Laps (the stepper), Speed (the cc buttons, on their own row), CPU,
+     Items. Then a "Players" heading, the rows, and while nobody has joined the line "Scan the code to join" in
+     place of the rows. Then the status line and Start race.
+   - `#kart-3d-tools-button` becomes a `.pp-button` that says "Display" (same id, same drawer, still under the
+     gear, top right).
+2. **The race's strip** (mockup screens 4 to 6). When a race starts (the karts go on the grid, Watch too) call
+   `bar.setDocked(true)`; back on the setup screen, and while Measure runs, `bar.setDocked(false)`. Only on a
+   change, like `syncRoomOpen`.
+   - The race bar's three buttons go into `bar.slot`: "Setup" (`#kart-3d-setup-button`, was "Back to setup"),
+     "Restart", "Tuning" (pressed while its popup is open). Hidden over the results, as now. After them in the
+     slot, pushed to the right, the race clock (`#kart-3d-clock`), so it is off the views; it must not push the
+     shell's own controls out of the strip. Take the controls out of the slot in `stop()`.
+   - The views fill the canvas, which the shell now ends above the strip. No view's name or item frame makes room
+     for a back arrow any more: remove `BACK_ARROW_CLEARANCE_EM`, `backArrowClearance` and the `--top-inset`
+     handling in `views.js` and `view-hud.js`.
+   - The countdown and the results are centred in the area above the strip, and the results panel never reaches
+     under it.
+3. **One Tuning popup** (mockup screen 5). It opens upward from the strip on the left, over the views (it does
+   not shrink them), like the settings popup on the right. Its first section is "Stats": the readout's text
+   (`#kart-3d-readout`), always in sight; the sliders and buttons scroll under it. The readout is no longer in
+   the race bar. `#kart-3d-tuning-close` stays.
+4. **Results** (mockup screen 6): a "Results" heading with, beside it, what was raced ("Seaside Skyway · 150cc ·
+   3 laps", `#kart-3d-results-summary`); the winner's row larger with its place in the accent; each finished
+   kart's gap to the winner (`formatGap`; none for the winner or a kart with no time); Race again across the
+   panel's whole width.
+
+#### Task C: player rows, the 2D race, the phone
+
+Files: `host/kart/player-rows.js`, `host/kart/panels.css`, `host/kart/setup-rows.js`, `host/kart/panel-parts.js`,
+`host/games/kart-2d/setup-panel.js`, `results-panel.js`, its panels' CSS and `race-views.js`,
+`controller/index.html`, `controller/main.js`, `controller/screens.css`, `controller/kart/markup.js`,
+`controller/kart/setup-screen.js`, `controller/kart/setup.css`, their unit tests.
+
+1. **Player rows** (both races): how a player drives is words, not two icons: "Tilt · Auto", "Stick · Go
+   button" (`styleIcons` becomes a function returning the words; rename it). A ready row keeps its green edge and
+   tick and adds the word "Ready". A dropped player reads "back in 0:24" (no clock icon). The remove cross is
+   unchanged.
+2. **`lapsStepperMarkup`**: the flag icon becomes `<span class="pp-muted kart-laps-label">Laps</span>`. The
+   3D card (task B) uses it too.
+3. **2D setup:** a "Players" heading over the rows, and "Scan the code to join" in place of the rows while
+   nobody has joined (the same words as the 3D setup).
+4. **2D results**, like the 3D ones: a "Results" heading with "3 laps" beside it, the winner's row larger with
+   its place in the accent, each finished kart's gap to the winner (`formatGap`), Race again across the panel's
+   whole width.
+5. **Phone:** the Leave button's icon is `leave` (was `close`); same two taps. Under Ready on the setup screen
+   the line "Turn your phone sideways when the race starts" is back (`#kart-turn-note`, as in
+   `git show 472116f:controller/kart/markup.js`). When the phone cannot keep its screen awake (the wake lock is
+   refused or missing, `shared/wake-lock.js`) the game screen shows one small muted line saying so
+   (`#wake-note`: "This phone's screen may sleep"); nothing while the lock holds.
+
+#### Task T: the browser tests (spawned alone, after A to C are merged)
+
+Files: `test/browser/*`, `test/helpers/*`. It may run browser files, one at a time.
+
+- The join window is closed with `#join-done-button`; the cross is gone.
+- The back button and Add players have words; the gear's and the leave icon's names are checked where the icons'
+  names are checked now.
+- The 3D race: the bar is docked during a race (the strip at the bottom, the race's buttons in `#bar-slot`,
+  the views' canvas ends above it) and at the top on the setup screen; the view names sit at the top of every
+  view again (the m7b tests that expected the first one below the back arrow); the readout is in the Tuning
+  popup; the results have their heading, summary and gaps.
+- New texts on the picker (blurb, "players"), the setup screens (Speed row, course descriptions and names,
+  Players heading, "Scan the code to join"), the player rows (words, Ready, "back in"), the phone (the sideways
+  line).
+- Each merged task's report lists what it changed; the main session passes them on.
+- Fix tests to follow behaviour that changed on purpose; where a test fails for another reason, report it
+  instead of bending the test.
+
+#### Decisions made during the run
+
+- The "Players" heading and "Scan the code to join" go on the 2D setup as well as the 3D one (flag I named the
+  3D setup only), so both races' lobbies read the same.
+
+#### Parked for the user
+
+(nothing)
+
+#### What A, B and C changed, for task T (from their reports and reviews)
+
+Shell (A):
+- Removed: `#join-close-button`. The join window is closed with `#join-done-button` ("Done"); it has
+  `h2.join-title` "Join the party" and `p.join-hint`; a chip's status span reads "back in 0:24" for a dropped player.
+- `#game-back-button`: a `.pp-button` with the back icon and "Back to games", no aria-label or title (was
+  "Back to the games"); two clicks, class `armed`. `#game-add-players-button`: a `.pp-button.pp-primary` with
+  its icon and "Add players", no aria-label. `#settings-button` unchanged (aria-label "Settings").
+- Settings rows have words in `span.settings-label` (Music, Sound effects, Hold a dropped player); the sliders'
+  and the grace buttons' ids and labels are unchanged.
+- Picker: `#picker-game-blurb`; tiles 13em wide, the picture 12.6em by 9.45em (4:3).
+- `#bar-slot` inside `.top-bar-left`; class `docked` on `#top-bar` and `above-strip` on `#game-container` while a
+  game has docked the bar (the strip is `--pp-strip` high, 4 stage em, along the window's bottom).
+
+3D race (B):
+- Setup: `#kart-3d-course-blurb`; the course tiles have no aria-label or title any more, their text is the
+  course's name (`.k3d-course-tile-name`); rows Laps, Speed, CPU, Items; `.k3d-card-heading` "Players";
+  `#kart-3d-no-players` "Scan the code to join" (shown, and `#kart-3d-rows` hidden, while nobody has joined);
+  `#kart-3d-tools-button` says "Display" and has no aria-label.
+- Race: the bar is docked whenever a race exists (grid, countdown, racing, results, Watch) and undocked on the
+  setup screen and during Measure. `#kart-3d-race-bar` is a wrapper in `#bar-slot` with `#kart-3d-setup-button`
+  ("Setup", was "Back to setup"), `-restart-button`, `-tuning-button` and `#kart-3d-clock`; hidden over the
+  results. `#kart-3d-readout` is inside `#kart-3d-tuning` (visible exactly while the popup is open). The view
+  names no longer make room for a back arrow (`--top-inset` is gone).
+- Results: `.k3d-results-heading`, `#kart-3d-results-summary` ("Seaside Skyway · 150cc · 3 laps"), the rows have
+  a fourth `.gap` span and the winner's row the class `first` (the `.player` and `.place.pp-muted` classes are
+  gone); Race again spans the panel.
+
+Rows, 2D, phone (C):
+- `.kart-player-style` is plain text: "Tilt · Auto", "Stick · Go button", or "back in 0:24" for a dropped
+  player (no child spans, no icons with aria-labels; `m10-shell.test.js` near line 211 reads the old span).
+  `.kart-player-tick` holds the tick and "Ready". The laps control has `span.kart-laps-label` "Laps" (no flag).
+- 2D setup: `h2.k2d-subheading` "Players", `#kart-2d-join-line`. 2D results: a "Results" heading,
+  `#kart-2d-results-summary` ("3 laps"), rows `li.k2d-result` with `.k2d-place`, the chip, the time, `.k2d-gap`;
+  the winner `k2d-winner`.
+- Phone: the leave button holds the `leave` icon (aria-label "Leave game" unchanged); `#kart-turn-note` under the
+  choices on the setup screen; `#wake-note` on the game screen only when the wake lock is refused or missing
+  (headless browsers refuse it, so the tests will see it).
+
+Also for T: look at the screenshots your files take of the new screens (the picker, join window, both setups,
+the 3D race with the strip and with Tuning and Settings open, both results, the phone's setup) and report
+anything that overlaps, is cut off or scrolls; the main session could not screenshot the 3D race.

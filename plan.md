@@ -78,7 +78,7 @@ Two kinds of settings, handled in two places:
 - **Game settings** belong to the game and are set inside it, on the game's own setup screen, as in Mario Kart:
   - *Race settings* (the number of laps, and in the 3D race the course and engine class) on the host screen, HTML buttons in both races since M10. One set for everyone, controlled only by the host (decided before M5).
   - *Control style* on each phone, for that player only (tilt or stick, auto-accelerate). The phone sends the choice to the game as an `INPUT` of kind `choice`, so the game hears it through the same `onMessage` as steering. The game shows who has chosen and is ready.
-  - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept); the shell's back arrow is the way out (M10b).
+  - The host starts the race when everyone is ready. After the results: "Race again" (back to the setup screen, settings kept); the shell's Back to games is the way out (M10b).
 - *Look* (the 3D race's drawing quality, M7c) sits on the host's setup screen too, but belongs to the host device rather than the race: it is saved in the host's localStorage and comes back next time.
 - So the shell never needs to know what a game's settings are. Settings last while the game runs and reset when it ends; saving them between games (localStorage on the host) can be added later if it gets annoying.
 
@@ -99,7 +99,7 @@ registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers, 
   load(onProgress)            -> Promise. Fetch and decode assets. The shell awaits it before start(), behind its
                                  loading screen (host/loading-screen.js); it is called on Play. onProgress(0..1)
                                  is optional to call; the bar creeps when a game reports nothing (M10).
-  start({ container, players, setControllerView, removePlayer, pingPlayer, setRoomOpen })
+  start({ container, players, setControllerView, removePlayer, pingPlayer, setRoomOpen, bar })
                               -> Build the game. container is an empty full-screen element the game renders into
                                  with whatever it likes. players is the room's roster (read-only and live). The
                                  room is new at start() (M10b): players is empty and fills as phones join, and
@@ -111,8 +111,15 @@ registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers, 
                                  limit to the game's maxPlayers before start() (M10b); a game closes the room
                                  for a race and opens it again on screens where a new player can come in (setup,
                                  results). The input lab never closes it. While it is open the top bar shows
-                                 the room code and the add-players icon. A new player just appears in players;
+                                 the room code and Add players. A new player just appears in players;
                                  the shell has already sent them the game's screen.
+                                 bar (M10c) is the shell's top bar: bar.slot is an empty element after Back to
+                                 games where the game may put its own controls (the shell empties it when the
+                                 game ends); bar.setDocked(true) moves the bar into a strip along the bottom of
+                                 the window (4 stage em, --pp-strip) and ends the container above it, so the
+                                 game's buttons do not lie on the game; false puts it back at the top. A game
+                                 that never calls it keeps the bar at the top. Only the 3D kart race docks it,
+                                 while a race exists (its setup screen keeps the bar at the top).
   onMessage(playerId, message)
                               -> A message from that player's phone that belongs to the game: INPUT, INPUT_MODE or
                                  PONG (GAME_MESSAGE_TYPES in host/game-session.js). The shell keeps the rest.
@@ -121,8 +128,8 @@ registry entry (host/games/index.js only): { id, title, minPlayers, maxPlayers, 
                                  between the last two steps, for smooth drawing on 120 Hz screens.
   onPlayerLeft(playerId)      -> A player was removed mid-game (kicked, left, grace period over).
   isDone()                    -> true when the game wants to end: the shell closes the room and shows the picker.
-                                 No game uses it since M10b (all three return false): the shell's back arrow is
-                                 the one way out. The game draws its own setup, countdown and results screens.
+                                 No game uses it since M10b (all three return false): the shell's Back to games
+                                 is the one way out. The game draws its own setup, countdown and results screens.
   stop()                      -> Free everything: WebGL context, listeners, timers.
 }
 ```
@@ -143,9 +150,9 @@ start(container, send)        -> Build the controls in container and start the i
 showView(view)                -> Show what the host sent with setControllerView (null until it sends one).
 stop()                        -> Stop the input modules and timers; the shell empties the container afterwards.
 ```
-The shell keeps a top line on the phone's game screen (the room code and a leave icon, two taps) above the container.
+The shell keeps a top line on the phone's game screen (the room code and the leave door icon, two taps) above the container, and a muted line under it when the phone cannot keep its screen awake (M10c).
 
-Flow (M10b): Tap to start (full screen, wake lock, audio unlock) -> the game picker (no room: nobody can join) -> Play -> the loading screen (await `load()`) -> the game's room is created and the game starts on its setup screen, which is its lobby: the join window (QR code, room code, link) opens by itself, and from the add-players icon after that -> race (the room closed) -> results (open again) -> "Race again", or the back arrow. The back arrow (top left, two clicks, at any time) stops the game and closes the room: the host's socket closes, the server sends every phone `ROOM_CLOSED`, the phones show "The game ended", and the picker comes back. The next game gets a new room and a new code. The shell's top bar over every game (`host/game-bar.js`) holds the back arrow on the left and the room code, add players (both only while the room is open) and settings on the right, so games keep the top corners clear (5 em down from the top at the left and right edges).
+Flow (M10b): Tap to start (full screen, wake lock, audio unlock) -> the game picker (no room: nobody can join) -> Play -> the loading screen (await `load()`) -> the game's room is created and the game starts on its setup screen, which is its lobby: the join window (QR code, room code, link) opens by itself, and from Add players after that -> race (the room closed) -> results (open again) -> "Race again", or Back to games. Back to games (top left, or at the left of the strip when a game docks the bar; two clicks, at any time) stops the game and closes the room: the host's socket closes, the server sends every phone `ROOM_CLOSED`, the phones show "The game ended", and the picker comes back. The next game gets a new room and a new code. The shell's top bar over every game (`host/game-bar.js`) holds Back to games and the game's slot on the left and the room code, Add players (both only while the room is open) and settings on the right, so games keep the top corners clear (5 em down from the top at the left and right edges) unless they dock the bar (M10c).
 
 ## Pre-build spike (I run this myself before M0)
 
@@ -488,7 +495,7 @@ of 20 tasks run without the user (2026-11-12 and 13); every task, interface and 
   `renderer.js` (212) of the 3D race are still a little long.
 
 ### M10b: Each game runs its own lobby, and the icon UI (built, device run pending)
-Built 2026-11-14 as one queue; every task, decision and the device-run procedure are in "M10b" in
+Built 2026-11-14 as one queue; its look was revised by M10c, and its device run is M10c's; every task, decision and the device-run procedure are in "M10b" in
 `docs/history.md`. The flow and the game module interface above describe it.
 - **The host page only picks a game** (`host/game-picker.js`): no room there. Play loads the game, then
   `host/game-session.js` makes its room (`host/room.js`, one per game; `game-opening.js` holds the order) and
@@ -506,6 +513,23 @@ Built 2026-11-14 as one queue; every task, decision and the device-run procedure
 - **No engine sounds** in either race.
 - **Tests:** the browser tests' helpers are `openHost` (to the picker) and `startGame(hostPage, { gameId })`
   (returns the room code; phones join after it).
+
+### M10c: The UI fixes after M10b (built, device run pending)
+Built 2026-11-14 as a queue after the user's review of M10b ("we went too overboard with the minimalist design");
+every task, decision and the device run (one run for M10b and M10c) are in "M10c" in `docs/history.md`.
+- **Words back where icons had to be guessed** (`CLAUDE.md`'s "UI design" now says "clear before minimal"):
+  Back to games and Add players in words, settings rows in words, the player rows' "Tilt · Auto", "Ready" and
+  "back in 0:24", Laps/Speed/CPU/Items rows, "Players" headings, "Scan the code to join", the phone's sideways
+  line, the 3D setup's Display button. Icons alone only for the gear (redrawn), the remove cross, plus and minus
+  and the phone's leave door (new). `flag`, `tools`, `music`, `volume` and `clock` left the icon set.
+- **The picker** shows each cover whole (4:3 boxes) and the game's one-line `blurb` (back in the registry).
+- **The join window** is the one from before M10b again ("Join the party", the hint, chips, Done).
+- **The bar can dock** (`bar` in the game module interface, `host/game-bar.js`, `top-bar.css`): the 3D kart
+  race docks it as a strip under its views while a race exists, with Setup, Restart, Tuning and the clock in its
+  slot; Settings and the one Tuning popup (Stats on top, then the sliders) open upward from the strip.
+- **The 3D setup** sits at the bottom (course name, its description, 16:9 pictures with names; the card), the
+  results in both races have a heading, what was raced, the winner larger, gaps (`formatGap` in
+  `host/kart/race-time.js`) and Race again across the panel.
 
 ### M11: Deploy to Termux
 - [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin

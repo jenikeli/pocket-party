@@ -1651,3 +1651,11 @@ and the sounds and tunes to change.
   tilt with the phone turned) moved to M10b's device run.
 - **The UI:** the lobby and its words led to M10b (each game runs its own lobby, icons, colour as the
   confirmation) and to `CLAUDE.md`'s "UI design" section.
+
+## M10c: the race's buttons in a strip
+
+Not a look change: the 3D race's buttons moved off the views into a strip under them (the shell's bar, docked
+while a race exists), the setup screen's blocks sit at the bottom, Tuning is one popup with the stats on top,
+and the results have a heading, the race's summary and gaps. Everything, and the device run (steps 10 and 11
+are the 3D ones), is in "M10c" in `docs/history.md`. Measured without a device: the canvas at 960x540 becomes
+960x492 during a race (the strip is 4 stage em, 48 px there); the frame rate is unchanged by it.

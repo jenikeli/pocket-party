@@ -496,7 +496,7 @@ of 20 tasks run without the user (2026-11-12 and 13); every task, interface and 
   after all three courses, trimming designed in the history if the iPad needs it); `index.js` (232 lines) and
   `renderer.js` (212) of the 3D race are still a little long.
 
-### M10b: Each game runs its own lobby, and the icon UI (built, device run pending)
+### M10b: Each game runs its own lobby, and the icon UI (done)
 Built 2026-11-14 as one queue; its look was revised by M10c, and its device run is M10c's; every task, decision and the device-run procedure are in "M10b" in
 `docs/history.md`. The flow and the game module interface above describe it.
 - **The host page only picks a game** (`host/game-picker.js`): no room there. Play loads the game, then
@@ -516,7 +516,7 @@ Built 2026-11-14 as one queue; its look was revised by M10c, and its device run 
 - **Tests:** the browser tests' helpers are `openHost` (to the picker) and `startGame(hostPage, { gameId })`
   (returns the room code; phones join after it).
 
-### M10c: The UI fixes after M10b (built, device run pending)
+### M10c: The UI fixes after M10b (done)
 Built 2026-11-14 as a queue after the user's review of M10b ("we went too overboard with the minimalist design");
 every task, decision and the device run (one run for M10b and M10c) are in "M10c" in `docs/history.md`.
 - **Words back where icons had to be guessed** (`CLAUDE.md`'s "UI design" now says "clear before minimal"):
@@ -533,13 +533,11 @@ every task, decision and the device run (one run for M10b and M10c) are in "M10c
 - **The 3D setup** sits at the bottom (course name, its description, 16:9 pictures with names; the card), the
   results in both races have a heading, what was raced, the winner larger, gaps (`formatGap` in
   `host/kart/race-time.js`) and Race again across the panel.
-
-### M11: Deploy to Termux
-- [ ] Soak test: server idle with the screen off for 15-20 minutes (`termux-wake-lock` held, battery optimization off for Termux), then confirm devices can still connect and rejoin
-- [ ] Check the hotspot does not auto-switch off when idle
-- [ ] HTTPS working on the phone using the approach chosen in M2
-- [ ] Play a full 2D and a full 3D race on the real setup
-- [ ] Document setup in `README.md` (Termux from F-Droid, `pkg update && pkg upgrade`, clone, `npm install`, `npm start`)
+- **Device run (2026-11-14, iPad, an iPhone and an Android phone; covers M10b):** everything passed, nothing to
+  change. The covers, gear, settings, join window, rows, red of an armed control, two-click friction, the 3D
+  setup, the strip and the sound are right; on the iPhone nothing zooms, the sideways controls clear the notch
+  and tilt steers. A phone locked mid-race leaves its kart stopped until it reconnects, then it drives on: fine
+  as it is.
 
 ## Later ideas (not now)
 

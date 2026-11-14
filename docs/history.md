@@ -3548,6 +3548,21 @@ the room, and the iPhone checks left over from M10. Nothing here is tuned in cod
 **Report back:** the red of step 6, the friction of step 9, whether the strip of step 11 is right, the gear's
 look, and the iPhone checks of steps 5 and 7.
 
+### Device run results (2026-11-14, the user)
+
+Every step passed; nothing changes in code.
+- The picker, no-room message, settings (the new gear reads as settings, values kept) and the join window work.
+- Phone setup: nothing zooms on either phone, and the sleep line does not show over HTTPS.
+- The red of an armed control (`--pp-danger`, `#8e2b22`) is clear enough.
+- The 2D race works on the iPhone and Android: the sideways controls clear the notch and home bar, tilt steers.
+- Leave and the two-click friction are right as they are.
+- The 3D setup, the strip and the sound are good.
+- The input lab's card and cross work.
+- Drops: on a setup screen the row reads "back in" with the countdown. A phone locked mid-race leaves its kart
+  stopped until it reconnects, and it drives on after: fine as it is.
+
+M11 (deploy to Termux) was dropped the same day: the user already runs the server on the Termux phone.
+
 ### The queue as it was run
 
 

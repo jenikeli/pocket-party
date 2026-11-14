@@ -60,8 +60,9 @@ test('swipe: a quick flick sends its direction, unit vector and speed on release
   assert.equal(sent.length, 1);
   const { kind, direction, x, y, speed } = sent[0];
   assert.deepEqual({ kind, direction, x, y }, { kind: 'swipe', direction: 'up', x: 0, y: -1 });
-  // 150 px is half the 300 px surface, in about 0.1 s: about 5 surfaces per second (timers add a little).
-  assert.ok(speed > 3.5 && speed <= 5, `speed ${speed}`);
+  // 150 px is half the 300 px surface, in about 0.1 s: about 5 surfaces per second. Timers usually add a little,
+  // but Node can also fire the 100 ms timer a fraction early (a run gave 5.01), hence the small margin above 5.
+  assert.ok(speed > 3.5 && speed <= 5.1, `speed ${speed}`);
 });
 
 test('swipe: the axis that moved most decides the direction', () => {

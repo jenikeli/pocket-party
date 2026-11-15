@@ -39,8 +39,9 @@ test('a disconnected player keeps their color', () => {
   assert.equal(addPlayer(players, 'b').colorIndex, 1);
 });
 
-test(`there is a color for each of the ${MAX_PLAYERS} slots`, () => {
-  assert.equal(new Set(PLAYER_COLORS).size, MAX_PLAYERS);
+test('there are twelve different colors, one per 3D driver, enough for every player', () => {
+  assert.equal(new Set(PLAYER_COLORS).size, 12);
+  assert.ok(PLAYER_COLORS.length >= MAX_PLAYERS);
   const players = new Map();
   addPlayer(players, 'a');
   assert.equal(colorText(players.get('a')), '#e74c3c');

@@ -3,12 +3,12 @@
    controller/kart/setup.css. Each kart game's style.css imports this file. The --pp- tokens come from
    controller/style.css; the fallbacks are the same values. */
 
-/* The colours, 5 then 4 to a row, each a disc 44 to 60 px across. The padding keeps the chosen one's ring clear
+/* The twelve colours, 6 to a row, each a disc 44 to 56 px across (six fit a 320 px wide phone). The padding keeps the chosen one's ring clear
    of the scrolling column's edge, which would cut it off. */
 #kart-colors {
   display: grid;
-  grid-template-columns: repeat(5, minmax(44px, 60px));
-  gap: 12px;
+  grid-template-columns: repeat(6, minmax(44px, 56px));
+  gap: 10px;
   padding: 4px;
 }
 

@@ -13,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
-import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker, readyOnStick } from '../helpers/host-buttons.js';
 import { clickStartRace, openTools, GAME_START_TIMEOUT, STARTING_TIMEOUT, RACE_VIEW_GAP } from '../helpers/kart-3d-host.js';
 import { QUALITY_STORAGE_KEY } from '../../host/games/kart-3d/quality.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
@@ -108,8 +108,7 @@ describe('M7c 3D look', () => {
   // longer than the usual 60 s: a margin kept from when a High frame took about 2 s.
   test('on High the race is drawn through bloom, and the gap between the two views stays black', { timeout: STARTING_TIMEOUT + 120000 }, async () => {
     for (const player of [ana, cy]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await clickStartRace(hostPage);
     const labels = hostPage.locator('.kart-3d-view-hud:not([hidden]) .kart-3d-view-label');

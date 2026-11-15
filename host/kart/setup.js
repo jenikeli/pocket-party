@@ -10,8 +10,10 @@ export const DEFAULT_LAPS = 3;
 export const MIN_LAPS = 1;
 export const MAX_LAPS = 9;
 
-// What a player has until they choose: the stick, accelerating with Go.
-const DEFAULT_STYLE = Object.freeze({ steering: KART_STEERING.STICK, autoAccelerate: false, leftHanded: false });
+// What a player has until they choose: tilt (the phone turned like a wheel), accelerating with Go. Their phone
+// falls back to the stick by itself when it has no motion sensor or the player refuses it
+// (controller/kart/steering.js).
+const DEFAULT_STYLE = Object.freeze({ steering: KART_STEERING.TILT, autoAccelerate: false, leftHanded: false });
 
 // Returns the setup: { laps, players }, where players maps playerId ->
 // { steering, autoAccelerate, leftHanded, ready } for everyone who has chosen anything.

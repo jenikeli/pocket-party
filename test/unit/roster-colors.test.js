@@ -38,7 +38,7 @@ test('your own colour is yours: picking it again succeeds', () => {
 test('an unknown player, or a colour that is not a slot, changes nothing', () => {
   const players = roomOf('a');
   assert.equal(changeColor(players, 'nobody', 3), false);
-  for (const colorIndex of [-1, 9, 1.5, '3', null, undefined, NaN]) {
+  for (const colorIndex of [-1, 12, 1.5, '3', null, undefined, NaN]) {
     assert.equal(changeColor(players, 'a', colorIndex), false, `${colorIndex} is not a slot`);
   }
   assert.equal(players.get('a').colorIndex, 0);

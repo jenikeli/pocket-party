@@ -46,6 +46,12 @@ export function onInput(callback) {
   inputCallback = callback;
 }
 
+// Whether requestAccess() must be called from a tap: where the browser has a motion permission to ask for (iOS,
+// and Android Chrome too, which grants it without asking). Without one it answers at once.
+export function needsPermissionTap() {
+  return 'DeviceOrientationEvent' in window && typeof DeviceOrientationEvent.requestPermission === 'function';
+}
+
 // Asks for the motion permission where the browser has one (iOS always; the spike found it on Android Chrome
 // too). Resolves with 'granted' or one of INPUT_FALLBACK_REASONS.
 // Must be called straight from a tap handler: iOS only shows the prompt during a user gesture, and refuses

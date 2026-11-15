@@ -67,8 +67,28 @@ export function show(viewSteering) {
     startStick();
   } else {
     stopStick();
+    startTiltWithoutTap();
   }
   showSteering();
+}
+
+// The host says tilt (a new player's default, or this page was reloaded) but this page has no sensor running.
+// Where the browser has no motion permission to ask for (no motion sensor at all, on plain HTTP or a laptop) it
+// tries now, so the phone falls back to the stick with a note at once; otherwise it waits for the player's next
+// tap (startTiltOnTap), since iOS asks for the permission only inside a tap.
+function startTiltWithoutTap() {
+  if (tiltRunning || tiltStarting || tiltInput.needsPermissionTap()) {
+    return;
+  }
+  enableTilt();
+}
+
+// Called from any tap on the setup screen: the motion permission can only be asked inside a tap, so whichever
+// tap comes first (Ready, an option) asks for it while the host says tilt and tilt is not on yet.
+export function startTiltOnTap() {
+  if (steering === KART_STEERING.TILT && !tiltRunning && !tiltStarting) {
+    enableTilt();
+  }
 }
 
 // What this phone steers with now (a KART_STEERING value): the host's view, once it confirms a choice.
@@ -167,7 +187,7 @@ function showSteering() {
   elements.enableTiltButton.hidden = tiltRunning;
   elements.recenterButton.hidden = !tiltRunning;
   if (tilt && !tiltRunning && !tiltStarting) {
-    showNote('Tap Tilt to turn tilt on.');
+    showNote('Your next tap asks for the motion sensor, to steer by tilting.');
   } else if (tilt) {
     showNote('');
   }

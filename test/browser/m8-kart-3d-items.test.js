@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow } from '../helpers/host-buttons.js';
+import { startGame, clickNow, readyOnStick } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES, KART_ITEMS } from '../../shared/protocol.js';
 
@@ -39,8 +39,7 @@ describe('M8 items', () => {
 
   // Ana taps Ready on her setup screen, the host clicks Start, and the phone shows the race's controls.
   async function startRace() {
-    await ana.page.click('#kart-ready-button');
-    await ana.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+    await readyOnStick(ana.page);
     await clickStartRace(hostPage);
     await ana.page.waitForSelector('#kart-controls:not([hidden])');
   }

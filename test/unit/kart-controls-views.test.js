@@ -105,7 +105,7 @@ test('on the setup screen each phone sees the laps, its control style, colour an
   assert.deepEqual(setupView(setup, players, 'p1'), {
     phase: 'setup',
     laps: 3,
-    steering: 'stick',
+    steering: 'tilt',
     autoAccelerate: false,
     leftHanded: false,
     ready: false,

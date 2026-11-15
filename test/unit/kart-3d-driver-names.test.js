@@ -23,10 +23,16 @@ registerHooks({
 
 const { KART_DESIGNS } = await import('../../host/games/kart-3d/karts/kart-designs.js');
 const { DRIVER_NAMES } = await import('../../host/games/kart-3d/karts/kart-roster.js');
+const { PLAYER_COLORS } = await import('../../host/roster.js');
 
 test('DRIVER_NAMES lists the design of each colour slot', () => {
   DRIVER_NAMES.forEach((driverName, slot) => {
     const design = KART_DESIGNS.find((candidate) => candidate.slot === slot);
     assert.equal(design?.name, driverName, `slot ${slot}`);
   });
+});
+
+test('every driver has a colour slot a player can pick', () => {
+  assert.equal(DRIVER_NAMES.length, KART_DESIGNS.length);
+  assert.equal(PLAYER_COLORS.length, KART_DESIGNS.length);
 });

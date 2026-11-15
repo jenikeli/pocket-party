@@ -31,14 +31,14 @@ test('laps start at 3 and stay between 1 and 9', () => {
   assert.equal(setup.laps, 9);
 });
 
-test('a player starts on the stick with the Go button, not ready, and keeps what they choose', () => {
+test('a player starts on tilt with the Go button, not ready, and keeps what they choose', () => {
   const setup = createSetup();
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
-  applyChoice(setup, 'ana', { choice: 'steering', value: 'tilt' }, true);
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false });
+  applyChoice(setup, 'ana', { choice: 'steering', value: 'stick' }, true);
   applyChoice(setup, 'ana', { choice: 'autoAccelerate', value: true }, true);
   applyChoice(setup, 'ana', { choice: 'ready', value: true }, true);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: true, leftHanded: false, ready: true });
-  assert.deepEqual(playerSetup(setup, 'bo'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false }, 'others are not affected');
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: true, leftHanded: false, ready: true });
+  assert.deepEqual(playerSetup(setup, 'bo'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false }, 'others are not affected');
 });
 
 test('odd choices from a phone are ignored', () => {
@@ -48,7 +48,7 @@ test('odd choices from a phone are ignored', () => {
   applyChoice(setup, 'ana', { choice: 'ready', value: 1 }, true);
   applyChoice(setup, 'ana', { choice: 'laps', value: 20 }, true);
   applyChoice(setup, 'ana', {}, true);
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false });
   assert.equal(setup.laps, 3, 'phones cannot set the laps');
 });
 
@@ -106,7 +106,7 @@ test('a player who left is forgotten', () => {
   const setup = createSetup();
   applyChoice(setup, 'ana', { choice: 'steering', value: 'tilt' }, true);
   forgetPlayer(setup, 'ana');
-  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'stick', autoAccelerate: false, leftHanded: false, ready: false });
+  assert.deepEqual(playerSetup(setup, 'ana'), { steering: 'tilt', autoAccelerate: false, leftHanded: false, ready: false });
 });
 
 test('left-handed can change at any time, and only a true or false counts', () => {

@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
-import { startGame, clickNow, goBackToPicker } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker, readyOnStick } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, clickWatch, GAME_START_TIMEOUT, STARTING_TIMEOUT, RACE_VIEW_GAP } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -115,8 +115,8 @@ describe('M7b 3D race', () => {
     assert.equal(await hostPage.textContent('#kart-3d-laps'), '4');
     const view = await nextView(bo, (each) => each.phase === 'setup' && each.engineClass === 200);
     const { colors, colorIndex, driverName, ...rest } = view;
-    assert.deepEqual(rest, { phase: 'setup', laps: 4, engineClass: 200, courseName: 'Seaside Skyway', steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
-    assert.equal(colors.length, 9);
+    assert.deepEqual(rest, { phase: 'setup', laps: 4, engineClass: 200, courseName: 'Seaside Skyway', steering: 'tilt', autoAccelerate: false, ready: false, leftHanded: false });
+    assert.equal(colors.length, 12);
     assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
     assert.equal(typeof driverName, 'string');
     for (const player of [ana, bo]) {
@@ -153,8 +153,7 @@ describe('M7b 3D race', () => {
 
   test('Start race counts down on both screens; each view shows its player\'s name, lap and place', async () => {
     for (const player of [ana, bo]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await clickStartRace(hostPage);
     for (const player of [ana, bo]) {

@@ -78,12 +78,20 @@ export async function confirmClick(hostPage, button) {
 // (enabled once the host has seen everyone ready) and the first phone shows the countdown.
 export async function startRace(hostPage, controllerPages) {
   for (const page of controllerPages) {
-    await page.click('#kart-ready-button');
-    await page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+    await readyOnStick(page);
   }
   await hostPage.waitForSelector(`${START_RACE_BUTTON}:not([disabled])`);
   await clickNow(hostPage, START_RACE_BUTTON);
   await waitUntil(() => controllerPages[0].isVisible('#kart-controls'), {
     message: 'the race to start on the first phone',
   });
+}
+
+// Picks the stick on a phone's kart setup screen, then presses Ready. Tilt is the default steering and the
+// headless browsers have no motion sensor, so a test that drives with the stick picks it first.
+export async function readyOnStick(page) {
+  await page.click('[data-value="stick"]');
+  await page.waitForSelector('[data-value="stick"][aria-pressed="true"]');
+  await page.click('#kart-ready-button');
+  await page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
 }

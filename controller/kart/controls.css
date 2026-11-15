@@ -29,13 +29,18 @@
   grid-template-areas: "steer status brake brake";
 }
 
-/* The 3D race with the stick, with or without auto-accelerate: Item over Brake and Go on the right, Go doing the
-   drift too (the double tap), the bottom row a little taller for the right thumb. */
+/* The 3D race with the stick: Item over Brake and Go on the right, Go doing the drift too (the double tap), the
+   bottom row a little taller for the right thumb. */
 #kart-controls.race-3d {
   grid-template-rows: 1fr 1.3fr;
   grid-template-areas:
     "steer status item item"
     "steer status brake go";
+}
+
+/* With auto-accelerate there is no Go, so Drift takes its place. Under #kart-controls to win over buttons.css. */
+#kart-controls.race-3d.auto-accelerate:not(.tilt) #kart-drift {
+  grid-area: go;
 }
 
 /* The 3D race with tilt: the left thumb is free, so Drift takes the left; the tilt panel sits in the status. */

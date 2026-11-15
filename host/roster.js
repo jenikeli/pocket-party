@@ -2,15 +2,17 @@
 // grace period. Plain data and functions (no DOM), so it can be unit tested in Node. Used by host/room.js,
 // the join window (host/join-window.js) and the games.
 
-// One color per slot. MAX_PLAYERS in shared/protocol.js is 9, so 9 colors.
+// One color per slot, one for each of the 3D race's twelve drivers (host/games/kart-3d/karts/kart-roster.js), so
+// a player can drive any of them; the last three are those drivers' kart colours. A room holds MAX_PLAYERS (9)
+// phones, so a joining player always finds a free one.
 export const PLAYER_COLORS = [
   0xe74c3c, 0x3498db, 0x2ecc71, 0xf1c40f, 0x9b59b6, 0xe67e22,
-  0x1abc9c, 0xff79b0, 0xa3e048,
+  0x1abc9c, 0xff79b0, 0xa3e048, 0x8b5a2b, 0x7f8c8d, 0xe8e4f4,
 ];
 
 // The colours' names, in slot order. A player with no name is called by theirs, so the name matches their dot.
 export const PLAYER_COLOR_NAMES = [
-  'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Teal', 'Pink', 'Lime',
+  'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Teal', 'Pink', 'Lime', 'Brown', 'Grey', 'White',
 ];
 
 const MAX_NAME_LENGTH = 12;

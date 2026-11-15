@@ -1,5 +1,5 @@
 /* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift (or
-   Go, with the stick) with its spark colours, and its Item button with the running effects. Where they sit is
+   Go, with the stick and no auto-accelerate) with its spark colours, and its Item button with the running effects. Where they sit is
    controller/kart/controls.css. Each kart game's style.css imports this file. The --pp- tokens come from
    controller/style.css; the fallbacks are the same values. */
 
@@ -43,8 +43,8 @@
 }
 
 /* The drift's spark level, from the host's view: blue, orange, then purple, as in the reference game. Drawn on
-   Drift with tilt, on Go with the stick (the double tap). Under #kart-controls, to win over each button's own
-   colour. */
+   whichever button drifts: Go with the stick and no auto-accelerate (the double tap), else Drift. Under
+   #kart-controls, to win over each button's own colour. */
 #kart-controls .kart-pedal[data-spark="blue"] {
   background: #2f80ed;
   box-shadow: 0 0 24px #4fb3ff;

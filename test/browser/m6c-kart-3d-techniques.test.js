@@ -12,7 +12,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow } from '../helpers/host-buttons.js';
+import { startGame, clickNow, readyOnStick } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, pickCourse, waitForCourseBuilt, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -95,8 +95,7 @@ describe('M6c 3D techniques', () => {
     await bo.page.click('[data-choice="autoAccelerate"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
     for (const player of [ana, bo]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await pickCourse(hostPage, 'seaside-skyway');
     await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');
@@ -120,11 +119,15 @@ describe('M6c 3D techniques', () => {
   test('with the stick there is no Drift button: Go drifts on a double tap, Brake left of it, the Item place above both', async () => {
     for (const player of [ana, bo]) {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
-      assert.equal(await player.page.isVisible('#kart-drift'), false);
       assert.equal(await player.page.isVisible('#kart-item-slot'), true);
-      // With auto-accelerate too (Bo), since Go is also the drift.
-      assert.equal(await player.page.isVisible('#kart-accelerate'), true);
     }
+    assert.equal(await ana.page.isVisible('#kart-drift'), false);
+    assert.equal(await ana.page.isVisible('#kart-accelerate'), true);
+    // With auto-accelerate (Bo) there is no Go, so Drift takes its place.
+    assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
+    assert.equal(await bo.page.isVisible('#kart-drift'), true);
+    const [boBrake, boDrift] = await Promise.all(['#kart-brake', '#kart-drift'].map((selector) => boxOf(bo, selector)));
+    assert.ok(boBrake.x + boBrake.width <= boDrift.x + 1 && Math.abs(boBrake.y - boDrift.y) < 1, 'Bo\'s Drift sits where Go would');
     const [item, brake, go] = await Promise.all(['#kart-item-slot', '#kart-brake', '#kart-accelerate'].map((selector) => boxOf(ana, selector)));
     assert.ok(brake.x + brake.width <= go.x + 1 && Math.abs(brake.y - go.y) < 1, 'Brake sits left of Go');
     assert.ok(item.y + item.height <= go.y + 1, 'the Item place is above Go');

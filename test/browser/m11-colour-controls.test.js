@@ -1,6 +1,7 @@
-// Browser tests for M11 on the 3D race: each phone's top line shows its colour dot and name, a colour picked on
-// the setup screen reaches the host's row and the phone while a taken one is refused (and nothing changes it
-// during a race), Left-handed mirrors the driving layout, Go's double tap drifts, and Leave takes two taps.
+// Browser tests for M11 on the 3D race: each phone's top line shows its colour dot and name, twelve colours (one
+// per driver) sit in two rows of 6, a colour picked on the setup screen reaches the host's row and the phone
+// while a taken one is refused (and nothing changes it during a race), Left-handed mirrors the driving layout,
+// Go's double tap drifts, and Leave takes two taps.
 // Ana is an Android phone (Chromium, real touches) on the stick; Bo an unnamed iPhone (WebKit) who is
 // left-handed; Cy a portrait Android phone, left-handed, to check the turned layout. Headless Chromium draws
 // WebGL in software, so the host page is half the usual size and starts at Medium quality on the plain course.
@@ -12,7 +13,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow } from '../helpers/host-buttons.js';
+import { startGame, clickNow, readyOnStick } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, pickCourse, waitForCourseBuilt, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 import { PLAYER_COLORS } from '../../host/roster.js';
@@ -21,8 +22,10 @@ const HOST_SIZE = { width: 960, height: 540 };
 const GO_FINGER = 1;
 // Colour slots (host/roster.js).
 const RED = 0;
+const GREEN = 2;
 const YELLOW = 3;
 const ORANGE = 5;
+const WHITE = 11;
 
 function cssColor(slot) {
   return `#${PLAYER_COLORS[slot].toString(16)}`;
@@ -129,6 +132,20 @@ describe('M11 colour and controls on the 3D race', () => {
     await saveScreenshot(ana.page, 'm11-1-phone-setup');
   });
 
+  test('twelve colours in two rows of 6, one per driver: White gives Wisp', async () => {
+    const boxes = await Promise.all(Array.from({ length: 12 }, (unused, slot) => cy.page.locator(swatch(slot)).boundingBox()));
+    assert.equal(await cy.page.locator('.kart-swatch').count(), 12);
+    const rows = new Set(boxes.map((box) => Math.round(box.y)));
+    assert.equal(rows.size, 2, `two rows on a portrait phone: ${[...rows]}`);
+    assert.ok(Math.abs(boxes[0].x - boxes[6].x) < 1, 'the seventh starts the second row');
+    assert.ok(boxes.every((box) => box.width >= 44), 'every swatch is a thumb\'s size');
+    await cy.page.click(swatch(WHITE));
+    await waitUntil(async () => (await hostDotColor(cy)) === cssColor(WHITE), { message: 'Cy\'s row turning white' });
+    assert.equal(await cy.page.textContent('#kart-driver'), 'White: you drive Wisp');
+    await cy.page.click(swatch(GREEN));
+    await waitUntil(async () => (await hostDotColor(cy)) === cssColor(GREEN), { message: 'Cy\'s row green again' });
+  });
+
   test('a free colour tapped on the setup screen moves the host row and both dots; a taken one is refused', async () => {
     await ana.page.click(swatch(YELLOW));
     await waitUntil(async () => (await hostDotColor(ana)) === cssColor(YELLOW), { message: 'Ana\'s row turning yellow' });
@@ -163,8 +180,7 @@ describe('M11 colour and controls on the 3D race', () => {
 
   test('the race starts', async () => {
     for (const player of [ana, bo, cy]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await pickCourse(hostPage, 'seaside-skyway');
     await hostPage.waitForSelector('#kart-3d-start-button:not([disabled])');

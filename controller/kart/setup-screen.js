@@ -61,6 +61,10 @@ function showDriver(view) {
 }
 
 function onClick(event) {
+  // The first tap after the host says tilt (the default) turns tilt on, unless the tap is Stick or Tilt itself.
+  if (!event.target.closest(`[data-choice="${KART_CHOICES.STEERING}"]`)) {
+    steering.startTiltOnTap();
+  }
   // contains(), not ===: once ready the button holds the tick, and a tap on the tick has the SVG as its target.
   if (elements.readyButton.contains(event.target)) {
     sendChoice(KART_CHOICES.READY, !shownView.ready);

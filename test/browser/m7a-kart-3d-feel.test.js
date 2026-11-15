@@ -10,7 +10,7 @@ import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow } from '../helpers/host-buttons.js';
+import { startGame, clickNow, readyOnStick } from '../helpers/host-buttons.js';
 import { presetQuality, presetPlainCourse, clickStartRace, GAME_START_TIMEOUT, STARTING_TIMEOUT } from '../helpers/kart-3d-host.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 import { TUNABLES } from '../../host/games/kart-3d/tuning.js';
@@ -95,8 +95,7 @@ describe('M7a 3D feel', () => {
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo');
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     for (const player of [ana, bo]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await clickStartRace(hostPage);
     for (const player of [ana, bo]) {

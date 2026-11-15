@@ -1,8 +1,8 @@
 // Browser tests for M5c, the 2D race's setup screen and control styles: laps on the host, each phone's steering
 // (stick or tilt) and auto-accelerate, Ready and Start race, tilt steering in landscape, a rejoining phone
 // keeping its style, tilt falling back to the stick when refused, and Race again keeping the settings.
-// Ana is an Android phone (Chromium, real touches from test/helpers/touch.js) on the stick with auto-accelerate;
-// Bo is an iPhone (WebKit) steering by tilt. Since M10b the room is made by Play on the picker, so Ana joins the
+// Ana is an Android phone (Chromium, real touches from test/helpers/touch.js) who picks the stick and
+// auto-accelerate; Bo is an iPhone (WebKit) steering by tilt, the default, which his first tap turns on. Since M10b the room is made by Play on the picker, so Ana joins the
 // 2D race's setup screen alone first (it needs two players), then Bo. Headless browsers have no motion sensor, so Bo's page gets the iOS
 // permission API stubbed and deviceorientation events fired by hand, as in the M3 tests.
 
@@ -13,7 +13,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, startRace, clickNow, LAPS_MINUS_BUTTON, START_RACE_BUTTON, RACE_AGAIN_BUTTON } from '../helpers/host-buttons.js';
+import { startGame, readyOnStick, clickNow, LAPS_MINUS_BUTTON, START_RACE_BUTTON, RACE_AGAIN_BUTTON } from '../helpers/host-buttons.js';
 import { STEADY_LEFT } from '../helpers/kart-drivers.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
@@ -24,9 +24,9 @@ const RACE_TIMEOUT = { timeout: 120000 };
 const STICK_LEFT_PX = Math.round(-STEADY_LEFT.steer * 80);
 const TILT_LEFT_DEGREES = STEADY_LEFT.steer * 25;
 
-// A setup view without its colour fields (colorIndex and the nine colors), which m11-colour-controls checks.
+// A setup view without its colour fields (colorIndex and the twelve colors), which m11-colour-controls checks.
 function withoutColors({ colors, colorIndex, ...rest }) {
-  assert.equal(colors.length, 9);
+  assert.equal(colors.length, 12);
   assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
   return rest;
 }
@@ -129,6 +129,9 @@ describe('M5c 2D race setup screen and control styles', () => {
     roomCode = await startGame(hostPage, { gameId: 'kart-2d' });
     ana = await joinAs(chromium, 'Pixel 7 landscape', 'Ana');
     ana.touch = await openTouchscreen(ana.page);
+    // Tilt is the default; Ana drives with the stick, so she picks it before her first other tap would ask for tilt.
+    await ana.page.click('[data-value="stick"]');
+    await ana.page.waitForSelector('[data-value="stick"][aria-pressed="true"]');
   });
 
   after(async () => {
@@ -182,10 +185,12 @@ describe('M5c 2D race setup screen and control styles', () => {
 
   test('the setup screen shows the defaults on the phones and the setup panel on the host', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
-    assert.deepEqual(withoutColors(view), { phase: 'setup', laps: 3, steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
+    assert.deepEqual(withoutColors(view), { phase: 'setup', laps: 3, steering: 'tilt', autoAccelerate: false, ready: false, leftHanded: false });
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
     assert.equal(await bo.page.isVisible('#kart-controls'), false);
-    assert.equal(await bo.page.getAttribute('[data-value="stick"]', 'aria-pressed'), 'true');
+    await bo.page.waitForSelector('[data-value="tilt"][aria-pressed="true"]');
+    // iOS asks for the motion permission only inside a tap, so tilt waits for Bo's first one.
+    assert.equal(await bo.page.textContent('#kart-steering-note'), 'Your next tap asks for the motion sensor, to steer by tilting.');
     assert.equal(await bo.page.getAttribute('[data-choice="autoAccelerate"]', 'aria-pressed'), 'false');
     await waitUntil(panelOnHost, { message: 'the setup panel on the host' });
   });
@@ -196,7 +201,7 @@ describe('M5c 2D race setup screen and control styles', () => {
     await waitUntil(async () => (await ana.page.textContent('#kart-setup-laps')) === '1 lap', { message: '"1 lap" on the phone' });
   });
 
-  test('each phone picks its control style: Ana auto-accelerate, Bo tilt', async () => {
+  test('each phone picks its control style: Ana auto-accelerate, Bo keeps tilt and his first tap turns it on', async () => {
     await ana.page.click('[data-choice="autoAccelerate"]');
     assert.deepEqual(await nextHostInput(ana, (input) => input.kind === 'choice'), {
       kind: 'choice',
@@ -205,7 +210,8 @@ describe('M5c 2D race setup screen and control styles', () => {
     });
     await ana.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
 
-    await turnTiltOn(bo, '[data-value="tilt"]');
+    // Any tap on the setup screen counts, here one on the course's line.
+    await turnTiltOn(bo, '#kart-setup-title');
     assert.deepEqual(await nextHostInput(bo, (input) => input.kind === 'choice'), { kind: 'choice', choice: 'steering', value: 'tilt' });
     await bo.page.waitForSelector('[data-value="tilt"][aria-pressed="true"]');
     assert.equal(await bo.page.isVisible('#kart-steering-note'), false);
@@ -229,7 +235,12 @@ describe('M5c 2D race setup screen and control styles', () => {
     await hostPage.waitForTimeout(500);
     assert.equal(await ana.page.isVisible('#kart-setup'), true, 'still on the setup screen');
 
-    await startRace(hostPage, [ana.page, bo.page]);
+    // Ana is on the stick already; Bo stays on tilt, so his Ready is a plain tap.
+    await readyOnStick(ana.page);
+    await bo.page.click('#kart-ready-button');
+    await bo.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+    await hostPage.waitForSelector(`${START_RACE_BUTTON}:not([disabled])`);
+    await clickNow(hostPage, START_RACE_BUTTON);
     const anaView = await nextView(ana, (view) => view.phase === 'countdown');
     assert.deepEqual({ ...anaView, countdown: 0, place: 0 }, {
       phase: 'countdown',
@@ -317,18 +328,18 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.equal(await bo.page.getAttribute('#kart-ready-button', 'aria-pressed'), 'false');
   });
 
-  test('a phone whose tilt permission is refused falls back to the stick and tells the host', async () => {
-    // A new page has no sensor running, so the setup screen asks for a tap on Tilt.
+  test('a phone whose tilt permission is refused at its first tap (Ready) falls back to the stick and tells the host', async () => {
+    // A new page has no sensor running, so the setup screen says the next tap asks for it.
     await bo.page.close();
     await openPlayerPage(bo);
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
-    await waitUntil(async () => (await bo.page.textContent('#kart-steering-note')) === 'Tap Tilt to turn tilt on.', {
+    await waitUntil(async () => (await bo.page.textContent('#kart-steering-note')) === 'Your next tap asks for the motion sensor, to steer by tilting.', {
       message: 'the note asking for a tap',
     });
     await bo.page.evaluate(() => {
       DeviceOrientationEvent.requestPermission = async () => 'denied';
     });
-    await bo.page.click('[data-value="tilt"]');
+    await bo.page.click('#kart-ready-button');
     // The queue still holds Bo's earlier choices, so wait for this one.
     await nextHostInput(bo, (input) => input.kind === 'choice' && input.choice === 'steering' && input.value === 'stick');
     await bo.page.waitForSelector('[data-value="stick"][aria-pressed="true"]');

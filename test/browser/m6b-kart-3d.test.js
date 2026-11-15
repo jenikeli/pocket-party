@@ -15,7 +15,7 @@ import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, watchServerMessages, openHost, waitUntil, saveScreenshot } from '../helpers/browser.js';
 import { openPixelReader, findColor } from '../helpers/screenshot-pixels.js';
 import { openTouchscreen } from '../helpers/touch.js';
-import { startGame, clickNow, goBackToPicker, removeRowButton } from '../helpers/host-buttons.js';
+import { startGame, clickNow, goBackToPicker, removeRowButton, readyOnStick } from '../helpers/host-buttons.js';
 import {
   presetQuality,
   presetPlainCourse,
@@ -132,8 +132,8 @@ describe('M6b 3D driving', () => {
   test('Play opens the setup screen: the phones get the kart setup with laps and class, the host lists the players', async () => {
     const view = await nextView(bo, (each) => each.phase === 'setup');
     const { colors, colorIndex, driverName, ...rest } = view;
-    assert.deepEqual(rest, { phase: 'setup', laps: 3, engineClass: 150, courseName: 'Palm Bay Airport', steering: 'stick', autoAccelerate: false, ready: false, leftHanded: false });
-    assert.equal(colors.length, 9);
+    assert.deepEqual(rest, { phase: 'setup', laps: 3, engineClass: 150, courseName: 'Palm Bay Airport', steering: 'tilt', autoAccelerate: false, ready: false, leftHanded: false });
+    assert.equal(colors.length, 12);
     assert.equal(colors[colorIndex].takenBy, null, 'your own colour is not taken');
     assert.equal(typeof driverName, 'string');
     await bo.page.waitForSelector('#kart-setup:not([hidden])');
@@ -143,7 +143,7 @@ describe('M6b 3D driving', () => {
     await hostPage.waitForSelector('#kart-3d-setup:not([hidden])');
     // A row is the colour dot, the name, how they drive in words and a cross; "Ready" is on it only once they are.
     assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-name').allTextContents(), ['Ana', 'Bo']);
-    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-style').allTextContents(), ['Stick · Go button', 'Stick · Go button']);
+    assert.deepEqual(await hostPage.locator('#kart-3d-rows .kart-player-style').allTextContents(), ['Tilt · Go button', 'Tilt · Go button']);
     // The setup lists its players under a heading, and the line for an empty room is gone.
     assert.equal(await hostPage.textContent('.k3d-card-heading'), 'Players');
     assert.equal(await hostPage.isVisible('#kart-3d-no-players'), false);
@@ -201,8 +201,7 @@ describe('M6b 3D driving', () => {
     await bo.page.click('[data-choice="autoAccelerate"]');
     await bo.page.waitForSelector('[data-choice="autoAccelerate"][aria-pressed="true"]');
     for (const player of [ana, bo]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     const beforeStart = await loadingLog(hostPage);
     await clickStartRace(hostPage);
@@ -217,8 +216,13 @@ describe('M6b 3D driving', () => {
       await player.page.waitForSelector('#kart-controls:not([hidden])');
       assert.match(await player.page.textContent('#kart-line'), /^(Get ready!|Lap 1\/3)$/);
     }
-    assert.equal(await bo.page.isVisible('#kart-accelerate'), true, 'with the stick Go stays, for its double tap, auto-accelerate or not');
+    // With the stick, Go is there for Ana (its double tap drifts); with auto-accelerate Bo has Drift in its place.
     assert.equal(await ana.page.isVisible('#kart-accelerate'), true);
+    assert.equal(await ana.page.isVisible('#kart-drift'), false);
+    assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
+    assert.equal(await bo.page.isVisible('#kart-drift'), true);
+    const [boDrift, boBrake] = await Promise.all(['#kart-drift', '#kart-brake'].map((selector) => bo.page.locator(selector).boundingBox()));
+    assert.ok(boDrift.x > boBrake.x, 'Drift sits where Go would, right of Brake');
     await hostPage.waitForSelector('#kart-3d-race-bar:not([hidden])');
     // During a race the shell's bar is a strip along the bottom, the race's buttons and clock are in its slot,
     // and the canvas ends above the strip (4 stage em: 48 px in this 540 px high window).
@@ -264,8 +268,9 @@ describe('M6b 3D driving', () => {
     assert.deepEqual({ ...rest, place: 1 }, { phase: 'racing', steering: 'stick', autoAccelerate: true, leftHanded: false, countdown: null, spark: null, start: null, lap: 1, laps: 3, place: 1, finalLap: false, finished: false });
     assert.notEqual(item, null, 'items are on');
     await bo.page.waitForSelector('#kart-controls:not([hidden])');
-    // Go stays with auto-accelerate and the stick: it is also the drift (a double tap).
-    assert.equal(await bo.page.isVisible('#kart-accelerate'), true);
+    // With auto-accelerate and the stick, Drift takes Go's place.
+    assert.equal(await bo.page.isVisible('#kart-accelerate'), false);
+    assert.equal(await bo.page.isVisible('#kart-drift'), true);
   });
 
   test('Back to setup returns the phones to the setup screen with their control styles kept and ready cleared', async () => {
@@ -315,8 +320,7 @@ describe('M6b 3D driving', () => {
   test('the late joiners get karts in the next race, the built course is not built again, and a phone that tries during it is refused', { timeout: STARTING_TIMEOUT }, async () => {
     const buildsBefore = (await loadingLog(hostPage)).events.length;
     for (const player of [ana, bo, cy, dee]) {
-      await player.page.click('#kart-ready-button');
-      await player.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+      await readyOnStick(player.page);
     }
     await clickStartRace(hostPage);
     assert.equal((await loadingLog(hostPage)).events.length, buildsBefore, 'the course was kept: no second loading screen');

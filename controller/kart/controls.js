@@ -1,7 +1,7 @@
 // The phone side shared by both kart races: the setup screen (colour, control style, options and ready), then
 // the driving controls: steering, the status in the middle (Leave, the player's colour and name, the race's own
 // words) and the held buttons, laid out per race and steering (controller/kart/controls.css) and mirrored for
-// Left-handed. In the 3D race with the stick, a double tap on Go drifts (controller/kart/go-drift.js). On a
+// Left-handed. In the 3D race with the stick and no auto-accelerate, a double tap on Go drifts (controller/kart/go-drift.js). On a
 // portrait page the controls are drawn turned round (controller/kart/turned-layout.js). Used by
 // controller/games/kart-2d/index.js and controller/games/kart-3d/index.js, which pass their own title and
 // describeStatus and say whether they have Drift.
@@ -151,18 +151,19 @@ function showPlayer(player) {
 }
 
 // Which buttons show and where (controls.css): the layout follows the steering the phone shows, auto-accelerate
-// and left-handed. Drift is the Drift button with tilt and the double tap on Go with the stick.
+// and left-handed. Drift is the Drift button with tilt or with auto-accelerate, and the double tap on Go with the
+// stick when the player presses Go themselves.
 function showLayout(view) {
   const tilt = steering.current() === KART_STEERING.TILT;
-  const goDrifts = hasDrift && !tilt;
+  const goDrifts = hasDrift && !tilt && !view.autoAccelerate;
   controls.classList.toggle('tilt', tilt);
   controls.classList.toggle('auto-accelerate', view.autoAccelerate);
   controls.classList.toggle('left-handed', view.leftHanded);
-  driftButton.hidden = !(hasDrift && tilt);
+  driftButton.hidden = !hasDrift || goDrifts;
   goHint.hidden = !goDrifts;
-  // With auto-accelerate the kart drives unless braking, so there is no Go button; with the double tap Go stays,
-  // since it also drifts.
-  accelerateButton.hidden = view.autoAccelerate && !goDrifts;
+  // With auto-accelerate the kart drives unless braking, so there is no Go button (with the stick, Drift takes
+  // its place).
+  accelerateButton.hidden = view.autoAccelerate;
   // The 3D race's drift shows its spark colour on whichever button drifts (styled by data-spark), so a player can
   // see the level without looking up at the host screen.
   const spark = view.spark ?? '';
@@ -188,11 +189,12 @@ function onButtonInput(input) {
   controls.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
 }
 
-// Go's press as sent: through the double tap while Go also drifts (the 3D race with the stick). A release goes
+// Go's press as sent: through the double tap while Go also drifts (its hint shows: the 3D race with the stick,
+// without auto-accelerate). A release goes
 // the way its press went, even if the steering changed in between, so the host never keeps a button held.
 function goInput(input) {
   if (input.pressed) {
-    goPressDrifts = hasDrift && steering.current() === KART_STEERING.STICK;
+    goPressDrifts = !goHint.hidden;
   }
   if (!goPressDrifts) {
     return input;

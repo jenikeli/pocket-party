@@ -6,7 +6,7 @@
 //   id           unique, lower case ('blaze'); the kit-shots pieces are named after it (kart-blaze, ...)
 //   name         the character's name, for people
 //   slot         the lobby colour slot whose player drives it (kart-roster.js): 0 Blaze, 1 Pip, 2 Fern, 3 Bolt,
-//                4 Grimble, 5 Rusty, 6 Inky, 7 Mochi, 8 Sprout; 9 Bruno, 10 Rhino, 11 Wisp (CPU only)
+//                4 Grimble, 5 Rusty, 6 Inky, 7 Mochi, 8 Sprout, 9 Bruno, 10 Rhino, 11 Wisp
 //   palette      { main, second, third }, the kart's colours as hex numbers: main paints the nose, the pods'
 //                tops, the fairing's rim and the engine cover; second the nose's band, the fairing and the pods'
 //                notched stripe; third the pods' lower half and the bumper

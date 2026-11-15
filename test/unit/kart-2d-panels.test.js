@@ -21,12 +21,12 @@ function roster(...players) {
 
 test('the setup rows come in slot order with each player\'s control style and state', () => {
   const setup = createSetup();
-  applyChoice(setup, 'p0', { choice: KART_CHOICES.STEERING, value: KART_STEERING.TILT }, true);
+  applyChoice(setup, 'p0', { choice: KART_CHOICES.STEERING, value: KART_STEERING.STICK }, true);
   applyChoice(setup, 'p0', { choice: KART_CHOICES.AUTO_ACCELERATE, value: true }, true);
   applyChoice(setup, 'p0', { choice: KART_CHOICES.READY, value: true }, true);
   const rows = setupRows(setup, roster(playerAt(2), playerAt(0), playerAt(1, { connected: false })));
   assert.deepEqual(rows.map((row) => row.player.playerId), ['p0', 'p1', 'p2']);
-  assert.deepEqual(rows.map((row) => row.steering), ['tilt', 'stick', 'stick']);
+  assert.deepEqual(rows.map((row) => row.steering), ['stick', 'tilt', 'tilt']);
   assert.deepEqual(rows.map((row) => row.autoAccelerate), [true, false, false]);
   assert.deepEqual(rows.map((row) => row.ready), [true, false, false]);
   assert.deepEqual(rows.map((row) => row.leftHanded), [false, false, false]);

@@ -186,7 +186,7 @@ export const KART_CHOICES = Object.freeze({
   AUTO_ACCELERATE: 'autoAccelerate',
   // value: true or false. Only counts on the setup screen.
   READY: 'ready',
-  // value: an integer colour slot, 0-8 (the host's PLAYER_COLORS). Only counts on the setup screen, and only for a
+  // value: an integer colour slot, 0-11 (the host's PLAYER_COLORS). Only counts on the setup screen, and only for a
   // colour no other player holds; the kart design follows the colour.
   COLOR: 'color',
   // value: true (the driving layout is mirrored: steering on the right, Go on the left) or false. Counts at any

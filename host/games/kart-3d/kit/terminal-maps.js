@@ -1,7 +1,8 @@
-// The drawn maps of the airport's terminal and control tower (M9): the coloured band over the terminal's glass
-// (a coral stripe stepping up and down over sunny yellow, our own take on Sunshine Airport's zigzag), white metal
-// cladding panels, the roof's standing-seam metal, the skylight's framed panes and the jet bridges' ribbed steel,
-// each with its relief, shade and roughness (kit/surface-maps.js). Used by kit/terminal.js and kit/control-tower.js.
+// The drawn maps of the airport's terminal and control tower (M9): the coloured band over the terminal's glass (a
+// coral stripe stepping up and down over sunny yellow, our own take on the reference airport course's zigzag),
+// white metal cladding panels, the roof's standing-seam metal, the skylight's framed panes and the jet bridges'
+// ribbed steel, each with its relief, shade and roughness (kit/surface-maps.js). Used by kit/terminal.js and
+// kit/control-tower.js.
 
 import { createSurface, hexToRgb } from './surface-maps.js';
 import { drawnOnce } from '../canvas-texture.js';

@@ -1,6 +1,6 @@
 // The terminal's pictures drawn on canvases (M9): the sign on its roof, PALM BAY AIRPORT beside our emblem (a sun
-// rising behind a palm), cut out of a clear background so it stands in letters as Sunshine Airport's does; and the
-// departure board seen through the glass, our own airlines and places. Used by kit/terminal.js.
+// rising behind a palm), cut out of a clear background so it stands in letters as the reference airport course's
+// sign does; and the departure board seen through the glass, our own airlines and places. Used by kit/terminal.js.
 
 import { createCanvas, canvasTexture } from '../canvas-texture.js';
 

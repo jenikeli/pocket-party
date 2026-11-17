@@ -11,8 +11,8 @@ export const DRIVER_NAMES = ['Blaze', 'Pip', 'Fern', 'Bolt', 'Grimble', 'Rusty',
 // `karts` is race.karts (each with playerId, null for a CPU kart), `players` the room's Map(playerId -> player)
 // (each with colorIndex), `designs` the list of designs, each with its colour `slot`. Returns, for each kart in
 // order, an index into `designs`. Players come first, so a CPU kart never takes a player's design. A kart whose
-// player has left the room counts as a CPU kart. If there are more karts than designs (while M7d5's queue is
-// still adding them), the extra karts repeat designs in turn.
+// player has left the room counts as a CPU kart. If there are ever more karts than designs, the extra karts
+// repeat designs in turn.
 export function assignDesigns(karts, players, designs) {
   const assigned = new Array(karts.length).fill(null);
   const taken = new Set();

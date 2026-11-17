@@ -1,8 +1,8 @@
 // The airliner's three liveries (M9), our own airlines (the same names and colours as the hangars' signs, kit/
 // hangar.js's AIRLINES): white with a cheatline in the airline's colours sweeping up to the tail, a grey belly,
-// the name over the windows, a big emblem on the nose as on Sunshine Airport's planes, the fin in the airline's
-// colour with its emblem. Pictures for the fuselage and the fin, drawn on canvases (kit/airliner-paint.js). Used
-// by kit/airliner.js.
+// the name over the windows, a big emblem on the nose as on the reference airport course's planes, the fin in the
+// airline's colour with its emblem. Pictures for the fuselage and the fin, drawn on canvases
+// (kit/airliner-paint.js). Used by kit/airliner.js.
 
 import { canvasTexture, createCanvas } from '../canvas-texture.js';
 import { createFuselagePainter, roundedRectPath } from './airliner-paint.js';

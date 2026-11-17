@@ -1,6 +1,6 @@
-// The airport's padded barrier (M9 task K), after the fat yellow ones beside Sunshine Airport's blue road: one
-// long pillow of sun-yellow padding with well rounded edges on a dark skirt, held by a navy collar every few
-// metres. Returns { add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: the
+// The airport's padded barrier (M9 task K), after the fat yellow ones beside the reference airport course's blue
+// road: one long pillow of sun-yellow padding with well rounded edges on a dark skirt, held by a navy collar every
+// few metres. Returns { add(segment, side), end(station, index, side, facing), meshes() } for kit/barriers.js: the
 // pillow's cross-section is closed where it starts or stops, and a collar stands at each end.
 
 import * as THREE from 'three';

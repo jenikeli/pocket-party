@@ -1,7 +1,7 @@
-// The airport's apron rail (M9 task K), after the post-and-rail fences of Sunshine Airport's apron: two fat white
-// rails on orange posts with rounded caps, and every few posts a board of red-and-white chevrons low on the posts
-// (both faces, pointing the way the karts drive). Returns { add(segment, side), end(station, index, side,
-// facing), meshes() } for kit/barriers.js: end puts a post where the rails start or stop.
+// The airport's apron rail (M9 task K), after the post-and-rail fences of the reference airport course's apron:
+// two fat white rails on orange posts with rounded caps, and every few posts a board of red-and-white chevrons low
+// on the posts (both faces, pointing the way the karts drive). Returns { add(segment, side), end(station, index,
+// side, facing), meshes() } for kit/barriers.js: end puts a post where the rails start or stop.
 
 import * as THREE from 'three';
 import { createStripBuilder } from '../strip-builder.js';

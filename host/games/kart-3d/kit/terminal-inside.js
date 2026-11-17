@@ -1,7 +1,7 @@
-// The terminal's hall seen through its glass (M9), after the inside of Sunshine Airport's: a pale floor, tall
-// yellow columns with coral feet branching into struts under the ceiling, rows of blue seats, and lit departure
-// boards on the back wall. Only what reads through dark glass from the apron. Returns shapes by part, as
-// kit/terminal-body.js does.
+// The terminal's hall seen through its glass (M9), after the inside of the reference airport course's terminal: a
+// pale floor, tall yellow columns with coral feet branching into struts under the ceiling, rows of blue seats, and
+// lit departure boards on the back wall. Only what reads through dark glass from the apron. Returns shapes by
+// part, as kit/terminal-body.js does.
 
 import * as THREE from 'three';
 import { at, between, coloured, roundedBox, roundedCylinder } from '../shape-utils.js';

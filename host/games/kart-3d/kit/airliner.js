@@ -1,12 +1,13 @@
-// The airport's airliner (M9), a landmark about 45 long and 42 across, big beside the karts as Sunshine Airport's
-// planes are: a round fuselage with its cockpit and cabin windows and doors, swept wings with two engines, a tail
-// with the airline's emblem, a big emblem on its nose, and its landing gear. Its body and tail are built in kit/
-// airliner-shapes.js, its wings and engines in kit/airliner-wings.js, its gear in kit/airliner-gear.js, its
-// liveries in kit/airliner-liveries.js; here each part gets its material and becomes one mesh.
-// It stands on its gear on its origin (under the wings' middle), faces +x, its left side (-z) with the front door
-// the terminal's jet bridges reach. Every airliner on a course shares its fuselage's, fin's and trim's geometry,
-// and one set of materials per livery; the parts coloured per vertex are copied per plane (OWN_COPY). Used by the airport's dressing (airport-scenery.js), the take-off plane
-// (kit/take-off-plane.js) and kit-shots (host/kit-shots/airport-i-pieces.js).
+// The airport's airliner (M9), a landmark about 45 long and 42 across, big beside the karts as the reference
+// airport course's planes are: a round fuselage with its cockpit and cabin windows and doors, swept wings with two
+// engines, a tail with the airline's emblem, a big emblem on its nose, and its landing gear. Its body and tail are
+// built in kit/airliner-shapes.js, its wings and engines in kit/airliner-wings.js, its gear in
+// kit/airliner-gear.js, its liveries in kit/airliner-liveries.js; here each part gets its material and becomes one
+// mesh. It stands on its gear on its origin (under the wings' middle), faces +x, its left side (-z) with the front
+// door the terminal's jet bridges reach. Every airliner on a course shares its fuselage's, fin's and trim's
+// geometry, and one set of materials per livery; the parts coloured per vertex are copied per plane (OWN_COPY).
+// Used by the airport's dressing (airport-scenery.js), the take-off plane (kit/take-off-plane.js) and kit-shots
+// (host/kit-shots/airport-i-pieces.js).
 
 import * as THREE from 'three';
 import { mergeShapes } from '../shape-utils.js';

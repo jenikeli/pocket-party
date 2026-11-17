@@ -1,8 +1,8 @@
-// The plane taking off each lap (M9), a landmark, after the jet that lifts off low over the karts on Sunshine
-// Airport's runway in the reference game: an airliner (kit/airliner.js) waits at the runway's east end, rolls, lifts off
-// before the karts' part of it, flies low over the runway, the glide and the bay, folds its gear, then climbs
-// away and is gone. It loops on its own timer, one take-off about every 45 s. Its path is plain maths
-// (takeOffPose), unit tested. Used by the airport's dressing (airport-scenery.js) and kit-shots.
+// The plane taking off each lap (M9), a landmark, after the jet that lifts off low over the karts on the reference
+// airport course's runway: an airliner (kit/airliner.js) waits at the runway's east end, rolls, lifts off before
+// the karts' part of it, flies low over the runway, the glide and the bay, folds its gear, then climbs away and is
+// gone. It loops on its own timer, one take-off about every 45 s. Its path is plain maths (takeOffPose), unit
+// tested. Used by the airport's dressing (airport-scenery.js) and kit-shots.
 
 import * as THREE from 'three';
 import { buildAirliner } from './airliner.js';

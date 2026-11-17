@@ -1,12 +1,12 @@
 // The phone side shared by both kart races: the setup screen (colour, control style, options and ready), then
-// the driving controls: steering, the status in the middle (Leave, the player's colour and name, the race's own
+// the driving controls, shown from Ready on (still, with Back to setup, until the race starts): steering, the status in the middle (Leave, the player's colour and name, the race's own
 // words) and the held buttons, laid out per race and steering (controller/kart/controls.css) and mirrored for
 // Left-handed. In the 3D race with the stick and no auto-accelerate, a double tap on Go drifts (controller/kart/go-drift.js). On a
 // portrait page the controls are drawn turned round (controller/kart/turned-layout.js). Used by
 // controller/games/kart-2d/index.js and controller/games/kart-3d/index.js, which pass their own title and
 // describeStatus and say whether they have Drift.
 
-import { MESSAGE_TYPES, INPUT_KINDS, KART_BUTTONS, KART_STEERING } from '/shared/protocol.js';
+import { MESSAGE_TYPES, INPUT_KINDS, KART_BUTTONS, KART_CHOICES, KART_STEERING } from '/shared/protocol.js';
 import * as buttonInput from '/controller/inputs/button.js';
 import * as steering from '/controller/kart/steering.js';
 import * as setupScreen from '/controller/kart/setup-screen.js';
@@ -16,9 +16,11 @@ import { createItemSlot } from '/controller/kart/item-slot.js';
 import { createGoDrift } from '/controller/kart/go-drift.js';
 import { PORTRAIT_QUERY } from '/controller/kart/turned-layout.js';
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
+import { phoneScreen, PHONE_SCREENS } from '/controller/kart/phone-screen.js';
+import { icon } from '/shared/icons.js';
 
 // The page elements, looked up by findElements() once the markup is in place.
-let screen, setup, controls, accelerateButton, driftButton, goHint, bigText, lineText, playerName;
+let screen, setup, controls, accelerateButton, driftButton, goHint, bigText, lineText, playerName, backButton;
 let sendMessage = null; // set by start
 let hasDrift = false; // the 3D race: Drift (a button with tilt, the double tap on Go with the stick). Set by start
 let itemSlot = null; // the Item button's display in the 3D race, else null. Set by start
@@ -51,6 +53,8 @@ export function start(container, send, race, leave) {
   buttonInput.onInput(onButtonInput);
   buttonInput.start(controls);
   confirmOnSecondClick(byId('kart-leave'), leave);
+  // Not ready again: the host's next view, ready false, brings the setup screen back.
+  backButton.addEventListener('click', () => sendChoice(KART_CHOICES.READY, false));
   startSteeringAndSetup(race.title);
   previousPhase = null;
   // The page turns between portrait and landscape when the phone turns with rotation lock off; the drawing
@@ -66,9 +70,13 @@ export function start(container, send, race, leave) {
 // shell's CONTROLLER_STATE.
 export function showView(view, player) {
   showPlayer(player);
-  const onSetup = view?.phase === 'setup';
-  setup.hidden = !onSetup;
-  controls.hidden = onSetup;
+  const shown = phoneScreen(view);
+  const waiting = shown === PHONE_SCREENS.WAITING;
+  setup.hidden = shown !== PHONE_SCREENS.SETUP;
+  controls.hidden = shown === PHONE_SCREENS.SETUP;
+  // While waiting the buttons and the stick stay still (controller/kart/steer-status.css), so nothing is sent.
+  controls.classList.toggle('waiting', waiting);
+  backButton.hidden = !waiting;
   updateTurn();
   // GO: the countdown is over (both races name the phase 'countdown'), and the player is holding the phone
   // the way they mean as straight ahead (steering.recenterTilt).
@@ -82,11 +90,20 @@ export function showView(view, player) {
     return;
   }
   steering.show(view.steering);
-  if (onSetup) {
+  if (view.phase === 'setup') {
     setupScreen.show(view);
+  }
+  if (shown === PHONE_SCREENS.SETUP) {
     return;
   }
   showLayout(view);
+  if (waiting) {
+    // The setup view has no items yet, so the 3D race's Item shows empty.
+    itemSlot?.show({ held: null, effects: [] });
+    bigText.innerHTML = `${icon('check')}Ready`;
+    lineText.textContent = 'Waiting for the race to start';
+    return;
+  }
   itemSlot?.show(view.item);
   const status = describeStatus(view);
   bigText.textContent = status.big;
@@ -116,6 +133,7 @@ function findElements() {
   bigText = byId('kart-big');
   lineText = byId('kart-line');
   playerName = byId('kart-me-name');
+  backButton = byId('kart-back');
 }
 
 // Starts the steering (controller/kart/steering.js) and the setup screen (setup-screen.js) on their elements.

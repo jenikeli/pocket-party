@@ -1,6 +1,6 @@
 // The kart races' phone screens as HTML, which controller/kart/controls.js puts into the game container.
 // The setup screen before every race (the race's line, then Colour, Steering and Options rows, and Ready), laid
-// out for portrait, and the driving controls, held sideways: steering on the left, the status in the middle, the
+// out for portrait, and the driving controls (also shown after Ready, with Back to setup, until the race starts), held sideways: steering on the left, the status in the middle, the
 // buttons on the right (controller/kart/controls.css lays out each race's grid, and mirrors it for Left-handed).
 // On a portrait page the controls are drawn a quarter turn round. The ids are styled in controller/kart/setup.css,
 // controls.css and buttons.css; data-button names match KART_BUTTONS, data-choice and data-value match
@@ -43,7 +43,7 @@ const SETUP_SCREEN = `
         </div>
       </div>
       <div id="kart-ready-area">
-        <p id="kart-turn-note" class="pp-muted">Turn your phone sideways when the race starts</p>
+        <p id="kart-turn-note" class="pp-muted">Ready shows your controls. Turn your phone sideways.</p>
         <button id="kart-ready-button" class="pp-button pp-primary" aria-pressed="false">Ready</button>
       </div>
     </div>`;
@@ -64,6 +64,7 @@ export function kartMarkup(tiltInStatus) {
           <p id="kart-me"><span id="kart-me-dot"></span><span id="kart-me-name"></span></p>
           <p id="kart-big"></p>
           <p id="kart-line"></p>${tiltInStatus ? TILT_PANEL : ''}
+          <button type="button" id="kart-back" class="pp-button" hidden>Back to setup</button>
         </div>
       </div>
       <div class="kart-pedal" id="kart-item-slot" data-button="item" hidden>

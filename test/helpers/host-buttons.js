@@ -87,11 +87,12 @@ export async function startRace(hostPage, controllerPages) {
   });
 }
 
-// Picks the stick on a phone's kart setup screen, then presses Ready. Tilt is the default steering and the
-// headless browsers have no motion sensor, so a test that drives with the stick picks it first.
+// Picks the stick on a phone's kart setup screen, then presses Ready and waits for the controls Ready shows
+// (with Back to setup). Tilt is the default steering and the headless browsers have no motion sensor, so a test
+// that drives with the stick picks it first.
 export async function readyOnStick(page) {
   await page.click('[data-value="stick"]');
   await page.waitForSelector('[data-value="stick"][aria-pressed="true"]');
   await page.click('#kart-ready-button');
-  await page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+  await page.waitForSelector('#kart-back', { state: 'visible' });
 }

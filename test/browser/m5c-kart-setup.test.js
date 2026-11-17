@@ -149,15 +149,23 @@ describe('M5c 2D race setup screen and control styles', () => {
     assert.equal(await hostPage.isVisible('#kart-2d-join-line'), false);
     assert.equal(await hostPage.textContent('.kart-laps-label'), 'Laps');
     // The phone says to turn it sideways, and (headless browsers refuse the wake lock) that its screen may sleep.
-    assert.equal(await ana.page.textContent('#kart-turn-note'), 'Turn your phone sideways when the race starts');
+    assert.equal(await ana.page.textContent('#kart-turn-note'), 'Ready shows your controls. Turn your phone sideways.');
     // Shown once the wake lock's refusal comes back, which is asynchronous.
     await ana.page.waitForSelector('#wake-note:not([hidden])');
-    // Ready turns green with a tick, and still says "Ready".
+    // Ready takes her to the controls she picked, which stay still until the race starts: a green Ready with a
+    // tick, the line and Back to setup in the middle column.
     assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
     await ana.page.click('#kart-ready-button');
-    await ana.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
-    assert.equal(await ana.page.textContent('#kart-ready-button'), 'Ready');
-    assert.equal(await ana.page.locator('#kart-ready-button svg').count(), 1, 'a tick once ready');
+    await ana.page.waitForSelector('#kart-back', { state: 'visible' });
+    assert.equal(await ana.page.isVisible('#kart-setup'), false);
+    assert.equal(await ana.page.isVisible('#kart-controls'), true);
+    assert.equal(await ana.page.textContent('#kart-big'), 'Ready');
+    assert.equal(await ana.page.locator('#kart-big svg').count(), 1, 'a tick once ready');
+    assert.equal(await ana.page.textContent('#kart-line'), 'Waiting for the race to start');
+    assert.equal(await ana.page.textContent('#kart-back'), 'Back to setup');
+    for (const still of ['#kart-accelerate', '#kart-brake', '#kart-stick-zone']) {
+      assert.equal(await ana.page.$eval(still, (element) => getComputedStyle(element).pointerEvents), 'none', `${still} stays still`);
+    }
     await saveScreenshot(ana.page, 'm5c-0-android-ready');
     // On the host her row shows a tick and "Ready" (hidden while the player is not ready).
     await hostPage.waitForSelector('.kart-player-row.ready .kart-player-tick');
@@ -173,10 +181,13 @@ describe('M5c 2D race setup screen and control styles', () => {
       button.click();
     }, START_RACE_BUTTON);
     await hostPage.waitForTimeout(500);
-    assert.equal(await ana.page.isVisible('#kart-setup'), true, 'still on the setup screen');
+    assert.equal(await ana.page.isVisible('#kart-back'), true, 'still waiting for the race');
     assert.equal(await panelOnHost(), true);
-    await ana.page.click('#kart-ready-button');
+    // Back to setup makes her not ready and shows the choices again.
+    await ana.page.click('#kart-back');
+    await ana.page.waitForSelector('#kart-setup:not([hidden])');
     await ana.page.waitForSelector('#kart-ready-button[aria-pressed="false"]');
+    await hostPage.waitForSelector('.kart-player-row.ready', { state: 'detached' });
     bo = await joinAs(webkit, 'iPhone 13 landscape', 'Bo', 'granted');
     await waitUntil(async () => (await hostPage.textContent('#kart-2d-setup-status')) === 'Waiting for Ana, Bo', {
       message: 'the line to wait for both players',
@@ -238,7 +249,7 @@ describe('M5c 2D race setup screen and control styles', () => {
     // Ana is on the stick already; Bo stays on tilt, so his Ready is a plain tap.
     await readyOnStick(ana.page);
     await bo.page.click('#kart-ready-button');
-    await bo.page.waitForSelector('#kart-ready-button[aria-pressed="true"]');
+    await bo.page.waitForSelector('#kart-back', { state: 'visible' });
     await hostPage.waitForSelector(`${START_RACE_BUTTON}:not([disabled])`);
     await clickNow(hostPage, START_RACE_BUTTON);
     const anaView = await nextView(ana, (view) => view.phase === 'countdown');
@@ -342,7 +353,10 @@ describe('M5c 2D race setup screen and control styles', () => {
     await bo.page.click('#kart-ready-button');
     // The queue still holds Bo's earlier choices, so wait for this one.
     await nextHostInput(bo, (input) => input.kind === 'choice' && input.choice === 'steering' && input.value === 'stick');
-    await bo.page.waitForSelector('[data-value="stick"][aria-pressed="true"]');
+    // Ready took him to the waiting controls, which change to the stick's.
+    await bo.page.waitForSelector('#kart-stick-zone', { state: 'visible' });
+    assert.equal(await bo.page.isVisible('#kart-back'), true);
+    assert.equal(await bo.page.getAttribute('[data-value="stick"]', 'aria-pressed'), 'true');
     assert.equal(await bo.page.textContent('#kart-steering-note'), 'Tilt is not available: permission denied. Using the stick.');
     await saveScreenshot(bo.page, 'm5c-5-iphone-tilt-denied');
   });

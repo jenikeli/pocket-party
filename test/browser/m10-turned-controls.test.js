@@ -32,7 +32,7 @@ describe('M10 kart controls on a portrait phone', () => {
     await page.click('#join-button');
     await page.waitForSelector('#kart-setup', { state: 'visible' });
     // The setup screen tells a phone held upright to turn it sideways for the race.
-    assert.equal(await page.textContent('#kart-turn-note'), 'Turn your phone sideways when the race starts');
+    assert.equal(await page.textContent('#kart-turn-note'), 'Ready shows your controls. Turn your phone sideways.');
     assert.equal(await page.isVisible('#kart-turn-note'), true);
     const { playerId } = await hostMessages.nextOfType(MESSAGE_TYPES.PLAYER_JOINED);
     return { page, touch, playerId };

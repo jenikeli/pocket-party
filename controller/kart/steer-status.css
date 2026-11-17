@@ -1,6 +1,7 @@
 /* The kart controls' steering and status (controller/kart/markup.js): the floating stick with its steer bar, the
    tilt panel (on the left in the 2D race, small in the status column in the 3D race), and the status column
-   (Leave at the top, the player's chip, the place and the race's line). Where they sit is
+   (Leave at the top, the player's chip, the place and the race's line; after Ready, until the race starts,
+   a green Ready, "Waiting for the race to start" and Back to setup). Where they sit is
    controller/kart/controls.css. Each kart game's style.css imports this file. The --pp- tokens come from
    controller/style.css; the fallbacks are the same. */
 
@@ -203,4 +204,46 @@
 #kart-controls.race-3d.tilt #kart-line,
 #kart-controls.race-3d.tilt #kart-me {
   font-size: 16px;
+}
+
+/* Waiting for the race (Ready pressed, controller/kart/controls.js): the controls show but stay still, so a touch
+   on a button or the stick sends nothing; Leave, Back to setup and the tilt panel still work. */
+#kart-controls.waiting .kart-pedal,
+#kart-controls.waiting #kart-stick-zone {
+  pointer-events: none;
+}
+
+/* A green Ready with a tick, smaller than the place so it fits the column on a small phone (the iPhone 13).
+   Through #kart-readout to win over the tilt layout's size above. */
+#kart-controls.waiting #kart-readout #kart-big {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--pp-ok, #2ecc71);
+  font-size: 30px;
+}
+
+#kart-controls.waiting #kart-big .pp-icon {
+  width: 0.8em;
+  height: 0.8em;
+  stroke-width: 3;
+}
+
+#kart-controls.waiting #kart-readout #kart-line {
+  font-size: 16px;
+}
+
+/* One line on the narrowest column, 44 px tall for the thumb. */
+#kart-back {
+  margin-top: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--pp-radius, 0.45em);
+  background: var(--pp-panel-2, #2a3145);
+  color: var(--pp-ink, #ffffff);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
 }

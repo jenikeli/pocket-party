@@ -1,10 +1,11 @@
-// The phone side shared by both kart races: the setup screen (colour, control style, options and ready), then
-// the driving controls, shown from Ready on (still, with Back to setup, until the race starts): steering, the status in the middle (Leave, the player's colour and name, the race's own
-// words) and the held buttons, laid out per race and steering (controller/kart/controls.css) and mirrored for
-// Left-handed. In the 3D race with the stick and no auto-accelerate, a double tap on Go drifts (controller/kart/go-drift.js). On a
-// portrait page the controls are drawn turned round (controller/kart/turned-layout.js). Used by
-// controller/games/kart-2d/index.js and controller/games/kart-3d/index.js, which pass their own title and
-// describeStatus and say whether they have Drift.
+// The phone side shared by both kart races: the setup screen (colour, control style, options and ready), then the
+// driving controls, shown from Ready on (still, with Back to setup, until the race starts): steering, the status
+// in the middle (Leave, the player's colour and name, the race's own words) and the held buttons, laid out per
+// race and steering (controller/kart/controls.css) and mirrored for Left-handed. In the 3D race with the stick and
+// no auto-accelerate, a double tap on Go drifts (controller/kart/go-drift.js). On a portrait page the controls are
+// drawn turned round (controller/kart/turned-layout.js). Used by controller/games/kart-2d/index.js and
+// controller/games/kart-3d/index.js, which pass their own title and describeStatus and say whether they have
+// Drift.
 
 import { MESSAGE_TYPES, INPUT_KINDS, KART_BUTTONS, KART_CHOICES, KART_STEERING } from '/shared/protocol.js';
 import * as buttonInput from '/controller/inputs/button.js';
@@ -13,7 +14,7 @@ import * as setupScreen from '/controller/kart/setup-screen.js';
 import { kartMarkup } from '/controller/kart/markup.js';
 import { ITEM_ICONS } from '/shared/item-icons.js';
 import { createItemSlot } from '/controller/kart/item-slot.js';
-import { createGoDrift } from '/controller/kart/go-drift.js';
+import { createGoButton } from '/controller/kart/go-drift.js';
 import { PORTRAIT_QUERY } from '/controller/kart/turned-layout.js';
 import { confirmOnSecondClick } from '/shared/confirm-click.js';
 import { phoneScreen, PHONE_SCREENS } from '/controller/kart/phone-screen.js';
@@ -28,8 +29,7 @@ let itemSlot = null; // the Item button's display in the 3D race, else null. Set
 let describeStatus = null;
 let portrait = null; // the MediaQueryList for PORTRAIT_QUERY, set by start
 let previousPhase = null; // the newest view's phase, to see the countdown end
-let goDrift = null; // the double tap on Go, set by start
-let goPressDrifts = false; // whether Go's press now held went through goDrift, so its release does too
+let goInput = null; // (input, goDrifts, now) -> the input Go sends, through the double tap; set by start
 
 // `race` is { title, describeStatus, drift, items }: title is the race's name for the setup screen,
 // describeStatus(view) -> { big, line }, drift true for the 3D race's Drift and items true to show the Item
@@ -42,8 +42,7 @@ export function start(container, send, race, leave) {
   hasDrift = race.drift;
   controls.classList.toggle('race-3d', race.drift);
   itemSlot = race.items ? createItemSlot(byId('kart-item-slot'), ITEM_ICONS) : null;
-  goDrift = createGoDrift();
-  goPressDrifts = false;
+  goInput = createGoButton();
   // A long press on a held button must not open the browser's menu.
   // On the game's own element, not the container, which the shell keeps between games.
   screen.addEventListener('contextmenu', (event) => event.preventDefault());
@@ -74,7 +73,7 @@ export function showView(view, player) {
   const waiting = shown === PHONE_SCREENS.WAITING;
   setup.hidden = shown !== PHONE_SCREENS.SETUP;
   controls.hidden = shown === PHONE_SCREENS.SETUP;
-  // While waiting the buttons and the stick stay still (controller/kart/steer-status.css), so nothing is sent.
+  // While waiting the buttons and the stick stay still (controller/kart/status.css), so nothing is sent.
   controls.classList.toggle('waiting', waiting);
   backButton.hidden = !waiting;
   updateTurn();
@@ -150,16 +149,7 @@ function startSteeringAndSetup(title) {
     note: byId('kart-steering-note'),
   };
   steering.start(steeringElements, { sendChoice, sendInput });
-  const setupElements = {
-    setup,
-    game: byId('kart-setup-game'),
-    title: byId('kart-setup-title'),
-    laps: byId('kart-setup-laps'),
-    colors: byId('kart-colors'),
-    driver: byId('kart-driver'),
-    readyButton: byId('kart-ready-button'),
-  };
-  setupScreen.start(setupElements, title, sendChoice);
+  setupScreen.start(title, sendChoice);
 }
 
 // The player's colour edges the controls and dots the status chip (controls.css reads --kart-player-color).
@@ -202,21 +192,9 @@ function sendChoice(choice, value) {
   sendInput({ kind: INPUT_KINDS.CHOICE, choice, value });
 }
 
+// Go also drifts while its hint shows (the 3D race with the stick, without auto-accelerate).
 function onButtonInput(input) {
-  sendInput(input.button === KART_BUTTONS.ACCELERATE ? goInput(input) : input);
+  const isGo = input.button === KART_BUTTONS.ACCELERATE;
+  sendInput(isGo ? goInput(input, !goHint.hidden, performance.now()) : input);
   controls.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
-}
-
-// Go's press as sent: through the double tap while Go also drifts (its hint shows: the 3D race with the stick,
-// without auto-accelerate). A release goes
-// the way its press went, even if the steering changed in between, so the host never keeps a button held.
-function goInput(input) {
-  if (input.pressed) {
-    goPressDrifts = !goHint.hidden;
-  }
-  if (!goPressDrifts) {
-    return input;
-  }
-  const now = performance.now();
-  return { kind: INPUT_KINDS.BUTTON, ...(input.pressed ? goDrift.press(now) : goDrift.release(now)) };
 }

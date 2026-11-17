@@ -3,7 +3,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createGoDrift } from '../../controller/kart/go-drift.js';
+import { createGoDrift, createGoButton } from '../../controller/kart/go-drift.js';
 
 const ACCELERATE_DOWN = { button: 'accelerate', pressed: true };
 const ACCELERATE_UP = { button: 'accelerate', pressed: false };
@@ -50,4 +50,18 @@ test('the two times can be set', () => {
   go.press(1000);
   go.release(1350);
   assert.deepEqual(go.press(1800), { button: 'drift', pressed: true });
+});
+
+test('Go\'s button input goes through the double tap only while Go drifts, and a release follows its press', () => {
+  const press = { kind: 'button', button: 'accelerate', pressed: true };
+  const release = { kind: 'button', button: 'accelerate', pressed: false };
+  const plain = createGoButton();
+  assert.deepEqual(plain(press, false, 0), press, 'Go does not drift: the input as it came');
+  assert.deepEqual(plain(release, false, 100), release);
+  const go = createGoButton();
+  go(press, true, 0);
+  go(release, true, 100);
+  assert.deepEqual(go(press, true, 200), { kind: 'button', button: 'drift', pressed: true }, 'tap, then press: drift');
+  // The steering changed while Drift was held: the release still names Drift.
+  assert.deepEqual(go(release, false, 900), { kind: 'button', button: 'drift', pressed: false });
 });

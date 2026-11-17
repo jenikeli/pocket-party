@@ -15,8 +15,18 @@ let sendChoice = null; // (choice, value), set by start
 let colorPicker = null; // set by start
 let shownView = null; // the newest view, which the option toggles turn round
 
-export function start(pageElements, title, choiceSender) {
-  elements = pageElements;
+// `title` is the race's name, `choiceSender(choice, value)` sends a choice to the host.
+export function start(title, choiceSender) {
+  const byId = (id) => document.getElementById(id);
+  elements = {
+    setup: byId('kart-setup'),
+    game: byId('kart-setup-game'),
+    title: byId('kart-setup-title'),
+    laps: byId('kart-setup-laps'),
+    colors: byId('kart-colors'),
+    driver: byId('kart-driver'),
+    readyButton: byId('kart-ready-button'),
+  };
   gameTitle = title;
   sendChoice = choiceSender;
   colorPicker = createColorPicker(elements.colors, sendChoice);

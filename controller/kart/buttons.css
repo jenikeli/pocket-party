@@ -1,7 +1,7 @@
-/* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift (or
-   Go, with the stick and no auto-accelerate) with its spark colours, and its Item button with the running effects. Where they sit is
-   controller/kart/controls.css. Each kart game's style.css imports this file. The --pp- tokens come from
-   controller/style.css; the fallbacks are the same values. */
+/* The kart races' held buttons on the phone (controller/kart/markup.js): Brake and Go, the 3D race's Drift (or Go,
+   with the stick and no auto-accelerate) with its spark colours, and its Item button with the running effects.
+   Where they sit is controller/kart/controls.css. Each kart game's style.css imports this file. The --pp- tokens
+   come from controller/style.css; the fallbacks are the same values. */
 
 .kart-pedal {
   display: flex;

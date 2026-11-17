@@ -1,11 +1,12 @@
-// The kart races' phone screens as HTML, which controller/kart/controls.js puts into the game container.
-// The setup screen before every race (the race's line, then Colour, Steering and Options rows, and Ready), laid
-// out for portrait, and the driving controls (also shown after Ready, with Back to setup, until the race starts), held sideways: steering on the left, the status in the middle, the
-// buttons on the right (controller/kart/controls.css lays out each race's grid, and mirrors it for Left-handed).
-// On a portrait page the controls are drawn a quarter turn round. The ids are styled in controller/kart/setup.css,
-// controls.css and buttons.css; data-button names match KART_BUTTONS, data-choice and data-value match
-// KART_CHOICES and their values. The pp- classes are the shared look (controller/style.css). Stick and Tilt are an
-// icon with a word under it (shared/icons.js), since neither has a conventional icon on its own.
+// The kart races' phone screens as HTML, which controller/kart/controls.js puts into the game container. The setup
+// screen before every race (the race's line, then Colour, Steering and Options rows, and Ready), laid out for
+// portrait, and the driving controls (also shown after Ready, with Back to setup, until the race starts), held
+// sideways: steering on the left, the status in the middle, the buttons on the right (controller/kart/controls.css
+// lays out each race's grid, and mirrors it for Left-handed). On a portrait page the controls are drawn a quarter
+// turn round. The ids are styled in controller/kart/setup.css, controls.css and buttons.css; data-button names
+// match KART_BUTTONS, data-choice and data-value match KART_CHOICES and their values. The pp- classes are the
+// shared look (controller/style.css). Stick and Tilt are an icon with a word under it (shared/icons.js), since
+// neither has a conventional icon on its own.
 
 import { icon } from '/shared/icons.js';
 

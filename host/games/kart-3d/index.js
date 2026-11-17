@@ -1,15 +1,14 @@
 // The 3D kart race (M6 to M10), a game module: a setup screen (setup-panel.js: the course from saved pictures,
 // laps, engine class, CPU level and the items on the host, the drawing quality, the Measure tool and Watch behind
 // the Display button, and control style and ready on each phone), then the chosen course is built behind the
-// loading screen (M10: nothing is built before), a countdown with a rocket start, and 1-4 players race
-// their laps in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results,
-// and Race again. While karts race the shell's bar docks as a strip along the bottom (bar.setDocked), with the
-// race's own buttons and clock in it (race-bar.js). Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no phones
-// needed. The room is open to new players on the setup and results screens. Loaded through host/games/index.js
-// and run by the shell (host/game-session.js).
-// The rules live in DOM-free modules next to this file; this file connects them to the shell, the setup screen's
-// choices, the renderer and the panels. The current race is race-session.js's, the frames frame-drawer.js's and
-// what the phones are sent phone-link.js's.
+// loading screen (M10: nothing is built before), a countdown with a rocket start, and 1-4 players race their laps
+// in split screen, drifting and boosting, with CPU karts filling the field to 12; then the results, and Race
+// again. While karts race the shell's bar docks as a strip along the bottom (bar.setDocked), with the race's own
+// buttons and clock in it (race-bar.js). Watch races 1-4 stand-ins (stand-ins.js) instead of the players, with no
+// phones needed. The room is open to new players on the setup and results screens. Loaded through
+// host/games/index.js and run by the shell (host/game-session.js). The rules live in DOM-free modules next to this
+// file; this file connects them to the shell, the setup screen's choices, the renderer and the panels. The current
+// race is race-session.js's, the frames frame-drawer.js's and what the phones are sent phone-link.js's.
 
 import { MESSAGE_TYPES } from '/shared/protocol.js';
 import { playersInSlotOrder } from '/host/roster.js';
@@ -119,10 +118,15 @@ export function createGame() {
     const tuningPanel = createTuningPanel(shell.container);
     // After the setup panel, so its report shows over the setup screen once a run ends.
     measurePanel = createMeasurePanel(shell.container, renderer, () => renderer.setQuality(choices.quality));
-    raceBar = createRaceBar(shell.container, shell.bar.slot, { onBackToSetup: session.showSetup, onRestart: session.restart, onTuning: () => tuningPanel.toggle() });
+    raceBar = createRaceBar(shell.container, shell.bar.slot, {
+      onBackToSetup: session.showSetup,
+      onRestart: session.restart,
+      onTuning: () => tuningPanel.toggle(),
+    });
     const resultsPanel = createResultsPanel(shell.container, { onRaceAgain: session.showSetup });
     const panels = { setupPanel, raceBar, resultsPanel, tuningPanel, measurePanel };
-    frameDrawer = createFrameDrawer({ renderer, readout, session, setup, choices, chosenTrack, players: () => shell.players, panels });
+    const players = () => shell.players;
+    frameDrawer = createFrameDrawer({ renderer, readout, session, setup, choices, chosenTrack, players, panels });
     phoneViews = createPhoneViews({ shell, session, setup, choices, courseName: () => chosenCourse().name });
     stopPinging = startPinging(shell);
     session.showSetup();

@@ -1,0 +1,104 @@
+/* The kart controls' steering (controller/kart/markup.js): the floating stick with its steer bar, and the tilt
+   panel (on the left in the 2D race; in the 3D race it sits small in the status column, sized by
+   controller/kart/status.css). Where they sit is controller/kart/controls.css. Each kart game's style.css imports
+   this file. The --pp- tokens come from controller/style.css; the fallbacks are the same. */
+
+#kart-stick-zone,
+#kart-tilt-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: calc(var(--pp-radius, 0.45em) * 2);
+  background: var(--pp-panel, #1c2130);
+  font-size: 16px;
+}
+
+/* Holds the ring where the thumb lands; a ring near the edge is cut off rather than spilling over the rest. */
+#kart-stick-zone {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* The steer amount, a bar growing from the middle of the top edge (controller/kart/floating-stick.js). */
+#kart-steer-meter {
+  position: absolute;
+  top: 10px;
+  left: 20%;
+  right: 20%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--pp-panel-2, #2a3145);
+  overflow: hidden;
+}
+
+#kart-steer-amount {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  background: var(--pp-accent, #f39c12);
+}
+
+/* Centred on the touch: floating-stick.js sets left and top in the zone's own frame. */
+#kart-stick-ring {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 3px solid var(--pp-line, #343d57);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#kart-stick-knob {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--pp-accent, #f39c12);
+}
+
+.kart-hint {
+  margin: 0;
+  color: var(--pp-muted, #9aa4bf);
+}
+
+/* The thumb is down: the ring takes the hint's place. */
+#kart-stick-zone.steering .kart-hint {
+  visibility: hidden;
+}
+
+/* 44 px tall at least, so a thumb finds them, in the status column too. */
+#kart-tilt-zone button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--pp-radius, 0.45em);
+  background: var(--pp-panel-2, #2a3145);
+  color: var(--pp-ink, #ffffff);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* A wheel seen from the front: the bar turns as the phone does. */
+#kart-wheel {
+  display: flex;
+  align-items: center;
+  width: 110px;
+  height: 110px;
+  border: 6px solid var(--pp-line, #343d57);
+  border-radius: 50%;
+}
+
+#kart-wheel-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--pp-accent, #f39c12);
+}

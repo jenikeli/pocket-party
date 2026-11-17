@@ -2,7 +2,7 @@
    left, the status in the middle, the buttons on the right (controller/kart/buttons.css), on one grid per race
    and steering, mirrored for Left-handed, with an edge in the player's colour. They cover the page, the shell's
    top line included (the status column has the chip and Leave); on a portrait page they are drawn a quarter turn
-   round. The steering and the status are styled in controller/kart/steer-status.css.
+   round. The steering and the status are styled in controller/kart/steering.css and status.css.
    Each kart game's style.css imports this file. The --pp- tokens come from controller/style.css; the fallbacks
    are the same. --kart-player-color is set on #kart-screen by controller/kart/controls.js. */
 

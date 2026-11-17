@@ -4,5 +4,6 @@
 @import url('/controller/kart/setup.css');
 @import url('/controller/kart/setup-choices.css');
 @import url('/controller/kart/controls.css');
-@import url('/controller/kart/steer-status.css');
+@import url('/controller/kart/steering.css');
+@import url('/controller/kart/status.css');
 @import url('/controller/kart/buttons.css');

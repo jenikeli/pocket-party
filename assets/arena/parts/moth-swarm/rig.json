@@ -1,0 +1,87 @@
+{
+ "height": 22,
+ "gait": "hover",
+ "lift": 10,
+ "shadow": [
+  12,
+  5
+ ],
+ "ring": 0.6,
+ "hand": null,
+ "order": {
+  "front": [
+   "armBack",
+   "body",
+   "head",
+   "armFront"
+  ],
+  "back": [
+   "armBack",
+   "body",
+   "headBack",
+   "armFront"
+  ]
+ },
+ "parts": {
+  "body": {
+   "w": 14,
+   "h": 18,
+   "pivot": [
+    7,
+    18
+   ],
+   "at": [
+    0,
+    -2
+   ]
+  },
+  "head": {
+   "w": 12,
+   "h": 12,
+   "pivot": [
+    6,
+    12
+   ],
+   "at": [
+    0,
+    -14
+   ]
+  },
+  "headBack": {
+   "w": 12,
+   "h": 12,
+   "pivot": [
+    6,
+    12
+   ],
+   "at": [
+    0,
+    -14
+   ]
+  },
+  "armBack": {
+   "w": 22,
+   "h": 20,
+   "pivot": [
+    20,
+    15
+   ],
+   "at": [
+    -3,
+    -9
+   ]
+  },
+  "armFront": {
+   "w": 22,
+   "h": 20,
+   "pivot": [
+    2,
+    15
+   ],
+   "at": [
+    3,
+    -9
+   ]
+  }
+ }
+}

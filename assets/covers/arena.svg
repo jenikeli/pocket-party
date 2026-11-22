@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2150"/><stop offset="1" stop-color="#5a3fc4"/></linearGradient>
+    <linearGradient id="lamp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset="1" stop-color="#ffc53d"/></linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#sky)"/>
+  <rect y="150" width="400" height="150" fill="#3f7f4a"/>
+  <path d="M0 150 Q100 135 200 150 T400 150 V176 Q300 191 200 176 T0 176 Z" fill="#3ba3d9"/>
+  <path d="M20 160 Q100 150 180 160" stroke="#beebff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M230 168 Q310 160 380 168" stroke="#beebff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="86" y="140" width="46" height="44" fill="#9b6b3e"/>
+  <rect x="270" y="140" width="46" height="44" fill="#9b6b3e"/>
+  <g>
+    <rect x="62" y="40" width="42" height="96" rx="6" fill="#6c5b7b"/>
+    <path d="M56 44 L83 14 L110 44 Z" fill="#8e6bff"/>
+    <circle cx="83" cy="62" r="11" fill="url(#lamp)"/>
+  </g>
+  <g>
+    <rect x="296" y="196" width="42" height="84" rx="6" fill="#6c5b7b"/>
+    <path d="M290 200 L317 170 L344 200 Z" fill="#ffc53d"/>
+    <circle cx="317" cy="218" r="11" fill="url(#lamp)"/>
+  </g>
+  <g>
+    <rect x="164" y="214" width="26" height="40" rx="8" fill="#e8552f"/>
+    <circle cx="177" cy="208" r="12" fill="#e8552f"/>
+    <circle cx="173" cy="206" r="2.5" fill="#1d1b2e"/><circle cx="181" cy="206" r="2.5" fill="#1d1b2e"/>
+  </g>
+  <g>
+    <rect x="212" y="80" width="26" height="40" rx="8" fill="#35b6c9"/>
+    <circle cx="225" cy="74" r="12" fill="#35b6c9"/>
+    <circle cx="221" cy="72" r="2.5" fill="#1d1b2e"/><circle cx="229" cy="72" r="2.5" fill="#1d1b2e"/>
+  </g>
+</svg>

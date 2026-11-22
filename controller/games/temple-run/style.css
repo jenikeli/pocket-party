@@ -1,0 +1,99 @@
+/* Temple Chase phone screen. Loaded by controller/game-screen.js before the game starts; scoped by element id. */
+
+#tr-pad {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border-radius: 1.1em;
+  border: 2px solid var(--pp-line);
+  background: radial-gradient(120% 90% at 50% 0%, #26304a 0%, var(--pp-panel) 70%);
+}
+
+#tr-pad[data-role="runner"] { background: radial-gradient(120% 90% at 50% 0%, #4a3a14 0%, #231c0c 75%); border-color: var(--pp-accent); }
+#tr-pad[data-role="chaser"] { background: radial-gradient(120% 90% at 50% 0%, #4a1c14 0%, #240d0a 75%); border-color: #d9543f; }
+
+#tr-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  padding: 0.6em 0.7em;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+#tr-stats { display: flex; align-items: center; gap: 0.35em; flex-wrap: wrap; justify-content: flex-end; }
+
+.tr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em 0.65em;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.95em;
+}
+#tr-role { font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+#tr-role[hidden] { display: none; }
+.tr-coins { color: #ffc933; }
+.tr-power { color: #5ac8fa; }
+.tr-heart { color: #ff4d5e; display: inline-flex; font-size: 1.25em; }
+.tr-heart-lost { color: #6b7280; display: inline-flex; font-size: 1.25em; }
+
+#tr-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  padding: 0 1em;
+  text-align: center;
+}
+
+/* The corner prompt: big and gold, pulsing so it catches the eye mid-run. */
+#tr-turn {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.15em 0.8em;
+  border-radius: 99px;
+  font-size: 2em;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #1c2130;
+  background: var(--pp-accent);
+  box-shadow: 0 0 1.2em var(--pp-accent);
+  animation: tr-pulse 0.3s ease-in-out infinite alternate;
+}
+#tr-turn[hidden] { display: none; }
+@keyframes tr-pulse { from { transform: scale(0.96); } to { transform: scale(1.05); } }
+
+#tr-badge { font-size: 4.2em; color: var(--pp-accent); display: flex; line-height: 1; opacity: 0.9; }
+#tr-pad[data-role="chaser"] #tr-badge { color: #ff8a5b; }
+#tr-big { margin: 0; font-size: 3em; font-weight: 800; line-height: 1.1; }
+#tr-sub { margin: 0; color: var(--pp-muted); font-size: 1.05em; }
+
+#tr-hint {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  padding: 0.7em;
+  color: var(--pp-muted);
+  font-size: 0.85em;
+}
+#tr-hint[hidden] { display: none; }
+#tr-hint span { display: inline-flex; align-items: center; gap: 0.25em; padding: 0.25em 0.7em; border-radius: 99px; background: rgba(0, 0, 0, 0.3); }
+
+/* 44px or more under a thumb. */
+#tr-action { min-height: 4.5em; margin-top: 0.6em; display: flex; align-items: center; justify-content: center; gap: 0.5em; }
+#tr-action[hidden] { display: none; }
+#tr-action.tr-ready { background: var(--pp-ok); border-color: var(--pp-ok); color: #0c2a17; }
+.tr-cost { display: inline-flex; align-items: center; gap: 0.2em; padding: 0.1em 0.6em; border-radius: 99px; background: rgba(0, 0, 0, 0.25); }
+#tr-action:disabled { opacity: 0.5; }

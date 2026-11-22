@@ -1,0 +1,41 @@
+{
+ "height": 0,
+ "gait": "still",
+ "lift": 0,
+ "shadow": [
+  0,
+  0
+ ],
+ "ring": 1,
+ "hand": null,
+ "order": {
+  "front": [],
+  "back": []
+ },
+ "parts": {
+  "ring-dawn": {
+   "w": 60,
+   "h": 32,
+   "pivot": [
+    30,
+    14
+   ],
+   "at": [
+    0,
+    0
+   ]
+  },
+  "ring-dusk": {
+   "w": 60,
+   "h": 32,
+   "pivot": [
+    30,
+    14
+   ],
+   "at": [
+    0,
+    0
+   ]
+  }
+ }
+}

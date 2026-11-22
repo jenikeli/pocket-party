@@ -1,0 +1,33 @@
+{
+ "height": 30,
+ "gait": "still",
+ "lift": 0,
+ "shadow": [
+  0,
+  0
+ ],
+ "ring": 1,
+ "hand": null,
+ "order": {
+  "front": [
+   "prop"
+  ],
+  "back": [
+   "prop"
+  ]
+ },
+ "parts": {
+  "prop": {
+   "w": 40,
+   "h": 40,
+   "pivot": [
+    20,
+    20
+   ],
+   "at": [
+    0,
+    0
+   ]
+  }
+ }
+}

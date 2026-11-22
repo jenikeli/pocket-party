@@ -22,7 +22,8 @@ import { PALM_BAY_AIRPORT } from './palm-bay-airport.js';
 import { SEASIDE_SKYWAY } from './seaside-skyway.js';
 import { TEST_TRACK } from './test-track.js';
 import { RESULTS } from './results.js';
+import { ARENA, ARENA_DOUBLE, ARENA_OVERTIME, ARENA_FINAL } from './arena.js';
 
 export const TUNES = Object.fromEntries(
-  [LOBBY, KART_2D, PALM_BAY_AIRPORT, SEASIDE_SKYWAY, TEST_TRACK, RESULTS].map((tune) => [tune.name, tune]),
+  [LOBBY, KART_2D, PALM_BAY_AIRPORT, SEASIDE_SKYWAY, TEST_TRACK, RESULTS, ARENA, ARENA_DOUBLE, ARENA_OVERTIME, ARENA_FINAL].map((tune) => [tune.name, tune]),
 );

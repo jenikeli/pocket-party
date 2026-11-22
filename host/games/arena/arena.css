@@ -1,0 +1,112 @@
+/* Spirefall's host panels in the host's look (host/ui.css): the setup screen. Sizes are in em of the game's
+   .pp-stage. Loaded with the game by host/games/arena/index.js. Colours: the shell's tokens, plus the two team
+   colours (docs/arena-plan.md, palette). */
+
+.ar-screen {
+  --ar-dawn: #ffc53d;
+  --ar-dusk: #8e6bff;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 6em;
+  background: linear-gradient(180deg, #2a2150, #10131c 70%);
+}
+
+.ar-panel {
+  width: 52em;
+  padding: 1.4em 1.6em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  border: 0.1em solid var(--pp-line);
+}
+
+.ar-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.ar-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+}
+
+.ar-team {
+  padding: 0.8em 1em;
+  border-radius: var(--pp-radius);
+  border: 0.15em solid var(--ar-team);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.ar-team[data-team="0"] { --ar-team: var(--ar-dawn); }
+.ar-team[data-team="1"] { --ar-team: var(--ar-dusk); }
+
+.ar-team h2 {
+  margin: 0 0 0.5em;
+  font-size: 1.1em;
+  color: var(--ar-team);
+}
+
+.ar-seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.ar-seat {
+  min-height: 2em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.ar-seat-cpu { color: var(--pp-muted); }
+.ar-ready { color: var(--pp-ok); font-weight: 700; }
+
+.ar-status { margin: 0; min-height: 1.3em; }
+
+.ar-actions { display: flex; gap: 0.8em; align-items: center; }
+
+/* The two team panels beside the arena during a match: 27 em each, the arena (24.75 em) between them. */
+.ar-side {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 26em;
+  padding: 5em 1.4em 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  box-sizing: border-box;
+  --ar-team: var(--ar-dawn);
+}
+.ar-side[data-team="0"] { left: 0; --ar-team: #ffc53d; }
+.ar-side[data-team="1"] { right: 0; --ar-team: #8e6bff; }
+.ar-side-title { margin: 0; font-size: 2.2em; color: var(--ar-team); }
+.ar-crowns { font-size: 1.6em; font-weight: 700; }
+.ar-crown-number { color: var(--ar-team); font-size: 1.6em; }
+.ar-side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4em; }
+.ar-side-seats li { font-size: 1.2em; font-weight: 600; }
+.ar-towers li { display: grid; grid-template-columns: 7em 1fr; align-items: center; gap: 0.6em; font-size: 0.95em; color: var(--pp-muted); }
+.ar-bar { display: block; height: 0.7em; border-radius: 0.4em; background: #1d1b2e; overflow: hidden; }
+.ar-bar-fill { display: block; height: 100%; width: 100%; background: var(--ar-team); transition: width 0.2s; }
+.ar-side-heading { margin: 0.4em 0 0; font-size: 0.95em; color: var(--pp-muted); font-weight: 600; }
+.ar-plays li { font-size: 1.1em; }
+.ar-clock { padding: 0.4em 0; }
+.ar-time { font-size: 4em; font-weight: 800; line-height: 1; }
+.ar-ribbon { min-height: 1.4em; margin-top: 0.3em; color: #e24bd0; font-weight: 700; font-size: 1.1em; }
+
+.ar-result { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.ar-result-panel { pointer-events: auto; padding: 1.6em 2.4em; text-align: center; display: flex; flex-direction: column; gap: 0.7em; border: 0.15em solid var(--pp-line); }
+.ar-result[data-team="0"] .ar-result-panel { border-color: #ffc53d; }
+.ar-result[data-team="1"] .ar-result-panel { border-color: #8e6bff; }
+.ar-result-title { font-size: 2.6em; margin: 0; }
+.ar-result-score { font-size: 1.6em; margin: 0; font-weight: 700; }
+.ar-result-reason { margin: 0; }

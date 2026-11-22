@@ -1,0 +1,144 @@
+{
+ "height": 40,
+ "gait": "walk",
+ "lift": 0,
+ "shadow": [
+  18,
+  7
+ ],
+ "ring": 1,
+ "hand": [
+  4,
+  11
+ ],
+ "order": {
+  "front": [
+   "footA",
+   "footB",
+   "armBack",
+   "body",
+   "head",
+   "armFront",
+   "prop"
+  ],
+  "back": [
+   "footA",
+   "footB",
+   "armBack",
+   "bodyBack",
+   "headBack",
+   "armFront",
+   "prop"
+  ]
+ },
+ "parts": {
+  "footA": {
+   "w": 10,
+   "h": 8,
+   "pivot": [
+    5,
+    4
+   ],
+   "at": [
+    -3,
+    -3
+   ]
+  },
+  "footB": {
+   "w": 10,
+   "h": 8,
+   "pivot": [
+    5,
+    4
+   ],
+   "at": [
+    3,
+    -3
+   ]
+  },
+  "body": {
+   "w": 20,
+   "h": 20,
+   "pivot": [
+    10,
+    20
+   ],
+   "at": [
+    0,
+    -5
+   ]
+  },
+  "bodyBack": {
+   "w": 20,
+   "h": 24,
+   "pivot": [
+    10,
+    24
+   ],
+   "at": [
+    0,
+    -5
+   ]
+  },
+  "head": {
+   "w": 20,
+   "h": 22,
+   "pivot": [
+    10,
+    22
+   ],
+   "at": [
+    0,
+    -22
+   ]
+  },
+  "headBack": {
+   "w": 20,
+   "h": 22,
+   "pivot": [
+    10,
+    22
+   ],
+   "at": [
+    0,
+    -22
+   ]
+  },
+  "armBack": {
+   "w": 8,
+   "h": 19,
+   "pivot": [
+    4,
+    2
+   ],
+   "at": [
+    -7,
+    -20
+   ]
+  },
+  "armFront": {
+   "w": 8,
+   "h": 19,
+   "pivot": [
+    4,
+    2
+   ],
+   "at": [
+    7,
+    -20
+   ]
+  },
+  "prop": {
+   "w": 12,
+   "h": 30,
+   "pivot": [
+    5,
+    27
+   ],
+   "at": [
+    0,
+    0
+   ]
+  }
+ }
+}

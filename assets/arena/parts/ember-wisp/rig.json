@@ -1,0 +1,59 @@
+{
+ "height": 34,
+ "gait": "hover",
+ "lift": 14,
+ "shadow": [
+  18,
+  7
+ ],
+ "ring": 1,
+ "hand": null,
+ "order": {
+  "front": [
+   "body",
+   "prop"
+  ],
+  "back": [
+   "bodyBack",
+   "prop"
+  ]
+ },
+ "parts": {
+  "body": {
+   "w": 28,
+   "h": 35,
+   "pivot": [
+    14,
+    35
+   ],
+   "at": [
+    0,
+    -2
+   ]
+  },
+  "bodyBack": {
+   "w": 28,
+   "h": 35,
+   "pivot": [
+    14,
+    35
+   ],
+   "at": [
+    0,
+    -2
+   ]
+  },
+  "prop": {
+   "w": 22,
+   "h": 16,
+   "pivot": [
+    11,
+    0
+   ],
+   "at": [
+    0,
+    -3
+   ]
+  }
+ }
+}

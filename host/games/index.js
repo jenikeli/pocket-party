@@ -32,6 +32,26 @@ export const GAMES = Object.freeze([
     cover: '/assets/covers/kart-2d.svg',
     background: '/assets/covers/kart-2d-wide.jpg',
   }),
+  // One monkey chases, the rest run; endless, with revives. One player is enough: a CPU takes the other side.
+  Object.freeze({
+    id: 'temple-run',
+    title: 'Temple Chase',
+    blurb: 'One monkey chases, the rest run. Split screen, up to 4 players. CPUs fill in.',
+    minPlayers: 1,
+    maxPlayers: 4,
+    cover: '/assets/covers/temple-run.svg',
+    background: null,
+  }),
+  // A tower-clash duel, 1v1 or 2v2 (docs/arena-plan.md). Empty seats are CPUs, so one player can play alone.
+  Object.freeze({
+    id: 'arena',
+    title: 'Spirefall',
+    blurb: '1v1 or 2v2. Play cards, push lanes, topple towers. CPUs fill empty seats.',
+    minPlayers: 1,
+    maxPlayers: 4,
+    cover: '/assets/covers/arena.svg',
+    background: null,
+  }),
   Object.freeze({
     id: 'input-lab',
     title: 'Input lab',

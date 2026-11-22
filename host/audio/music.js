@@ -91,3 +91,16 @@ export function tuneForRace(race, raceTune) {
   }
   return race.phase === 'results' ? 'results' : raceTune;
 }
+
+// Which tune Spirefall's match has: none on the setup screen, in the intro and once it is over (the result's
+// cue plays alone), a calm one in regulation, the drum one at double elixir, and in overtime a minor one whose
+// beat speeds up at triple elixir. `multiplier` is the elixir speed (1, 2 or 3), `match` null on the setup screen.
+export function tuneForArena(match, multiplier) {
+  if (!match || match.phase === 'intro' || match.phase === 'over') {
+    return null;
+  }
+  if (match.phase === 'overtime') {
+    return multiplier >= 3 ? 'arena-final' : 'arena-overtime';
+  }
+  return multiplier >= 2 ? 'arena-double' : 'arena';
+}

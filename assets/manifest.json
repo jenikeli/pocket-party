@@ -87,6 +87,1606 @@
       "source": "npm run course-previews (tools/course-previews.js), a shot of our own course",
       "licence": "our own",
       "usedBy": "host/games/kart-3d/course-previews.js (the 3D setup screen)"
+    },
+    {
+      "path": "covers/arena.svg",
+      "sha256": "23621869f1bdc4fdc0a18d625c18d079e28a47e867d297208d5934bc816baf97",
+      "bytes": 1826,
+      "source": "drawn for Spirefall A0 (cover art of our own design)",
+      "licence": "our own",
+      "usedBy": "host/games/index.js (the picker thumbnail of Spirefall)"
+    },
+    {
+      "path": "arena/parts/ballista-nest/body.svg",
+      "sha256": "56c9ed3cfd53aaec897981bbf056934835e0ec27cc0f65f7d4ecd001d2c9958b",
+      "bytes": 1725,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ballista-nest/prop.svg",
+      "sha256": "6218ca5e51ca10ac2ee6fe53ea50c96692eb7079d3a63c5e645a5e9e8532412f",
+      "bytes": 1252,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ballista-nest/rig.json",
+      "sha256": "643cbb4ed5d73cf8ba548602310bf10317598707296addf594347ab1aca3cf04",
+      "bytes": 424,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bolt-tower/body.svg",
+      "sha256": "bea66bb49253ae79e5271efc0e5681dd8cfe34773122d1aaeb2fbb6351836c5e",
+      "bytes": 1829,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bolt-tower/prop.svg",
+      "sha256": "5bedc59efba850406e96fe108ac705cb5d60d29f5978e167440dc752f5666420",
+      "bytes": 854,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bolt-tower/rig.json",
+      "sha256": "25a30dbc11e13ff787b9df7d7b01f7fa5a2fdd660516df5834de2a3f2363faf8",
+      "bytes": 424,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/armBack.svg",
+      "sha256": "0c7780077d15d4785d4e5a2ee0ba78b6a4c3a6e09055df2bc77c3af524de5775",
+      "bytes": 754,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/armFront.svg",
+      "sha256": "0c7780077d15d4785d4e5a2ee0ba78b6a4c3a6e09055df2bc77c3af524de5775",
+      "bytes": 754,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/body.svg",
+      "sha256": "04a61b3b9b985757758acb628640759d7801651bafd312d1d4da5271a521b7a2",
+      "bytes": 1067,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/bodyBack.svg",
+      "sha256": "cf9a12fab12aaf61efb072fc2de80b465b52d907ed377a86fbf0654cbd7ea135",
+      "bytes": 1000,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/footA.svg",
+      "sha256": "1fda3964d1ac77f33e94162c3829153ec082a73cd7854fa97789b4c4df0083c0",
+      "bytes": 738,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/footB.svg",
+      "sha256": "2c6d62deb6ed6da165d0b4b5731147db9497065ae29b114456e6bc6599fa3e4f",
+      "bytes": 738,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/head.svg",
+      "sha256": "f2232340b33d88c82f6648a2d86749439a4252e21dd79f56674f6c36c07e7786",
+      "bytes": 1129,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/headBack.svg",
+      "sha256": "d696f37e3d81731a34b832e0bb06e08385901f8070ebffe132c08b40208b4b2a",
+      "bytes": 928,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/prop.svg",
+      "sha256": "3076f5fde77a4ff9434bf7f6be4f56a6b13a77810011f2029ada350371fd1ef6",
+      "bytes": 1367,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/bramble-knight/rig.json",
+      "sha256": "18cd35b05ad0803c8e1ce01b9768a07136d281b91728db369b53a11060fab43f",
+      "bytes": 1334,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/armBack.svg",
+      "sha256": "1480cc63ec06981e6cd2086dc6795e0d93fe544924a4fbf5a596fd5bbc5a6887",
+      "bytes": 737,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/armFront.svg",
+      "sha256": "1480cc63ec06981e6cd2086dc6795e0d93fe544924a4fbf5a596fd5bbc5a6887",
+      "bytes": 737,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/body.svg",
+      "sha256": "357eb1ca45ca9aef27aa92c29600c9aa84bea251223a04ca51097a81d57bb583",
+      "bytes": 755,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/bodyBack.svg",
+      "sha256": "d2a9fd3598955d2c09bb0de6a624037afa9284a9bae4e9814cd8b773b1a20aaa",
+      "bytes": 777,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/footA.svg",
+      "sha256": "401c97593d692de4f4717b4e0e4e9aa88f78e506ef11b0f08da4dff55a663cf4",
+      "bytes": 690,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/footB.svg",
+      "sha256": "2b74afb9f3caed4604fbc178da82cdd7f1be2e87f8c09113e863a05468a4aef3",
+      "bytes": 690,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/head.svg",
+      "sha256": "f0a20967d5cf3c224f839c363dbc4e16536c82ae023412c034cda7db712bb9de",
+      "bytes": 1441,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/headBack.svg",
+      "sha256": "273a99e90f4a3ea767235494d992e6c38112dc77a84cebb228b8146af1976ec9",
+      "bytes": 1257,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/prop.svg",
+      "sha256": "cab18846446d6fd9fc8a8fa6597ff0a4a8318ef1503bd9ae8a30a7cf215d2991",
+      "bytes": 965,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/brook-sprite/rig.json",
+      "sha256": "aa71e152b034a205fd05bdec000f458dd96d5c1e7f2d13af6cd7e2417d9fb6e5",
+      "bytes": 1317,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/body.svg",
+      "sha256": "e3549fdfdd62f03654b10927bc0e9c44e7dd8360810e0771170ff5a06e575b28",
+      "bytes": 821,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/bodyBack.svg",
+      "sha256": "ba6ed004f3e1d598140981822f82babfa651787f6f6b41be9281fe14844dd793",
+      "bytes": 798,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/footA.svg",
+      "sha256": "62e69ed853ca42a047e15fb4e2b0848c1c153ae67061286ad2eb2f6c77f1a285",
+      "bytes": 738,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/footB.svg",
+      "sha256": "aa8b54ed7a7b251a9e62bdc3dfab65517e51de7af16a1dc2af95f1d33a863e87",
+      "bytes": 738,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/head.svg",
+      "sha256": "f8f1a6d1bc83b558086b8636e9baba57277c32fbd9e09d131615c6d13992f467",
+      "bytes": 1856,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/headBack.svg",
+      "sha256": "2ccec7a135fbf7b1a659d5728dce226edf249e91ef47f7d634210dab2013685b",
+      "bytes": 1550,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/prop.svg",
+      "sha256": "5e38a4474a540ec4d2497cdf005c7d7e80974d4226837748a1c0cc34a18c35a8",
+      "bytes": 425,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cinder-hound/rig.json",
+      "sha256": "93cf61e98481fa7bf5e066fb8d7427e68ddb37161b02d77da54b8cbe5e8322b6",
+      "bytes": 1044,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/body.svg",
+      "sha256": "478bd80e36d786e80b5f70ad368ff0f1ceff8f1df390b67ccbd4258622c628db",
+      "bytes": 1361,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/bodyBack.svg",
+      "sha256": "34e936d6471b8f24e5137640fc4040ef4e591831b86b2256af83c357cd701f98",
+      "bytes": 891,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/footA.svg",
+      "sha256": "a2050857b11e10b6d754b5d5d8dcbb988ab4f2fd799ffc2c32831c5a6852c073",
+      "bytes": 714,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/footB.svg",
+      "sha256": "34f7f6d9150dfadb711c59da77e08fb37b7682b7e5c64b127264535228ade23d",
+      "bytes": 714,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/head.svg",
+      "sha256": "6422f91681d8bed337b8c6c380f5337c5eb350aac91033cfd5ad31d6653cfaa4",
+      "bytes": 1056,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/headBack.svg",
+      "sha256": "6203d679bc418328ca9c07c24ac1ac0d8952648179699fe3179b99db371707f8",
+      "bytes": 874,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cog-bot/rig.json",
+      "sha256": "07ee80856692105d9efae320d3e8b555a1e46e228eadfabce244fcfb36d9221a",
+      "bytes": 907,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/armBack.svg",
+      "sha256": "4058fc5a9067f74e100d169d4f21b71dc32564d211bd1765fd463dba82d80ccc",
+      "bytes": 766,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/armFront.svg",
+      "sha256": "4058fc5a9067f74e100d169d4f21b71dc32564d211bd1765fd463dba82d80ccc",
+      "bytes": 766,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/body.svg",
+      "sha256": "5c9b13a24aa5cf71a629e0d245c1ee928aa6f56bc3277387d688d95e2f301495",
+      "bytes": 1932,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/bodyBack.svg",
+      "sha256": "b50636ba28eef38e85c9eec5ee5bfa25909c1699b6eb7791c780e900630c3eb6",
+      "bytes": 2157,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/footA.svg",
+      "sha256": "dcc25e019730dbdc33e3964a52407d457fa061fb3c2a27b7acb3e59b062bc827",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/footB.svg",
+      "sha256": "cf82661b0593c9ed6b5ad30fe68abeddf506c53a6046400757ee7d3d721a1405",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/head.svg",
+      "sha256": "8477480e26e70331f0990d7b433ae937f63f914ca0efccfc788807ae40ec30fb",
+      "bytes": 2660,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/headBack.svg",
+      "sha256": "9f7aee2a178fc952103d885341a2f2a6b6c1b13445b5b70b52c43e3fb7304b8c",
+      "bytes": 1384,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/prop.svg",
+      "sha256": "c5b5b7d2d4321a0e4696a1bc0d586cddc7404aac30329898a365a82ee7e99541",
+      "bytes": 1361,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/cogwright/rig.json",
+      "sha256": "6b19776d159cd13ca1f7093007267a0413eec597547ba99d92af1d1429b4fe9b",
+      "bytes": 1323,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ember-wisp/body.svg",
+      "sha256": "de3c5a7e662273203aacaac3461731f35dc3afbb13d1d337a1ebf28cca0f3e1e",
+      "bytes": 1061,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ember-wisp/bodyBack.svg",
+      "sha256": "451b426957806a3f251270fc0572a0c178583d7d42726e4d5b00a62c424f9b52",
+      "bytes": 863,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ember-wisp/prop.svg",
+      "sha256": "b9031a7fe7bb0782338a21af1f2e34a25ae73e696cd55487495f9ddbe77d41f9",
+      "bytes": 228,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/ember-wisp/rig.json",
+      "sha256": "3cf03fbd35da011433e191d639f0fe70937db5b5013c98bd04ac7aa513f622cc",
+      "bytes": 535,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/flare/prop.svg",
+      "sha256": "5f8e3091b16ea37f4805115dbd563ab5cefeefe21eb1d9b0af86fa10d2a604be",
+      "bytes": 1330,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/flare/rig.json",
+      "sha256": "ae34e01f095abde5dd8858208b12752497fa24dcc8692a4ca0af4c995a0b1916",
+      "bytes": 291,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/armBack.svg",
+      "sha256": "f8062c3ddc1a9302222f4210ea201268b4190c6fae7b16d6528afb52692a7476",
+      "bytes": 953,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/armFront.svg",
+      "sha256": "68c65039f53fe00bc4b3d769fe3896ccf5b9734938d1936d630f73896d2116e8",
+      "bytes": 761,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/body.svg",
+      "sha256": "aa32a4c04a672223f88bb9b00ce032c91d6cde611cac62e96c334497f9b4e80b",
+      "bytes": 756,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/bodyBack.svg",
+      "sha256": "02f194a0a44ffcc73f43e37290df51bf8b25c0d405a7849c06b7bded8024f9a2",
+      "bytes": 792,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/head.svg",
+      "sha256": "a63def440ce7f71a29814a39878d4281268b17f165056f06e3cce70a47d20a9c",
+      "bytes": 1460,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/headBack.svg",
+      "sha256": "08b7211a830335b0e89017e78f49af69f990317ca79c6d78f5320a870f7fe686",
+      "bytes": 1293,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/prop.svg",
+      "sha256": "d083cc100280c9949d72a2924af01d0f9138991603dadf58fe6ad2bf713b15d2",
+      "bytes": 1451,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/hexweaver/rig.json",
+      "sha256": "567c5a6035e4e9131a970569e541bf475a34944332950cfde2ee84d5847be788",
+      "bytes": 1063,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/armBack.svg",
+      "sha256": "eaaec7561cf59e7d0e2ff74da4443b876cc197a7e52b7ce2dfa35fc57207c0b3",
+      "bytes": 751,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/armFront.svg",
+      "sha256": "eaaec7561cf59e7d0e2ff74da4443b876cc197a7e52b7ce2dfa35fc57207c0b3",
+      "bytes": 751,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/body.svg",
+      "sha256": "ceb85cfdbe259aa5314ee64bf6d21c189c9d4cd48bfa49c11279489b41a769cb",
+      "bytes": 765,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/bodyBack.svg",
+      "sha256": "20bad50a6d05b80d5f486783ebf57f45d280722ad542871d2c7c6271f4a5b7d5",
+      "bytes": 701,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/footA.svg",
+      "sha256": "fa74678162f81a4ec1acd0389e87a630345bdad32a61cd8bed29b5bf9030939a",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/footB.svg",
+      "sha256": "93f9571149338928b4515c88ca4fcbe840f1bd43a047914f2c56fa049cc29625",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/head.svg",
+      "sha256": "29c85f8ac633da32a4af28f391cbb194573db7dac01e87fc2ac804c9e9a38d2f",
+      "bytes": 931,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/headBack.svg",
+      "sha256": "6c70a2591939875f327431692ac8417629377af9a369b9b8880f66ee31664d58",
+      "bytes": 825,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/prop.svg",
+      "sha256": "3e85d4be78fa10f6dfbae58f2dd1e9b08bb0831f283ea524095cdca7f10f92c2",
+      "bytes": 1170,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/kestrel/rig.json",
+      "sha256": "61b3f187fef2fe28bff296a6124abc0e13d808e9afe780effe8626db21bc84b8",
+      "bytes": 1322,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/armBack.svg",
+      "sha256": "6a99aeaef39721fb39a0a19516b367e83c6994cb8e0705c7db120c894324da17",
+      "bytes": 1352,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/armFront.svg",
+      "sha256": "6a99aeaef39721fb39a0a19516b367e83c6994cb8e0705c7db120c894324da17",
+      "bytes": 1352,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/body.svg",
+      "sha256": "ea97edd89e16cc30386d8b89b5a159139b4a3f0fd35986d6eeec929602bc00da",
+      "bytes": 1043,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/bodyBack.svg",
+      "sha256": "bc664d489fef53adf6c42d3e86e96dc525d9595cbaf66bb518575d3886c07550",
+      "bytes": 1009,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/footA.svg",
+      "sha256": "80ace6eb3e5f77268ae443707f92f8057abd1f4b1849c60a058a1e14b9d741b7",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/footB.svg",
+      "sha256": "e3425201b259f382dff947ccec07408222de5ea1874f6e1de4a7c72918d8edb7",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/head.svg",
+      "sha256": "89f5263fac1d604ba3df5b24713a871caf4e5004c7684440ee2e60f1aea4ebbf",
+      "bytes": 1131,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/headBack.svg",
+      "sha256": "fd4f93eb6ca75a0d541571bbfba775125a2f17e7e37245fe9b7645dfa581c6c2",
+      "bytes": 927,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/magma-brute/rig.json",
+      "sha256": "34e3292a195498541d8400907dd8fb904e44a24d17db1a5de393c64a464134fd",
+      "bytes": 1198,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/armBack.svg",
+      "sha256": "b2d9949527d3cd5c8fc59e1e3f2c1ef689d37d440d13ba3443368c09e3d94538",
+      "bytes": 787,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/armFront.svg",
+      "sha256": "615b765d8916dfbbc9da79e58b8c5555dae070afc5f2adcbd0b5f66263168b47",
+      "bytes": 790,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/body.svg",
+      "sha256": "c5dc7346b424d3bf331e223156950f080fe050091bb09f0411946085559de053",
+      "bytes": 795,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/head.svg",
+      "sha256": "20a112638b608a79f9d68739c8d09ae404973185d90824a2e2b6ee51487ad054",
+      "bytes": 892,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/headBack.svg",
+      "sha256": "f0da5d036f7e6d0427174216d8156314a58bbf7f81efbf6581fae648858dbac8",
+      "bytes": 796,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/moth-swarm/rig.json",
+      "sha256": "c887534e7af99bfcb4963b5dda50f1c1dd8037a25a9f381bcb71b34c33c616bc",
+      "bytes": 814,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/armBack.svg",
+      "sha256": "4982a9824481160ec625d1f89d56b9a6adf739824eca79ef9076dbc0b98dfdfc",
+      "bytes": 749,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/armFront.svg",
+      "sha256": "4982a9824481160ec625d1f89d56b9a6adf739824eca79ef9076dbc0b98dfdfc",
+      "bytes": 749,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/body.svg",
+      "sha256": "a72c62e4fa40d3ff9c3f49a5b5b294918a40ba887f2c40b8391f5b80ee2b61dc",
+      "bytes": 870,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/bodyBack.svg",
+      "sha256": "469e2b0a6a2f21672ea7207d17f70b17a5c847543e47d44d7c020677b79557f0",
+      "bytes": 766,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/footA.svg",
+      "sha256": "11fead951781c03a182d1524eb4eac662fcd1fbaa2e9f96ebddfffc34bf7190a",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/footB.svg",
+      "sha256": "8ad210260f6988171f1b4de9246c3e7e109afa66f567040dfce8049b43c347c6",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/head.svg",
+      "sha256": "6cad88e38101659854c1147c86c3eb2d4c5330e3fb24e463cfb7be1b0c8f70ca",
+      "bytes": 1591,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/headBack.svg",
+      "sha256": "53448b272ef9c8e181befdba9b715f99e16c1609786b99422768fd7445b04793",
+      "bytes": 1395,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/prop.svg",
+      "sha256": "5c869445387356de185c6037e912243a76704b8595f22c86926671f29a276b02",
+      "bytes": 1302,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pikewarden/rig.json",
+      "sha256": "815ff2be2c8a0f801892fe8f07ac008ede97fe5632f1845a4430753fe905e4e6",
+      "bytes": 1323,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/body.svg",
+      "sha256": "e2dba5b09f701c53780ad53a077314e4925134a86d6e0d153ab975305ccb612b",
+      "bytes": 1320,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/bodyBack.svg",
+      "sha256": "0fdce1bdb23ea08688ae5bf71ad9d568d93e41094f61fb6445b27d3ee22f8b01",
+      "bytes": 936,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/footA.svg",
+      "sha256": "6948a8a7dbbe603ad560f3f0d48c989994adea37b466c25300e8ef56e55f613d",
+      "bytes": 876,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/footB.svg",
+      "sha256": "e3c301bc5c5e1de003e3b9117dd424bb280c5a5761db0287a47c0da7f0fe34a3",
+      "bytes": 876,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/prop.svg",
+      "sha256": "05c91cb2572f5f04b12fb8edf4f0c11caa9b4b04e2c83b314ef3ce8bdfbc8330",
+      "bytes": 1164,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/powder-cart/rig.json",
+      "sha256": "1352d77900bfb4eb2cd7d7d29373d2a6243c79d17e358fd6218a51f394e512ee",
+      "bytes": 797,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/armBack.svg",
+      "sha256": "3100a6a2eb699d228fd4385730ff7c5983d205682dd2fdb647c6a37b1ee81d57",
+      "bytes": 783,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/armFront.svg",
+      "sha256": "3100a6a2eb699d228fd4385730ff7c5983d205682dd2fdb647c6a37b1ee81d57",
+      "bytes": 783,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/body.svg",
+      "sha256": "05cb9edbe3920926d4030c6214e872f7ec4eec9d077bf9deda710ee056fce88b",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/bodyBack.svg",
+      "sha256": "85f3fa192423d60ff78b56ac4279c1d5198422b9ca875af8e07d1c5704130cb9",
+      "bytes": 819,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/head.svg",
+      "sha256": "1b604d9358e653eb82026bfdb64545131cf19cb0ec62d5548dbdaba0b2e6076b",
+      "bytes": 2125,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/headBack.svg",
+      "sha256": "ebe8e86d568e3dd2bea9e6738aa060e2bbd7070c3846630ad780fe17b2732e0f",
+      "bytes": 1835,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/prop.svg",
+      "sha256": "3df544ad2ef11701b775722d6ab90c70d5f3934b9b93f1f781af0dc92d2fcbd9",
+      "bytes": 791,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/pyre-mage/rig.json",
+      "sha256": "1569a80ad8458f235181450f323d9f1ad9ea524e164e76a06a34c76783ea0504",
+      "bytes": 1068,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/armBack.svg",
+      "sha256": "a5495b7105f7f4c9b41d898c26e7d7928751b38baa8a09fba0f4fc95d3352232",
+      "bytes": 1350,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/armFront.svg",
+      "sha256": "a5495b7105f7f4c9b41d898c26e7d7928751b38baa8a09fba0f4fc95d3352232",
+      "bytes": 1350,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/body.svg",
+      "sha256": "c685ec19f201a56235c247c83d6dae915167ded01409b48ed8f8da19aafcaf29",
+      "bytes": 1050,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/bodyBack.svg",
+      "sha256": "34054dee17071e1efc16aab10ca3cf712f1f4794364a5331a1d345fa3f084aa9",
+      "bytes": 1050,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/footA.svg",
+      "sha256": "838e888dc9da07a1133810b2dc00d9cd082971f7b17672c03f41e0e221477234",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/footB.svg",
+      "sha256": "b48eff58e0cc9a0f03702bc90e019a6dc1b8360bd885c4417d852f461271cbf8",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/head.svg",
+      "sha256": "788721495fc5147fa190252851ba748e55db7d18cd69c9011f019b9dbf98e09d",
+      "bytes": 1044,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/headBack.svg",
+      "sha256": "f73b8d8e0d7decd61a9b4183289d26055b380a86c579e5c83a6c6069bae0449a",
+      "bytes": 789,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/prop.svg",
+      "sha256": "49218f031b5ddebd32e960897451e1e81d6cedde9e81f4b1877ee26105dd74f1",
+      "bytes": 998,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rampart-golem/rig.json",
+      "sha256": "fa09ae5085dc78e536bf2c5a41801c2b12f63677b13c022c6e1bc5926fd4d7e3",
+      "bytes": 1338,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rime/prop.svg",
+      "sha256": "6dcc3c1cd2dd3f747f5f494cbbe8f66f07f510bbde21d7cd10fe5c57433c4b4e",
+      "bytes": 924,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rime/rig.json",
+      "sha256": "fea58fff12f3fe9e5f3255c2766def57255302b353b0605604023b6cc314ac8d",
+      "bytes": 291,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rootspout/body.svg",
+      "sha256": "1a5d6f9a8456a0ea30e95a68ee49ffcb4cdd04ddb25ce0d32bddb81ea53aed96",
+      "bytes": 1053,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rootspout/prop.svg",
+      "sha256": "1b690157113296cc85d7a5b625a8a824e13ca34e920d580d8d5823ba0290a8a8",
+      "bytes": 818,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rootspout/rig.json",
+      "sha256": "7f27b0995bf429385f741ebfc0ee57bd131740de53e87fa523dde9f1e5a31180",
+      "bytes": 424,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/armBack.svg",
+      "sha256": "96570c5afdba9293d2021ffc31d34a18a0b11eaf79b001fd919c0fbeab9952c3",
+      "bytes": 778,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/armFront.svg",
+      "sha256": "96570c5afdba9293d2021ffc31d34a18a0b11eaf79b001fd919c0fbeab9952c3",
+      "bytes": 778,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/body.svg",
+      "sha256": "4c95efbc7eaf47c11fa1d1a1249e1fe763e5a8e25a5f12ccbcf66e17afc3fbee",
+      "bytes": 824,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/footA.svg",
+      "sha256": "8ebfb9bc063faa41cc65698c84d336c78142f33a3f9bba45fefcfd523baca699",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/footB.svg",
+      "sha256": "dce1c42d2c788c24d32136129c16d11850cd323f40c396269bfb871aca616fe9",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/head.svg",
+      "sha256": "124142c125db8c9934045a2bf4f92307b869bdac859d4ca9a3211b2c9d89df11",
+      "bytes": 765,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/headBack.svg",
+      "sha256": "3a13b055a3303aedae3cb43e7bcc3631d52726e3da001651c65cfefbfa1af2b2",
+      "bytes": 672,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/rubble/rig.json",
+      "sha256": "adbb330b7e77399e01d645a706b67392c49ab17a89475ea629d69d700527827e",
+      "bytes": 1073,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/armBack.svg",
+      "sha256": "d26369c5a4fa1027934d113df0c394262bcebbd8cc18e3fdf76d1d27d57d253c",
+      "bytes": 805,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/armFront.svg",
+      "sha256": "d26369c5a4fa1027934d113df0c394262bcebbd8cc18e3fdf76d1d27d57d253c",
+      "bytes": 805,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/body.svg",
+      "sha256": "1cac7f7d8a1e53fb0591b20b97a70075b86616273eee275497434a6eaa6f3fb5",
+      "bytes": 835,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/footA.svg",
+      "sha256": "82cceb89f102184197acd6d43a47a00709157506a23960be50c18d4426023e3f",
+      "bytes": 712,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/footB.svg",
+      "sha256": "61db5fa0a1d91cf282c055fd5c58b21c5bf983fee59c35cf8feba7c6e3ca43f2",
+      "bytes": 712,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/head.svg",
+      "sha256": "1587cea71d13fb9a01547a4e65ecba6e1a10ec1a24087bd3f6f9e7e12cb398b3",
+      "bytes": 2098,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/headBack.svg",
+      "sha256": "f65cf7627b6b84b987f87fa0de074b479d44c961cf288f4de6cabe94a61bc8aa",
+      "bytes": 1902,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/sapling/rig.json",
+      "sha256": "5157f3a5c41de8f47621db342e70c46a611bb4f6719f8e34bc09b9fc7784f9fe",
+      "bytes": 1078,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/armBack.svg",
+      "sha256": "319c44ddc4b736ffef88a88edc66d4511c1889c607042feb0945d284ab65d74f",
+      "bytes": 802,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/armFront.svg",
+      "sha256": "319c44ddc4b736ffef88a88edc66d4511c1889c607042feb0945d284ab65d74f",
+      "bytes": 802,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/body.svg",
+      "sha256": "409c1c129620d6e8c9e4dd738d3cbb6d4d1d59784501e1875e6398efe70d35e5",
+      "bytes": 2769,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/bodyBack.svg",
+      "sha256": "99024f992ad7892486bc0ec6e925b3fe54096a3fba2d6f8d88f90db9b2032ed3",
+      "bytes": 2494,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/footA.svg",
+      "sha256": "29b8b27531363434727438cf4c00eb5e62a7318b1d8344d98ba754c8397b2c05",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/footB.svg",
+      "sha256": "70be130ff0df932869a95e1c370ae7560dbb94484ddeaf9dd8aa5a31c9a6dfc4",
+      "bytes": 704,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/head.svg",
+      "sha256": "89dd38885df35b4ec12ec4ca1ee4db9008a146cbc777766cfb4a9a1efbe4c078",
+      "bytes": 1193,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/headBack.svg",
+      "sha256": "8f5b5f9d90d5e0efa89cfbe67d59bc4fb7b45b82a71b9e9c3e54dd477dbb3fda",
+      "bytes": 982,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/prop.svg",
+      "sha256": "269a54d76ae1c624094d6c51a7ed58e107b0ac6b4c3bd6275b1a66e34e97cd1c",
+      "bytes": 1262,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/stag-rider/rig.json",
+      "sha256": "3248bad081b313606a4c3932df4cb54b797c2d4c806203974c0612977c57f923",
+      "bytes": 1328,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/static/prop.svg",
+      "sha256": "fd9ccd5c3cbfd916e2f3e3f769d8fd72f6d4ae5c3dc65387c645ce1a9d9201a1",
+      "bytes": 875,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/static/rig.json",
+      "sha256": "04eff774b91dfae2c581968d53c1261135ec198e2bc7286f167f807a0ef01727",
+      "bytes": 291,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/surge/prop.svg",
+      "sha256": "3045e02bddf479e6edbe17289f94ba7ce1d43ddb2933cf01a6b613f0c1d1963a",
+      "bytes": 873,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/surge/rig.json",
+      "sha256": "f1684e680015741a18aa8357cb60086c70a144f2b2543e694be4c1577fbfc5a1",
+      "bytes": 291,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/team/rig.json",
+      "sha256": "2a99694495bf209599101ecf80d45985ad2acba80ea01e38c14eb408beb60df6",
+      "bytes": 379,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/team/ring-dawn.svg",
+      "sha256": "a04bb7539e265ba0d71b7159469811bbef531405659b988f1d5ac949e3c6e996",
+      "bytes": 616,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/team/ring-dusk.svg",
+      "sha256": "e4ad165200039f45667a8ebddb15f4b22ce05b168aa30ada36624ed267a44bdd",
+      "bytes": 525,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/body.svg",
+      "sha256": "ef511fee84e634444167918a93ae824115495e43afd3ca92f1304891df793899",
+      "bytes": 825,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/bodyBack.svg",
+      "sha256": "0651d67533b5da248d8db6afe25d83a9c1b1fa719639a4f7d29f14bd07006202",
+      "bytes": 825,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/footA.svg",
+      "sha256": "6f1be12221659c9b4619c9d600c7854d1941e7de3c5741bacaabb8d93e37b8ae",
+      "bytes": 702,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/footB.svg",
+      "sha256": "c5eabeeb23a6b058d5b2b623b7a6eedbf0ce260d21474cb9c4ffb4cdfb0d83a6",
+      "bytes": 702,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/head.svg",
+      "sha256": "3a0d2b30280d040280c52e1cd0583cdaca47260aa5dccdd53ae7490d451bbb10",
+      "bytes": 2155,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/headBack.svg",
+      "sha256": "a835c6003304e24580dd48dfaf004d41da50472cfac4200465e127d418aae858",
+      "bytes": 672,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/thistle-pups/rig.json",
+      "sha256": "a33dfe6ffffbadb4950e1a0deaa3a4460c98d80db7e8d7ec8c9a4c81aef2da44",
+      "bytes": 903,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/armBack.svg",
+      "sha256": "4f88dcfd3a426f083e9f4b91bf72b761b8a40d6b894eeee0b348bbd2a1a7c41c",
+      "bytes": 778,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/armFront.svg",
+      "sha256": "4f88dcfd3a426f083e9f4b91bf72b761b8a40d6b894eeee0b348bbd2a1a7c41c",
+      "bytes": 778,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/body.svg",
+      "sha256": "f6b4802d75f46a38cfaf1f591a8bf18457dfda76af0a1486f2dd95e007b38a2a",
+      "bytes": 1441,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/bodyBack.svg",
+      "sha256": "dce8bf448622f288030faf8b4a6c7011d9a60bff8b2bfef8dede531257ce3dd6",
+      "bytes": 891,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/footA.svg",
+      "sha256": "147481251c9f566f5f31754dcf54d945b84330d1626f62f96496f05cb2a9e42d",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/footB.svg",
+      "sha256": "57d0f43857c70ca81ae40bd32a36aec4c49733911997f920a018d58b8a07e5e4",
+      "bytes": 716,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/head.svg",
+      "sha256": "42a205b84154a8df2197bd4d4f73918f8233d819cae7f0aa247ff8cb42ed0f3d",
+      "bytes": 1582,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/headBack.svg",
+      "sha256": "3daf4d4114024bc6b381374efda0513293dda3c604ba948786d0bba6382c48e3",
+      "bytes": 1253,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/prop.svg",
+      "sha256": "e1ac38c2b109ae3a6034aeab33fe2c31d8fb4ff27906e1fc8769672bdd4ccf47",
+      "bytes": 1166,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tideshell-guardian/rig.json",
+      "sha256": "c9507d5ae44122f574f4983072ba3e6c38bad16a6b7fdedb31462796bfcb3e70",
+      "bytes": 1327,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/banner-dawn.svg",
+      "sha256": "73026ee58c98799368ead84864dd416b9f95d318d6272e125278a25ac51cf687",
+      "bytes": 1138,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/banner-dusk.svg",
+      "sha256": "16111a2586a9a5f4768b60282a171d44310cc5b88f75f9ba64952e810de15c13",
+      "bytes": 1049,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/body.svg",
+      "sha256": "41d58beb883fe9fe6b9fd277a76b6174528eac25277db2db1b424bcb338d0c28",
+      "bytes": 3832,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/lantern.svg",
+      "sha256": "ebf1cacc7b994d6838168b7a088c6f0a33fcb33b43bec64a7f759048cb113638",
+      "bytes": 900,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/rig.json",
+      "sha256": "2ecfbec27f2ffa7509f172ea082f995a89c77ecd8a54fc24252f34e2f02415d5",
+      "bytes": 1169,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/roof-dawn.svg",
+      "sha256": "b298e4dcafa82baea5e65322efdd777bf3ce568446cdb42407df797f9a2d11ac",
+      "bytes": 1292,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/roof-dusk.svg",
+      "sha256": "cbd05ea2024e42a5a461f0bcd83c03fc20a62af2616333b4e817b729ec50ac7d",
+      "bytes": 1292,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/rubble.svg",
+      "sha256": "e18bae3cb2b27c48f6abc74d92198f8c61eb185c3d8fba3973b7401f9a98504e",
+      "bytes": 1844,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/shutterL.svg",
+      "sha256": "b577853f1bfcff644dbcd85cffcea9e0abb8c4ecfb65627b6b9c1a933618598e",
+      "bytes": 847,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-keep/shutterR.svg",
+      "sha256": "7ff2db774b961b91a4498c553b0d65327d14d1bc64e0fc3670f918d67007db19",
+      "bytes": 847,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/banner-dawn.svg",
+      "sha256": "982a373e5f3b4d256e7b79617012415533d2f94311d3c841cf3d3c55538b472b",
+      "bytes": 1138,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/banner-dusk.svg",
+      "sha256": "d64f8f01ff0444c17a5928a2762995a0708a59839b5d6770fd7707720708d826",
+      "bytes": 1049,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/body.svg",
+      "sha256": "5b06bf89cf54d44fa9efaef7eef8d4107695f8c80d2343ec0247f404e86c5722",
+      "bytes": 1783,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/lantern.svg",
+      "sha256": "503fcad5db123de0580010367fde9761b2834301e043626efe97b20716f149f4",
+      "bytes": 900,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/rig.json",
+      "sha256": "a172a7797a642e316ef1625ab3a32f49cbd2211b6739143d641f452d0d62d4ed",
+      "bytes": 941,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/roof-dawn.svg",
+      "sha256": "9f98b80495b9aa02dbb2413891c1fe8102a8c859fd23056de3ef9f2296848f63",
+      "bytes": 1290,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/roof-dusk.svg",
+      "sha256": "34a3c5e211880dd344b1a0fcffc97ecd23f1ea576c52d6ea628148ad4c260e10",
+      "bytes": 1290,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/tower-warden/rubble.svg",
+      "sha256": "92d53721aab7fa9bf0dcf4a77246b8509de37b9a77eb62d80bba2ddcd64a0f7d",
+      "bytes": 1261,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/verdant-mend/prop.svg",
+      "sha256": "30062980a79a56b475780884f00b5e2bb99576494a0697180e4f356798819ebc",
+      "bytes": 2043,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
+    },
+    {
+      "path": "arena/parts/verdant-mend/rig.json",
+      "sha256": "fea58fff12f3fe9e5f3255c2766def57255302b353b0605604023b6cc314ac8d",
+      "bytes": 291,
+      "source": "drawn for Spirefall (our own)",
+      "licence": "our own",
+      "usedBy": "host/games/arena/atlas.js (puppet parts packed into one texture)"
     }
   ]
 }

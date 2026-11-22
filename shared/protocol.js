@@ -154,6 +154,10 @@ export const INPUT_KINDS = Object.freeze({
   // A menu choice on a game's setup screen: { kind: 'choice', choice, value }. choice names the setting
   // (KART_CHOICES for the kart races), value is what the player picked. The game decides what is allowed.
   CHOICE: 'choice',
+  // A card being played in Spirefall: { kind: 'place', phase: 'pick' | 'aim' | 'drop' | 'cancel', slot: 0..3, x, y }.
+  // x and y are fractions (0..1) of the phone's pad from its top-left. The pad shows the whole arena turned so the
+  // player's own base is at the bottom; the host turns the fractions into arena coordinates (placement.js).
+  PLACE: 'place',
 });
 
 // The kart races' held buttons (INPUT kind button). The phone's controls name them in data-button attributes.
@@ -192,6 +196,38 @@ export const KART_CHOICES = Object.freeze({
   // value: true (the driving layout is mirrored: steering on the right, Go on the left) or false. Counts at any
   // time, like steering.
   LEFT_HANDED: 'leftHanded',
+});
+
+// The temple run's choices (INPUT kind choice). Its moves are INPUT kind swipe: up jumps, down slides, left and
+// right change lane.
+export const TEMPLE_CHOICES = Object.freeze({
+  // value: true or false. Counts in the lobby; a round starts when every connected player is ready.
+  READY: 'ready',
+  // value: the playerId of a downed runner. Counts for a living runner during a run.
+  REVIVE: 'revive',
+});
+
+// Spirefall's teams (ARENA_CHOICES.TEAM values). Dawn holds the bottom of the host's arena, Dusk the top.
+export const ARENA_TEAMS = Object.freeze({
+  DAWN: 0,
+  DUSK: 1,
+});
+
+// Spirefall's choices (INPUT kind choice).
+// The six emotes a player can send during a match (ARENA_CHOICES.EMOTE is an index into this list).
+export const ARENA_EMOTES = Object.freeze(['Nice', 'Haha', 'Wow', 'Oops', 'Thanks', 'Good game']);
+
+export const ARENA_CHOICES = Object.freeze({
+  // value: true or false. Counts on the setup screen.
+  READY: 'ready',
+  // value: an ARENA_TEAMS value. Counts on the setup screen; the host seats the player in that team if it has room.
+  TEAM: 'team',
+  // value: an array of 8 distinct card ids (shared/arena-cards.js). Counts on the setup screen; the host checks it.
+  DECK: 'deck',
+  // value: an index into the six emotes, 0..5. Counts during a match; the host limits it to one every 2 seconds.
+  EMOTE: 'emote',
+  // value: true. Counts during a match: the player's seat goes to a CPU.
+  FORFEIT: 'forfeit',
 });
 
 export const KART_STEERING = Object.freeze({

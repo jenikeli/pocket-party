@@ -14,6 +14,7 @@
     "gen-cert": "node server/gen-cert.js",
     "kit-shots": "node tools/kit-shots.js",
     "course-previews": "node tools/course-previews.js",
+    "balance-sim": "node tools/balance-sim.js",
     "test": "node --test --test-timeout=30000 \"test/unit/*.test.js\" \"test/server/*.test.js\"",
     "test:browser": "node --test --test-timeout=60000 --test-concurrency=1 \"test/browser/*.test.js\""
   },

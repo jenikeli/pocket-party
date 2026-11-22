@@ -1,0 +1,116 @@
+{
+ "height": 62,
+ "gait": "glide",
+ "lift": 4,
+ "shadow": [
+  22,
+  8
+ ],
+ "ring": 1,
+ "hand": [
+  4,
+  14
+ ],
+ "order": {
+  "front": [
+   "armBack",
+   "body",
+   "head",
+   "armFront",
+   "prop"
+  ],
+  "back": [
+   "armBack",
+   "bodyBack",
+   "headBack",
+   "armFront",
+   "prop"
+  ]
+ },
+ "parts": {
+  "body": {
+   "w": 24,
+   "h": 42,
+   "pivot": [
+    12,
+    42
+   ],
+   "at": [
+    0,
+    -8
+   ]
+  },
+  "bodyBack": {
+   "w": 24,
+   "h": 42,
+   "pivot": [
+    12,
+    42
+   ],
+   "at": [
+    0,
+    -8
+   ]
+  },
+  "head": {
+   "w": 20,
+   "h": 26,
+   "pivot": [
+    10,
+    26
+   ],
+   "at": [
+    0,
+    -48
+   ]
+  },
+  "headBack": {
+   "w": 20,
+   "h": 26,
+   "pivot": [
+    10,
+    26
+   ],
+   "at": [
+    0,
+    -48
+   ]
+  },
+  "armBack": {
+   "w": 24,
+   "h": 54,
+   "pivot": [
+    12,
+    2
+   ],
+   "at": [
+    -9,
+    -42
+   ]
+  },
+  "armFront": {
+   "w": 8,
+   "h": 22,
+   "pivot": [
+    4,
+    2
+   ],
+   "at": [
+    8,
+    -42
+   ]
+  },
+  "prop": {
+   "w": 14,
+   "h": 60,
+   "pivot": [
+    7,
+    44
+   ],
+   "at": [
+    0,
+    0
+   ]
+  }
+ }
+}

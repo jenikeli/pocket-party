@@ -1,0 +1,47 @@
+{
+ "height": 48,
+ "gait": "still",
+ "lift": 0,
+ "shadow": [
+  40,
+  12
+ ],
+ "ring": 1.1,
+ "hand": null,
+ "order": {
+  "front": [
+   "body",
+   "prop"
+  ],
+  "back": [
+   "body",
+   "prop"
+  ]
+ },
+ "parts": {
+  "body": {
+   "w": 48,
+   "h": 46,
+   "pivot": [
+    24,
+    46
+   ],
+   "at": [
+    0,
+    0
+   ]
+  },
+  "prop": {
+   "w": 20,
+   "h": 20,
+   "pivot": [
+    10,
+    14
+   ],
+   "at": [
+    0,
+    -22
+   ]
+  }
+ }
+}

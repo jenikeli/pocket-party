@@ -5,7 +5,7 @@ import { layoutViews, MAX_VIEWS } from '/host/games/temple-run/layout.js';
 import { TUNING, WEAPONS } from './tuning.js';
 import { eyeOf } from './world.js';
 
-const ORIGINAL_GAME = '/saltline-fable-5.2/index.html?autostart=1&noaudio=1&q=low';
+const ORIGINAL_GAME = '/saltline-fable-5.2/index.html?autostart=1&q=high';
 const READY_TIMEOUT_MS = 45000;
 
 function setText(element, text) {
@@ -160,8 +160,7 @@ function createView(container, index, onError) {
       }
       const game = win.__G;
       const hasCharacterModel = game?.enemies?.list?.some((enemy) => enemy.rig?.group?.clone);
-      const bridge = win.__POCKET_PARTY__;
-      if (!game?.render || !game?.hud || !game?.weapon || !hasCharacterModel || !game?.level || !bridge?.startHostView()) {
+      if (!game?.render || !game?.hud || !game?.weapon || !hasCharacterModel || !game?.level || !win.__ready) {
         if (performance.now() - frame.startedAt > READY_TIMEOUT_MS) {
           const details = win.__errors?.length ? `\n${win.__errors.join('\n')}` : '';
           throw new Error(`The original Saltline page did not finish loading.${details}`);
@@ -243,14 +242,25 @@ export function createRenderer(container) {
           top: `${(fraction?.y ?? 0) * height}px`,
           width: `${(fraction?.w ?? 1) * width}px`,
           height: `${(fraction?.h ?? 1) * height}px`,
+          pointerEvents: 'auto',
         });
+        frame.iframe.setAttribute('aria-hidden', 'false');
+        frame.iframe.tabIndex = 0;
         continue;
       }
       if (payload.match) {
         syncFrame(frame, payload, fraction, index, width, height, dt);
       } else {
         frame.iframe.style.display = 'block';
-        Object.assign(frame.iframe.style, { left: '0px', top: '0px', width: `${width}px`, height: `${height}px` });
+        Object.assign(frame.iframe.style, {
+          left: '0px',
+          top: '0px',
+          width: `${width}px`,
+          height: `${height}px`,
+          pointerEvents: 'auto',
+        });
+        frame.iframe.setAttribute('aria-hidden', 'false');
+        frame.iframe.tabIndex = 0;
       }
     }
     for (let index = count; index < frames.length; index += 1) {

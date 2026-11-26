@@ -20,7 +20,27 @@ All credit for the game goes to its original author. This repo is a mirror so pe
 
 Nothing in the game code. The claude.ai frame-runtime scripts were removed from `<head>`, and a doctype, charset and viewport tag were added so the file runs as a plain web page.
 
-## Run it
+## Play in Pocket Party multiplayer
+
+From the root of the `pocket-party` repository, start the Pocket Party server:
+
+```sh
+npm start
+```
+
+Use the LAN address printed by the server and open `<LAN-address>/host` on the host
+display. Choose **Saltline** and **Play**. Connect phones to the same Wi-Fi, scan the
+join QR code, choose a team and tap **Ready** on each phone. When everyone is ready,
+select **Start match** on the host. The phones control players in separate views of
+this original scene.
+
+See the [full multiplayer procedure](../FPS-MULTIPLAYER-PROCEDURE.md) for phone
+controls and troubleshooting.
+
+## Run the original solo demo
+
+This standalone command runs the original single-player page only; it does not create
+a Pocket Party room or enable phone multiplayer.
 
 ```sh
 python3 -m http.server 8731

@@ -124,3 +124,36 @@ test('a bot-only match gives the host one CPU view while the CPUs fight', () => 
   assert.ok(match.world.players.some((player) => player.kills > 0));
   assert.ok(match.scores.some((score) => score > 0));
 });
+
+test('a phone fire input eliminates an opponent and awards the kill', () => {
+  const session = createSession({
+    people: [
+      { id: 'shooter', name: 'Shooter', team: 0, primary: 'rifle' },
+      { id: 'target', name: 'Target', team: 1, primary: 'rifle' },
+    ],
+    modeId: 'tdm', botLevel: 1, seed: 51, mapId: 'harbor',
+  });
+  const { match } = session;
+  const shooter = session.playerOf('shooter');
+  const target = session.playerOf('target');
+  match.world.players.splice(2);
+  match.world.boxes = [];
+  match.phase = 'play';
+  match.world.time = 4;
+  Object.assign(shooter, { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, cool: 0, protectedUntil: 0 });
+  Object.assign(target, { x: 0, y: 0, z: -5, protectedUntil: 0 });
+  shooter.px = shooter.x;
+  shooter.py = shooter.y;
+  shooter.pz = shooter.z;
+  target.px = target.x;
+  target.py = target.y;
+  target.pz = target.z;
+
+  session.input('shooter', { kind: INPUT_KINDS.BUTTON, button: 'fire', pressed: true });
+  session.step(1 / 60);
+
+  assert.equal(target.alive, false);
+  assert.equal(match.scores[0], 1);
+  assert.equal(target.hurt.n, 1);
+  assert.equal(shooter.hit.n, 1);
+});

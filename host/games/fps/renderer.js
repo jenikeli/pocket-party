@@ -5,7 +5,7 @@ import { layoutViews, MAX_VIEWS } from '/host/games/temple-run/layout.js';
 import { TUNING, WEAPONS } from './tuning.js';
 import { eyeOf } from './world.js';
 
-const ORIGINAL_GAME = '/saltline-fable-5.2/index.html?autostart=1&q=high';
+const ORIGINAL_GAME = '/saltline-fable-5.2/index.html?autostart=1&noaudio=1&q=low';
 const READY_TIMEOUT_MS = 45000;
 
 function setText(element, text) {
@@ -160,7 +160,9 @@ function createView(container, index, onError) {
       }
       const game = win.__G;
       const hasCharacterModel = game?.enemies?.list?.some((enemy) => enemy.rig?.group?.clone);
-      if (!game?.render || !game?.hud || !game?.weapon || !hasCharacterModel || !game?.level || !win.__ready) {
+      const bridge = win.__POCKET_PARTY__;
+      if (!game?.render || !game?.hud || !game?.weapon || !hasCharacterModel || !game?.level
+        || !bridge?.startHostView?.()) {
         if (performance.now() - frame.startedAt > READY_TIMEOUT_MS) {
           const details = win.__errors?.length ? `\n${win.__errors.join('\n')}` : '';
           throw new Error(`The original Saltline page did not finish loading.${details}`);

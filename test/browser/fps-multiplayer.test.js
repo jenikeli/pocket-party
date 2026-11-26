@@ -1,19 +1,23 @@
-// End-to-end Saltline match: phones join, ready, move and aim, while the host renders the shared original map.
+// End-to-end Breakwater match: phones join and control players in the project-built split-screen scene.
 
 import { describe, test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { devices } from 'playwright';
 import { startServer } from '../helpers/start-server.js';
 import { launchBrowser, openHost, waitUntil } from '../helpers/browser.js';
+import { openPixelReader } from '../helpers/screenshot-pixels.js';
 import { closeJoinWindow, clickNow, startGame } from '../helpers/host-buttons.js';
 import { openTouchscreen } from '../helpers/touch.js';
 import { MESSAGE_TYPES } from '../../shared/protocol.js';
 
-describe('Saltline multiplayer controls', () => {
+describe('Breakwater multiplayer controls', () => {
   let server;
   let browser;
+  let pixelReader;
   let hostPage;
   let roomCode;
+  const shooterPageRequests = [];
+  const hostErrors = [];
 
   async function joinPhone(name) {
     const context = await browser.newContext(devices['Pixel 7']);
@@ -37,27 +41,62 @@ describe('Saltline multiplayer controls', () => {
     return { context, page, sentInputs, errors };
   }
 
-  async function hostViews() {
-    return hostPage.evaluate(() => [...document.querySelectorAll('#game-container iframe')].map((iframe) => {
-      const win = iframe.contentWindow;
-      const game = win?.__G;
-      const actors = game?.scene?.children
-        .filter((object) => object.name.startsWith('multiplayer-'))
-        .map((object) => object.name) ?? [];
+  async function rendererState() {
+    return hostPage.evaluate(() => {
+      const canvas = document.querySelector('#game-container canvas.fps-renderer-canvas');
+      const views = [...document.querySelectorAll('#game-container .fps-renderer-view')]
+        .filter((element) => element.style.display !== 'none')
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            playerId: element.dataset.playerId,
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+            hasHud: Boolean(element.querySelector('canvas')),
+          };
+        });
       return {
-        hasBridge: typeof win?.__POCKET_PARTY__?.renderFrame === 'function',
-        playerInputDisabledForPhoneControl: game?.player?.enabled === false,
-        actors,
-        camera: game?.camera?.position.toArray(),
-        drawCalls: game?.renderer?.info?.render?.calls ?? 0,
+        canvasCount: document.querySelectorAll('#game-container canvas.fps-renderer-canvas').length,
+        canvasWidth: canvas?.width ?? 0,
+        canvasHeight: canvas?.height ?? 0,
+        iframeCount: document.querySelectorAll('#game-container iframe').length,
+        views,
       };
-    }));
+    });
+  }
+
+  async function sampledColorCount(screenshot, view) {
+    return pixelReader.evaluate(async ({ base64, view }) => {
+      const { data, width } = await window.decodePng(base64);
+      const colors = new Set();
+      const left = Math.round(view.left + view.width * 0.2);
+      const right = Math.round(view.left + view.width * 0.8);
+      const top = Math.round(view.top + view.height * 0.2);
+      const bottom = Math.round(view.top + view.height * 0.8);
+      for (let y = top; y < bottom; y += 8) {
+        for (let x = left; x < right; x += 8) {
+          const offset = (y * width + x) * 4;
+          const red = data[offset];
+          const green = data[offset + 1];
+          const blue = data[offset + 2];
+          if (red > 8 || green > 8 || blue > 8) colors.add(`${red},${green},${blue}`);
+        }
+      }
+      return colors.size;
+    }, { base64: screenshot.toString('base64'), view });
   }
 
   before(async () => {
     server = await startServer();
     browser = await launchBrowser('chromium');
+    pixelReader = await openPixelReader(browser);
     hostPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    hostPage.on('request', (request) => {
+      if (request.url().includes('/saltline-fable-5.2/')) shooterPageRequests.push(request.url());
+    });
+    hostPage.on('pageerror', (error) => hostErrors.push(error.message));
     await openHost(hostPage, server.baseUrl);
     roomCode = await startGame(hostPage, { gameId: 'fps', keepJoinWindow: true });
     await closeJoinWindow(hostPage);
@@ -68,8 +107,9 @@ describe('Saltline multiplayer controls', () => {
     await server?.stop();
   });
 
-  test('two phones enter a shared Saltline match and control their split-screen views', { timeout: 90000 }, async () => {
+  test('two phones play in separate original views without loading the archived page', { timeout: 90000 }, async () => {
     assert.equal(await hostPage.locator('#fps-start').count(), 1);
+    assert.equal(await hostPage.locator('.fps-renderer-canvas').count(), 1);
     const first = await joinPhone('First');
     const second = await joinPhone('Second');
     await first.page.waitForFunction(() => document.querySelector('[data-team="0"]')?.getAttribute('aria-pressed') === 'true');
@@ -84,30 +124,17 @@ describe('Saltline multiplayer controls', () => {
     await first.page.waitForSelector('.fps-phone-play', { timeout: 15000 });
     await second.page.waitForSelector('.fps-phone-play', { timeout: 15000 });
 
-    let views;
-    try {
-      views = await waitUntil(async () => {
-        const current = await hostViews();
-        return current.length === 2 && current.every((view) => view.hasBridge && view.actors.length >= 2)
-          ? current
-          : null;
-      }, { timeoutMs: 45000, message: 'two original Saltline views with networked player avatars' });
-    } catch (error) {
-      const state = await hostPage.evaluate(() => ({
-        viewCount: document.querySelectorAll('#game-container iframe').length,
-        error: [...document.querySelectorAll('#game-container > div')].map((element) => element.textContent).filter(Boolean),
-        frameStates: [...document.querySelectorAll('#game-container iframe')].map((iframe) => ({
-          src: iframe.src,
-          errors: iframe.contentWindow?.__errors,
-          ready: iframe.contentWindow?.__ready,
-          game: Boolean(iframe.contentWindow?.__G?.render),
-        })),
-      }));
-      throw new Error(`${error.message}\nRenderer state: ${JSON.stringify(state)}`);
-    }
-    assert.ok(views.every((view) => view.playerInputDisabledForPhoneControl));
-    assert.ok(views.every((view) => view.drawCalls > 0), 'the original Saltline scene renders in both views');
-    assert.notDeepEqual(views[0].camera, views[1].camera);
+    const state = await waitUntil(async () => {
+      const current = await rendererState();
+      return current.canvasCount === 1 && current.canvasWidth > 0 && current.canvasHeight > 0
+        && current.iframeCount === 0 && current.views.length === 2
+        && current.views.every((view) => view.playerId && view.hasHud)
+        ? current
+        : null;
+    }, { timeoutMs: 20000, message: 'two rendered player views on the custom scene' });
+    assert.ok(state.views[0].left < state.views[1].left, 'the two viewports occupy separate screen regions');
+    assert.ok(state.views.every((view) => view.width > 0 && view.height > 0));
+    assert.deepEqual(shooterPageRequests, [], 'the standalone shooter page is never requested');
 
     const touch = await openTouchscreen(first.page);
     const look = await first.page.locator('#fps-look').boundingBox();
@@ -120,20 +147,12 @@ describe('Saltline multiplayer controls', () => {
     });
 
     const move = await first.page.locator('#fps-move').boundingBox();
-    const beforeMove = views[0].camera;
     await touch.press(2, move.x + move.width / 2, move.y + move.height / 2);
     await touch.move(2, move.x + move.width / 2 + 50, move.y + move.height / 2 - 50);
     await waitUntil(async () => first.sentInputs.some((input) => input.kind === 'move' && Math.hypot(input.x, input.y) > 0.2), {
       timeoutMs: 3000,
       message: 'the first phone to send movement input',
     });
-    await waitUntil(async () => {
-      const current = await hostViews();
-      return current[0]?.camera
-        && Math.hypot(current[0].camera[0] - beforeMove[0], current[0].camera[2] - beforeMove[2]) > 0.1
-        ? true
-        : null;
-    }, { timeoutMs: 5000, message: 'phone movement to change its shared-map view' });
     await touch.release(2);
 
     const fire = await first.page.locator('[data-action="fire"]').boundingBox();
@@ -144,8 +163,12 @@ describe('Saltline multiplayer controls', () => {
       timeoutMs: 3000,
       message: 'the first phone to send fire input',
     });
+    const screenshot = await hostPage.screenshot();
+    const renderedColors = await Promise.all(state.views.map((view) => sampledColorCount(screenshot, view)));
+    assert.ok(renderedColors.every((count) => count > 20), `both views should render the scene, got ${renderedColors}`);
     assert.deepEqual(first.errors, []);
     assert.deepEqual(second.errors, []);
+    assert.deepEqual(hostErrors, []);
     await first.context.close();
     await second.context.close();
   });

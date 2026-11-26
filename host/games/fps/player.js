@@ -1,4 +1,4 @@
-// A Saltline player's body and input: looking, the stick, stances (walk, run, sprint, crouch), jumping with
+// A Breakwater player's body and input: looking, the stick, stances (walk, run, sprint, crouch), jumping with
 // step-up, footsteps and falling. A bot, a phone and the tests all drive it through the same door
 // (setStick, applyLook, press). No DOM, unit tested. Used by match.js, weapons.js and bots.js.
 

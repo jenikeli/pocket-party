@@ -1,4 +1,4 @@
-// Box collision for Saltline: a player is a box (half-width, height) moved one axis at a time against the map's
+// Box collision: a player is a box (half-width, height) moved one axis at a time against the map's
 // boxes, with step-up onto low ledges and sliding along walls. No DOM, unit tested. Used by player.js and
 // grenades.js.
 

@@ -1,11 +1,11 @@
-// Every number of Saltline that is not map data: movement (Saltline's own feel numbers), the weapon table, grenades,
-// respawn and the match modes. Tune here. Used by the rules (player.js, weapons.js, ballistics.js, grenades.js,
+// Every shooter number that is not map data: movement, the weapon table, grenades, respawn, and match modes.
+// Tune here. Used by the rules (player.js, weapons.js, ballistics.js, grenades.js,
 // modes.js, bots.js) and the host's drawing.
 
 export const TUNING = Object.freeze({
   // Body: the player is a box of this half-width and height; eye height is for the camera.
   radius: 0.4, height: 1.8, crouchHeight: 1.15, eyeHeight: 1.62, crouchEye: 1.0, stepHeight: 0.45,
-  // Movement, from Saltline: m/s and m/s squared.
+  // Movement: m/s and m/s squared.
   silent: 2.2, run: 3.8, sprint: 6.4, crouchSpeed: 1.9, adsSpeed: 2.4,
   accelGround: 34, decelGround: 26, accelAir: 9, gravity: 21, jumpApex: 0.9,
   // The stick: under this push is a silent walk, over the second is a sprint.
@@ -33,7 +33,7 @@ export const TUNING = Object.freeze({
 // perShell), spread in degrees (standing, plus moving, crouching multiplier), recoil in radians per shot, range in
 // metres, wall penetration (share of damage kept), the speed multiplier and the zoom steps (field of view).
 export const WEAPONS = Object.freeze({
-  rifle: { id: 'rifle', name: 'PAC-9 Longshore', slot: 'primary', damage: 40, rpm: 600, auto: true, mag: 30, reserve: 90, reload: 2.5, spread: 0.6, moveSpread: 3.2, crouchMul: 0.6, pellets: 1, recoil: 0.014, recoilYaw: 0.006, range: 120, pen: 0.5, speedMul: 1, zoom: [70, 52] },
+  rifle: { id: 'rifle', name: 'Ranger AR-9', slot: 'primary', damage: 40, rpm: 600, auto: true, mag: 30, reserve: 90, reload: 2.5, spread: 0.6, moveSpread: 3.2, crouchMul: 0.6, pellets: 1, recoil: 0.014, recoilYaw: 0.006, range: 120, pen: 0.5, speedMul: 1, zoom: [70, 52] },
   carbine: { id: 'carbine', name: 'Tactical Carbine', slot: 'primary', damage: 30, rpm: 750, auto: true, mag: 30, reserve: 120, reload: 2.0, spread: 0.45, moveSpread: 2.6, crouchMul: 0.6, pellets: 1, recoil: 0.009, recoilYaw: 0.004, range: 110, pen: 0.4, speedMul: 1.04, zoom: [70, 54] },
   shotgun: { id: 'shotgun', name: 'Combat Shotgun', slot: 'primary', damage: 9, rpm: 70, auto: false, mag: 8, reserve: 32, reload: 0.5, perShell: true, spread: 4.5, moveSpread: 1.5, crouchMul: 0.8, pellets: 8, recoil: 0.05, recoilYaw: 0.01, range: 30, pen: 0.2, speedMul: 0.97, zoom: [70, 62] },
   sniper: { id: 'sniper', name: 'Sniper Rifle', slot: 'primary', damage: 100, rpm: 45, auto: false, mag: 5, reserve: 20, reload: 3.0, spread: 0.05, moveSpread: 9, crouchMul: 0.7, pellets: 1, recoil: 0.06, recoilYaw: 0.004, range: 250, pen: 0.6, speedMul: 0.92, zoom: [70, 30, 15] },

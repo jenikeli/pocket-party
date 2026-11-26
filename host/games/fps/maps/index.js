@@ -1,4 +1,4 @@
-// Saltline's map registry: the playable maps by id. Used by session.js and the setup screen.
+// Breakwater's map registry: the playable maps by id. Used by session.js and the setup screen.
 
 import { HARBOR } from './harbor.js';
 import { DUSTLINE } from './dustline.js';

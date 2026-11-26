@@ -1,4 +1,4 @@
-// How each of Saltline's cues sounds (host/games/fps/sound-cues.js decides which play), built from the synth's tones
+// How each Breakwater cue sounds (host/games/fps/sound-cues.js decides which plays), built from the synth's tones
 // and noise (host/audio/synth.js), plus the two beds that run for a while: the rain and the flash-bang ringing.
 // Every voice is (cue, at, out): `out` is the node it plays into, a distance bus for positional cues.
 // Levels and timbres are by design, not tuned by ear.

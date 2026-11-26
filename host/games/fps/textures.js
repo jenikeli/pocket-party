@@ -1,4 +1,4 @@
-// Saltline's map materials: one canvas-drawn texture per box material (container, concrete, steel, metal, wood) plus
+// Breakwater map materials: one canvas-drawn texture per box material (container, concrete, steel, metal, wood) plus
 // the ground. Drawn once when createMaterials() is called. The maps are tinted per box by instance colour, which
 // multiplies the texture, so every texture here is a light, fairly neutral grey and the tint carries the colour.
 import * as THREE from 'three';

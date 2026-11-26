@@ -133,7 +133,7 @@ export function createHud(view) {
     const clock = match.phase === 'intro' ? `Starts in ${left}` : `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
     const uplink = match.uplink ? `${match.uplink.planted ? `UPLINK ${match.uplink.site}  ${Math.max(0, Math.ceil(match.uplink.remaining))}s` : 'UPLINK  plant or defuse'}` : '';
     setText(scores, match.mode.cooperative
-      ? `SALTLINE   ${clock}`
+      ? `BREAKWATER   ${clock}`
       : match.mode.teams
         ? `Vanguard ${match.scores[0]}   ${clock}   ${match.scores[1]} Syndicate${uplink ? `   ${uplink}` : ''}`
         : `${clock}   You ${player.score}   first to ${match.mode.targetScore}`);

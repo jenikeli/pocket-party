@@ -1,10 +1,9 @@
-// Saltline's setup and result screens on the host: the mode (Team Deathmatch or Free For All), the bot skill, who is in
-// each team with a ready mark, Start match (on once everyone is ready) and Watch bots play, and after a match the result
-// card with Back to setup. HTML in the game's stage. Used by host/games/fps/index.js.
+// Breakwater's setup and result screens on the host: the mode, bot skill, teams, readiness, and match results.
+// HTML in the game's stage. Used by host/games/fps/index.js.
 
 import { displayName, colorText } from '/host/roster.js';
 import { setText, setPressed } from '/host/kart/panel-parts.js';
-import { TUNING } from './tuning.js';
+import { TUNING, WEAPONS } from './tuning.js';
 import { DEFAULT_MAP, MAPS } from './maps/index.js';
 
 const MODE_IDS = Object.keys(TUNING.modes);
@@ -21,10 +20,10 @@ export function createSetupPanel(stage, handlers) {
   const levels = [1, 2, 3].map((level) => `<button type="button" class="pp-button" data-level="${level}">${level}</button>`).join('');
   screen.innerHTML = `
     <div class="pp-panel fp-panel">
-      <h1 class="pp-title">Saltline</h1>
+      <h1 class="pp-title">Breakwater</h1>
       <div class="fp-row"><span class="pp-muted">Mode</span><div class="pp-segment" role="group" aria-label="Mode">${modes}</div></div>
       <div class="fp-row"><span class="pp-muted">Bot skill</span><div class="pp-segment" role="group" aria-label="Bot skill">${levels}</div></div>
-      <div class="fp-row"><span class="pp-muted">Original map / weapon</span><strong id="fps-assets">${MAPS[DEFAULT_MAP].name} · PAC-9 Longshore</strong></div>
+      <div class="fp-row"><span class="pp-muted">Map / starting weapon</span><strong id="fps-assets">${MAPS[DEFAULT_MAP].name} · ${WEAPONS.rifle.name}</strong></div>
       <div id="fps-teams" class="fp-teams"></div>
       <p class="pp-muted fp-instructions" id="fps-instructions"></p>
       <p id="fps-status" class="pp-muted fp-status"></p>

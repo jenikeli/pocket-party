@@ -1,4 +1,4 @@
-// A Saltline soldier as seen from outside: a cheap box-built body in the team colour that stands, crouches, runs,
+// A Breakwater soldier as seen from outside: a box-built body in the team colour that stands, crouches, runs,
 // aims and falls, holding a small model of the current weapon. Used by the renderer for every other player's body.
 // Geometry and materials are shared between all avatars (module-level caches); only the groups are per avatar.
 import * as THREE from 'three';

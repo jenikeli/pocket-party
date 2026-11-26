@@ -97,7 +97,7 @@ test('one to four human players each get a split-screen view', () => {
   }
 });
 
-test('human players stay on the original PAC-9 Longshore', () => {
+test('human players keep the default Ranger AR-9 loadout', () => {
   const session = createSession({
     people: [{ id: 'human', name: 'Player', team: 0, primary: 'rifle' }],
     modeId: 'tdm', botLevel: 1, seed: 39, mapId: 'harbor',
@@ -107,7 +107,7 @@ test('human players stay on the original PAC-9 Longshore', () => {
   session.input('human', { kind: INPUT_KINDS.CHOICE, choice: 'primary', value: 'sniper' });
   session.step(1 / 60);
   assert.equal(player.slot, 'primary');
-  assert.equal(matchView(session.match, player).weapon.name, 'PAC-9 Longshore');
+  assert.equal(matchView(session.match, player).weapon.name, 'Ranger AR-9');
 });
 
 test('a bot-only match gives the host one CPU view while the CPUs fight', () => {

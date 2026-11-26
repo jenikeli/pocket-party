@@ -1,4 +1,4 @@
-// The first-person weapon and arms of a Saltline player, built from boxes and cylinders and parented to that player's
+// A first-person weapon and arms, built from boxes and cylinders and parented to that player's
 // camera (camera space: forward is -Z, x right, y up). Bob, sprint pose, aim, reload, recoil and draw are animated here.
 import * as THREE from 'three';
 import { WEAPONS } from './tuning.js';

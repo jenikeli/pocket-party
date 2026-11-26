@@ -1,4 +1,4 @@
-// The building kit for Saltline's maps: plain functions that return lists of axis-aligned boxes
+// The building kit for Breakwater maps: plain functions that return lists of axis-aligned boxes
 // { x0, y0, z0, x1, y1, z1, mat, color }. A map is a list of these plus spawns; the same boxes are the collision and
 // (batched by material) the drawing. No DOM, unit tested through the map tests. Used by maps/harbor.js.
 

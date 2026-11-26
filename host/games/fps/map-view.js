@@ -229,7 +229,7 @@ export function buildMap(scene, map, materials) {
       caps.frustumCulled = false;
       group.add(caps);
 
-      const decalMaterial = new THREE.MeshBasicMaterial({ map: makeSignTexture('SALTLINE  /  FREIGHT', '#c99562'), transparent: true, depthWrite: false });
+      const decalMaterial = new THREE.MeshBasicMaterial({ map: makeSignTexture('BREAKWATER  /  FREIGHT', '#c99562'), transparent: true, depthWrite: false });
       boxes.forEach((box, index) => {
         if (index % 2 !== 0) return;
         const width = box.x1 - box.x0;
@@ -252,7 +252,7 @@ export function buildMap(scene, map, materials) {
   group.add(ground);
   if (map.id === 'harbor') addHarborBackdrop(group, materials.container);
 
-  const signMaterial = new THREE.MeshBasicMaterial({ map: makeSignTexture('SALTLINE TERMINAL'), transparent: true });
+  const signMaterial = new THREE.MeshBasicMaterial({ map: makeSignTexture('BREAKWATER PORT'), transparent: true });
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(12, 3), signMaterial);
   sign.position.set(-38.8, 6.2, 0);
   sign.rotation.y = Math.PI / 2;

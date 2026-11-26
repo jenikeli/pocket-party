@@ -1,4 +1,4 @@
-// Plays Saltline's sounds: gunfire, footsteps, explosions, hit markers, the rain. What plays is decided by
+// Plays Breakwater sounds: gunfire, footsteps, explosions, hit markers, and rain. What plays is decided by
 // sound-cues.js, how each sounds by sound-voices.js. Created by host/games/fps/index.js, which calls handle() every
 // frame with the events the rules emitted and calls setPlayerFlash() with how blinded a person is.
 

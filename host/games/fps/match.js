@@ -1,4 +1,4 @@
-// A Saltline match: players (people and bots) in a world, the mode (Team Deathmatch or Free For All), the intro, the
+// A Breakwater match: players (people and bots) in a world, the mode, the intro, the
 // clock, scores, respawns and the result. One step runs the bots, every player's movement and weapon, the grenades
 // and the end check. No DOM, unit tested. Used by session.js and tools/fps-sim.js.
 

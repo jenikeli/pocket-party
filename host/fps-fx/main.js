@@ -1,4 +1,4 @@
-// Preview of the Saltline effects: ground, fog, a box, a free camera (drag to look, WASD to move), and buttons that
+// Preview of Breakwater's effects: ground, fog, a box, a free camera (drag to look, WASD to move), and buttons that
 // feed synthetic events into createEffects. Dev tool only; window.fx exposes the pieces for the Browser pane.
 
 import * as THREE from 'three';

@@ -1,4 +1,4 @@
-// The phone side of Saltline: a team/loadout setup screen and a minimal first-person control surface.
+// The phone side of Breakwater: a team setup screen and a minimal first-person control surface.
 
 import { MESSAGE_TYPES, INPUT_KINDS, FPS_CHOICES, FPS_BUTTONS } from '/shared/protocol.js';
 import { PORTRAIT_QUERY, pointInTurnedBox } from '/controller/kart/turned-layout.js';
@@ -81,10 +81,10 @@ function sendChoice(choice, value) {
 function createSetup(root) {
   root.innerHTML = `
     <div class="fps-phone fps-phone-setup">
-      <h1>Saltline</h1>
-      <p class="fps-setup-intro">Saltline Terminal · PAC-9 Longshore. Choose your team, tune your aim, then get ready.</p>
+      <h1>Breakwater</h1>
+      <p class="fps-setup-intro">Breakwater Port · Ranger AR-9. Choose your team, tune your aim, then get ready.</p>
       <div class="fps-choice-row fps-team-choice"><span>Team</span><button data-team="0">Vanguard</button><button data-team="1">Syndicate</button></div>
-      <p class="fps-mission-hint" hidden>Cut all three relays. Stay together and watch for Gulls and Hounds.</p>
+      <p class="fps-mission-hint" hidden>Restore all three relays. Stay together and watch for defenders.</p>
       <label class="fps-setting"><span>Aim sensitivity</span><input id="fps-sensitivity" type="range" min="0.3" max="3" step="0.1" value="${settings.sensitivity}"><output id="fps-sensitivity-output">${settings.sensitivity.toFixed(1)}</output></label>
       <div class="fps-setting-buttons"><button id="fps-invert" type="button" aria-pressed="false">Invert Y</button><button id="fps-handed" type="button" aria-pressed="false">Left handed</button></div>
       <div id="fps-look-test" class="fps-look-test"><i></i><span>Live aim test</span></div>

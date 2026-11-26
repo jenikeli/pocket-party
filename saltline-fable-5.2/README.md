@@ -20,19 +20,21 @@ All credit for the game goes to its original author. This repo is a mirror so pe
 
 Nothing in the game code. The claude.ai frame-runtime scripts were removed from `<head>`, and a doctype, charset and viewport tag were added so the file runs as a plain web page.
 
-## Play in Pocket Party multiplayer
+## Pocket Party's independent multiplayer shooter
 
-From the root of the `pocket-party` repository, start the Pocket Party server:
+The multiplayer game is **Breakwater**, a separate project-authored shooter. It does
+not load or embed this single-player page. To play Breakwater, start the Pocket Party
+server from the root of the `pocket-party` repository:
 
 ```sh
 npm start
 ```
 
 Use the LAN address printed by the server and open `<LAN-address>/host` on the host
-display. Choose **Saltline** and **Play**. Connect phones to the same Wi-Fi, scan the
-join QR code, choose a team and tap **Ready** on each phone. When everyone is ready,
-select **Start match** on the host. The phones control players in separate views of
-this original scene.
+display. Choose **Breakwater** and **Play**. Connect phones to the same Wi-Fi, scan
+the join QR code, choose a team and tap **Ready** on each phone. When everyone is
+ready, select **Start match** on the host. The host renders the project-built map and
+one first-person view per connected player.
 
 See the [full multiplayer procedure](../FPS-MULTIPLAYER-PROCEDURE.md) for phone
 controls and troubleshooting.

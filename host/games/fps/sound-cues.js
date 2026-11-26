@@ -1,4 +1,4 @@
-// What Saltline sounds like, decided without any audio: which cues the rules' events imply for one frame, and how
+// What Breakwater sounds like, decided without audio: which cues the rules' events imply for one frame, and how
 // loud, how far left or right and how muffled each one is for the nearest person playing. Plain functions, unit
 // tested in Node; host/games/fps/sounds.js turns the cues into Web Audio, sound-voices.js says how each sounds.
 // A cue is a small object { type, ... }; positional cues also carry { gain, pan, cutoff }.

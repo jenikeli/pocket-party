@@ -1,4 +1,4 @@
-/* Saltline's host panels in the host's look (host/ui.css): setup and result. Sizes in em of the game's .pp-stage.
+/* Breakwater's host panels in the host's look (host/ui.css): setup and result. Sizes in em of the game's .pp-stage.
    Loaded with the game by host/games/fps/index.js. */
 
 .fp-screen { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; padding: 4.5em 1em 1em; background: linear-gradient(180deg, rgba(20, 28, 36, 0.92), rgba(10, 13, 18, 0.96)); }

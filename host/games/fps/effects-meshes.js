@@ -1,4 +1,4 @@
-// The pooled solid effects for Saltline: bullet tracers, bullet-hole decals, grenade bodies, explosion fire spheres
+// The pooled solid effects: bullet tracers, bullet-hole decals, grenade bodies, explosion fire spheres
 // and the one shared flash light. Used by effects.js; every piece is made once and reused, never created per event.
 
 import * as THREE from 'three';

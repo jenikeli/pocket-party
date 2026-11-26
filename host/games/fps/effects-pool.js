@@ -1,4 +1,4 @@
-// Pure particle simulation for the Saltline effects (no Three.js, unit tested): a fixed ring of particles held in
+// Pure particle simulation for Breakwater effects (no Three.js, unit tested): a fixed ring of particles held in
 // typed arrays that effects-layer.js uploads to the GPU. Spawning reuses the oldest slot, so nothing is allocated.
 
 // A "kind" is a preset made once: { life, size, grow, grav, drag, r, g, b, a, spread } (size and grow in metres).

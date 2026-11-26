@@ -1,6 +1,10 @@
-# Saltline Split-Screen: build brief for a tactical 3D shooter inside Pocket Party
+# Historical: Saltline Split-Screen build brief
 
-Give this whole file to the builder. It replaces the earlier prompt. It is written for this repository's engine, which is **not** a server-authoritative netcode engine, so several things in the earlier prompt (prediction, reconciliation, lag compensation, server raycasts) are dropped or rewritten below with the reason.
+This is retained as a record of the earlier build request only. It is superseded by
+the project-authored Breakwater shooter. Do not follow its instructions to load,
+inspect, copy, or embed the standalone `saltline-fable-5.2` code. The current game
+uses the local renderer and game modules under `host/games/fps/`; see
+[`FPS-MULTIPLAYER-PROCEDURE.md`](../FPS-MULTIPLAYER-PROCEDURE.md).
 
 ## 1. Objective
 

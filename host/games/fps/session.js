@@ -1,4 +1,4 @@
-// A running Saltline match as the host handles it: the match, each phone's input (stick, look, buttons, loadout), a
+// A running Breakwater match as the host handles it: the match, each phone's input (stick, look, buttons, loadout), a
 // bot taking over a seat that a person left, and the private view each phone is shown. No DOM, unit tested. Used by
 // index.js and tools/fps-sim.js.
 

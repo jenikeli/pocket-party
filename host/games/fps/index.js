@@ -1,4 +1,4 @@
-// Saltline (fps): setup on the host and phones, a host-authoritative match, private views and Three.js rendering.
+// Breakwater (fps): setup on the host and phones, a host-authoritative match, private views and Three.js rendering.
 // It loads on demand through host/games/index.js and follows the shell game interface.
 
 import { MESSAGE_TYPES, INPUT_KINDS, FPS_CHOICES, FPS_TEAMS } from '/shared/protocol.js';

@@ -1,4 +1,4 @@
-// A Saltline bot: it sees enemies in front of it with a clear line, reacts after a delay, turns toward them at a
+// A Breakwater bot: it sees enemies in front of it with a clear line, reacts after a delay, turns toward them at a
 // limited rate with aim error, fires in bursts, strafes, reloads and throws the odd grenade; with nothing in sight
 // it walks a path over the nav grid to a random goal. It drives its body through the same door a phone does
 // (setStick, press, look) and never edits state. No DOM, unit tested. Used by match.js.

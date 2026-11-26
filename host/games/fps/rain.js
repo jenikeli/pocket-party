@@ -1,4 +1,4 @@
-// Rain for Saltline: about 1200 falling streaks in a box around the camera. The streaks fall inside the vertex shader
+// Rain for Breakwater: about 1200 falling streaks in a box around the camera. The streaks fall inside the vertex shader
 // from a time uniform, so update(dt) only advances that uniform and follow() only moves the group.
 
 import * as THREE from 'three';

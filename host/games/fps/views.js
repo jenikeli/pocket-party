@@ -1,4 +1,4 @@
-// What each phone is told in Saltline (the `view` of CONTROLLER_STATE): the setup screen, and during a match the
+// What each phone is told in Breakwater (the `view` of CONTROLLER_STATE): setup, and during a match the
 // player's own health, ammo, grenades, scores, clock and the feedback counters (hit confirm, damage direction,
 // flash) the phone turns into vibration. No DOM, unit tested. Used by session.js and index.js.
 

@@ -54,8 +54,8 @@ export const GAMES = Object.freeze([
   }),
   Object.freeze({
     id: 'fps',
-    title: 'Saltline',
-    blurb: 'Co-op relay mission or PvP. Split-screen 3D shooter with Gulls, Hounds, and CPU opponents.',
+    title: 'Breakwater',
+    blurb: 'Team Deathmatch, Free For All, or co-op. A split-screen 3D shooter with CPU opponents.',
     minPlayers: 1,
     maxPlayers: 4,
     cover: '/assets/covers/fps.svg',

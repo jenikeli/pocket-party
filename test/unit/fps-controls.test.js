@@ -1,4 +1,4 @@
-// Unit tests for Saltline's phone-driven movement and aiming (host/games/fps/player.js).
+// Unit tests for Breakwater's phone-driven movement and aiming (host/games/fps/player.js).
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

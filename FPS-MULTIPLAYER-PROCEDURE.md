@@ -1,4 +1,4 @@
-# Saltline multiplayer procedure
+# Breakwater multiplayer procedure
 
 ## Start a room
 
@@ -20,13 +20,13 @@
 
 3. Connect the host computer and every phone to the same Wi-Fi network. Open
    `http://<LAN-IP>:<PORT>/host` on the host computer.
-4. Choose **Saltline**, then **Play**. The host opens a room and shows a QR code.
+4. Choose **Breakwater**, then **Play**. The host opens a room and shows a QR code.
    When the host page was opened through `localhost`, it now replaces that local-only
    QR/link with a LAN address automatically. If it still shows `localhost`, use the
    `Reachable on` address from the terminal to open `/host`.
 5. On each phone, scan the QR code or open the shown LAN address and enter the room
-   code. On the Saltline setup screen, choose a team, adjust aim settings if needed,
-   then tap **Ready**. Saltline uses the original Terminal map and PAC-9 Longshore.
+   code. On the Breakwater setup screen, choose a team, adjust aim settings if needed,
+   then tap **Ready**. The match uses the project-built Breakwater Port and Ranger AR-9.
 6. When the host setup panel shows every connected player as **Ready**, select
    **Start match**. Each connected human gets a private split-screen view on the
    host. Bots fill remaining seats according to the selected mode.
@@ -49,7 +49,7 @@
 - Open **Settings** on the phone to adjust sensitivity, invert vertical aim, or change
   handedness.
 
-## How input and multiplayer reach the original renderer
+## How multiplayer is rendered
 
 1. The phone control module sends movement, look, and button inputs over the room's
    WebSocket connection. Each input is associated with the sending player's room slot
@@ -58,13 +58,12 @@
    movement, collision, weapons, damage, bots, scoring, and respawns.
 3. The host sends each player a private HUD view and sends the current match snapshot
    to the renderer.
-4. The renderer calls `window.__POCKET_PARTY__.renderFrame(...)` inside the original
-   [`saltline-fable-5.2/index.html`](./saltline-fable-5.2/index.html). That bridge
-   applies the host camera and player state, clones character models from the original
-   scene for the other players, and renders using the original game's Three.js code.
+4. The renderer builds the map, characters, first-person weapon, effects, and HUD from
+   the project's own Three.js modules. One WebGL canvas renders each player's camera
+   into its own split-screen viewport. It does not load or embed the standalone
+   `saltline-fable-5.2` page.
 
-The original page supplies the graphics; the host simulation and phone controller
-provide multiplayer rules and input.
+The host simulation owns the rules and the project-built renderer owns the graphics.
 
 ## If a phone cannot join or control the match
 

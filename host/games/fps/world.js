@@ -1,4 +1,4 @@
-// The Saltline world: the map's boxes, the players, grenades in flight, smoke clouds, and the events the host turns
+// The Breakwater world: map boxes, players, grenades in flight, smoke clouds, and events the host turns
 // into effects and sound. No DOM, unit tested. Made once per match by match.js and used by every rules file.
 
 import { createRng } from '../arena/rng.js';

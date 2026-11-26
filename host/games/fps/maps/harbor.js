@@ -1,4 +1,4 @@
-// Saltline Terminal: a rainy container terminal, 80 x 56 metres. Stacked containers form alleys and walk-through
+// Breakwater Port: a container yard, 80 x 56 metres. Stacked containers form alleys and walk-through
 // gaps, steel stairs lead up to the roofs of the two-high stacks and a crane perch, crate and barrier cover sit on
 // the central pier. Half the map is written once and turned half a turn for the other half, so it is fair to both
 // teams. Boxes only: the same data is the collision and the drawing. Used by maps/index.js.
@@ -60,7 +60,7 @@ const base = half();
 
 export const HARBOR = Object.freeze({
   id: 'harbor',
-  name: 'Saltline Terminal',
+  name: 'Breakwater Port',
   bounds: { x0: -40, x1: 40, z0: -28, z1: 28 },
   boxes: Object.freeze([...perimeter(), ...base, ...rotated(base)]),
   uplinkSites: Object.freeze({ A: { x: -34, z: -20, radius: 4 }, B: { x: 34, z: 20, radius: 4 } }),
@@ -74,7 +74,7 @@ export const HARBOR = Object.freeze({
     1: spawnsFor(1),
     ffa: [[-30, -15], [-8, -16], [14, -8], [34, -14], [34, 14], [8, 16], [-14, 8], [-34, 14], [0, 0], [-20, 0], [20, 0], [0, 22], [0, -22]].map(([x, z]) => ({ x, z, yaw: Math.atan2(-x, -z) })),
   }),
-  // Warm low-angle light and wet asphalt echo the standalone Saltline terminal.
+  // Warm low-angle light and wet asphalt give the port a late-evening atmosphere.
   look: {
     sky: 0x75645b,
     skyTop: 0x3e4c59,

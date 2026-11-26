@@ -1,4 +1,4 @@
-// Saltline's effects: turns the rules' events (shot, impact, explode, flash, smoke, kill) into tracers, sparks, dust,
+// Breakwater effects: turns the rules' events (shot, impact, explode, flash, smoke, kill) into tracers, sparks, dust,
 // bullet holes, explosions and smoke clouds, and draws grenade bodies. The renderer calls handle(events) and
 // update(dt) once per frame and sync(world) each frame. Everything is pooled; nothing is allocated per frame.
 

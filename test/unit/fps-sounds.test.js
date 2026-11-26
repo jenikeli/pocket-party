@@ -1,4 +1,4 @@
-// Unit tests for Saltline's sounds: the cue decisions (host/games/fps/sound-cues.js) as plain functions and
+// Unit tests for Breakwater sounds: cue decisions (host/games/fps/sound-cues.js) as plain functions and
 // sounds.js against a fake Web Audio context (no sound is left running, no throw, the rain starts and stops).
 
 import { test } from 'node:test';

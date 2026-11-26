@@ -6,11 +6,12 @@ Organised by topic, not by milestone: commit messages carry the milestone ids (`
 
 ## Goal
 
-A racing game in the style of console kart racers for a party. A host display shows the race, and players steer with their own phones (iOS or Android). Three games on the host's game picker, each a separate module:
+A racing game in the style of console kart racers for a party, plus a separate multiplayer shooter. A host display shows the game, and players control it with their own phones (iOS or Android). Each game is a separate module:
 
 - **Kartwheel Mini** (`kart-2d`, the 2D race, 2-9 players): top-down, a stadium track, the whole track on one screen.
 - **Kartwheel** (`kart-3d`, the 3D race, 1-4 players in split screen, CPU karts fill the field to 12): the main game, meant to look, feel and play as close to the reference console kart racer as we can make it, with our own assets.
 - **Input lab** (`input-lab`): a developer tool for tap, swipe, tilt and latency.
+- **Breakwater** (`fps`, the first-person shooter, 1-4 phones): host-authoritative team and free-for-all matches on an original procedural map. Its Three.js scene, player models, weapons, effects, and HUD are project-built; it does not load the standalone `saltline-fable-5.2` page or its code.
 
 ## Decisions
 
@@ -24,6 +25,12 @@ A racing game in the style of console kart racers for a party. A host display sh
 - **Host UI is HTML** in the "Night" look (`host/ui.css` tokens and classes, the same names on the phone in `controller/style.css`), sized in `em` inside a 16:9 `.pp-stage` whose font size is 1/80 of its width (`host/stage.js`). Phaser draws only the 2D track and the input lab.
 - **Kart controls:** the phone is held sideways like a game controller. Each player picks a control style on their phone: steering by tilt or stick, auto-accelerate on or off. A new player starts on tilt with auto-accelerate off; the phone turns tilt on at the player's first tap on the setup screen (iOS asks for the motion permission only inside a tap), and falls back to the stick with a note when the permission is refused or the page has no motion sensor (plain HTTP, a laptop). Ready takes the phone straight to the controls the player picked, still (a touch sends nothing) until the race starts, with a green Ready and Back to setup (not ready again) in the status column, so everyone sees and can turn to their controls before the lights; the host's Start race already waits for everyone ready.
 - **Tests guard everything built** (`CLAUDE.md`, "Testing"); real-device checks are kept for what automation cannot see.
+
+## Breakwater shooter
+
+- **Rendering:** one host-owned Three.js scene and WebGL canvas draws a private first-person viewport for each connected player. The map, materials, player models, weapon models, effects, and HUD are built by modules under `host/games/fps/`.
+- **Rules:** the host simulates movement, collision, weapons, damage, bots, scoring, grenades, and respawns. Phones send timestamped inputs over the existing room protocol.
+- **Modes:** Team Deathmatch, Free For All, Search and Defuse, and cooperative Relay Recovery. Bots fill out the match.
 
 ## 2D kart race
 
@@ -121,6 +128,7 @@ Controller side, `controller/games/<id>/index.js` with `style.css`, loaded when 
   - Karts (`karts/`): 12 designs in `karts/drivers/`, assigned by lobby colour slot (`kart-roster.js`); about 25,000 triangles and 10 draw calls each; shadows from a box stand-in.
   - Drawing: `renderer.js`, `scenery.js`, `course-loader.js` (nothing is built until Start race, Watch or Measure; a built course is kept), `baked-shade.js`, `course-light.js`, `bloom.js`, `sun.js`, `quality.js`, `views.js`, `effects.js`.
   - Session and panels: `index.js`, `race-session.js`, `frame-drawer.js`, `phone-link.js`, `setup-panel.js`, `race-bar.js` (the strip's buttons), `tuning-panel.js`, `results-panel.js`, `view-hud.js`, `measure-*.js`, `stand-ins.js`.
+- **Breakwater (`host/games/fps/`):** `index.js` and `session.js` own the match lifecycle; `renderer.js` draws the scene and split-screen viewports, `renderer-actors.js` synchronizes remote player models, and `renderer-view.js` owns each first-person camera, weapon, and HUD. The standalone shooter archive is not used by this module.
 - **Phone (`controller/`):** `main.js`, `connection.js`, `session-store.js`, `game-screen.js`, `no-zoom.js`, `background-leave.js`; `inputs/` (each `start(surface)`, `stop()`, `onInput(callback)`; tilt also `requestAccess()`, `calibrate()`); `kart/` (shared controls and setup screen: `controls.js` and `markup.js`, `setup-screen.js` with `color-picker.js`, `steering.js` with `floating-stick.js` and `turned-layout.js`, `go-drift.js` for Go's double tap and what Go sends, `phone-screen.js` for which screen a view shows: setup, waiting after Ready, or the race).
 - **Tests:** `test/unit/`, `test/server/`, `test/browser/`; helpers in `test/helpers/` (`startServer`, `openHost`, `startGame`, `clickNow`, `kart-3d-host.js` for the 3D waits and the plain course, `touch.js` for real multi-touch, `lane-driver.js`).
 - **Tools:** `tools/kit-shots.js`, `tools/course-previews.js`.

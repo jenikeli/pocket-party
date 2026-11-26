@@ -9,6 +9,7 @@ const STORAGE_PREFIX = 'pocket-party-volume-';
 // visit, so they stay right even where localStorage is missing or throws.
 let volumes = null;
 let context = null;
+let contextClass = null;
 let effectsGain = null;
 let musicGain = null;
 
@@ -99,8 +100,9 @@ export function unlockAudio() {
     console.info('Web Audio is not available in this browser: no sound');
     return;
   }
-  if (!context) {
+  if (!context || contextClass !== AudioContextClass) {
     context = new AudioContextClass();
+    contextClass = AudioContextClass;
     buildGraph();
     globalThis.document?.addEventListener('visibilitychange', resumeWhenVisible);
   }

@@ -4,11 +4,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listLanAddresses } from './addresses.js';
 
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // Only these top-level folders are public. Everything else (server/, node_modules/, certs) is not.
 const PUBLIC_FOLDERS = ['controller', 'host', 'shared', 'assets'];
+const PUBLIC_FILES = new Set([path.resolve(ROOT_DIR, 'saltline-fable-5.2/index.html')]);
 
 // Short URLs people type by hand.
 const PAGE_ALIASES = {
@@ -31,10 +33,23 @@ const CONTENT_TYPES = {
   '.mp3': 'audio/mpeg',
   '.m4a': 'audio/mp4',
 };
+const LAN_ADDRESSES_PATH = '/server/lan-addresses.json';
 
 export function handleStaticRequest(request, response) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     sendText(response, 405, 'Method not allowed');
+    return;
+  }
+
+  let urlPath;
+  try {
+    urlPath = new URL(request.url, 'http://localhost').pathname;
+  } catch {
+    sendText(response, 404, 'Not found');
+    return;
+  }
+  if (urlPath === LAN_ADDRESSES_PATH) {
+    sendLanAddresses(request, response);
     return;
   }
 
@@ -53,6 +68,16 @@ export function handleStaticRequest(request, response) {
   });
 }
 
+function sendLanAddresses(request, response) {
+  const body = JSON.stringify({ addresses: listLanAddresses() });
+  response.writeHead(200, {
+    'Cache-Control': 'no-store',
+    'Content-Length': Buffer.byteLength(body),
+    'Content-Type': CONTENT_TYPES['.json'],
+  });
+  response.end(request.method === 'HEAD' ? '' : body);
+}
+
 // Turns a request URL into an absolute file path, or null if it is not a public file.
 function resolvePublicPath(requestUrl) {
   let urlPath;
@@ -68,7 +93,7 @@ function resolvePublicPath(requestUrl) {
   const isPublic = PUBLIC_FOLDERS.some((folder) =>
     filePath.startsWith(path.join(ROOT_DIR, folder) + path.sep),
   );
-  return isPublic ? filePath : null;
+  return isPublic || PUBLIC_FILES.has(filePath) ? filePath : null;
 }
 
 function sendFile(request, response, filePath, stats) {

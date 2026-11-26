@@ -195,6 +195,8 @@ function sendChoice(choice, value) {
 // Go also drifts while its hint shows (the 3D race with the stick, without auto-accelerate).
 function onButtonInput(input) {
   const isGo = input.button === KART_BUTTONS.ACCELERATE;
-  sendInput(isGo ? goInput(input, !goHint.hidden, performance.now()) : input);
-  controls.querySelector(`[data-button="${input.button}"]`)?.classList.toggle('held', input.pressed);
+  const sent = isGo ? goInput(input, !goHint.hidden, performance.now()) : input;
+  sendInput(sent);
+  const visualButton = isGo ? accelerateButton : controls.querySelector(`[data-button="${sent.button}"]`);
+  visualButton?.classList.toggle('held', input.pressed);
 }

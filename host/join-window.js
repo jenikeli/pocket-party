@@ -15,6 +15,7 @@ const playerList = document.getElementById('join-players');
 // The room whose players the open window shows; null while it is closed.
 let shownRoom = null;
 let refreshTimer = null;
+let currentRoomCode = null;
 
 document.getElementById('join-done-button').addEventListener('click', closeJoinWindow);
 joinWindow.addEventListener('click', (event) => {
@@ -27,12 +28,42 @@ joinWindow.addEventListener('click', (event) => {
 // phone that scans it lands on the join screen with the code filled in; the text shows only the address, short
 // enough to type, and the code above it.
 export function setRoomCode(roomCode) {
-  document.getElementById('join-qr').innerHTML = qrCodeSvg(joinUrl(location.origin, roomCode));
-  document.getElementById('join-code').textContent = roomCode;
-  document.getElementById('join-url').textContent = location.origin;
-  // The QR uses this page's own address, and "localhost" only works on this machine, not on the phones.
+  currentRoomCode = roomCode;
   const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  document.getElementById('join-lan-warning').hidden = !isLocal;
+  setJoinLink(roomCode, location.origin, isLocal);
+  if (!isLocal) {
+    return;
+  }
+
+  fetch('/server/lan-addresses.json', { cache: 'no-store' })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`LAN address lookup failed (${response.status}).`);
+      }
+      return response.json();
+    })
+    .then(({ addresses }) => {
+      if (currentRoomCode !== roomCode) {
+        return;
+      }
+      const address = addresses.find((entry) => /^\d{1,3}(?:\.\d{1,3}){3}$/.test(entry.address))?.address;
+      if (!address) {
+        console.warn('No LAN address is available for phone controllers.');
+        return;
+      }
+      const port = location.port ? `:${location.port}` : '';
+      setJoinLink(roomCode, `${location.protocol}//${address}${port}`, false);
+    })
+    .catch((error) => {
+      console.error('Could not create a LAN-reachable join link:', error);
+    });
+}
+
+function setJoinLink(roomCode, origin, showLanWarning) {
+  document.getElementById('join-qr').innerHTML = qrCodeSvg(joinUrl(origin, roomCode));
+  document.getElementById('join-code').textContent = roomCode;
+  document.getElementById('join-url').textContent = origin;
+  document.getElementById('join-lan-warning').hidden = !showLanWarning;
 }
 
 export function openJoinWindow(room) {

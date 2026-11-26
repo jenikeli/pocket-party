@@ -121,6 +121,7 @@ function runGame({ game, room, roomCode, gameInfo, onStart, onEnd }) {
       bar: { slot: barSlot, setDocked: setBarDocking },
       players: room.players,
       setControllerView: room.setControllerView,
+      setPlayerLimit: room.setPlayerLimit,
       pickColor: room.pickColor,
       removePlayer: room.kickPlayer,
       // The PONG comes back to the game's onMessage with the same sentAt.

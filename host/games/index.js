@@ -53,6 +53,15 @@ export const GAMES = Object.freeze([
     background: null,
   }),
   Object.freeze({
+    id: 'fps',
+    title: 'Saltline',
+    blurb: 'Co-op relay mission or PvP. Split-screen 3D shooter with Gulls, Hounds, and CPU opponents.',
+    minPlayers: 1,
+    maxPlayers: 4,
+    cover: '/assets/covers/fps.svg',
+    background: null,
+  }),
+  Object.freeze({
     id: 'input-lab',
     title: 'Input lab',
     blurb: 'Try tap, swipe and tilt, and see how long each input takes to arrive.',

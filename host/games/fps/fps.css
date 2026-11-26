@@ -1,0 +1,24 @@
+/* Saltline's host panels in the host's look (host/ui.css): setup and result. Sizes in em of the game's .pp-stage.
+   Loaded with the game by host/games/fps/index.js. */
+
+.fp-screen { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: center; padding: 4.5em 1em 1em; background: linear-gradient(180deg, rgba(20, 28, 36, 0.92), rgba(10, 13, 18, 0.96)); }
+.fp-panel { width: 52em; padding: 1.4em 1.6em; display: flex; flex-direction: column; gap: 0.9em; border: 0.1em solid var(--pp-line); }
+.fp-panel .pp-title { font-family: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif; letter-spacing: .08em; }
+.fp-panel .pp-primary { background: #ffb347; border-color: #ffb347; color: #0b0d0f; }
+.fp-panel .pp-button[aria-pressed="true"] { border-color: #ffb347; color: #ffc977; }
+.fp-instructions { margin: 0; }
+.fp-row { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+.fp-teams { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1em; }
+.fp-team { padding: 0.8em 1em; border-radius: var(--pp-radius); border: 0.15em solid var(--fp-team, var(--pp-line)); background: rgba(0, 0, 0, 0.25); min-height: 6em; }
+.fp-team[data-team="0"] { --fp-team: #3b82f6; }
+.fp-team[data-team="1"] { --fp-team: #ef4444; }
+.fp-team h2 { margin: 0 0 0.5em; font-size: 1.1em; color: var(--fp-team, var(--pp-ink)); }
+.fp-team ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5em; }
+.fp-team li { display: flex; align-items: center; gap: 0.5em; }
+.fp-ready { color: var(--pp-ok); font-weight: 700; }
+.fp-status { margin: 0; min-height: 1.3em; }
+.fp-actions { display: flex; gap: 0.8em; align-items: center; }
+.fp-result { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.fp-result-panel { pointer-events: auto; padding: 1.6em 2.4em; text-align: center; display: flex; flex-direction: column; gap: 0.7em; border: 0.15em solid var(--pp-line); }
+.fp-result-title { font-size: 2.6em; margin: 0; }
+.fp-result-score { font-size: 1.4em; margin: 0; font-weight: 700; }

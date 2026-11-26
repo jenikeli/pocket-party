@@ -50,7 +50,9 @@ function handlePointerDown(event) {
   const alreadyHeld = isHeld(name);
   heldBy.set(event.pointerId, name);
   // Capture keeps the finger's up event coming to the surface even if it slides off.
-  surface.setPointerCapture(event.pointerId);
+  if (surface.setPointerCapture) {
+    surface.setPointerCapture(event.pointerId);
+  }
   if (!alreadyHeld) {
     inputCallback({ kind: INPUT_KINDS.BUTTON, button: name, pressed: true });
   }

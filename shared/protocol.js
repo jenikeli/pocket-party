@@ -158,6 +158,12 @@ export const INPUT_KINDS = Object.freeze({
   // x and y are fractions (0..1) of the phone's pad from its top-left. The pad shows the whole arena turned so the
   // player's own base is at the bottom; the host turns the fractions into arena coordinates (placement.js).
   PLACE: 'place',
+  // Saltline's stick: { kind: 'move', x, y }, both -1..1 in the player's directions (x right, y up the screen = forward).
+  // Sent on change, at most about 30 times a second. The size of the push sets walk, run or sprint.
+  MOVE: 'move',
+  // Saltline's aim: { kind: 'look', dx, dy }, the finger movement since the last send as a fraction of the look pad
+  // (dx right, dy down), already scaled by the player's sensitivity. Summed on the phone, never dropped.
+  LOOK: 'look',
 });
 
 // The kart races' held buttons (INPUT kind button). The phone's controls name them in data-button attributes.
@@ -228,6 +234,22 @@ export const ARENA_CHOICES = Object.freeze({
   EMOTE: 'emote',
   // value: true. Counts during a match: the player's seat goes to a CPU.
   FORFEIT: 'forfeit',
+});
+
+// Saltline's held buttons (INPUT kind button, { button, pressed }); GRENADE may carry lob: true (a short underhand throw).
+export const FPS_BUTTONS = Object.freeze({
+  FIRE: 'fire', ADS: 'ads', JUMP: 'jump', CROUCH: 'crouch', RELOAD: 'reload', GRENADE: 'grenade', SCORES: 'scores', CYCLE_GRENADE: 'cycleGrenade', USE: 'use',
+});
+
+// Saltline's teams (FPS_CHOICES.TEAM values): 0 Vanguard, 1 Syndicate.
+export const FPS_TEAMS = Object.freeze({ VANGUARD: 0, SYNDICATE: 1 });
+
+// Saltline's choices (INPUT kind choice).
+export const FPS_CHOICES = Object.freeze({
+  // value: true or false. Counts on the setup screen.
+  READY: 'ready',
+  // value: an FPS_TEAMS value. Counts on the setup screen.
+  TEAM: 'team',
 });
 
 export const KART_STEERING = Object.freeze({

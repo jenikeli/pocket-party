@@ -41,6 +41,7 @@ for (const [path, contentType, bodyIncludes] of [
   ['/host/vendor/qrcode-generator-2.0.4.mjs', JAVASCRIPT, 'qrcode'],
   ['/host/vendor/phaser-3.90.0.esm.min.js', JAVASCRIPT, ''],
   ['/assets/manifest.json', 'application/json; charset=utf-8', '"assets"'],
+  ['/saltline-fable-5.2/index.html', 'text/html; charset=utf-8', 'SALTLINE'],
 ]) {
   test(`GET ${path} serves ${contentType}`, async () => {
     const response = await request(path);
@@ -55,6 +56,7 @@ for (const path of [
   '/server/index.js',
   '/package.json',
   '/node_modules/ws/package.json',
+  '/saltline-fable-5.2/index%20copy.html',
   '/controller/../server/config.js',
   '/controller/%2e%2e/server/config.js',
   '/controller/missing.js',
@@ -68,6 +70,20 @@ for (const path of [
 
 test('POST is refused with 405', async () => {
   assert.equal((await request('/', { method: 'POST' })).status, 405);
+});
+
+test('LAN address endpoint returns cache-free IPv4 candidates', async () => {
+  const response = await request('/server/lan-addresses.json');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers['content-type'], 'application/json; charset=utf-8');
+  assert.equal(response.headers['cache-control'], 'no-store');
+  const { addresses } = JSON.parse(response.body);
+  assert.ok(Array.isArray(addresses));
+  assert.ok(addresses.every((entry) => (
+    typeof entry.name === 'string'
+    && typeof entry.address === 'string'
+    && /^\d{1,3}(?:\.\d{1,3}){3}$/.test(entry.address)
+  )));
 });
 
 test('HEAD sends headers without a body', async () => {
